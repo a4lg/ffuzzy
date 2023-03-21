@@ -1,0 +1,38 @@
+[package]
+name = "ffuzzy"
+version = "0.1.0"
+description = "Library to generate / parse / compare ssdeep Context Triggered Piecewise Hashes (CTPH)"
+homepage = "https://github.com/a4lg/ffuzzy"
+repository = "https://github.com/a4lg/ffuzzy"
+license = "GPL-2.0-or-later"
+edition = "2021"
+rust-version = "1.56"
+readme = "../README.md"
+workspace = ".."
+exclude = ["data/testsuite/generate/large_trigger_last_hash.bin.zstd"]
+
+[lib]
+name = "ssdeep"
+
+[dependencies]
+cfg-if = "1.0.0"
+static_assertions = "1.1.0"
+
+[dev-dependencies]
+rand = { version = "0.8.5", default-features = false }
+rand_xoshiro = "0.6.0"
+
+[build-dependencies]
+version_check = "0.9"
+
+[features]
+default = ["std", "easy-functions"]
+std = ["alloc"]
+alloc = []
+easy-functions = []
+unsafe = []
+opt-reduce-fnv-table = []
+tests-slow = []
+tests-very-slow = ["tests-slow"]
+nightly = []
+maint-lints = []

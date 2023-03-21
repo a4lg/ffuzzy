@@ -1,0 +1,6 @@
+.*
+!.git?*
+/dev/generator/base64/rfc4648.txt
+/target
+*.profdata
+*.profraw

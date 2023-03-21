@@ -1,0 +1,11 @@
+[workspace]
+members = ["ffuzzy"]
+exclude = ["dev/generator/hash-blocksize-debruijn"]
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+debug = true
