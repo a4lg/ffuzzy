@@ -331,12 +331,6 @@ impl BlockHashPositionArray {
     /// distance, allowing character insertion and deletion as two primitive
     /// operations (in cost 1).
     ///
-    /// While this method requires that this object is not empty,
-    /// its user, [`score_strings`](Self::score_strings) ensures that both this
-    /// object and `other` are at least
-    /// [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH)
-    /// in length.
-    ///
     /// # Algorithm Implemented
     ///
     /// [[Hyyrö et al., 2005] (doi:10.1007/11427186_33)](https://doi.org/10.1007/11427186_33)
@@ -366,12 +360,6 @@ impl BlockHashPositionArray {
     /// In specific, it computes the Longest Common Subsequence (LCS)
     /// distance, allowing character insertion and deletion as two primitive
     /// operations (in cost 1).
-    ///
-    /// While this method requires that this object is not empty,
-    /// its user, [`score_strings`](Self::score_strings) ensures that both this
-    /// object and `other` are at least
-    /// [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH)
-    /// in length.
     ///
     /// # Algorithm Implemented
     ///
