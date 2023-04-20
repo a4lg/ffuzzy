@@ -1444,20 +1444,14 @@ mod const_asserts {
 
     // Regular tests.
     const_assert!(BlockSize::is_log_valid(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
-    const_assert!(
-        if FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER > 0 {
-            !is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1) &&
-            is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER)
-        }
-        else { true }
-    );
+    const_assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
+    const_assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
 
     // Regular tests (dynamic)
     #[cfg(test)]
     #[test]
     fn test_log_block_size_capping_border() {
-        assert!(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER > 0);
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
-        assert!(is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
+        assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     }
 }
