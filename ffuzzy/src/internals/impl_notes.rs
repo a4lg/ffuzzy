@@ -76,3 +76,5 @@
 //! *   [`crate::hash::FuzzyHashData::new_from_internals`]
 //! *   [`crate::hash::FuzzyHashData::new_from_internals_raw`]
 //! *   [`crate::hash::block::BlockSize::log_from_valid`]
+//! *   [`crate::hash_dual::FuzzyHashDualData::init_from_raw_form_internals_raw`]
+//! *   [`crate::hash_dual::FuzzyHashDualData::new_from_raw_form_internals_raw`]
