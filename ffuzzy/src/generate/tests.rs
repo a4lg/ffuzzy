@@ -592,8 +592,9 @@ fn test_generator_error_is_size_too_large_error() {
 
 
 #[test]
-fn cover_generator_default() {
+fn cover_generator_basic() {
     cover_default::<Generator>();
+    cover_auto_clone::<Generator>(&Generator::new());
 }
 
 #[cfg(feature = "alloc")]

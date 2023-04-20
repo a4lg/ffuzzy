@@ -359,7 +359,7 @@ impl BlockHashContext {
 /// let hash: RawFuzzyHash = generator.finalize().unwrap();
 /// assert_eq!(hash.to_string(), "3:aaX8v:aV");
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Generator {
     /// Processed input size.
     ///
