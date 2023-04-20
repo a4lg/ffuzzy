@@ -8,7 +8,7 @@ use crate::generate::fnv_table::FNV_HASH_INIT;
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
 use crate::generate::fnv_table::FNV_TABLE;
 #[cfg(feature = "opt-reduce-fnv-table")]
-use crate::generate_table::FNV_HASH_PRIME;
+use crate::generate::fnv_table::FNV_HASH_PRIME;
 use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{
     BlockSize, BlockHash,
