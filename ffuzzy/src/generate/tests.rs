@@ -800,15 +800,33 @@ fn test_generator_length_mismatch() {
 
 #[cfg(feature = "tests-very-slow")]
 #[test]
-fn test_generator_large_trigger_last_hash() {
+fn test_generator_large_triggers() {
+    const ZERO_1M: [u8; 1024*1024] = [0; 1024*1024];
+    let mut generator_orig = Generator::new();
+    // Feed zero bytes until it reaches 96GiB-1MiB (98303MiB).
+    // The loop variable is processed MiBs **after** feeding data to the generator.
+    for _mb_processed in 1..=(96 * 1024 - 1) {
+        generator_orig.update(&ZERO_1M[..]);
+        #[cfg(feature = "std")]
+        if _mb_processed % 1024 == 0 {
+            println!("{:3}GiB of {{96,192}}GiB processed...", _mb_processed / 1024);
+        }
+    }
+    assert_eq!(
+        generator_orig.input_size,
+        96 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
+    );
+
     /*
+        Test 1:
+
         This test triggers "last hash" (FNV-based) output on the generator.
 
         Input size:
         96GiB + 1B
 
         SHA-256 of the generator input:
-        2b8b92765a232967d96a9d23a869620ceb7ee316270bc4b566a23995d95630a2
+        08a6cdc1cdca3b173becd2c27f82588e36e41fe988f678100ca96a0952fe6de4
 
         Equivalent Zstandard-compressed file is available at:
         `ffuzzy/data/testsuite/generate/large_trigger_last_hash.bin.zstd`
@@ -816,119 +834,82 @@ fn test_generator_large_trigger_last_hash() {
 
         Be careful!  This Zstandard-compressed file is a zip bomb!
     */
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
-    generator.set_fixed_input_size(96 * 1024 * 1048576 + 1).unwrap();
-    for _ in 0..64 {
-        generator.update(b"`]]]_CT");
+    let mut last_bytes: [u8; 7*64+1] = [0u8; 7*64+1];
+    for i in 0..64 {
+        last_bytes[i*7..(i+1)*7].clone_from_slice(b"`]]]_CT");
     }
-    generator.update(&ZERO_1M[0..1048128]);
-    // Now: 1MiB (7 * 64 + 1048128 == 1048576)
-    // Feed zero bytes until it reaches 96GiB (98304MiB).
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 2..=(96 * 1024) {
-        generator.update(&ZERO_1M[..]);
-        #[cfg(feature = "std")]
-        if _mb_processed % 1024 == 0 {
-            println!("{:2}GiB of 96GiB processed...", _mb_processed / 1024);
-        }
+    last_bytes[7*64] = 1;
+    let mut generator_base = generator_orig.clone();
+    generator_base.update(&ZERO_1M[0..(1024*1024-7*64)]);
+    // Append 7 bytes pattern 64 times **except** one 0x01.
+    // Use update
+    let mut generator1 = generator_base.clone();
+    generator1.update(&last_bytes[0..(7*64)]);
+    // Use update_by_iter
+    let mut generator2 = generator_base.clone();
+    generator2.update_by_iter(last_bytes[0..(7*64)].iter().cloned());
+    // Use update_by_byte
+    let mut generator3 = generator_base.clone();
+    for &ch in last_bytes[0..(7*64)].iter() {
+        generator3.update_by_byte(ch);
     }
-    // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
-    generator.update(&[1]);
-    assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-        let hash_expected = FuzzyHashType::from_str(
-            "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
+    // Check all generators (for comparison; without last byte)
+    for generator in [&generator1, &generator2, &generator3] {
+        use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024));
+        let hash_expected_long = LongRawFuzzyHash::from_str(
+            "1610612736\
+                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
+                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
         ).unwrap();
-        assert_eq!(
-            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
-        );
-    }}
-    test_for_each_generator_finalization!(test);
-}
-
-#[cfg(feature = "tests-very-slow")]
-#[test]
-fn test_generator_large_trigger_last_hash_by_iter() {
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
-    generator.set_fixed_input_size(96 * 1024 * 1048576 + 1).unwrap();
-    for _ in 0..64 {
-        generator.update_by_iter(b"`]]]_CT".iter().cloned());
-    }
-    generator.update_by_iter(ZERO_1M[0..1048128].iter().cloned());
-    // Now: 1MiB (7 * 64 + 1048128 == 1048576)
-    // Feed zero bytes until it reaches 96GiB (98304MiB).
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 2..=(96 * 1024) {
-        generator.update_by_iter(ZERO_1M[..].iter().cloned());
-        #[cfg(feature = "std")]
-        if _mb_processed % 1024 == 0 {
-            println!("{:2}GiB of 96GiB processed...", _mb_processed / 1024);
-        }
-    }
-    // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
-    generator.update_by_iter([1; 1][..].iter().cloned());
-    assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-        let hash_expected = FuzzyHashType::from_str(
-            "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
+        let hash_expected_short = RawFuzzyHash::from_str(
+            "1610612736\
+                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
+                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
         ).unwrap();
-        assert_eq!(
-            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
-        );
-    }}
-    test_for_each_generator_finalization!(test);
-}
+        let hash_expected_short_as_long = hash_expected_short.to_long_form();
+        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_long);
+        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow));
+        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long);
+        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>().unwrap(), hash_expected_short);
+    }
+    // Append 7 bytes pattern 64 times **and** one 0x01.
+    // Use update
+    let mut generator1 = generator_base.clone();
+    generator1.update(&last_bytes[..]);
+    // Use update_by_iter
+    let mut generator2 = generator_base.clone();
+    generator2.update_by_iter(last_bytes[..].iter().cloned());
+    // Use update_by_byte
+    let mut generator3 = generator_base.clone();
+    for &ch in last_bytes.iter() {
+        generator3.update_by_byte(ch);
+    }
+    // Print progress if possible
+    #[cfg(feature = "std")]
+    {
+        println!(" 96GiB of  96GiB processed...");
+    }
+    // Check all generators
+    for generator in [&generator1, &generator2, &generator3] {
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1);
+        assert!(!generator.may_warn_about_small_input_size());
+        macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+            type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
+            let hash_expected = FuzzyHashType::from_str(
+                "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
+            ).unwrap();
+            assert_eq!(
+                hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
+            );
+        }}
+        test_for_each_generator_finalization!(test);
+    }
 
-#[cfg(feature = "tests-very-slow")]
-#[test]
-fn test_generator_large_trigger_last_hash_by_byte() {
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
-    generator.set_fixed_input_size(96 * 1024 * 1048576 + 1).unwrap();
-    for _ in 0..64 {
-        for &ch in b"`]]]_CT".iter() {
-            generator.update_by_byte(ch);
-        }
-    }
-    for &ch in ZERO_1M[0..1048128].iter() {
-        generator.update_by_byte(ch);
-    }
-    // Now: 1MiB (7 * 64 + 1048128 == 1048576)
-    // Feed zero bytes until it reaches 96GiB (98304MiB).
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 2..=(96 * 1024) {
-        for &ch in ZERO_1M[..].iter() {
-            generator.update_by_byte(ch);
-        }
-        #[cfg(feature = "std")]
-        if _mb_processed % 1024 == 0 {
-            println!("{:2}GiB of 96GiB processed...", _mb_processed / 1024);
-        }
-    }
-    // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
-    generator.update_by_byte(1);
-    assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-        let hash_expected = FuzzyHashType::from_str(
-            "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
-        ).unwrap();
-        assert_eq!(
-            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
-        );
-    }}
-    test_for_each_generator_finalization!(test);
-}
-
-#[cfg(feature = "tests-very-slow")]
-#[test]
-fn test_generator_large_error() {
     /*
-        This test triggers "input too large error".
+        Test 2:
+
+        This test triggers "input too large error" by all-zero bytes.
 
         Input size:
         192GiB + 1B
@@ -936,66 +917,51 @@ fn test_generator_large_error() {
         SHA-256 of the generator input:
         e613117320077150ddb32b33c2e8aaeaa63e9590a656c5aba04a91fa47d1c1b5
     */
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
+    // Feed zero bytes until it reaches 192GiB-1MiB (196607MiB).
     // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 1..=(192 * 1024) {
-        generator.update(&ZERO_1M[..]);
+    for _mb_processed in (96 * 1024)..=(192 * 1024 - 1) {
+        generator_orig.update(&ZERO_1M[..]);
         #[cfg(feature = "std")]
         if _mb_processed % 1024 == 0 {
             println!("{:3}GiB of 192GiB processed...", _mb_processed / 1024);
         }
     }
-    // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
-    generator.update(&[0]);
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
-    }}
-    test_for_each_generator_finalization!(test);
-}
-
-#[cfg(feature = "tests-very-slow")]
-#[test]
-fn test_generator_large_error_by_iter() {
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 1..=(192 * 1024) {
-        generator.update_by_iter(ZERO_1M[..].iter().cloned());
-        #[cfg(feature = "std")]
-        if _mb_processed % 1024 == 0 {
-            println!("{:3}GiB of 192GiB processed...", _mb_processed / 1024);
-        }
+    assert_eq!(
+        generator_orig.input_size,
+        192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
+    );
+    // Append 1 zero byte (now 192GiB-1MiB+1)
+    let mut generator_base = generator_orig.clone();
+    generator_base.update_by_byte(0);
+    assert_eq!(
+        generator_base.input_size,
+        192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024) + 1
+    );
+    // Append 1MiB of zeroes:
+    // Use update
+    let mut generator1 = generator_base.clone();
+    generator1.update(&ZERO_1M[..]);
+    // Use update_by_iter
+    let mut generator2 = generator_base.clone();
+    generator2.update_by_iter(ZERO_1M[..].iter().cloned());
+    // Use update_by_byte
+    let mut generator3 = generator_base.clone();
+    for _ in 0..(1024 * 1024) {
+        generator3.update_by_byte(0);
     }
-    // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
-    generator.update_by_iter([0u8; 1][..].iter().cloned());
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
-    }}
-    test_for_each_generator_finalization!(test);
-}
-
-#[cfg(feature = "tests-very-slow")]
-#[test]
-fn test_generator_large_error_by_byte() {
-    const ZERO_1M: [u8; 1048576] = [0; 1048576];
-    let mut generator = Generator::new();
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 1..=(192 * 1024) {
-        for &ch in ZERO_1M[..].iter() {
-            generator.update_by_byte(ch);
-        }
-        #[cfg(feature = "std")]
-        if _mb_processed % 1024 == 0 {
-            println!("{:3}GiB of 192GiB processed...", _mb_processed / 1024);
-        }
+    // Print progress if possible
+    #[cfg(feature = "std")]
+    {
+        println!("192GiB of 192GiB processed...");
     }
-    // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
-    generator.update_by_byte(0);
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
-    }}
-    test_for_each_generator_finalization!(test);
+    // Check all generators
+    for generator in [&generator1, &generator2, &generator3] {
+        assert!(generator.input_size > Generator::MAX_INPUT_SIZE);
+        macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+            assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
+        }}
+        test_for_each_generator_finalization!(test);
+    }
 }
 
 #[cfg(feature = "std")]
