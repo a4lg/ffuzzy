@@ -1427,14 +1427,17 @@ mod const_asserts {
     }
 
     // Prerequisite for 64-bit position array
-    // This test requires nightly features: const_trait_impl and const_convert.
-    #[cfg(feature = "nightly")]
-    const_assert!(
-        match TryInto::<u32>::try_into(BlockHash::FULL_SIZE) {
-            Ok(x) => x <= u64::BITS,
-            Err(_) => false,
-        }
-    );
+    // grcov-excl-br-start
+    #[cfg(test)]
+    #[test]
+    fn test_position_array_fits_in_64_bits() {
+        assert!(
+            u32::try_from(BlockHash::FULL_SIZE)
+                .and_then(|x| Ok(x <= u64::BITS))
+                .unwrap_or(false)
+        );
+    }
+    // grcov-excl-br-end
 
     // Prerequisite for 64-bit position array
     const_assert!(BlockHash::FULL_SIZE <= 64);

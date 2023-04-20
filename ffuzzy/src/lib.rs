@@ -207,9 +207,6 @@
 // Regular nightly features
 #![cfg_attr(feature = "nightly", feature(doc_cfg))]
 #![cfg_attr(feature = "nightly", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "nightly", feature(const_convert))]
-#![cfg_attr(feature = "nightly", feature(const_num_from_num))]
-#![cfg_attr(feature = "nightly", feature(const_trait_impl))]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(no_coverage))]
 // int_log feature depending on ilog2 availability

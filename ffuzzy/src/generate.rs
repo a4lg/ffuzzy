@@ -1149,26 +1149,13 @@ mod const_asserts {
 
     // Consistency between module-local and struct-global one.
     const_assert_eq!(ROLLING_WINDOW, RollingHash::WINDOW_SIZE);
+
     // RollingHash::h3 is a rolling component and an input byte
     // are vanished after processing more RollingHash::WINDOW_SIZE bytes.
-    // This test requires nightly features: const_trait_impl and const_convert.
-    #[cfg(feature = "nightly")]
-    const_assert!(
-        match u32::try_from(
-            RollingHash::WINDOW_SIZE * RollingHash::H3_LSHIFT
-        ) {
-            Ok(x) => x >= u32::BITS,
-            Err(_) => false,
-        }
-    );
-
     // grcov-excl-br-start
     #[cfg(test)]
     #[test]
     fn test_rolling_hash_h3_shifts() {
-        // Equivalent test as above (stable but runs only on testing)
-        // checked_mul/unwrap is not necessary above because integer overflow is
-        // always an error in the constant context.
         assert!(
             u32::try_from(
                 RollingHash::WINDOW_SIZE.checked_mul(RollingHash::H3_LSHIFT).unwrap()
