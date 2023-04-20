@@ -21,19 +21,20 @@ pub(crate) fn cover_default<T: Default>() {
 /// This function is suitable if we have no comparison function for these.
 ///
 /// In other words, this function is for coverage tests.
-pub(crate) fn cover_auto_clone<T: Copy + Clone>(orig_value: &T) {
-    let value1: T = *orig_value;
-    let _value2: T = value1.clone();
+pub(crate) fn cover_auto_clone<T: Clone>(orig_value: &T) {
+    let mut cloned: T = orig_value.clone();
+    cloned.clone_from(orig_value);
 }
 
 
 /// Testing function for [`Eq`] + [`Clone`].
 ///
 /// It also requires [`core::fmt::Debug`] for assertion.
-pub(crate) fn test_auto_clone<T: Copy + Clone + Eq + core::fmt::Debug>(orig_value: &T) {
-    let value1: T = *orig_value;
-    let value2: T = value1.clone();
-    assert_eq!(value1, value2);
+pub(crate) fn test_auto_clone<T: Clone + Eq + core::fmt::Debug>(orig_value: &T) {
+    let mut cloned: T = orig_value.clone();
+    assert_eq!(*orig_value, cloned);
+    cloned.clone_from(&orig_value);
+    assert_eq!(*orig_value, cloned);
 }
 
 
