@@ -368,23 +368,9 @@ fn test_partial_fnv_hash_with_regular_fnv1_test_vector() {
 
 
 #[test]
-fn test_rolling_hash_initial() {
-    // Check all struct members and the hash value.
-    let hash = RollingHash::new();
-    assert_eq!(hash.h1, 0);
-    assert_eq!(hash.h2, 0);
-    assert_eq!(hash.h3, 0);
-    assert_eq!(hash.index, 0);
-    assert_eq!(hash.window, [0; RollingHash::WINDOW_SIZE]);
-    assert_eq!(hash.value(), 0);
-    // Also check the default value.
-    let hash = RollingHash::default();
-    assert_eq!(hash.h1, 0);
-    assert_eq!(hash.h2, 0);
-    assert_eq!(hash.h3, 0);
-    assert_eq!(hash.index, 0);
-    assert_eq!(hash.window, [0; RollingHash::WINDOW_SIZE]);
-    assert_eq!(hash.value(), 0);
+fn test_rolling_hash_basic() {
+    test_recommended_default!(RollingHash);
+    test_auto_clone::<RollingHash>(&RollingHash::new());
 }
 
 #[test]

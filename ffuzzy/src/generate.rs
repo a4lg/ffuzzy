@@ -114,7 +114,7 @@ const ROLLING_WINDOW: usize = 7;
 /// Specifically, [`RollingHash`] implements the rolling hash implemented in
 /// ssdeep version 2.13 or later.  This is the first version that officially
 /// supported ≧4GiB files and implemented a true rolling hash function.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RollingHash {
     /// Current rolling window index.
     index: u32,
