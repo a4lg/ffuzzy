@@ -6,7 +6,7 @@ can match inputs that have homologies.  Such inputs have sequences of identical
 bytes in the same order, although bytes in between these sequences may be
 different in both content and length.
 
-This crate is the port of the ssdeep (libfuzzy) to the Rust language, created
+This crate is the port of ssdeep (libfuzzy) to the Rust language, created
 by a ssdeep maintainer, Tsukasa OI.
 
 This crate is designed to be a replacement to the original ssdeep library,
