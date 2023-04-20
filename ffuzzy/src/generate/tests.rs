@@ -636,9 +636,9 @@ fn test_generator_empty() {
     let mut generator = Generator::new();
     generator.set_fixed_input_size(0).unwrap();
     assert!(generator.may_warn_about_small_input_size());
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-        let hash = generator.finalize_raw::<$norm, $bs1, $bs2>().unwrap();
+        let hash = generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap();
         assert_eq!(hash.block_size(), BlockSize::MIN);
         assert_eq!(hash.block_hash_1_len(), 0);
         assert_eq!(hash.block_hash_2_len(), 0);
@@ -767,8 +767,8 @@ fn test_generator_length_mismatch() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs when finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$norm, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
     }}
     test_for_each_generator_finalization!(test);
 
@@ -790,8 +790,8 @@ fn test_generator_length_mismatch() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs when finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$norm, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
     }}
     test_for_each_generator_finalization!(test);
 
@@ -843,13 +843,13 @@ fn test_generator_large_trigger_last_hash() {
     // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
     generator.update(&[1]);
     assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
         let hash_expected = FuzzyHashType::from_str(
             "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
         ).unwrap();
         assert_eq!(
-            hash_expected, generator.finalize_raw::<$norm, $bs1, $bs2>().unwrap()
+            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
         );
     }}
     test_for_each_generator_finalization!(test);
@@ -878,13 +878,13 @@ fn test_generator_large_trigger_last_hash_by_iter() {
     // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
     generator.update_by_iter([1; 1][..].iter().cloned());
     assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
         let hash_expected = FuzzyHashType::from_str(
             "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
         ).unwrap();
         assert_eq!(
-            hash_expected, generator.finalize_raw::<$norm, $bs1, $bs2>().unwrap()
+            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
         );
     }}
     test_for_each_generator_finalization!(test);
@@ -919,13 +919,13 @@ fn test_generator_large_trigger_last_hash_by_byte() {
     // Append 1 byte (96GiB + 1 in total) to trigger h_last output.
     generator.update_by_byte(1);
     assert!(!generator.may_warn_about_small_input_size());
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
         let hash_expected = FuzzyHashType::from_str(
             "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
         ).unwrap();
         assert_eq!(
-            hash_expected, generator.finalize_raw::<$norm, $bs1, $bs2>().unwrap()
+            hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
         );
     }}
     test_for_each_generator_finalization!(test);
@@ -955,8 +955,8 @@ fn test_generator_large_error() {
     }
     // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
     generator.update(&[0]);
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$norm, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
     }}
     test_for_each_generator_finalization!(test);
 }
@@ -976,8 +976,8 @@ fn test_generator_large_error_by_iter() {
     }
     // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
     generator.update_by_iter([0u8; 1][..].iter().cloned());
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$norm, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
     }}
     test_for_each_generator_finalization!(test);
 }
@@ -999,8 +999,8 @@ fn test_generator_large_error_by_byte() {
     }
     // Append 1 byte (192GiB + 1 in total) to trigger the "input too large" error.
     generator.update_by_byte(0);
-    macro_rules! test {($norm: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$norm, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
+    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
     }}
     test_for_each_generator_finalization!(test);
 }
