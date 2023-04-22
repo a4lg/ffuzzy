@@ -168,7 +168,7 @@ mod tests {
         }
         else {
             // grcov-excl-start
-            assert!(false);
+            panic!("The error must be an IOError and this line should not be reachable!");
             // grcov-excl-stop
         }
     }
@@ -198,7 +198,7 @@ mod tests {
         }
         else {
             // grcov-excl-start
-            assert!(false);
+            panic!("The error must be an IOError and this line should not be reachable!");
             // grcov-excl-stop
         }
     }
