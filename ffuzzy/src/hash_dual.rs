@@ -146,17 +146,13 @@ mod private {
                 use super::*;
                 use static_assertions::const_assert;
 
-                // grcov-excl-start
                 // grcov-excl-br-start
                 #[cfg_attr(feature = "nightly", no_coverage)]
                 #[allow(dead_code)]
                 const fn div_ceil(a: usize, b: usize) -> usize {
                     a / b + (if a % b == 0 { 0 } else { 1 })
                 }
-                // grcov-excl-br-stop
-                // grcov-excl-stop
 
-                // grcov-excl-br-start
                 #[cfg(test)]
                 #[test]
                 fn test_div_ceil_examples() {
