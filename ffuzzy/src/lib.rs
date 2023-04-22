@@ -157,7 +157,7 @@
 //!     this feature heavily depends on the version of `rustc` and should not be
 //!     considered stable (don't expect SemVer-compatible semantics).
 //! *   `opt-reduce-fnv-table` (not recommended to enable this)  
-//!     ssdeep uses partial (the lowest 6-bits of) FNV hash.  While default table
+//!     ssdeep uses partial (the lowest 6 bits of) FNV hash.  While default table
 //!     lookup instead of full FNV hash computation is faster on most cases, it will
 //!     not affect the performance much on some configurations.
 //!     Enabling this option will turn off using precomputed FNV hash table (4KiB).
@@ -293,11 +293,11 @@ pub mod constraints {
 mod const_asserts {
     use static_assertions::const_assert;
 
-    // We expect that usize is at least 8-bits in width.
+    // We expect that usize is at least 8 bits in width.
     // For buffer-related operations in this crate except generator_easy,
     // this should be enough.  In reality, generator_easy would require
-    // usize of >= 16-bits and in fact some structs in this crate
+    // usize of >= 16 bits and in fact some structs in this crate
     // exceeds 256 bytes.  Some tests even require that usize is at least
-    // 32-bits.
+    // 32 bits.
     const_assert!(usize::BITS >= 8);
 }

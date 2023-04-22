@@ -25,7 +25,7 @@ use crate::macros::{optionally_unsafe, invariant};
 /// (the [`Far`](Self::Far) variant).
 ///
 /// In this crate, it can efficiently handle such relations by using the
-/// [*base 2 logarithms* form of the block size](crate::FuzzyHashData#block-size)
+/// [*base-2 logarithms* form of the block size](crate::FuzzyHashData#block-size)
 /// (no multiplication required).
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,22 +33,22 @@ pub enum BlockSizeRelation {
     /// Two block sizes are *far* and a block hash comparison
     /// cannot be performed.
     Far,
-    /// Two block sizes are *near* and the block hash 2 (one with larger block
+    /// Two block sizes are *near* and the block hash 2 (one with a larger block
     /// size) of the left side (of comparison) can be compared with the block
-    /// hash 1 (one with smaller block size) of the right side.
+    /// hash 1 (one with a smaller block size) of the right side.
     NearLt,
     /// Two block sizes are not just *near* but the same.
     /// We compare both block hashes with the other and take the maximum value
     /// for the output.
     NearEq,
-    /// Two block sizes are *near* and the block hash 1 (one with smaller block
-    /// size) of the left side (of comparison) can be compared with the block
-    /// hash 2 (one with larger block size) of the right side.
+    /// Two block sizes are *near* and the block hash 1 (one with a smaller
+    /// block size) of the left side (of comparison) can be compared with the
+    /// block hash 2 (one with a larger block size) of the right side.
     NearGt,
 }
 
 impl BlockSizeRelation {
-    /// Checks if the value denotes one of the three *near* cases.
+    /// Checks whether a given value denotes one of the three *near* cases.
     pub fn is_near(&self) -> bool {
         !matches!(self, BlockSizeRelation::Far)
     }
@@ -72,23 +72,23 @@ pub mod BlockSize {
 
     /// The number of valid block sizes.
     ///
-    /// `NUM_VALID` is the first constant which 2<sup>n</sup>
+    /// `NUM_VALID` is the smallest value which 2<sup>n</sup>
     /// exceeds [`u32::MAX`].
     pub const NUM_VALID: usize = 31;
 
-    /// Checks whether the given block size is valid.
+    /// Checks whether a given block size is valid.
     #[inline]
     pub(crate) fn is_valid(block_size: u32) -> bool {
         (block_size % MIN == 0) && (block_size / MIN).is_power_of_two()
     }
 
-    /// Checks whether *base 2 logarithm* form of the block size is valid.
+    /// Checks whether *base-2 logarithm* form of the block size is valid.
     #[inline(always)]
     pub const fn is_log_valid(log_block_size: u8) -> bool {
         log_block_size < NUM_VALID as u8
     }
 
-    /// Converts *base 2 logarithm* form of the block size to the actual one
+    /// Converts *base-2 logarithm* form of the block size to the actual one
     /// without checking validity of the block size.
     ///
     /// `log_block_size` must be valid.
@@ -100,7 +100,7 @@ pub mod BlockSize {
         MIN << log_block_size
     }
 
-    /// Converts *base 2 logarithm* form of the block size to the actual one.
+    /// Converts *base-2 logarithm* form of the block size to the actual one.
     ///
     /// It returns [`None`] if `log_block_size` is not valid.
     ///
@@ -159,7 +159,7 @@ pub mod BlockSize {
     pub(crate) const MAX_BLOCK_SIZE_LEN_IN_CHARS: usize =
         BLOCK_SIZES_STR[BLOCK_SIZES_STR.len() - 1].len();
 
-    /// Custom constant for a variant of de Bruijn sequence to convert
+    /// The custom constant for a variant of de Bruijn sequence to convert
     /// all valid block size values into the unique index.
     ///
     /// # Internal Notes
@@ -172,8 +172,8 @@ pub mod BlockSize {
     /// *   `BlockSize::NUM_VALID == 31`
     const LOG_DEBRUIJN_CONSTANT: u32 = 0x05773e35;
 
-    /// Custom table for a variant of de Bruijn sequence to convert
-    /// all valid block size values into the *base 2 logarithm* form.
+    /// The custom table for a variant of de Bruijn sequence to convert
+    /// all valid block size values into the *base-2 logarithm* form.
     ///
     /// The element `[0x11]` is unused (and assigned an invalid number `0xff`).
     ///
@@ -185,7 +185,7 @@ pub mod BlockSize {
         0x1e, 0x09, 0x13, 0x0f, 0x1d, 0x12, 0x1c, 0x1b,
     ];
 
-    /// Internal implementation of [`log_from_valid_unchecked`].
+    /// The internal implementation of [`log_from_valid_unchecked`].
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         let value = LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
@@ -196,7 +196,7 @@ pub mod BlockSize {
         value
     }
 
-    /// Computes the base 2 logarithm form of a valid block size
+    /// Computes the *base-2 logarithm* form of a valid block size
     /// but do not check whether the block size is valid.
     ///
     /// This is the same as computing `n` for a valid block size
@@ -211,7 +211,7 @@ pub mod BlockSize {
         log_from_valid_internal(block_size)
     }
 
-    /// Computes the base 2 logarithm form of a valid block size.
+    /// Computes the *base-2 logarithm* form of a valid block size.
     ///
     /// This is the same as computing `n` for a valid block size
     /// which can be represented as ([`MIN`] * 2<sup>n</sup>) (`0 <= n`).
@@ -225,7 +225,7 @@ pub mod BlockSize {
         log_from_valid_internal(block_size)
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// form a *near* relation (one of the three *near* cases).
     ///
     /// Both arguments must be valid.
@@ -237,7 +237,7 @@ pub mod BlockSize {
         u32::wrapping_sub(lhs as u32, rhs as u32).wrapping_add(1) <= 2
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// form a [`BlockSizeRelation::NearEq`] relation.
     ///
     /// Both arguments must be valid.
@@ -248,7 +248,7 @@ pub mod BlockSize {
         lhs == rhs
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// form a [`BlockSizeRelation::NearLt`] relation.
     ///
     /// Both arguments must be valid.
@@ -260,7 +260,7 @@ pub mod BlockSize {
         (rhs as i32) - (lhs as i32) == 1
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// form a [`BlockSizeRelation::NearGt`] relation.
     ///
     /// Both arguments must be valid.
@@ -271,7 +271,7 @@ pub mod BlockSize {
         is_near_lt(rhs, lhs)
     }
 
-    /// Compare two *base 2 logarithm* form of the block size values to
+    /// Compare two *base-2 logarithm* forms of the block size values to
     /// determine the relation between two block sizes.
     ///
     /// Both arguments must be valid.
@@ -288,7 +288,7 @@ pub mod BlockSize {
         }
     }
 
-    /// Compares two *base 2 logarithm* form of the block size values
+    /// Compares two *base-2 logarithm* forms of the block size values
     /// for ordering.
     ///
     /// Both arguments must be valid.
@@ -319,12 +319,13 @@ pub mod BlockHash {
     /// ssdeep is a fuzzy *hash*.  We should be able to easily interchange
     /// the hash value and storing 6-bit hash values for all pieces is not useful
     /// enough.
-    /// This constant limits number of "pieces" to store in each block hash.
+    /// This constant limits the number of "pieces" to store in each block hash.
     ///
     /// Note that, since ssdeep is not a cryptographic hash, it's important to
-    /// limit the size of block hash to prevent an adversary to generate number of
-    /// "pieces" by an adversarial pattern (that would make the resulting the hash
-    /// huge if the size of block hash is not limited properly).
+    /// limit the size of the block hash to prevent an adversary to generate a
+    /// number of "pieces" by placing an adversarial pattern (that would make
+    /// the resulting hash huge if the size of the block hash is not limited
+    /// properly).
     pub const FULL_SIZE: usize = 64;
 
     /// The half size of each block hash.

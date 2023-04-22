@@ -11,7 +11,7 @@ use crate::hash::parser_state::{
 };
 
 
-/// Operand (side) which caused a parse error
+/// The operand (side) which caused a parse error
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorSide {
@@ -22,7 +22,7 @@ pub enum ParseErrorSide {
 }
 
 /// The error type representing a parse error for one of the operands
-/// specified to [`compare`] function.
+/// specified to the [`compare`] function.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseErrorEither(ParseErrorSide, ParseError);
 

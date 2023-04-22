@@ -147,7 +147,7 @@ assert_eq!(target.compare(&hash2), 88);
     this feature heavily depends on the version of `rustc` and should not be
     considered stable (don't expect SemVer-compatible semantics).
 *   `opt-reduce-fnv-table` (not recommended to enable this)  
-    ssdeep uses partial (the lowest 6-bits of) FNV hash.  While default table
+    ssdeep uses partial (the lowest 6 bits of) FNV hash.  While default table
     lookup instead of full FNV hash computation is faster on most cases, it will
     not affect the performance much on some configurations.
     Enabling this option will turn off using precomputed FNV hash table (4KiB).

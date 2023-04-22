@@ -12,7 +12,7 @@ use crate::hash::RawFuzzyHash;
 use crate::macros::{optionally_unsafe, invariant};
 
 
-/// The error type describing either generator or I/O error.
+/// The error type describing either a generator error or an I/O error.
 ///
 /// This type contains either:
 /// *   A fuzzy hash generator error ([`GeneratorError`]) or
@@ -54,10 +54,10 @@ impl std::error::Error for GeneratorOrIOError {}
 /// Constant temporary buffer size for "easy" functions.
 const BUFFER_SIZE: usize = 32768;
 
-/// Generates a fuzzy hash from a reader stream.
+/// Generates a fuzzy hash from a given reader stream.
 ///
 /// This is an internal function to allow other functions to
-/// prepare [`Generator`] object.
+/// prepare a [`Generator`] object.
 #[inline]
 fn hash_stream_common<R: Read>(
     generator: &mut Generator,
@@ -79,7 +79,7 @@ fn hash_stream_common<R: Read>(
 }
 
 
-/// Generates a fuzzy hash from a reader stream.
+/// Generates a fuzzy hash from a given reader stream.
 ///
 /// # Example
 ///
@@ -102,7 +102,7 @@ pub fn hash_stream<R: Read>(reader: &mut R)
     hash_stream_common(&mut generator, reader)
 }
 
-/// Generates a fuzzy hash from a file.
+/// Generates a fuzzy hash from a given file.
 ///
 /// # Example
 ///

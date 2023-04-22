@@ -26,44 +26,45 @@ mod tests;
 /// Current design of the RLE block is basic RLE encoded bytes,
 /// each consisting of following bitfields:
 ///
-/// *   6-bits of offset
-/// *   2-bits of length
+/// *   6 bits of offset
+/// *   2 bits of length
 ///
-/// 6-bits is enough to store any block hash offset.
+/// 6 bits is enough to store any block hash offset.
 ///
 /// Because [`BlockHash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
-/// offset zero as the terminator (if offset is zero, length must be encoded as
-/// zero, making the RLE block zero-terminated).
+/// offset zero as the terminator (if the offset is zero, the length must be
+/// encoded as zero, making the RLE block zero-terminated).
 ///
 /// This `offset` is the one of a normalized block hash.
 ///
-/// 2-bits of length is enough to compress
+/// 2 bits of length is enough to compress
 /// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1`-bytes into one byte, making the
-/// long sequence able to be compressed in a fixed size RLE block.
+/// long sequence able to be compressed in a fixed-size RLE block.
 ///
-/// Encoded length is one less than actual length for efficiency.
+/// The encoded length is one less than actual length for efficiency.
 /// For instance, encoded `length` of `0` actually means repeating a character
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
 #[allow(non_snake_case)]
 pub(crate) mod RleEncodings {
-    /// Bits used to represent position (offset) variable.
+    /// Bits used to represent the position (offset).
     ///
     /// This is the start offset to repeat the same character.
     ///
-    /// If this field is zero, all succeeding encodings are not meant to be used.
+    /// If this field is zero, all succeeding encodings are
+    /// not meant to be used.
     pub const BITS_POSITION: u32 = 6;
 
-    /// Mask used to represent position (offset) variable.
+    /// Mask used to represent the position (offset).
     pub const MASK_POSITION: u8 = (1u8 << BITS_POSITION) - 1;
 
-    /// Bits used to represent a run length.
+    /// Bits used to represent the run length.
     ///
     /// If this RLE encoding is valid, high bits are used to represent
     /// `len + 1` because we don't encode zero length.
     pub const BITS_RUN_LENGTH: u32 = 2;
 
-    /// Maximum length for a RLE encoding.
+    /// Maximum run length for the RLE encoding.
     pub const MAX_RUN_LENGTH: usize = 1usize << BITS_RUN_LENGTH;
 
     /// Constant assertions related to RLE encoding prerequisites.
@@ -324,7 +325,7 @@ mod algorithms {
         }
     }
 
-    /// Expand a normalize block hash to a raw form using RLE encodings.
+    /// Expand a normalized block hash to a raw form using RLE encodings.
     #[inline]
     pub(crate) fn expand_block_hash_using_rle<const SZ_BH: usize, const SZ_RLE: usize>(
         blockhash_out: &mut [u8; SZ_BH],
@@ -389,7 +390,7 @@ mod algorithms {
         }
     }
 
-    /// Expand a normalize block hash to a raw form using RLE encodings.
+    /// Expand a normalized block hash to a raw form using RLE encodings.
     pub(crate) fn is_valid_rle_block_for_block_hash<const SZ_BH: usize, const SZ_RLE: usize>(
         blockhash: &[u8; SZ_BH],
         rle_block: &[u8; SZ_RLE],
@@ -497,11 +498,13 @@ mod algorithms {
 /// # Safety
 ///
 /// Template parameters should not be considered stable because some template
-/// parameters are just there because of the restrictions of Rust's constant
-/// generics.  **Do not** use [`FuzzyHashDualData`] directly.
+/// parameters are just there because of the current restrictions of Rust's
+/// constant generics (that will be resolved after the feature
+/// `generic_const_exprs` is stabilized).
 ///
-/// Instead, use instantiations of this generic type, [`DualFuzzyHash`] and/or
-/// [`LongDualFuzzyHash`] (for most cases, [`DualFuzzyHash`] will suffice).
+/// **Do not** use [`FuzzyHashDualData`] directly.  Instead, use instantiations
+/// of this generic type, [`DualFuzzyHash`] and/or [`LongDualFuzzyHash`]
+/// (for most cases, [`DualFuzzyHash`] will be sufficient).
 #[repr(align(8))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct FuzzyHashDualData<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
@@ -537,23 +540,23 @@ where
     RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
     RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
 {
-    /// The maximum size of the block hash 1 part.
+    /// The maximum size of the block hash 1.
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_BLOCK_HASH_SIZE_1).
     pub const MAX_BLOCK_HASH_SIZE_1: usize = FuzzyHashData::<S1, S2, true>::MAX_BLOCK_HASH_SIZE_1;
 
-    /// The maximum size of the block hash 2 part.
+    /// The maximum size of the block hash 2.
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_BLOCK_HASH_SIZE_2).
     pub const MAX_BLOCK_HASH_SIZE_2: usize = FuzzyHashData::<S1, S2, true>::MAX_BLOCK_HASH_SIZE_2;
 
-    /// The number of RLE block entries in the block hash 1 part.
+    /// The number of RLE block entries in the block hash 1.
     #[allow(dead_code)]
     pub(crate) const RLE_BLOCK_SIZE_1: usize = C1;
 
-    /// The number of RLE block entries in the block hash 2 part.
+    /// The number of RLE block entries in the block hash 2.
     #[allow(dead_code)]
     pub(crate) const RLE_BLOCK_SIZE_2: usize = C2;
 
@@ -574,7 +577,7 @@ where
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_LEN_IN_STR).
     pub const MAX_LEN_IN_STR: usize = FuzzyHashData::<S1, S2, true>::MAX_LEN_IN_STR;
 
-    /// Creates a new fuzzy hash object with the empty contents.
+    /// Creates a new fuzzy hash object with empty contents.
     ///
     /// This is equivalent to the fuzzy hash string `3::`.
     pub fn new() -> Self {
@@ -604,7 +607,7 @@ where
         );
     }
 
-    /// Internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked`].
     pub(crate) fn init_from_raw_form_internals_raw_internal(
         &mut self,
         log_block_size: u8,
@@ -644,10 +647,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
     #[cfg(feature = "unsafe")]
@@ -670,10 +674,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     #[inline]
     pub fn init_from_raw_form_internals_raw(
         &mut self,
@@ -699,7 +704,7 @@ where
         );
     }
 
-    /// Internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked`].
     #[allow(dead_code)]
     pub(crate) fn new_from_raw_form_internals_raw_internal(
         log_block_size: u8,
@@ -721,10 +726,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
     #[cfg(feature = "unsafe")]
@@ -747,10 +753,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     #[inline]
     pub fn new_from_raw_form_internals_raw(
         log_block_size: u8,
@@ -765,7 +772,7 @@ where
         hash
     }
 
-    /// The *base 2 logarithm* form of the fuzzy hash's block size.
+    /// The *base-2 logarithm* form of the block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
     #[inline(always)]
@@ -824,8 +831,8 @@ where
 
     /// Decompresses and generates a raw variant of the fuzzy hash.
     ///
-    /// Based on the normalized fuzzy hash representation and "reverse
-    /// normalization" data, this method generates the original, raw variant
+    /// Based on the normalized fuzzy hash representation and the "reverse
+    /// normalization" data, this method generates the original, a raw variant
     /// of the fuzzy hash.
     pub fn to_raw_form(&self) -> FuzzyHashData<S1, S2, false> {
         let mut hash = FuzzyHashData::new();
@@ -844,8 +851,8 @@ where
 
     /// Converts the fuzzy hash to the string (normalized form).
     ///
-    /// This method returns the string corresponding the normalized
-    /// normalized) form.
+    /// This method returns the string corresponding
+    /// the normalized form.
     #[cfg(feature = "alloc")]
     pub fn to_normalized_string(&self) -> String {
         self.norm_hash.to_string()
@@ -853,14 +860,14 @@ where
 
     /// Converts the fuzzy hash to the string (raw form).
     ///
-    /// This method returns the string corresponding the raw (not
-    /// normalized) form.
+    /// This method returns the string corresponding the raw
+    /// (non-normalized) form.
     #[cfg(feature = "alloc")]
     pub fn to_raw_form_string(&self) -> String {
         self.to_raw_form().to_string()
     }
 
-    /// Parse a fuzzy hash from a bytes (slice of [`u8`]).
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`]).
     pub fn from_bytes(str: &[u8]) -> Result<Self, ParseError> {
         let raw_hash = FuzzyHashData::<S1, S2, false>::from_bytes(str)?;
         Ok(Self::from_raw_form(&raw_hash))

@@ -55,7 +55,7 @@ where
     }
 }
 
-/// Check whether the given block hash is normalized.
+/// Check whether a given block hash is normalized.
 pub(crate) fn is_normalized<const N: usize>(
     blockhash: &[u8; N],
     blockhash_len: u8,
@@ -81,10 +81,10 @@ where
     true
 }
 
-/// Push block hash contents at the end of the given [`String`].
+/// Push block hash contents at the end of a given [`String`].
 ///
 /// It converts internal block hash contents into the sequence of Base64
-/// alphabets and appends to the [`String`].
+/// alphabets and appends to a given [`String`].
 #[cfg(feature = "alloc")]
 #[inline]
 pub(crate) fn insert_block_hash_into_str<const N: usize>(
@@ -104,10 +104,10 @@ where
     }
 }
 
-/// Push block hash contents at the end of the given [`u8`] slice.
+/// Push block hash contents at the end of a given [`u8`] slice.
 ///
 /// It converts internal block hash contents into the sequence of Base64
-/// alphabets and inserts into given slice.
+/// alphabets and inserts into a given slice.
 #[inline]
 pub(crate) fn insert_block_hash_into_bytes<const N: usize>(
     buf: &mut [u8],
@@ -127,7 +127,7 @@ where
     }
 }
 
-/// Parse block size part of the fuzzy hash from bytes.
+/// Parse block size part of the fuzzy hash from given bytes.
 ///
 /// If success, [`Ok`] containing a valid block size is returned.
 ///
@@ -194,7 +194,8 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
 
 /// Parse block hash part (1/2) of the fuzzy hash from bytes.
 ///
-/// `i` (input/output) is updated to the last character index to continue parsing.
+/// `i` (input/output) is updated to the last character index
+/// to continue parsing.
 pub(crate) fn parse_block_hash_from_bytes<const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,

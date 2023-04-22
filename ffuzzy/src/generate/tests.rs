@@ -79,7 +79,7 @@ fn test_partial_fnv_hash_usage() {
 #[cfg(feature = "alloc")]
 #[test]
 fn test_partial_fnv_hash_debug() {
-    // 39 == 0x27 == lower 6-bits of 0x28021967
+    // 39 == 0x27 == the lowest 6 bits of 0x28021967
     assert_eq!(
         format!("{:?}", PartialFNVHash::new()),
         "PartialFNVHash(39)"
@@ -90,7 +90,7 @@ fn test_partial_fnv_hash_debug() {
 fn test_partial_fnv_hash_with_regular_fnv1_test_vector() {
     fn test(expected_value: u32, buf: &[u8]) {
         // Overwrite the initial state with regular FNV-1-32's one (0x811c9dc5).
-        // Test only the lowest 6-bits.
+        // Test only the lowest 6 bits.
         let mut hash = PartialFNVHash::new();
         const FNV1_INIT: u32 = 0x811c9dc5;
         // Test update_by_byte
@@ -115,7 +115,7 @@ fn test_partial_fnv_hash_with_regular_fnv1_test_vector() {
         ========================================================================
 
         It follows with the original notice by the author and applies to
-        this function except internal `test` method above.
+        this function except the `test` method above.
 
         Please do not copyright this code.  This code is in the public domain.
 
@@ -527,7 +527,7 @@ fn test_block_hash_context_basic() {
 #[cfg(feature = "alloc")]
 #[test]
 fn test_block_hash_context_debug() {
-    // 39 == 0x27 == lower 6-bits of 0x28021967
+    // 39 == 0x27 == the lowest 6 bits of 0x28021967
     // 255 == BLOCKHASH_CHAR_NIL
     assert_eq!(
         format!("{:?}", BlockHashContext::new()),

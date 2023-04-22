@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023
 
 
-/// Computes base 2 logarithm (floored) of an [`u64`] value.
+/// Computes the base-2 logarithm (floored) of an [`u64`] value.
 ///
 /// This is the wrapper with fallbacks for stable [`u64::ilog2`].
 ///

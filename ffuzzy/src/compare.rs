@@ -21,27 +21,28 @@ mod tests;
 /// A position array-based block hash except its length.
 ///
 /// Each element of the position array indicates which positions in
-/// the corresponding block hash have the given alphabet
-/// (note that array index is of the alphabet).
+/// the corresponding block hash has the given alphabet
+/// (note that the array index is of the alphabet).
 ///
 /// For instance, if `representation()[5] == 0x81`, it means the block hash
 /// contains the alphabet index `5` in the positions `0` and `7`
 /// (block hash glob: `E??????E*`).
 ///
-/// This is because bit 0 `0x01` at index 5 means that the position 0 is the
-/// alphabet index `5` (`E`).  Likewise, bit 7 (`0x80`) at index 5
-/// corresponds to the fact that position 7 is the alphabet index `5` (`E`).
+/// This is because the bit 0 (`0x01`) at the index 5 means that position 0 has
+/// the alphabet with index `5` (`E`).  Likewise, the bit 7 (`0x80`) at the
+/// index 5 corresponds to the fact that position 7 has the alphabet with
+/// index `5` (`E`).
 ///
-/// This representation makes possible to make certain dynamic programming
+/// This representation makes it possible to make some dynamic programming
 /// algorithms bit-parallel.  In other words, some table updates of
 /// certain top-down dynamic programming algorithms can be
 /// represented as logical expressions (with some arithmetic ones
-/// to enable e.g. horizontal propagation).  This is particularly
+/// to enable, for instance, horizontal propagation).  This is particularly
 /// effective on ssdeep because each block hash has a maximum size of
 /// [`BlockHash::FULL_SIZE`] (64; many 64-bit machines would handle that
 /// efficiently and even 32-bit machines can benefit from).
 ///
-/// This is *so* fast so that the bit-parallel approach is still faster
+/// This is *so* fast that the bit-parallel approach is still faster
 /// even if we don't use any batching.
 ///
 /// For an example of such algorithms, see
@@ -49,8 +50,8 @@ mod tests;
 ///
 /// # Important Note: Length not included
 ///
-/// Note that this struct does not include its length.  The length must be
-/// given from outside.
+/// Note that this struct does not contain its length inside.  The length must
+/// be given from outside each time you call the methods.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     pub(crate) representation: [u64; BlockHash::ALPHABET_SIZE]
@@ -59,7 +60,7 @@ pub struct BlockHashPositionArray {
 impl BlockHashPositionArray {
     /// Creates empty position array-based block hash object without length.
     ///
-    /// Because this object doesn't have any characters, it is
+    /// Because the resulting object doesn't contain any characters, it is
     /// only valid on length zero.
     pub fn new() -> Self {
         BlockHashPositionArray {
@@ -67,21 +68,21 @@ impl BlockHashPositionArray {
         }
     }
 
-    /// Returns raw representation of the block hash position array.
+    /// Returns the raw representation of the block hash position array.
     pub fn representation(&self) -> [u64; BlockHash::ALPHABET_SIZE] {
         self.representation
     }
 
-    /// Clears current representation of the block hash.
+    /// Clears the current representation of the block hash.
     pub fn clear(&mut self) {
         self.representation.fill(0);
     }
 
-    /// Initialize (encode) the object from given byte array and length
+    /// Initialize (encode) the object from a given byte array and length
     /// without clearing or checking validity.
     ///
     /// This method is intended to be used just after clearing the position
-    /// array (e.g. just after the initialization).
+    /// array (i.e. just after the initialization).
     ///
     /// # Usage Constraints
     ///
@@ -99,7 +100,7 @@ impl BlockHashPositionArray {
         }
     }
 
-    /// Clear and initialize (encode) the object from given slice.
+    /// Clear and initialize (encode) the object from a given slice.
     ///
     /// # Usage Constraints
     ///
@@ -113,7 +114,7 @@ impl BlockHashPositionArray {
         self.init_from_partial(blockhash);
     }
 
-    /// Internal implementation of [`Self::is_equiv_unchecked`].
+    /// The internal implementation of [`Self::is_equiv_unchecked`].
     #[inline]
     pub(crate) fn is_equiv_internal(&self, len: u8, other: &[u8]) -> bool {
         debug_assert!(other.len() <= 64);
@@ -135,12 +136,12 @@ impl BlockHashPositionArray {
     ///
     /// # Safety
     ///
-    /// *   This object must be valid for given length `len`.
+    /// *   This object must be valid on a given length `len`.
     /// *   The length of `other` must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
-    /// If those conditions are not satisfied, the behavior is not defined.
+    /// If they are not satisfied, it will return a meaningless value.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn is_equiv_unchecked(&self, len: u8, other: &[u8]) -> bool {
@@ -151,7 +152,7 @@ impl BlockHashPositionArray {
     ///
     /// # Usage Constraints
     ///
-    /// *   This object must be valid for given length `len`.
+    /// *   This object must be valid on a given length `len`.
     /// *   The length of `other` must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
@@ -163,7 +164,7 @@ impl BlockHashPositionArray {
     }
 
     /// Performs full validity checking of a position array
-    /// considering given length.
+    /// considering a given length.
     pub fn is_valid(&self, len: u8) -> bool {
         if len > 64 { return false; }
         let expected_total: u64 =
@@ -189,7 +190,7 @@ impl BlockHashPositionArray {
         true
     }
 
-    /// Internal implementation of [`Self::has_common_substring_unchecked`].
+    /// The internal implementation of [`Self::has_common_substring_unchecked`].
     #[inline(always)]
     pub(crate) fn has_common_substring_internal(&self, len: u8, other: &[u8]) -> bool {
         debug_assert!((len as u32) <= 64);
@@ -226,62 +227,62 @@ impl BlockHashPositionArray {
         false
     }
 
-    /// Checks whether given two strings have common substrings with length
+    /// Checks whether two given strings have common substrings with a length
     /// of [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH).
     ///
     /// # Algorithm Implemented
     ///
-    /// This function implements Boyer–Moore-like bit-parallel algorithm to find
-    /// fixed length common substring.  The original algorithm is the Backward
-    /// Shift-Add algorithm for k-LCF problem
+    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
+    /// find a fixed-length common substring.  The original algorithm is the
+    /// Backward Shift-Add algorithm for the k-LCF problem
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
-    /// (which searches longest common substring with
+    /// (which searches the longest common substring with
     /// up to k errors under the Hamming distance).
     ///
     /// This algorithm is modified:
     /// *   to search only perfect matches (up to 0 errors),
     /// *   to return as soon as possible if it finds a common substring and
-    /// *   to share position array representation with
+    /// *   to share the position array representation with
     ///     [`edit_distance`](Self::edit_distance)
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Safety
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this object) must be `64` or less.
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
-    /// If those conditions are not satisfied, the behavior is not defined.
+    /// If they are not satisfied, it will return a meaningless value.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn has_common_substring_unchecked(&self, len: u8, other: &[u8]) -> bool {
         self.has_common_substring_internal(len, other)
     }
 
-    /// Checks whether given two strings have common substrings with length
+    /// Checks whether two given strings have common substrings with a length
     /// of [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH).
     ///
     /// # Algorithm Implemented
     ///
-    /// This function implements Boyer–Moore-like bit-parallel algorithm to find
-    /// fixed length common substring.  The original algorithm is the Backward
-    /// Shift-Add algorithm for k-LCF problem
+    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
+    /// find a fixed-length common substring.  The original algorithm is the
+    /// Backward Shift-Add algorithm for the k-LCF problem
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
-    /// (which searches longest common substring with
+    /// (which searches the longest common substring with
     /// up to k errors under the Hamming distance).
     ///
     /// This algorithm is modified:
     /// *   to search only perfect matches (up to 0 errors),
     /// *   to return as soon as possible if it finds a common substring and
-    /// *   to share position array representation with
+    /// *   to share the position array representation with
     ///     [`edit_distance`](Self::edit_distance)
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Usage Constraints
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this object) must be `64` or less.
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     pub fn has_common_substring(&self, len: u8, other: &[u8]) -> bool {
@@ -290,7 +291,7 @@ impl BlockHashPositionArray {
         self.has_common_substring_internal(len, other)
     }
 
-    /// Internal implementation of [`Self::edit_distance_unchecked`].
+    /// The internal implementation of [`Self::edit_distance_unchecked`].
     #[inline(always)]
     pub(crate) fn edit_distance_internal(&self, len: u8, other: &[u8]) -> u32 {
         debug_assert!((len as u32) <= 64);
@@ -327,7 +328,7 @@ impl BlockHashPositionArray {
 
     /// Computes the edit distance between two given strings
     ///
-    /// In specific, it computes the Longest Common Subsequence (LCS)
+    /// Specifically, it computes the Longest Common Subsequence (LCS)
     /// distance, allowing character insertion and deletion as two primitive
     /// operations (in cost 1).
     ///
@@ -338,17 +339,17 @@ impl BlockHashPositionArray {
     /// bit-parallel approach and this method is based on it.
     ///
     /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring" which is
+    /// purpose of the original algorithm is to find a "substring"
     /// similar to a pattern string.
     ///
     /// # Safety
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this object) must be `64` or less.
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
-    /// If those conditions are not satisfied, the behavior is not defined.
+    /// If they are not satisfied, it will return a meaningless distance.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn edit_distance_unchecked(&self, len: u8, other: &[u8]) -> u32 {
@@ -357,7 +358,7 @@ impl BlockHashPositionArray {
 
     /// Computes the edit distance between two given strings
     ///
-    /// In specific, it computes the Longest Common Subsequence (LCS)
+    /// Specifically, it computes the Longest Common Subsequence (LCS)
     /// distance, allowing character insertion and deletion as two primitive
     /// operations (in cost 1).
     ///
@@ -368,13 +369,13 @@ impl BlockHashPositionArray {
     /// bit-parallel approach and this method is based on it.
     ///
     /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring" which is
+    /// purpose of the original algorithm is to find a "substring"
     /// similar to a pattern string.
     ///
     /// # Usage Constraints
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this object) must be `64` or less.
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     pub fn edit_distance(&self, len: u8, other: &[u8]) -> u32 {
@@ -385,7 +386,7 @@ impl BlockHashPositionArray {
         self.edit_distance_internal(len, other)
     }
 
-    /// Internal implementation of [`Self::score_strings_raw_unchecked`].
+    /// The internal implementation of [`Self::score_strings_raw_unchecked`].
     #[inline(always)]
     pub(crate) fn score_strings_raw_internal(&self, len: u8, other: &[u8]) -> u32 {
         debug_assert!(other.len() <= BlockHash::FULL_SIZE);
@@ -395,7 +396,7 @@ impl BlockHashPositionArray {
             return 0;
         }
         let dist = self.edit_distance_internal(len, other);
-        // Scale raw edit distance to 0-100 score (faimiliar to humans).
+        // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
         optionally_unsafe! {
             // rustc/LLVM cannot prove that
             // (len as u32 + other.len() as u32)
@@ -408,7 +409,8 @@ impl BlockHashPositionArray {
         )) / BlockHash::FULL_SIZE as u32
     }
 
-    /// Compare two block hashes and computes the similarity score.
+    /// Compare two block hashes and computes the similarity score
+    /// without capping.
     ///
     /// This method does not "cap" the score to prevent exaggregating the
     /// matches that are not meaningful enough, making this function block size
@@ -416,20 +418,22 @@ impl BlockHashPositionArray {
     ///
     /// # Safety
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this) must not exceed [`BlockHash::FULL_SIZE`].
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed
+    ///     [`BlockHash::FULL_SIZE`].
     /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
-    /// If those conditions are not satisfied, the behavior is not defined.
+    /// If they are not satisfied, it will return a meaningless score.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn score_strings_raw_unchecked(&self, len: u8, other: &[u8]) -> u32 {
         self.score_strings_raw_internal(len, other)
     }
 
-    /// Compare two block hashes and computes the similarity score.
+    /// Compare two block hashes and computes the similarity score
+    /// without capping.
     ///
     /// This method does not "cap" the score to prevent exaggregating the
     /// matches that are not meaningful enough, making this function block size
@@ -437,8 +441,9 @@ impl BlockHashPositionArray {
     ///
     /// # Usage Constraints
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this) must not exceed [`BlockHash::FULL_SIZE`].
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed
+    ///     [`BlockHash::FULL_SIZE`].
     /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
@@ -450,7 +455,7 @@ impl BlockHashPositionArray {
         self.score_strings_raw_internal(len, other)
     }
 
-    /// Internal implementation of [`Self::score_strings_unchecked`].
+    /// The internal implementation of [`Self::score_strings_unchecked`].
     #[inline(never)]
     pub(crate) fn score_strings_internal(&self, len: u8, other: &[u8], log_block_size: u8) -> u32 {
         /*
@@ -483,14 +488,15 @@ impl BlockHashPositionArray {
     ///
     /// # Safety
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this) must not exceed [`BlockHash::FULL_SIZE`].
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed
+    ///     [`BlockHash::FULL_SIZE`].
     /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
     /// *   `log_block_size` [must be valid](crate::hash::block::BlockSize::is_log_valid).
     ///
-    /// If those conditions are not satisfied, the behavior is not defined.
+    /// If they are not satisfied, it will return a meaningless score.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn score_strings_unchecked(&self, len: u8, other: &[u8], log_block_size: u8) -> u32 {
@@ -505,8 +511,9 @@ impl BlockHashPositionArray {
     ///
     /// # Usage Constraints
     ///
-    /// *   This object must be valid for given length `len`.
-    /// *   `len` (the length of this) must not exceed [`BlockHash::FULL_SIZE`].
+    /// *   This object must be valid on a given length `len`.
+    /// *   `len` (the length of this object) must not exceed
+    ///     [`BlockHash::FULL_SIZE`].
     /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
@@ -521,7 +528,7 @@ impl BlockHashPositionArray {
         self.score_strings_internal(len, other, log_block_size)
     }
 
-    /// Checks whether given position array entry has a sequence of the given
+    /// Checks whether a given position array entry has a sequence of the given
     /// length (or longer).
     ///
     /// # Performance Analysis
@@ -582,8 +589,7 @@ impl BlockHashPositionArray {
         mask != 0
     }
 
-    /// The same function as [`element_has_sequences`](Self::element_has_sequences)
-    /// but made to be a generic function.
+    /// The generic variant of [`element_has_sequences`](Self::element_has_sequences).
     ///
     /// It improves the performance by intensive constant foldings.
     #[inline(always)]
@@ -619,37 +625,12 @@ impl core::fmt::Debug for BlockHashPositionArray {
 pub struct FuzzyHashCompareTarget {
     /// The position array representation of block hash 1.
     ///
-    /// Each element of the position array indicates which positions in
-    /// the corresponding block hash have the given alphabet
-    /// (note that array index is of the alphabet).
-    ///
-    /// For instance, if `blockhash1[5] == 0x81`, it means the block hash
-    /// contains the alphabet index `5` in the positions `0` and `7`
-    /// (block hash glob: `E??????E*`).
-    ///
-    /// This is because bit 0 `0x01` at index 5 means that the position 0 is the
-    /// alphabet index `5` (`E`).  Likewise, bit 7 (`0x80`) at index 5
-    /// corresponds to the fact that position 7 is the alphabet index `5` (`E`).
-    ///
-    /// This representation makes possible to make certain dynamic programming
-    /// algorithms bit-parallel.  In other words, some table updates of
-    /// certain top-down dynamic programming algorithms can be
-    /// represented as logical expressions (with some arithmetic ones
-    /// to enable e.g. horizontal propagation).  This is particularly
-    /// effective on ssdeep because each block hash has a maximum size of
-    /// [`BlockHash::FULL_SIZE`] (64; many 64-bit machines would handle that
-    /// efficiently and even 32-bit machines can benefit from).
-    ///
-    /// This is *so* fast so that the bit-parallel approach is still faster
-    /// even if we don't use any batching.
-    ///
-    /// For an example of such algorithms, see
-    /// [Bitap algorithm](https://en.wikipedia.org/wiki/Bitap_algorithm).
+    /// See [`BlockHashPositionArray`] for details.
     pub(crate) blockhash1: BlockHashPositionArray,
 
     /// The position array representation of block hash 2.
     ///
-    /// See [`blockhash1`](Self::blockhash1) for details.
+    /// See [`BlockHashPositionArray`] for details.
     pub(crate) blockhash2: BlockHashPositionArray,
 
     /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
@@ -657,7 +638,7 @@ pub struct FuzzyHashCompareTarget {
     /// Length of the block hash 2 (up to [`BlockHash::FULL_SIZE`]).
     pub(crate) len_blockhash2: u8,
 
-    /// Base 2 logarithm form of the actual block size.
+    /// Base-2 logarithm form of the actual block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     pub(crate) log_blocksize: u8,
@@ -669,9 +650,9 @@ impl FuzzyHashCompareTarget {
     ///
     /// To score similarity between two block hashes, ssdeep expects that
     /// two block hashes are similar enough.  In other words, ssdeep expects
-    /// that they have a common substring of the length
+    /// that they have a common substring of a length
     /// [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH) or longer
-    /// to reduce the possibility of false matches by chance (coincidence).
+    /// to reduce the possibility of false matches by chance.
     ///
     /// Finding such common substrings is a special case of finding a
     /// [longest common substring (LCS)](https://en.wikipedia.org/wiki/Longest_common_substring).
@@ -683,15 +664,15 @@ impl FuzzyHashCompareTarget {
     ///
     /// have a common substring `cOpEYXB+0Z` (length 10), long enough
     /// (≧ [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH))
-    /// to compute the edit distance to score the similarity.
+    /// to compute the edit distance to compute the similarity score.
     ///
-    /// In specific, ssdeep requires a common substring of
-    /// length 7 for actual scoring.  Otherwise, the block hash comparison
-    /// function returns similarity score of zero (not similar enough).
+    /// Specifically, ssdeep requires a common substring of a length 7 to
+    /// compute a similarity score.  Otherwise, the block hash comparison
+    /// method returns zero (meaning, not similar).
     pub const MIN_LCS_FOR_BLOCKHASH: usize = 7;
 
-    /// The lower bound (inclusive) of the *base 2 logarithm* form of
-    /// the block size which score capping is no longer required.
+    /// The lower bound (inclusive) of the *base-2 logarithm* form of
+    /// the block size in which the score capping is no longer required.
     ///
     /// If `log_block_size` is equal to or larger than this value and
     /// `len1` and `len2` are at least
@@ -736,7 +717,7 @@ impl FuzzyHashCompareTarget {
         ((100 + Self::MIN_LCS_FOR_BLOCKHASH as u64 - 1) / Self::MIN_LCS_FOR_BLOCKHASH as u64)
         .next_power_of_two().trailing_zeros() as u8;
 
-    /// Creates a new [`FuzzyHashCompareTarget`] object with the empty value.
+    /// Creates a new [`FuzzyHashCompareTarget`] object with empty contents.
     ///
     /// This is equivalent to the fuzzy hash string `3::`.
     #[inline]
@@ -750,7 +731,7 @@ impl FuzzyHashCompareTarget {
         }
     }
 
-    /// The *base 2 logarithm* form of the comparison target's block size.
+    /// The *base-2 logarithm* form of the comparison target's block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](FuzzyHashData#block-size)
     #[inline(always)]
@@ -762,11 +743,11 @@ impl FuzzyHashCompareTarget {
         BlockSize::from_log_unchecked(self.log_blocksize)
     }
 
-    /// Initialize the object from given fuzzy hash
-    /// (without clearing position array).
+    /// Initialize the object from a given fuzzy hash
+    /// (without clearing the position arrays).
     ///
     /// This method is intended to be used just after clearing the position
-    /// array (e.g. just after the initialization).
+    /// arrays (i.e. just after the initialization).
     #[inline]
     fn init_from_partial<const S1: usize, const S2: usize>(
         &mut self,
@@ -789,7 +770,7 @@ impl FuzzyHashCompareTarget {
         self.blockhash2.init_from_partial(hash.block_hash_2());
     }
 
-    /// Initialize the object from given fuzzy hash.
+    /// Initialize the object from a given fuzzy hash.
     #[inline]
     pub fn init_from<const S1: usize, const S2: usize>(
         &mut self,
@@ -805,7 +786,8 @@ impl FuzzyHashCompareTarget {
         self.init_from_partial(hash);
     }
 
-    /// Compare whether two fuzzy hashes are equivalent (except block size)
+    /// Compare whether two fuzzy hashes are equivalent
+    /// (except for their block size).
     #[inline]
     fn is_equiv_except_block_size<const S1: usize, const S2: usize>(
         &self,
@@ -837,7 +819,7 @@ impl FuzzyHashCompareTarget {
         self.is_equiv_except_block_size(hash)
     }
 
-    /// Internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked`].
+    /// The internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked`].
     #[inline(always)]
     pub(crate) fn score_cap_on_block_hash_comparison_internal(
         log_block_size: u8,
@@ -851,16 +833,16 @@ impl FuzzyHashCompareTarget {
         (1u32 << log_block_size) * u32::min(len_block_hash_lhs as u32, len_block_hash_rhs as u32)
     }
 
-    /// Returns "score cap" for given block size and two block hash lengths,
-    /// assuming that block size is small enough so that arithmetic overflow
-    /// will not occur.
+    /// Returns the "score cap" for a given block size and two block hash
+    /// lengths, assuming that block size is small enough so that an arithmetic
+    /// overflow will not occur.
     ///
     /// # Safety
     ///
     /// If `log_block_size` is equal to or larger than
     /// [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER),
-    /// and/or both lengths are large enough, it may cause an
-    /// arithmetic overflow, returning an useless value.
+    /// and/or both lengths are too large, it may cause an
+    /// arithmetic overflow and return an useless value.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn score_cap_on_block_hash_comparison_unchecked(
@@ -876,15 +858,16 @@ impl FuzzyHashCompareTarget {
         )
     }
 
-    /// Returns "score cap" for given block size and two block hash lengths.
+    /// Returns the "score cap" for a given block size and
+    /// two block hash lengths.
     ///
     /// The internal block hash comparison method "caps" the score to prevent
     /// exaggregating the matches that are not meaningful enough.  This behavior
-    /// depends on the block size (score cap gets higher when block size gets
+    /// depends on the block size (the "cap" gets higher as the block size gets
     /// higher) and the minimum of block hash lengths.
     ///
     /// The result is not always guaranteed to be in `0..=100` but `100` or
-    /// higher means we don't need any score capping.
+    /// higher means that we don't need any score capping.
     #[inline(always)]
     pub fn score_cap_on_block_hash_comparison(
         log_block_size: u8,
@@ -927,7 +910,7 @@ impl FuzzyHashCompareTarget {
             && self.blockhash2.is_valid(self.len_blockhash2)
     }
 
-    /// Internal implementation of [`Self::compare_unequal_near_eq_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_eq_unchecked`].
     #[inline]
     fn compare_unequal_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
@@ -955,7 +938,7 @@ impl FuzzyHashCompareTarget {
         )
     }
 
-    /// Compare two fuzzy hashes assuming both are different and
+    /// Compare two fuzzy hashes assuming both are different and their
     /// block sizes have a relation of [`BlockSizeRelation::NearEq`].
     ///
     /// # Safety
@@ -980,7 +963,7 @@ impl FuzzyHashCompareTarget {
     }
 
     /// **SLOW:** Compare two fuzzy hashes assuming both are different and
-    /// block sizes have a relation of [`BlockSizeRelation::NearEq`].
+    /// their block sizes have a relation of [`BlockSizeRelation::NearEq`].
     ///
     /// # Usage Constraints
     ///
@@ -1013,7 +996,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_eq_internal(other)
     }
 
-    /// Internal implementation of [`Self::compare_near_eq_unchecked`].
+    /// The internal implementation of [`Self::compare_near_eq_unchecked`].
     #[inline]
     fn compare_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1030,7 +1013,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_eq_internal(other)
     }
 
-    /// Compare two fuzzy hashes assuming block sizes have
+    /// Compare two fuzzy hashes assuming their block sizes have
     /// a relation of [`BlockSizeRelation::NearEq`].
     ///
     /// # Safety
@@ -1039,7 +1022,7 @@ impl FuzzyHashCompareTarget {
     ///     block size relation of [`BlockSizeRelation::NearEq`].
     ///
     /// If the condition above is not satisfied, it will return
-    /// meaningless score.
+    /// a meaningless score.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn compare_near_eq_unchecked<const S1: usize, const S2: usize>(
@@ -1054,7 +1037,7 @@ impl FuzzyHashCompareTarget {
         self.compare_near_eq_internal(other)
     }
 
-    /// Compare two fuzzy hashes assuming block sizes have
+    /// Compare two fuzzy hashes assuming their block sizes have
     /// a relation of [`BlockSizeRelation::NearEq`].
     ///
     /// # Usage Constraints
@@ -1076,7 +1059,7 @@ impl FuzzyHashCompareTarget {
         self.compare_near_eq_internal(other)
     }
 
-    /// Internal implementation of [`Self::compare_unequal_near_lt_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_lt_unchecked`].
     #[inline(always)]
     fn compare_unequal_near_lt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1096,7 +1079,7 @@ impl FuzzyHashCompareTarget {
         )
     }
 
-    /// Compare two fuzzy hashes assuming both are different and
+    /// Compare two fuzzy hashes assuming both are different and their
     /// block sizes have a relation of [`BlockSizeRelation::NearLt`].
     ///
     /// # Safety
@@ -1119,7 +1102,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_lt_internal(other)
     }
 
-    /// Compare two fuzzy hashes assuming both are different and
+    /// Compare two fuzzy hashes assuming both are different and their
     /// block sizes have a relation of [`BlockSizeRelation::NearLt`].
     ///
     /// # Usage Constraints
@@ -1141,7 +1124,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_lt_internal(other)
     }
 
-    /// Internal implementation of [`Self::compare_unequal_near_gt_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_gt_unchecked`].
     #[inline(always)]
     fn compare_unequal_near_gt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1161,7 +1144,7 @@ impl FuzzyHashCompareTarget {
         )
     }
 
-    /// Compare two fuzzy hashes assuming both are different and
+    /// Compare two fuzzy hashes assuming both are different and their
     /// block sizes have a relation of [`BlockSizeRelation::NearGt`].
     ///
     /// # Safety
@@ -1184,7 +1167,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_gt_internal(other)
     }
 
-    /// Compare two fuzzy hashes assuming both are different and
+    /// Compare two fuzzy hashes assuming both are different and their
     /// block sizes have a relation of [`BlockSizeRelation::NearGt`].
     ///
     /// # Usage Constraints
@@ -1206,7 +1189,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_gt_internal(other)
     }
 
-    /// Internal implementation of [`Self::compare_unequal_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_unchecked`].
     #[inline]
     pub(crate) fn compare_unequal_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1234,7 +1217,7 @@ impl FuzzyHashCompareTarget {
     /// *   Both fuzzy hashes (`self` and `other`) must be different.
     ///
     /// If the condition above is not satisfied, it will return
-    /// meaningless score.
+    /// a meaningless score.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn compare_unequal_unchecked<const S1: usize, const S2: usize>(
@@ -1258,7 +1241,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// # Performance Consideration
     ///
-    /// This method's performance is not good enough (because of constraint
+    /// This method's performance is not good enough (because of the constraint
     /// checking).
     ///
     /// Use those instead:
@@ -1348,7 +1331,7 @@ where
         target.compare(other.as_ref())
     }
 
-    /// Internal implementation of [`Self::compare_unequal_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_unchecked`].
     #[inline]
     pub(crate) fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
@@ -1364,7 +1347,7 @@ where
     /// *   `self` and `other` must be different.
     ///
     /// If the condition above is not satisfied, it will return
-    /// meaningless score.
+    /// a meaningless score.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn compare_unequal_unchecked(&self, other: impl AsRef<Self>) -> u32 {
@@ -1404,7 +1387,7 @@ mod const_asserts {
     use super::*;
     use static_assertions::{const_assert, const_assert_eq};
 
-    /// Check whether the block size requires no score capping.
+    /// Check whether a given block size requires no score capping.
     #[allow(dead_code)] // to avoid false error
     const fn is_log_block_size_needs_no_capping(log_block_size: u8) -> bool {
         // Test whether score_cap in score_strings method is equal to

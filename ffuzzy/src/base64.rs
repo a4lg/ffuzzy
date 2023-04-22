@@ -64,10 +64,10 @@ const BASE64_REV_TABLE_U8: [u8; 256] = [
     0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40,
 ];
 
-/// The constant representing "invalid" Base64 character index.
+/// The constant representing an "invalid" Base64 character index.
 pub(crate) const BASE64_INVALID: u8 = 0x40;
 
-/// Tries to convert a Base64 alphabet into corresponding index value.
+/// Tries to convert a Base64 alphabet into a corresponding index value.
 ///
 /// If `ch` is not a valid Base64 alphabet, [`BASE64_INVALID`] is returned.
 ///
@@ -100,7 +100,7 @@ mod const_asserts {
 mod tests {
     use super::*;
 
-    /// Tries to convert a Base64 alphabet into corresponding index value.
+    /// Tries to convert a Base64 alphabet into a corresponding index value.
     ///
     /// If `ch` is not a valid Base64 alphabet, [`None`] is returned.
     #[inline]

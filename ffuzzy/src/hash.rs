@@ -35,17 +35,17 @@ pub(crate) mod test_utils;
 ///
 /// 1.  Block size (reciprocal of average piece-splitting probability per byte)
 ///
-/// 2.  Block hash 1.  6-bit hash per "piece", variable length up to
+/// 2.  Block hash 1.  6-bit hash per "piece", variable-length up to
 ///     [`BlockHash::FULL_SIZE`].
 ///
-///     Average piece-splitting probability is given as `1/block_size`.
-/// 3.  Block hash 2.  6-bit hash per "piece", variable length up to either
+///     The average piece-splitting probability is given as `1/block_size`.
+/// 3.  Block hash 2.  6-bit hash per "piece", variable-length up to either
 ///     *   [`BlockHash::HALF_SIZE`] (truncated / short / regular) or
 ///     *   [`BlockHash::FULL_SIZE`] (non-truncated / long).
 ///
-///     Average piece-splitting probability is given as `1/block_size/2`).
+///     The average piece-splitting probability is given as `1/block_size/2`).
 ///
-/// 4.  (optional) Input file name, which is ignored by the parser
+/// 4.  (optional) The input file name, which is ignored by the parser
 ///     on this type.
 ///
 /// This struct stores first three parts of a fuzzy hash.
@@ -64,19 +64,19 @@ pub(crate) mod test_utils;
 ///
 /// # Block Size
 ///
-/// In an example above, 1 / 196 608 is the average probability for
+/// In the example above, 1 / 196 608 is the average probability for
 /// piece-splitting per byte on the block hash 1.  On the block hash 2, the
-/// probability is 1 / 393 216 per byte, the half of the probability on the
+/// probability is 1 / 393 216 per byte, half of the probability on the
 /// block hash 1.
 ///
-/// Because ssdeep uses [a 32-bit hash function](crate::internal_hashes::RollingHash)
+/// Since ssdeep uses [a 32-bit hash function](crate::internal_hashes::RollingHash)
 /// to decide whether to perform a piece-splitting, this probability will get
 /// inaccurate as the block size gets larger.
 ///
 /// There is an important property of the block size: all valid block sizes
 /// can be represented as [`BlockSize::MIN`] * 2<sup>n</sup> (`n` ≧ 0).
 ///
-/// In this crate, the block size is stored as `n` (the **base 2 logarithm**
+/// In this crate, the block size is stored as `n` (the **base-2 logarithm**
 /// form of the block size) for higher efficiency.
 /// [`log_block_size()`](Self::log_block_size()) method returns this raw
 /// representation.  If you need an actual block size as used in the string
@@ -86,8 +86,8 @@ pub(crate) mod test_utils;
 ///
 /// A fuzzy hash has two block hashes (1 and 2).
 ///
-/// They are variable length fields which stores array of 6-bit "piece" hash
-/// values (represented as Base64 characters in the string representaion and
+/// They are variable-length fields that store an array of 6-bit "piece" hash
+/// values (represented as Base64 characters in the string representation and
 /// internally stored as Base64 indices).
 ///
 /// ## Relations with Block Size
@@ -106,7 +106,7 @@ pub(crate) mod test_utils;
 ///                                                                [*] 12288 == 6144 * 2
 /// ```
 ///
-/// You can easily compare with another fuzzy hash with the same block size
+/// You can easily compare it with another fuzzy hash with the same block size
 /// ([but actual block hash similarity scoring only occurs after checking common substring](crate::compare::FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH)).
 ///
 /// ```text
@@ -125,7 +125,7 @@ pub(crate) mod test_utils;
 /// ```
 ///
 /// The final similarity score is the maximum of two block hash comparisons
-/// (note that [`score` function on small block sizes will cap the score to
+/// (note that [the `score` function on small block sizes will cap the score to
 /// prevent exaggeration of matches](crate::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison)).
 ///
 /// If you have two fuzzy hashes with different block sizes but they are *near*
@@ -154,7 +154,7 @@ pub(crate) mod test_utils;
 /// Such cases are handled with [`BlockSizeRelation`] and [`BlockSize`]
 /// utility functions.  We can outline the relation in the table below.
 /// Note that each block size is denoted as
-/// "Actual block size ([block size in *base 2 logarithm*](Self#block-size))".
+/// "Actual block size ([block size in *base-2 logarithm*](Self#block-size))".
 ///
 /// | Left (`lhs`) | Right (`rhs`) | Relation                              |
 /// | ------------:| -------------:|:------------------------------------- |
@@ -165,8 +165,8 @@ pub(crate) mod test_utils;
 /// |   12288 (12) |     6144 (11) | [`NearGt`](BlockSizeRelation::NearGt) |
 /// |    3072 (10) |    12288 (12) | [`Far`](BlockSizeRelation::Far)       |
 ///
-/// For highly optimized clustering applications, being aware of the block size
-/// relation will be important.
+/// On highly optimized clustering applications, being aware of the block size
+/// relation will be crucial.
 ///
 /// See also: [`BlockSizeRelation`]
 ///
@@ -192,7 +192,7 @@ pub(crate) mod test_utils;
 ///
 /// ssdeep normally generates (as well as [`Generator`](crate::Generator))
 /// *truncated* fuzzy hashes.  In the truncated fuzzy hash, length of block hash
-/// 2 is limited to [`BlockHash::HALF_SIZE`], the half of the maximum length of
+/// 2 is limited to [`BlockHash::HALF_SIZE`], half of the maximum length of
 /// block hash 1 ([`BlockHash::FULL_SIZE`]).
 ///
 /// While libfuzzy allows generating non-truncated, long fuzzy hashes, they are
@@ -218,7 +218,7 @@ where
     ///
     /// Each element contains a 6-bit value which can be easily
     /// converted to a Base64 alphabet.
-    /// Element `[len_blockhash2..]` are always filled with zeroes.
+    /// Elements `[len_blockhash2..]` are always filled with zeroes.
     pub(crate) blockhash2: [u8; S2],
 
     /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
@@ -228,14 +228,14 @@ where
     /// [`BlockHash::FULL_SIZE`] or [`BlockHash::HALF_SIZE`]).
     pub(crate) len_blockhash2: u8,
 
-    /// Base 2 logarithm form of the actual block size.
+    /// Base-2 logarithm form of the actual block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     pub(crate) log_blocksize: u8,
 }
 
 
-/// An enumeration representing a cause of generic fuzzy hash error.
+/// An enumeration representing a cause of a generic fuzzy hash error.
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -243,7 +243,7 @@ pub enum FuzzyHashOperationError {
     /// When converting between two fuzzy hash types, copying block hash
     /// would cause a buffer overflow.
     BlockHashOverflow,
-    /// When converting a fuzzy hash to string, buffer overflow would occur.
+    /// When converting a fuzzy hash to a string, a buffer overflow would occur.
     StringizationOverflow,
 }
 
@@ -269,14 +269,14 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
-    /// The maximum size of the block hash 1 part.
+    /// The maximum size of the block hash 1.
     ///
-    /// This value should be always [`BlockHash::FULL_SIZE`].
+    /// This value is always [`BlockHash::FULL_SIZE`].
     pub const MAX_BLOCK_HASH_SIZE_1: usize = S1;
 
-    /// The maximum size of the block hash 2 part.
+    /// The maximum size of the block hash 2.
     ///
-    /// This value should be either
+    /// This value is either
     /// [`BlockHash::HALF_SIZE`] or [`BlockHash::FULL_SIZE`].
     pub const MAX_BLOCK_HASH_SIZE_2: usize = S2;
 
@@ -284,9 +284,12 @@ where
     pub const IS_NORMALIZED_FORM: bool = NORM;
 
     /// Denotes whether the fuzzy type can contain a non-truncated fuzzy hash.
+    ///
+    /// It directly corresponds to
+    /// [`MAX_BLOCK_HASH_SIZE_2`](Self::MAX_BLOCK_HASH_SIZE_2).
     pub const IS_LONG_FORM: bool = Self::MAX_BLOCK_HASH_SIZE_2 == BlockHash::FULL_SIZE;
 
-    /// Creates a new fuzzy hash object with the empty contents.
+    /// Creates a new fuzzy hash object with empty contents.
     ///
     /// This is equivalent to the fuzzy hash string `3::`.
     pub fn new() -> Self {
@@ -299,7 +302,7 @@ where
         }
     }
 
-    /// Internal implementation of [`Self::init_from_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::init_from_internals_raw_unchecked`].
     pub(crate) fn init_from_internals_raw_internal(
         &mut self,
         log_block_size: u8,
@@ -332,14 +335,15 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid ranges of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
     ///
-    /// If they are not satisfied, the resulting object will be corrupted.
+    /// If they are not satisfied, the resulting object is corrupted.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn init_from_internals_raw_unchecked(
@@ -362,10 +366,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid ranges of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
     #[inline]
@@ -397,7 +402,7 @@ where
         );
     }
 
-    /// Internal implementation of [`Self::new_from_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::new_from_internals_raw_unchecked`].
     #[allow(dead_code)]
     pub(crate) fn new_from_internals_raw_internal(
         log_block_size: u8,
@@ -418,14 +423,15 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid ranges of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
     ///
-    /// If they are not satisfied, the resulting object will be corrupted.
+    /// If they are not satisfied, the resulting object is corrupted.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn new_from_internals_raw_unchecked(
@@ -448,10 +454,11 @@ where
     ///
     /// *   Valid range of `block_hash_1` and `block_hash_2` must consist of
     ///     valid Base64 indices.
-    /// *   Invalid range of `block_hash_1` and `block_hash_2` must be zeroes.
-    /// *   `block_hash_1_len` and `block_hash_2_len` must have valid length.
-    /// *   `log_block_size` must hold the valid *base 2 logarithm* form
-    ///     of the block size.
+    /// *   Invalid ranges of `block_hash_1` and `block_hash_2` must be
+    ///     filled with zeroes.
+    /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
+    /// *   `log_block_size` must hold a valid *base-2 logarithm* form
+    ///     of a block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
     #[inline]
@@ -468,7 +475,7 @@ where
         hash
     }
 
-    /// Internal implementation of [`Self::new_from_internals_unchecked`].
+    /// The internal implementation of [`Self::new_from_internals_unchecked`].
     pub(crate) fn new_from_internals_internal(
         block_size: u32,
         block_hash_1: &[u8],
@@ -499,9 +506,9 @@ where
     ///
     /// # Safety
     ///
-    /// *   `block_hash_1` and `block_hash_2` must have valid length.
-    /// *   `block_hash_1` and `block_hash_2` must consist of valid Base64
-    ///     indices.
+    /// *   `block_hash_1` and `block_hash_2` must have valid lengths.
+    /// *   Elements of `block_hash_1` and `block_hash_2` must consist of valid
+    ///     Base64 indices.
     /// *   `block_size` must hold a valid block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
@@ -525,9 +532,9 @@ where
     ///
     /// # Usage Constraints
     ///
-    /// *   `block_hash_1` and `block_hash_2` must have valid length.
-    /// *   `block_hash_1` and `block_hash_2` must consist of valid Base64
-    ///     indices.
+    /// *   `block_hash_1` and `block_hash_2` must have valid lengths.
+    /// *   Elements of `block_hash_1` and `block_hash_2` must consist of valid
+    ///     Base64 indices.
     /// *   `block_size` must hold a valid block size.
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
@@ -555,7 +562,7 @@ where
         hash
     }
 
-    /// The *base 2 logarithm* form of the fuzzy hash's block size.
+    /// The *base-2 logarithm* form of the block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     #[inline(always)]
@@ -589,7 +596,7 @@ where
         &self.blockhash1[..self.len_blockhash1 as usize]
     }
 
-    /// A reference to the block hash 1 (in fixed size array).
+    /// A reference to the block hash 1 (in fixed-size array).
     ///
     /// Elements that are not a part of the block hash are filled with zeroes.
     ///
@@ -627,7 +634,7 @@ where
         &self.blockhash2[..self.len_blockhash2 as usize]
     }
 
-    /// A reference to the block hash 2 (in fixed size array).
+    /// A reference to the block hash 2 (in fixed-size array).
     ///
     /// Elements that are not a part of the block hash are filled with zeroes.
     ///
@@ -643,7 +650,7 @@ where
         self.len_blockhash2 as usize
     }
 
-    /// Length of this fuzzy hash in the string representation.
+    /// The length of this fuzzy hash in the string representation.
     ///
     /// This is the exact size (bytes and characters) required to store the
     /// string representation corresponding this fuzzy hash object.
@@ -697,15 +704,15 @@ where
         buf
     }
 
-    /// Store string representation of the fuzzy hash into the bytes.
+    /// Store the string representation of the fuzzy hash into the bytes.
     /// Returns whether the operation has succeeded.
     ///
-    /// The only condition this function would fail (returns an [`Err`]) is,
+    /// The only case this function will fail (returns an [`Err`]) is,
     /// when `buffer` does not have enough size to store string representation
     /// of the fuzzy hash.
     ///
     /// Required size of the `buffer` is
-    /// [`len_in_str()`](Self::len_in_str)-bytes.  This is exact.
+    /// [`len_in_str()`](Self::len_in_str)-bytes.  This size is exact.
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {
@@ -740,7 +747,7 @@ where
         Ok(())
     }
 
-    /// Parse a fuzzy hash from a bytes (slice of [`u8`])
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
     /// of a string representation.
     pub fn from_bytes(str: &[u8])
         -> Result<Self, ParseError>
@@ -870,12 +877,12 @@ where
 
     /// Performs full equality checking of the internal structure.
     ///
-    /// While [`PartialEq`] for this type is designed to be fast by ignoring
+    /// While [`PartialEq::eq`] for this type is designed to be fast by ignoring
     /// non-block hash bytes, this method performs full equality checking,
     /// *not* ignoring "non-block hash" bytes.
     ///
     /// The primary purpose of this is debugging and it should always
-    /// return the same value as [`PartialEq`] result unless...
+    /// return the same value as [`PartialEq::eq`] result unless...
     ///
     /// 1.  There is a bug in this crate, corrupting this structure or
     /// 2.  A memory corruption is occurred somewhere else.
@@ -895,7 +902,7 @@ where
         self.log_blocksize == other.log_blocksize
     }
 
-    /// Compare two *base 2 logarithm* form of the block size values from
+    /// Compare two *base-2 logarithm* forms of the block size values from
     /// given two fuzzy hashes to determine their block size relation.
     #[inline]
     pub fn compare_block_sizes(
@@ -909,7 +916,7 @@ where
         )
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a near relation.
     #[inline]
     pub fn is_block_sizes_near(
@@ -923,7 +930,7 @@ where
         )
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearEq`]
     /// relation.
     #[inline]
@@ -938,7 +945,7 @@ where
         )
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearLt`]
     /// relation.
     #[inline]
@@ -953,7 +960,7 @@ where
         )
     }
 
-    /// Checks whether two *base 2 logarithm* form of the block size values
+    /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearGt`]
     /// relation.
     #[inline]
@@ -968,7 +975,7 @@ where
         )
     }
 
-    /// Compare two fuzzy hashes only by block sizes.
+    /// Compare two fuzzy hashes only by their block sizes.
     #[inline]
     pub fn cmp_by_block_size(&self, other: &Self) -> core::cmp::Ordering {
         u8::cmp(
@@ -1119,14 +1126,14 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
-    /// Formats the value using the given formatter.
+    /// Formats the value using a given formatter.
     ///
     /// # Safety
     ///
     /// This method assumes that the fuzzy hash data is not broken.
     ///
     /// Unlike this method, [`Debug`](core::fmt::Debug::fmt) implementation
-    /// does not cause problems if given fuzzy hash is broken.
+    /// does not cause problems if a given fuzzy hash is broken.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut buffer = [0u8; LongRawFuzzyHash::MAX_LEN_IN_STR];
         self.store_into_bytes(&mut buffer).unwrap();
@@ -1202,7 +1209,7 @@ macro_rules! short_type {($norm: expr) => {FuzzyHashData<{BlockHash::FULL_SIZE},
 macro_rules!  long_type {($norm: expr) => {FuzzyHashData<{BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}, $norm> }}
 
 
-/// Implementation of Normalized fuzzy hashes.
+/// Implementation of normalized fuzzy hashes.
 ///
 /// Methods below are available on normalized fuzzy hashes
 /// ([`FuzzyHash`] or [`LongFuzzyHash`]).
@@ -1263,7 +1270,7 @@ where
 }
 
 
-/// Implementation of Non-normalized fuzzy hashes (in raw form).
+/// Implementation of non-normalized fuzzy hashes (in raw form).
 ///
 /// Methods below are available on non-normalized fuzzy hashes
 /// ([`RawFuzzyHash`] or [`LongRawFuzzyHash`]).
@@ -1305,7 +1312,7 @@ where
 
     /// Returns whether the fuzzy hash is normalized.
     ///
-    /// For a non normalized fuzzy hash type (in raw form), it checks whether
+    /// For a non-normalized fuzzy hash type (in raw form), it checks whether
     /// the fuzzy hash is already normalized.
     ///
     /// Note that this method is only for convenience purposes and checking
@@ -1323,7 +1330,7 @@ where
 }
 
 
-/// Implementation of Short fuzzy hashes.
+/// Implementation of short fuzzy hashes.
 ///
 /// Methods below are available on short (truncated) fuzzy hashes
 /// ([`FuzzyHash`] or [`RawFuzzyHash`]).
@@ -1356,7 +1363,7 @@ impl <const NORM: bool> short_type!(NORM) {
 }
 
 
-/// Implementation of Long fuzzy hashes.
+/// Implementation of long fuzzy hashes.
 ///
 /// Methods below are available on long (non-truncated) fuzzy hashes
 /// ([`LongFuzzyHash`] or [`LongRawFuzzyHash`]).
@@ -1440,7 +1447,7 @@ impl<const NORM: bool>
 
 /// Regular (truncated) normalized fuzzy hash type.
 ///
-/// This type has a short (truncated) and normalized form, so that this type is
+/// This type has a short (truncated) and normalized form so this type is
 /// the best fit for fuzzy hash comparison.
 ///
 /// See also: [`FuzzyHashData`]
@@ -1457,7 +1464,7 @@ impl<const NORM: bool>
 ///
 /// use a raw form, [`RawFuzzyHash`].
 ///
-/// Usually, all fuzzy hashes you would handle is truncated, meaning the second
+/// Usually, all fuzzy hashes you would handle are truncated, meaning the second
 /// half of two block hashes are truncated to the half size of the maximum size
 /// of the first half.  But if you pass the `FUZZY_FLAG_NOTRUNC` flag to the
 /// `fuzzy_digest` function (libfuzzy), the result will be a non-truncated,
@@ -1469,7 +1476,7 @@ pub type FuzzyHash =
 
 /// Regular (truncated) raw fuzzy hash type.
 ///
-/// This type has a short (truncated) and non normalized raw form, so that this
+/// This type has a short (truncated) and non-normalized raw form so this
 /// type is the best fit to preserve the original string representation of a
 /// fuzzy hash.
 ///
@@ -1483,7 +1490,7 @@ pub type FuzzyHash =
 /// Comparison functions/methods require that the input is normalized.
 /// To prevent excess normalization, [`FuzzyHash`] is recommended for comparison.
 ///
-/// Usually, all fuzzy hashes you would handle is truncated, meaning the second
+/// Usually, all fuzzy hashes you would handle are truncated, meaning the second
 /// half of two block hashes are truncated to the half size of the maximum size
 /// of the first half.  But if you pass the `FUZZY_FLAG_NOTRUNC` flag to the
 /// `fuzzy_digest` function (libfuzzy), the result will be a non-truncated,
@@ -1507,7 +1514,7 @@ pub type LongFuzzyHash =
 
 /// Long (non-truncated) raw fuzzy hash type.
 ///
-/// This type has a long (non-truncated) and non normalized raw form.
+/// This type has a long (non-truncated) and non-normalized raw form.
 ///
 /// You don't usually handle non-truncated fuzzy hashes.
 /// Use [`RawFuzzyHash`] where applicable.

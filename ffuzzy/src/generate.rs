@@ -24,15 +24,15 @@ mod fnv_table;
 mod tests;
 
 
-/// Hasher which computes the lowest 6-bits of a 32-bit FNV-1 variant.
+/// Hasher which computes the lowest 6 bits of a 32-bit FNV-1 variant.
 ///
 /// This variant of FNV-1 hash has the regular prime constant of `0x01000193`
-/// but has different initial state: `0x28021967` (in constrast to regular
+/// but has a different initial state: `0x28021967` (in contrast to regular
 /// FNV-1-32's `0x811c9dc5`).
 ///
-/// Since ssdeep only uses the lowest 6-bits of the hash value, it ignores any
-/// higher bits, enabling update method table-based (instead of multiply and
-/// xor) unless `opt-reduce-fnv-table` feature is enabled.
+/// Since ssdeep only uses the lowest 6 bits of the hash value, it ignores any
+/// higher bits, enabling updating the state table-based (instead of multiply
+/// and xor) unless the `opt-reduce-fnv-table` feature is enabled.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PartialFNVHash(u8);
 
@@ -111,10 +111,9 @@ const ROLLING_WINDOW: usize = 7;
 /// In ssdeep, this is the most important hash function to decide whether to
 /// trigger a context update based on the last 7 bytes it met.
 ///
-/// To be specific, [`RollingHash`] implements the rolling hash implemented in
-/// ssdeep version 2.13 or later.  This is the first version which officially
-/// supported inputs larger than (or as large as) 4GiB and implemented a true
-/// rolling hash function.
+/// Specifically, [`RollingHash`] implements the rolling hash implemented in
+/// ssdeep version 2.13 or later.  This is the first version that officially
+/// supported ≧4GiB files and implemented a true rolling hash function.
 #[derive(Debug)]
 pub struct RollingHash {
     /// Current rolling window index.
@@ -122,21 +121,21 @@ pub struct RollingHash {
 
     /// Hash component 1.
     ///
-    /// This is the sum of last [`WINDOW_SIZE`](Self::WINDOW_SIZE)-bytes.
+    /// This is the sum of the last [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes.
     ///
-    /// In the "ssdeep-compatible" configuration, this value is in range of
-    /// `0..=1785` (`0..=(7*0xff)`).
+    /// In the "ssdeep-compatible" configuration, this value is in the range
+    /// of `0..=1785` (`0..=(7*0xff)`).
     h1: u32,
 
     /// Hash component 2.
     ///
-    /// This is the sum of last [`WINDOW_SIZE`](Self::WINDOW_SIZE)-bytes
-    /// but more recent byte has higher weight (the latest byte has weight
-    /// of [`WINDOW_SIZE`](Self::WINDOW_SIZE) and the last (fading) byte
-    /// has weight of 1).
+    /// This is the sum of the last [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes
+    /// but the more recent byte has a higher weight (the latest byte has a
+    /// weight of [`WINDOW_SIZE`](Self::WINDOW_SIZE) and the last (fading) byte
+    /// has a weight of 1).
     ///
-    /// In the "ssdeep-compatible" configuration, this value is in range of
-    /// `0..=7140` (`0..=(sum(1..=7)*0xff)`).
+    /// In the "ssdeep-compatible" configuration, this value is in the range
+    /// of `0..=7140` (`0..=(sum(1..=7)*0xff)`).
     h2: u32,
 
     /// Hash component 3.
@@ -145,11 +144,11 @@ pub struct RollingHash {
     /// Each time it processes a byte, this value is left-shifted by
     /// [`H3_LSHIFT`](Self::H3_LSHIFT) and xor-ed with the latest byte value.
     ///
-    /// If it processes [`WINDOW_SIZE`](Self::WINDOW_SIZE)-bytes,
+    /// If it processes [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes,
     /// older bytes are shifted out (larger than its MSB).
     h3: u32,
 
-    /// Last [`WINDOW_SIZE`](Self::WINDOW_SIZE)-bytes of the processed data.
+    /// The last [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes of the processed data.
     window: [u8; ROLLING_WINDOW],
 }
 
@@ -161,7 +160,7 @@ impl RollingHash {
 
     /// Left shift width of [`h3`](Self::h3) for each byte.
     ///
-    /// This is `5` in ssdeep.
+    /// This is 5 in ssdeep.
     const H3_LSHIFT: usize = 5;
 
     /// Creates a new [`RollingHash`] with the initial value.
@@ -217,7 +216,7 @@ impl RollingHash {
     /// Note that there's no "finalization" on this rolling hash.
     /// You can even continue updating after reading the hash value.
     ///
-    /// This is the sum of its three internal states (`h1`, `h2` and `h3`).
+    /// This is the sum of its three internal states (`h1`, `h2`, and `h3`).
     /// See the source code and the private documentation for
     /// its mathematical details.
     #[inline]
@@ -233,7 +232,7 @@ impl Default for RollingHash {
 }
 
 
-/// Invalid character for a "not filled" marker.
+/// The invalid character for a "not filled" marker.
 const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 
 /// Block hash context.
@@ -243,21 +242,20 @@ const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 struct BlockHashContext {
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
-    /// Block hash
+    /// Block hash contents
     blockhash: [u8; BlockHash::FULL_SIZE],
-    /// The Block hash character used when truncating.
+    /// The last block hash character used when truncating.
     blockhash_ch_half: u8,
-    /// Block hash updater (FNV-1 hasher) for full block hash.
+    /// Block hash updater (a FNV-1 hasher) for full block hash.
     h_full: PartialFNVHash,
-    /// Block hash updater (FNV-1 hasher) for truncated block hash.
+    /// Block hash updater (a FNV-1 hasher) for truncated block hash.
     h_half: PartialFNVHash,
 }
 
 impl BlockHashContext {
     /// Creates a new [`BlockHashContext`] with the initial value.
     ///
-    /// It performs full initialization of the all
-    /// [`BlockHashContext`] fields.
+    /// It performs full initialization of the all [`BlockHashContext`] fields.
     pub fn new() -> Self {
         BlockHashContext {
             blockhash_index: 0,
@@ -270,8 +268,8 @@ impl BlockHashContext {
 
     /// Performs a partial initialization.
     ///
-    /// It effectively resets the state to the initial one but not necessarily
-    /// reinitializes all fields.
+    /// It effectively resets the state to the initial one but does not
+    /// necessarily reinitialize all fields.
     pub fn reset(&mut self) {
         self.blockhash_index = 0;
         // partial initialization of the block hash buffer
@@ -285,7 +283,7 @@ impl BlockHashContext {
 
 /// Fuzzy hash generator.
 ///
-/// This type is used to generate fuzzy hashes from given data.
+/// This type generates fuzzy hashes from a given data.
 ///
 /// # Default Output
 ///
@@ -294,9 +292,8 @@ impl BlockHashContext {
 /// The output of the generator is not normalized.  If you want to convert it
 /// to a normalized form, use separate methods like [`RawFuzzyHash::normalize`].
 ///
-/// In another words, this generator (itself) does not have the direct
-/// equivalent to the `FUZZY_FLAG_ELIMSEQ` flag of libfuzzy's `fuzzy_digest`
-/// function.
+/// In other words, this generator (itself) does not have the direct  equivalent
+/// to the `FUZZY_FLAG_ELIMSEQ` flag of libfuzzy's `fuzzy_digest` function.
 ///
 /// ## Truncation
 ///
@@ -328,17 +325,17 @@ impl BlockHashContext {
 /// On the other hand, if the input size is too small, the result will not be
 /// meaningful enough.  This *soft* lower limit (inclusive) is declared as
 /// [`MIN_RECOMMENDED_INPUT_SIZE`](Self::MIN_RECOMMENDED_INPUT_SIZE) and
-/// you can check
+/// you can check the
 /// [`may_warn_about_small_input_size`](Self::may_warn_about_small_input_size)
 /// method to check whether the size is too small to be meaningful enough.
 ///
 /// Note: even if it's doubtful to be meaningful enough, a fuzzy hash generated
-/// from such a small input is still valid.  You don't have to reject the input
-/// just because the input is too small.  This *soft* limit is for diagnostics.
+/// from such a small input is still valid.  You don't have to reject them
+/// just because they are too small.  This *soft* limit is for diagnostics.
 ///
 /// If you know the total size of the input, you can improve the performance by
-/// using either [`set_fixed_input_size`](Self::set_fixed_input_size) method or
-/// [`set_fixed_input_size_in_usize`](Self::set_fixed_input_size_in_usize)
+/// using either the [`set_fixed_input_size`](Self::set_fixed_input_size) method
+/// or the [`set_fixed_input_size_in_usize`](Self::set_fixed_input_size_in_usize)
 /// method.
 ///
 /// # Examples
@@ -366,32 +363,33 @@ impl BlockHashContext {
 pub struct Generator {
     /// Processed input size.
     ///
-    /// This value may be inaccurate if the generator has feeded more than the
+    /// This value may be inaccurate if the generator has fed more than the
     /// maximum *hard* size limit (finalization should fail in that case).
     input_size: u64,
 
-    /// Optional fixed size set by [`set_fixed_input_size`](Self::set_fixed_input_size).
+    /// Optional fixed size set by the
+    /// [`set_fixed_input_size`](Self::set_fixed_input_size) method.
     fixed_size: Option<u64>,
 
     /// Border size to consider advancing [`bhidx_start`](Self::bhidx_start)
-    /// (or, to perform block hash elimination).
+    /// (or, to perform a block hash elimination).
     ///
     /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
     elim_border: u64,
 
-    /// Start of block hash "index" to process.
+    /// Start of the block hash "index" to process.
     ///
-    /// The "index" is equivalent to the *base 2 logarithm* form
+    /// The "index" is equivalent to the *base-2 logarithm* form
     /// of the block size.  In [`Generator`], it is used as an actual index
     /// of [`bh_context`](Self::bh_context).
     bhidx_start: usize,
 
-    /// End of block hash "index" to process.
+    /// End of the block hash "index" to process.
     ///
     /// See also: [`bhidx_start`](Self::bhidx_start)
     bhidx_end: usize,
 
-    /// End of block hash "index" to process (set by given fixed size).
+    /// End of the block hash "index" to process (set by a given fixed size).
     ///
     /// See also:
     ///
@@ -400,7 +398,7 @@ pub struct Generator {
     bhidx_end_limit: usize,
 
     /// Rolling hash mask to prevent piece split matching
-    /// before index [`bhidx_start`](Self::bhidx_start).
+    /// before the index [`bhidx_start`](Self::bhidx_start).
     ///
     /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
     roll_mask: u32,
@@ -419,22 +417,24 @@ pub struct Generator {
     is_last: bool,
 }
 
-/// The error type for either invalid or unsupported operations of [`Generator`].
+/// The error type representing an invalid or an unsupported operation of
+/// [the generator](Generator).
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GeneratorError {
-    /// [Fixed size](Generator::set_fixed_input_size) has a mismatch to either
-    /// previously set value or the final input size.
+    /// [The fixed size](Generator::set_fixed_input_size) has a mismatch with
+    /// either the previously set value or the final input size.
     FixedSizeMismatch,
-    /// [Fixed size](Generator::set_fixed_input_size) is
+    /// [The fixed size](Generator::set_fixed_input_size) is
     /// [too large](Generator::MAX_INPUT_SIZE).
     FixedSizeTooLarge,
-    /// Total input size on finalization is [too large](Generator::MAX_INPUT_SIZE).
+    /// The total input size on finalization is
+    /// [too large](Generator::MAX_INPUT_SIZE).
     InputSizeTooLarge,
-    /// Output would cause a buffer overflow for specific output type.
+    /// The output would cause a buffer overflow for a specific output type.
     ///
-    /// This kind of error only occurs when:
+    /// This error only occurs when:
     ///
     /// 1.  Truncation is disabled,
     /// 2.  The output type is a short form  
@@ -470,19 +470,19 @@ impl core::fmt::Display for GeneratorError {
 impl std::error::Error for GeneratorError {}
 
 impl Generator {
-    /// Returns preferred maximum input size at the specified block size.
+    /// Returns the preferred maximum input size at the specified block size.
     ///
-    /// If total input size exceeds this border, the double block size
-    /// (*base 2 logarithm* form: `log_block_size + 1`) is preferred for
-    /// the final block size (if block hash for double block size has
-    /// enough length `BlockHash::HALF_SIZE`).
+    /// If the total input size exceeds this border, the double block size
+    /// (*base-2 logarithm* form: `log_block_size + 1`) is preferred for
+    /// the final block size (if the block hash for double block size has
+    /// enough length: `BlockHash::HALF_SIZE`).
     const fn guessed_preferred_max_input_size_at(log_block_size: u8) -> u64 {
         BlockSize::from_log_unchecked(log_block_size) as u64 * BlockHash::FULL_SIZE as u64
     }
 
     /// The maximum input size (inclusive).
     ///
-    /// ssdeep has a upper limit of 192GiB (inclusive).
+    /// ssdeep has an upper limit of 192GiB (inclusive).
     ///
     /// This is a *hard* limit.  Feeding data larger than this constant size is
     /// an invalid operation.
@@ -515,8 +515,8 @@ impl Generator {
 
     /// Performs a partial initialization.
     ///
-    /// It effectively resets the state to the initial one but not necessarily
-    /// reinitializes all internal fields.
+    /// It effectively resets the state to the initial one but does not
+    /// necessarily reinitialize all internal fields.
     pub fn reset(&mut self) {
         self.input_size = 0;
         self.fixed_size = None;
@@ -537,9 +537,10 @@ impl Generator {
     pub fn input_size(&self) -> u64 { self.input_size }
 
     /// Checks whether a ssdeep-compatible client may raise a warning due to
-    /// its small input size (less meaningful fuzzy hashes will be generated).
+    /// its small input size (less meaningful fuzzy hashes will be generated
+    /// on the finalization).
     ///
-    /// The result is based on either the fixed size or current input size.
+    /// The result is based on either the fixed size or the current input size.
     /// So, this method should be used after calling either:
     ///
     /// *   [`set_fixed_input_size`](Self::set_fixed_input_size)
@@ -553,14 +554,14 @@ impl Generator {
         self.fixed_size.unwrap_or(self.input_size) < Self::MIN_RECOMMENDED_INPUT_SIZE
     }
 
-    /// Returns suitable initial block size (equal to or greater than `start`)
-    /// for specified input size (in *base 2 logarithm* form).
+    /// Returns the suitable initial block size (equal to or greater than
+    /// `start`) for the specified input size (in *base-2 logarithm* form).
     ///
-    /// `start` is also in a *base 2 logarithm* form.
+    /// `start` is also in a *base-2 logarithm* form.
     ///
     /// This method returns a good candidate but not always suitable for the
-    /// final fuzzy hash.  The final guess is performed in
-    /// [`guess_output_log_block_size`](Self::guess_output_log_block_size).
+    /// final fuzzy hash.  The final guess is performed in the
+    /// [`guess_output_log_block_size`](Self::guess_output_log_block_size) method.
     fn get_log_block_size_from_input_size(size: u64, start: usize) -> usize {
         let size_unit = Self::guessed_preferred_max_input_size_at(0);
         if size <= size_unit { return start; }
@@ -581,7 +582,7 @@ impl Generator {
     ///
     /// 1.  `size` is larger than [`MAX_INPUT_SIZE`](Self::MAX_INPUT_SIZE)
     ///     ([`GeneratorError::FixedSizeTooLarge`]) or
-    /// 2.  Fixed size is previously set but the new one is different
+    /// 2.  The fixed size is previously set but the new one is different
     ///     ([`GeneratorError::FixedSizeMismatch`]).
     pub fn set_fixed_input_size(&mut self, size: u64) -> Result<(), GeneratorError> {
         if size > Self::MAX_INPUT_SIZE {
@@ -639,7 +640,7 @@ impl Generator {
 ///     An iterator-like object (each item is in [`u8`]) to consume.
 /// *   `$proc_per_byte`  
 ///     Statemenets to run each time the generator consumes a byte
-///     (e.g. on iterator, advance `input_size` variable).
+///     (e.g. on the iterator variant, advance the `input_size` variable).
 macro_rules! generator_update_template {
     ($self: expr, $buffer: expr, $proc_per_byte: block) => {
         optionally_unsafe! {
@@ -834,7 +835,7 @@ macro_rules! generator_update_template {
                     {
                         // (Block hash elimination)
                         // Current block hash context will be never used on the final fuzzy hash.
-                        // Advance bhidx_start and prepare for next block hash elimination.
+                        // Advance bhidx_start and prepare for the next block hash elimination.
                         $self.bhidx_start += 1;
                         bh_advance_start!();
                         $self.roll_mask = $self.roll_mask.wrapping_mul(2).wrapping_add(1);
@@ -894,15 +895,15 @@ impl Generator {
     /// [`get_log_block_size_from_input_size`](Self::get_log_block_size_from_input_size).
     ///
     /// But if the resulting fuzzy hash is too short, we have to half
-    /// the block size until it finds a fuzzy hash in suitable length.
+    /// the block size until it finds a fuzzy hash of suitable length.
     /// In other words, it tries to find a block hash until:
     ///
     /// 1.  It find a block size so that corresponding block hash is already
-    ///     at least `BLOCKHASH_SIZE / 2`-chars in length
-    ///     (one character may be appended on the finalization process).
+    ///     at least [`BlockHash::HALF_SIZE`] chars in length
+    ///     (one character may be appended on the finalization process) or
     /// 2.  It reaches the lower bound ([`bhidx_start`](Self::bhidx_start)).
     ///
-    /// The resulting block size and corresponding block hash are used as:
+    /// The resulting block size and the corresponding block hash are used as:
     ///
     /// 1.  Block size part
     /// 2.  Block hash 1
@@ -928,9 +929,9 @@ impl Generator {
 
     /// Retrieves the resulting fuzzy hash.
     ///
-    /// Usually, you should use [`finalize`](Self::finalize) method (a wrapper
-    /// of this method) instead because it passes `TRUNC` option [`true`] to
-    /// this method (as the default ssdeep option).
+    /// Usually, you should use the [`finalize`](Self::finalize) method (a
+    /// wrapper of this method) instead because it passes the `TRUNC` option
+    /// [`true`] to this method (as the default ssdeep option).
     ///
     /// Although some methods including this is named *finalize*, you can
     /// continue feeding more data and updating the internal state without
@@ -1093,7 +1094,7 @@ impl Generator {
 
     /// Retrieves the resulting fuzzy hash.
     ///
-    /// The resulting fuzzy hash type ([`RawFuzzyHash`]) is in
+    /// The type of resulting fuzzy hash ([`RawFuzzyHash`]) is in
     /// a raw form (not normalized).  This is the default behavior of ssdeep.
     ///
     /// This is equivalent to the libfuzzy's `fuzzy_digest` function

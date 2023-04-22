@@ -7,9 +7,9 @@ use crate::generate::{Generator, GeneratorError};
 use crate::hash::RawFuzzyHash;
 
 
-/// Generates a fuzzy hash from a buffer.
+/// Generates a fuzzy hash from a given buffer.
 ///
-/// # Example (requires `alloc` feature)
+/// # Example (requires feature: `alloc`)
 ///
 /// ```
 /// # #[cfg(feature = "alloc")]
