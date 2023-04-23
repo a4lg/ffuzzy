@@ -429,6 +429,11 @@ impl BlockHashPositionArray {
             // Place this invariant to avoid division-by-zero checking.
             invariant!((len as u32 + other.len() as u32) > 0);
         }
+        /*
+            Possible arithmetic operations to check overflow:
+            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
+            2.  100 * BlockHash::FULL_SIZE
+        */
         100 - (100 * (
             (dist * BlockHash::FULL_SIZE as u32) / (len as u32 + other.len() as u32) // grcov-excl-br-line:DIVZERO
         )) / BlockHash::FULL_SIZE as u32
@@ -1454,4 +1459,29 @@ mod const_asserts {
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
         assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     }
+
+    // Test whether no arithmetic overflow occurs on
+    // the similarity score computation.
+    // grcov-excl-br-start
+    #[cfg(test)]
+    #[test]
+    fn test_score_arithmetic_overflow() {
+        /*
+            Possible arithmetic operations to check overflow:
+            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
+            2.  100 * BlockHash::FULL_SIZE
+        */
+        assert!(
+            u32::try_from(BlockHash::FULL_SIZE).ok()
+                .and_then(|x| x.checked_mul(2))
+                .and_then(|x| x.checked_mul(u32::try_from(BlockHash::FULL_SIZE).unwrap()))
+                .is_some()
+        );
+        assert!(
+            u32::try_from(BlockHash::FULL_SIZE).ok()
+                .and_then(|x| x.checked_mul(100))
+                .is_some()
+        );
+    }
+    // grcov-excl-br-end
 }
