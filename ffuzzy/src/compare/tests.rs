@@ -924,7 +924,7 @@ fn test_has_common_substring_naive() {
 
 #[cfg(all(feature = "std", feature = "tests-slow"))]
 #[test]
-fn verify_has_common_substring() {
+fn verify_has_common_substring_by_real_blockhash_vectors() {
     use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
@@ -964,7 +964,7 @@ fn verify_has_common_substring() {
 
 #[cfg(all(feature = "std", feature = "tests-slow"))]
 #[test]
-fn verify_edit_distance() {
+fn verify_edit_distance_by_real_blockhash_vectors() {
     use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
