@@ -20,6 +20,16 @@ If you understand both the property of fuzzy hashes and this crate well, you can
 cluster the fuzzy hashes over 5 times faster than libfuzzy.
 
 
+## License (GNU GPL v2 or later)
+
+This crate (as a whole library) is licensed under the terms of the GNU General
+Public License as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+However, some portions are licensed under more permissive licenses (see the
+source code for details).
+
+
 ## Performance
 
 While ffuzzy++ performed well in large scale clustering, some use cases were
