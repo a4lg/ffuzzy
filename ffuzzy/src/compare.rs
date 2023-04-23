@@ -165,6 +165,11 @@ impl BlockHashPositionArray {
 
     /// Performs full validity checking of a position array
     /// considering a given length.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// From v0.2.0, the new argument `test_norm` will be
+    /// added, making this method incompatible with v0.1.x series.
     pub fn is_valid(&self, len: u8) -> bool {
         if len > 64 { return false; }
         let expected_total: u64 =
@@ -254,6 +259,11 @@ impl BlockHashPositionArray {
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
     /// If they are not satisfied, it will return a meaningless value.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// From v0.2.0, the new argument `expect_norm` will be
+    /// added, making this method incompatible with v0.1.x series.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn has_common_substring_unchecked(&self, len: u8, other: &[u8]) -> bool {
@@ -285,6 +295,11 @@ impl BlockHashPositionArray {
     /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// From v0.2.0, the new argument `expect_norm` will be
+    /// added, making this method incompatible with v0.1.x series.
     pub fn has_common_substring(&self, len: u8, other: &[u8]) -> bool {
         assert!((len as u32) <= 64);
         assert!(self.is_valid(len));
@@ -350,6 +365,11 @@ impl BlockHashPositionArray {
     ///     [`BlockHash::ALPHABET_SIZE`].
     ///
     /// If they are not satisfied, it will return a meaningless distance.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// From v0.2.0, the new argument `expect_norm` will be
+    /// added, making this method incompatible with v0.1.x series.
     #[cfg(feature = "unsafe")]
     #[inline(always)]
     pub unsafe fn edit_distance_unchecked(&self, len: u8, other: &[u8]) -> u32 {
@@ -378,6 +398,11 @@ impl BlockHashPositionArray {
     /// *   `len` (the length of this object) must not exceed 64.
     /// *   All elements in `other` must be less than
     ///     [`BlockHash::ALPHABET_SIZE`].
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// From v0.2.0, the new argument `expect_norm` will be
+    /// added, making this method incompatible with v0.1.x series.
     pub fn edit_distance(&self, len: u8, other: &[u8]) -> u32 {
         assert!((len as u32) <= 64);
         assert!(u32::try_from(other.len()).is_ok());
