@@ -107,7 +107,7 @@ pub(crate) mod test_utils;
 /// ```
 ///
 /// You can easily compare it with another fuzzy hash with the same block size
-/// ([but actual block hash similarity scoring only occurs after checking common substring](crate::compare::FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH)).
+/// ([but actual block hash similarity scoring only occurs after checking common substring](BlockHash::MIN_LCS_FOR_COMPARISON)).
 ///
 /// ```text
 /// Unaligned:

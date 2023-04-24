@@ -70,17 +70,17 @@ fn test_datamodel_position_array_block_hash_content() {
         */
         assert_eq!(
             pa.has_common_substring(len_norm, bh_norm),
-            bh_norm.len() >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+            bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
         );
         assert_eq!(
             pa.has_common_substring_internal(len_norm, bh_norm),
-            bh_norm.len() >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+            bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
         );
         #[cfg(feature = "unsafe")]
         unsafe {
             assert_eq!(
                 pa.has_common_substring_unchecked(len_norm, bh_norm),
-                bh_norm.len() >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+                bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
             );
         }
         /*
@@ -106,7 +106,7 @@ fn test_datamodel_position_array_block_hash_content() {
             Note: raw similarity score with itself should always return 100
             unless the block hash is too small (in this case, it should be 0).
         */
-        let expected_score = if bh_norm.len() >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH { 100 } else { 0 };
+        let expected_score = if bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON { 100 } else { 0 };
         assert_eq!(pa.score_strings_raw(len_norm, bh_norm), expected_score);
         assert_eq!(pa.score_strings_raw_internal(len_norm, bh_norm), expected_score);
         #[cfg(feature = "unsafe")]
@@ -268,14 +268,14 @@ fn test_datamodel_generic() {
                             ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap);
-                        if len_blockhash1 < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH &&
-                           len_blockhash2 < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+                        if len_blockhash1 < BlockHash::MIN_LCS_FOR_COMPARISON &&
+                           len_blockhash2 < BlockHash::MIN_LCS_FOR_COMPARISON
                         {
                             // For short fuzzy hashes (when different),
                             // the score will be zero regardless of its similarity.
                             assert_eq!(score, 0);
                         }
-                        else if len_blockhash2 >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH &&
+                        else if len_blockhash2 >= BlockHash::MIN_LCS_FOR_COMPARISON &&
                                 score_cap_2 >= 100
                         {
                             // If block hash 2 (we haven't touched) is long enough,
@@ -301,14 +301,14 @@ fn test_datamodel_generic() {
                             ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap);
-                        if len_blockhash1 < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH &&
-                           len_blockhash2 < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+                        if len_blockhash1 < BlockHash::MIN_LCS_FOR_COMPARISON &&
+                           len_blockhash2 < BlockHash::MIN_LCS_FOR_COMPARISON
                         {
                             // For short fuzzy hashes (when different),
                             // the score will be zero regardless of its similarity.
                             assert_eq!(score, 0);
                         }
-                        else if len_blockhash1 >= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH &&
+                        else if len_blockhash1 >= BlockHash::MIN_LCS_FOR_COMPARISON &&
                                 score_cap_1 >= 100
                         {
                             // If block hash 1 (we haven't touched) is long enough,
@@ -532,7 +532,7 @@ fn test_score_cap_on_block_hash_comparison() {
     // actually depends on min(len1, len2).
     for log_block_size in 0..FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
         let mut score_cap = 0;
-        for len in FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u8..=BlockHash::FULL_SIZE as u8 {
+        for len in BlockHash::MIN_LCS_FOR_COMPARISON as u8..=BlockHash::FULL_SIZE as u8 {
             let new_score_cap =
                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len);
             #[cfg(feature = "unsafe")]
@@ -542,7 +542,7 @@ fn test_score_cap_on_block_hash_comparison() {
                     FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_unchecked(log_block_size, len, len)
                 );
             }
-            if len == FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u8 {
+            if len == BlockHash::MIN_LCS_FOR_COMPARISON as u8 {
                 assert!(new_score_cap < 100);
             }
             else {
@@ -552,7 +552,7 @@ fn test_score_cap_on_block_hash_comparison() {
         }
     }
     for log_block_size in FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER..u8::MAX {
-        for len in FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u8..=BlockHash::FULL_SIZE as _ {
+        for len in BlockHash::MIN_LCS_FOR_COMPARISON as u8..=BlockHash::FULL_SIZE as _ {
             assert!(FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len) >= 100);
         }
     }
@@ -931,7 +931,7 @@ fn has_common_substring_naive(
 ) -> bool
 {
     use std::collections::HashSet;
-    const TARGET_LEN: usize = FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH;
+    const TARGET_LEN: usize = BlockHash::MIN_LCS_FOR_COMPARISON;
     let mut set1: HashSet<&[u8]> = HashSet::new();
     let mut set2: HashSet<&[u8]> = HashSet::new();
     for window in str1.windows(TARGET_LEN) {
@@ -952,7 +952,7 @@ fn test_has_common_substring_naive() {
     assert!(has_common_substring_naive(b"ABCDEFG", b"ABCDEFG"));
     // Common substring: "ABCDEFG"
     assert!(has_common_substring_naive(b"00000ABCDEFG", b"ABCDEFG11111"));
-    // From an example of FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH.
+    // From an example of BlockHash::MIN_LCS_FOR_COMPARISON.
     assert!(has_common_substring_naive(b"+r/kcOpEYXB+0ZJ", b"7ocOpEYXB+0ZF29"));
     // Corrupt an example above (NOT to match).
     assert!(!has_common_substring_naive(b"+r/kcOpEXXB+0ZJ", b"7ocOpEYXB+0ZF29"));
@@ -981,9 +981,9 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
     }
     let mut pa: BlockHashPositionArray = BlockHashPositionArray::new();
     for bh1 in &block_hashes {
-        if bh1.len() < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH { continue; }
+        if bh1.len() < BlockHash::MIN_LCS_FOR_COMPARISON { continue; }
         for bh2 in &block_hashes {
-            if bh2.len() < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH { continue; }
+            if bh2.len() < BlockHash::MIN_LCS_FOR_COMPARISON { continue; }
             // Make position array (pa) from given block hash (bh1).
             let bh1_len = u8::try_from(bh1.len()).unwrap();
             pa.init_from(bh1.as_slice());

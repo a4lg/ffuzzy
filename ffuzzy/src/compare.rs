@@ -201,17 +201,17 @@ impl BlockHashPositionArray {
     pub(crate) fn has_common_substring_internal(&self, len: u8, other: &[u8]) -> bool {
         debug_assert!((len as u32) <= 64);
         debug_assert!(self.is_valid(len));
-        if (len as usize) < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
-            || other.len() < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH
+        if (len as usize) < BlockHash::MIN_LCS_FOR_COMPARISON
+            || other.len() < BlockHash::MIN_LCS_FOR_COMPARISON
         {
             return false;
         }
         optionally_unsafe! {
             let mut d: u64;
-            let mut r: usize = FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH - 1;
+            let mut r: usize = BlockHash::MIN_LCS_FOR_COMPARISON - 1;
             let mut l: usize;
             while r < other.len() {
-                l = r - (FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH - 1);
+                l = r - (BlockHash::MIN_LCS_FOR_COMPARISON - 1);
                 let mut i: usize = other.len() - 1 - r;
                 invariant!(i < other.len());
                 invariant!((other[i] as usize) < BlockHash::ALPHABET_SIZE);
@@ -227,14 +227,14 @@ impl BlockHashPositionArray {
                     }
                 }
                 // Boyer–Moore-like skipping
-                r += FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH;
+                r += BlockHash::MIN_LCS_FOR_COMPARISON;
             }
         }
         false
     }
 
     /// Checks whether two given strings have common substrings with a length
-    /// of [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH).
+    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
     ///
     /// # Algorithm Implemented
     ///
@@ -267,7 +267,7 @@ impl BlockHashPositionArray {
     }
 
     /// Checks whether two given strings have common substrings with a length
-    /// of [`MIN_LCS_FOR_BLOCKHASH`](FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH).
+    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
     ///
     /// # Algorithm Implemented
     ///
@@ -406,7 +406,7 @@ impl BlockHashPositionArray {
         optionally_unsafe! {
             // rustc/LLVM cannot prove that
             // (len as u32 + other.len() as u32)
-            //     <= FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH * 2 .
+            //     <= BlockHash::MIN_LCS_FOR_COMPARISON * 2 .
             // Place this invariant to avoid division-by-zero checking.
             invariant!((len as u32 + other.len() as u32) > 0);
         }
@@ -681,35 +681,19 @@ impl FuzzyHashCompareTarget {
     /// The minimum length of the common substring to compute edit distance
     /// between two block hashes.
     ///
-    /// To score similarity between two block hashes, ssdeep expects that
-    /// two block hashes are similar enough.  In other words, ssdeep expects
-    /// that they have a common substring of a length
-    /// [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH) or longer
-    /// to reduce the possibility of false matches by chance.
+    /// Use [`BlockHash::MIN_LCS_FOR_COMPARISON`] instead.
     ///
-    /// Finding such common substrings is a special case of finding a
-    /// [longest common substring (LCS)](https://en.wikipedia.org/wiki/Longest_common_substring).
+    /// # Incompatibility Notice
     ///
-    /// For instance, those two strings:
-    ///
-    /// *  `+r/kcOpEYXB+0ZJ`
-    /// *  `7ocOpEYXB+0ZF29`
-    ///
-    /// have a common substring `cOpEYXB+0Z` (length 10), long enough
-    /// (≧ [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH))
-    /// to compute the edit distance to compute the similarity score.
-    ///
-    /// Specifically, ssdeep requires a common substring of a length 7 to
-    /// compute a similarity score.  Otherwise, the block hash comparison
-    /// method returns zero (meaning, not similar).
-    pub const MIN_LCS_FOR_BLOCKHASH: usize = 7;
+    /// This constant will be removed on v0.3.0 (or v1.0.0 if stabilized).
+    #[deprecated]
+    pub const MIN_LCS_FOR_BLOCKHASH: usize = BlockHash::MIN_LCS_FOR_COMPARISON;
 
     /// The lower bound (inclusive) of the *base-2 logarithm* form of
     /// the block size in which the score capping is no longer required.
     ///
-    /// If `log_block_size` is equal to or larger than this value and
-    /// `len1` and `len2` are at least
-    /// [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH) in size,
+    /// If `log_block_size` is equal to or larger than this value and `len1` and
+    /// `len2` are at least [`BlockHash::MIN_LCS_FOR_COMPARISON`] in size,
     /// [`Self::score_cap_on_block_hash_comparison`]`(log_block_size, len1, len2)`
     /// is guaranteed to be `100` or greater.
     ///
@@ -733,21 +717,21 @@ impl FuzzyHashCompareTarget {
     ///
     /// ## The Minimum Score Cap
     ///
-    /// This is expressed as `(1 << log_block_size) * MIN_LCS_FOR_BLOCKHASH`
+    /// This is expressed as `(1 << log_block_size) * MIN_LCS_FOR_COMPARISON`
     /// because both block hashes must at least as long as
-    /// [`MIN_LCS_FOR_BLOCKHASH`](Self::MIN_LCS_FOR_BLOCKHASH) to perform
-    /// edit distance-based scoring.
+    /// [`BlockHash::MIN_LCS_FOR_COMPARISON`] to perform edit distance-based
+    /// scoring.
     ///
     /// ## Computing the Constant
     ///
     /// Applying the theorem above,
-    /// `100 <= (1 << log_block_size) * MIN_LCS_FOR_BLOCKHASH`
+    /// `100 <= (1 << log_block_size) * MIN_LCS_FOR_COMPARISON`
     /// is equivalent to
-    /// `(100 + MIN_LCS_FOR_BLOCKHASH - 1) / MIN_LCS_FOR_BLOCKHASH <= (1 << log_block_size)`.
+    /// `(100 + MIN_LCS_FOR_COMPARISON - 1) / MIN_LCS_FOR_COMPARISON <= (1 << log_block_size)`.
     ///
     /// This leads to the expression to define this constant.
     pub const LOG_BLOCK_SIZE_CAPPING_BORDER: u8 =
-        ((100 + Self::MIN_LCS_FOR_BLOCKHASH as u64 - 1) / Self::MIN_LCS_FOR_BLOCKHASH as u64)
+        ((100 + BlockHash::MIN_LCS_FOR_COMPARISON as u64 - 1) / BlockHash::MIN_LCS_FOR_COMPARISON as u64)
         .next_power_of_two().trailing_zeros() as u8;
 
     /// Creates a new [`FuzzyHashCompareTarget`] object with empty contents.
@@ -1425,8 +1409,8 @@ mod const_asserts {
     const fn is_log_block_size_needs_no_capping(log_block_size: u8) -> bool {
         // Test whether score_cap in score_strings method is equal to
         // or greater than 100 (meaning, no capping is required).
-        (100 + FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u64 - 1) /
-            FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u64
+        (100 + BlockHash::MIN_LCS_FOR_COMPARISON as u64 - 1) /
+            BlockHash::MIN_LCS_FOR_COMPARISON as u64
                 <= BlockSize::from_log_unchecked(log_block_size) as u64 / BlockSize::MIN as u64
     }
 

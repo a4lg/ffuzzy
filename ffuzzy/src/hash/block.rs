@@ -339,6 +339,31 @@ pub mod BlockHash {
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](crate::FuzzyHashData#normalization)
     pub const MAX_SEQUENCE_SIZE: usize = 3;
+
+    /// The minimum length of the common substring to compute edit distance
+    /// between two block hashes.
+    ///
+    /// To score similarity between two block hashes, ssdeep expects that
+    /// two block hashes are similar enough.  In other words, ssdeep expects
+    /// that they have a common substring of a length [`MIN_LCS_FOR_COMPARISON`]
+    /// or longer to reduce the possibility of false matches by chance.
+    ///
+    /// Finding such common substrings is a special case of finding a
+    /// [longest common substring (LCS)](https://en.wikipedia.org/wiki/Longest_common_substring).
+    ///
+    /// For instance, those two strings:
+    ///
+    /// *  `+r/kcOpEYXB+0ZJ`
+    /// *  `7ocOpEYXB+0ZF29`
+    ///
+    /// have a common substring `cOpEYXB+0Z` (length 10), long enough
+    /// (≧ [`MIN_LCS_FOR_COMPARISON`]) to compute the edit distance to compute
+    /// the similarity score.
+    ///
+    /// Specifically, ssdeep requires a common substring of a length 7 to
+    /// compute a similarity score.  Otherwise, the block hash comparison
+    /// method returns zero (meaning, not similar).
+    pub const MIN_LCS_FOR_COMPARISON: usize = 7;
 }
 
 
