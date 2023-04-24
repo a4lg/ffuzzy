@@ -632,6 +632,28 @@ impl core::fmt::Debug for BlockHashPositionArray {
 /// (this is usually over 10 times faster than batched `fuzzy_compare` calls
 /// in ssdeep 2.13).  Even if we generate this object each time we compare
 /// two fuzzy hashes, it's usually faster than `fuzzy_compare` in ssdeep 2.13.
+///
+/// # Examples (requires the `alloc` feature)
+///
+/// ```rust
+/// # #[cfg(feature = "alloc")]
+/// # {
+/// use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+///
+/// // Brute force comparison
+/// let hashes: Vec<FuzzyHash> = Vec::new();
+/// /* ... add fuzzy hashes to `hashes` ... */
+///
+/// let mut target: FuzzyHashCompareTarget = FuzzyHashCompareTarget::new();
+/// for hash1 in &hashes {
+///     target.init_from(hash1);
+///     for hash2 in &hashes {
+///         let score = target.compare(hash2);
+///         /* ... */
+///     }
+/// }
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct FuzzyHashCompareTarget {
     /// The position array representation of block hash 1.
