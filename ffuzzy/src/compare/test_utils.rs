@@ -8,13 +8,12 @@
 ///
 /// Both `s1` and `s2` are [`slice`]s of [`u8`].
 ///
-/// In specific, it computes the Longest Common Subsequence (LCS)
+/// Specifically, it computes the Longest Common Subsequence (LCS)
 /// distance, allowing character insertion and deletion as two primitive
 /// operations (in cost 1).
 ///
-/// This is a safer port (except arithmetic overflow) of the `edit_distn`
-/// function from `ssdeep-libfuzzy2-compat/src/compat_edit_dist.rs`,
-/// originating from the `edit_distn` function from libfuzzy's `edit_dist.c`.
+/// This is a port of the `edit_distn` function
+/// from libfuzzy's `edit_dist.c`.
 #[cfg(feature = "alloc")]
 #[allow(dead_code)]
 pub(crate) fn edit_distn(s1: &[u8], s2: &[u8]) -> usize {

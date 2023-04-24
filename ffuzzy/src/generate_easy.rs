@@ -9,7 +9,7 @@ use crate::hash::RawFuzzyHash;
 
 /// Generates a fuzzy hash from a given buffer.
 ///
-/// # Example (requires feature: `alloc`)
+/// # Example (requires the `alloc` feature)
 ///
 /// ```
 /// # #[cfg(feature = "alloc")]
