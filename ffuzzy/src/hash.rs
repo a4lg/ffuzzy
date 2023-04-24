@@ -1219,6 +1219,61 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
+    /// Windows representing normalized substrings
+    /// suitable for filtering block hashes to match (block hash 1).
+    ///
+    /// To compare two normalized block hashes, the scoring function requires
+    /// that two strings contain a common substring with a length of
+    /// [`BlockHash::MIN_LCS_FOR_COMPARISON`].
+    ///
+    /// This method provides an access to substrings of that length, allowing
+    /// the specialized clustering application to filter fuzzy hashes to compare
+    /// prior to actual comparison.
+    ///
+    /// For instance, you may store fuzzy hashes indexed by the elements of
+    /// this window.
+    ///
+    /// # Example (pseudocode)
+    ///
+    /// ```
+    /// use core::str::FromStr;
+    /// use ssdeep::FuzzyHash;
+    ///
+    /// // It stores a fuzzy hash with keys (with duplicates) like this:
+    /// //     db_entries(log_block_size, substring).add(hash)
+    /// // ... to enable later filtering.
+    /// fn insert_to_database(key: (u8, &[u8]), value: &FuzzyHash) { /* ... */ }
+    ///
+    /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
+    /// // let hash_str = ...;
+    /// let hash = FuzzyHash::from_str(hash_str).unwrap();
+    /// for window in hash.block_hash_1_windows() {
+    ///     insert_to_database(
+    ///         (hash.log_block_size(), window),
+    ///         &hash
+    ///     );
+    /// }
+    /// for window in hash.block_hash_2_windows() {
+    ///     insert_to_database(
+    ///         (hash.log_block_size() + 1, window),
+    ///         &hash
+    ///     );
+    /// }
+    /// ```
+    #[inline]
+    pub fn block_hash_1_windows(&self) -> core::slice::Windows<'_, u8> {
+        self.block_hash_1().windows(BlockHash::MIN_LCS_FOR_COMPARISON)
+    }
+
+    /// Windows representing substrings
+    /// suitable for filtering block hashes to match (block hash 2).
+    ///
+    /// See also: [`block_hash_1_windows`](Self::block_hash_1_windows).
+    #[inline]
+    pub fn block_hash_2_windows(&self) -> core::slice::Windows<'_, u8> {
+        self.block_hash_2().windows(BlockHash::MIN_LCS_FOR_COMPARISON)
+    }
+
     /// Converts the fuzzy hash from a raw form, normalizing it.
     #[inline]
     pub fn from_raw_form(source: &raw_type!(S1, S2)) -> Self { source.normalize() }

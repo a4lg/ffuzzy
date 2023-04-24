@@ -867,6 +867,60 @@ fn test_datamodel_corruption() {
 
 
 #[test]
+fn test_datamodel_norm_windows() {
+    macro_rules! test {($ty: ty) => {
+        // Test empty or not for all block hash sizes
+        for sz1 in 0..=<$ty>::MAX_BLOCK_HASH_SIZE_1 {
+            let mut bh1 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1];
+            // Fill with valid pattern
+            for (i, ch) in bh1[0..sz1].iter_mut().enumerate() {
+                assert!(i < BlockHash::ALPHABET_SIZE);
+                *ch = i as u8;
+            }
+            for sz2 in 0..=<$ty>::MAX_BLOCK_HASH_SIZE_2 {
+                let mut bh2 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2];
+                // Fill with valid pattern
+                for (i, ch) in bh2[0..sz2].iter_mut().enumerate() {
+                    assert!(i < BlockHash::ALPHABET_SIZE);
+                    *ch = (BlockHash::ALPHABET_SIZE - 1 - i) as u8;
+                }
+                // Make a hash
+                let hash = <$ty>::new_from_internals(3, &bh1[0..sz1], &bh2[0..sz2]);
+                // For each block hash, windows will return nothing as long as
+                // the block hash is shorter than BlockHash::MIN_LCS_FOR_COMPARISON.
+                assert_eq!(
+                    hash.block_hash_1_windows().next().is_none(),
+                    hash.block_hash_1_len() < BlockHash::MIN_LCS_FOR_COMPARISON
+                );
+                assert_eq!(
+                    hash.block_hash_2_windows().next().is_none(),
+                    hash.block_hash_2_len() < BlockHash::MIN_LCS_FOR_COMPARISON
+                );
+            }
+        }
+        // Test some example "3:mG+XtIWRQX:7mYCCCWdq"
+        assert_eq!(BlockHash::MIN_LCS_FOR_COMPARISON, 7);
+        let bh1 = &[38,  6, 62, 23, 45,  8, 22, 17, 16, 23]; // length 10
+        let bh2 = &[59, 38, 24,  2,  2,  2, 22, 29, 42];     // length  9
+        let hash = <$ty>::new_from_internals(3, bh1, bh2);
+        let mut windows_1 = hash.block_hash_1_windows();
+        assert_eq!(windows_1.next().unwrap(), &bh1[0..0+7]);
+        assert_eq!(windows_1.next().unwrap(), &bh1[1..1+7]);
+        assert_eq!(windows_1.next().unwrap(), &bh1[2..2+7]);
+        assert_eq!(windows_1.next().unwrap(), &bh1[3..3+7]);
+        assert!(windows_1.next().is_none());
+        let mut windows_2 = hash.block_hash_2_windows();
+        assert_eq!(windows_2.next().unwrap(), &bh2[0..0+7]);
+        assert_eq!(windows_2.next().unwrap(), &bh2[1..1+7]);
+        assert_eq!(windows_2.next().unwrap(), &bh2[2..2+7]);
+        assert!(windows_2.next().is_none());
+    }}
+    // Normalized variants only
+    test_for_each_type!(test, [FuzzyHash, LongFuzzyHash]);
+}
+
+
+#[test]
 fn test_datamodel_eq() {
     /*
         Tested methods:
