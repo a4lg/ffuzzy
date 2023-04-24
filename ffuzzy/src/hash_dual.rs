@@ -501,6 +501,26 @@ mod algorithms {
 /// **Do not** use [`FuzzyHashDualData`] directly.  Instead, use instantiations
 /// of this generic type, [`DualFuzzyHash`] and/or [`LongDualFuzzyHash`]
 /// (for most cases, [`DualFuzzyHash`] will be sufficient).
+///
+/// # Examples (Basic; requires the `alloc` feature)
+///
+/// ```
+/// # #[cfg(feature = "alloc")]
+/// # {
+/// use core::str::FromStr;
+/// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
+///
+/// let hash_str_raw  = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
+/// let hash_str_norm = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccei:+Klhav84a5sxJ";
+///
+/// let dual_hash = DualFuzzyHash::from_str(hash_str_raw).unwrap();
+///
+/// // This object can contain both
+/// // normalized and raw fuzzy hash representations.
+/// assert_eq!(dual_hash.to_raw_form().to_string(),   hash_str_raw);
+/// assert_eq!(dual_hash.to_normalized().to_string(), hash_str_norm);
+/// # }
+/// ```
 #[repr(align(8))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct FuzzyHashDualData<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
