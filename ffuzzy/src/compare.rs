@@ -52,6 +52,10 @@ mod tests;
 ///
 /// Note that this struct does not contain its length inside.  The length must
 /// be given from outside each time you call the methods.
+///
+/// # Incompatibility Notice
+///
+/// In v0.2.0, this struct is completely incompatible from v0.1.x.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     pub(crate) representation: [u64; BlockHash::ALPHABET_SIZE]
@@ -165,12 +169,6 @@ impl BlockHashPositionArray {
 
     /// Performs full validity checking of a position array
     /// considering a given length.
-    ///
-    /// # Incompatibility Notice
-    ///
-    /// From v0.2.0, this method will not check whether the object contains a
-    /// normalized string (new method will be created for v0.1.x's
-    /// [`is_valid`](Self::is_valid) bahavior).
     pub fn is_valid(&self, len: u8) -> bool {
         if len > 64 { return false; }
         let expected_total: u64 =
