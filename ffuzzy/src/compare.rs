@@ -700,6 +700,11 @@ impl FuzzyHashCompareTarget {
     /// Specifically, ssdeep requires a common substring of a length 7 to
     /// compute a similarity score.  Otherwise, the block hash comparison
     /// method returns zero (meaning, not similar).
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This constant is deprecated on v0.2.0 and going to be removed on v0.3.0
+    /// (or v1.0.0 if stabilized).
     pub const MIN_LCS_FOR_BLOCKHASH: usize = 7;
 
     /// The lower bound (inclusive) of the *base-2 logarithm* form of
@@ -1447,6 +1452,9 @@ mod const_asserts {
     // Compare with the precomputed value
     // (block_size / BlockSize::MIN >= 15, log_block_size >= 4 [2^log_block_size >= 16])
     const_assert_eq!(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER, 4);
+
+    // Compare with v0.2.0 constant
+    const_assert_eq!(BlockHash::MIN_LCS_FOR_COMPARISON, FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH);
 
     // Regular tests.
     const_assert!(BlockSize::is_log_valid(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
