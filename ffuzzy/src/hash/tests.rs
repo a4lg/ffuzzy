@@ -419,7 +419,7 @@ fn test_datamodel_block_size() {
                     }
                 }
             }
-        }    
+        }
     }}
     test_for_each_type!(test, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);
 }

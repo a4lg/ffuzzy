@@ -559,7 +559,7 @@ mod tests {
                         assert_eq!(
                             parse_block_hash_from_bytes::<N, $NORM>(
                                 &mut buffer_out,
-                                &mut buffer_len, 
+                                &mut buffer_len,
                                 &str_buffer[..out_offset + out_len],
                                 &mut offset
                             ),
@@ -623,7 +623,7 @@ mod tests {
                         }
                     }
                 }
-            }    
+            }
         }}
         test_for_each_block_size!(test, [BlockHash::FULL_SIZE, BlockHash::HALF_SIZE]);
     }
