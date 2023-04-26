@@ -1456,12 +1456,14 @@ mod const_asserts {
     const_assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
 
     // Regular tests (dynamic)
+    // grcov-excl-br-start
     #[cfg(test)]
     #[test]
     fn test_log_block_size_capping_border() {
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
         assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     }
+    // grcov-excl-br-end
 
     // Test whether no arithmetic overflow occurs on
     // the similarity score computation.
