@@ -11,615 +11,24 @@ use crate::hash::block::{
 use crate::macros::{optionally_unsafe, invariant};
 
 
+/// Module that contains position array-related traits and implementations.
+pub mod position_array;
 /// Test-only utilities.
 #[cfg(any(test, doc))]
 mod test_utils;
 #[cfg(test)]
 mod tests;
 
-
-/// A position array-based block hash except its length.
-///
-/// Each element of the position array indicates which positions in
-/// the corresponding block hash has the given alphabet
-/// (note that the array index is of the alphabet).
-///
-/// For instance, if `representation()[5] == 0x81`, it means the block hash
-/// contains the alphabet index `5` in the positions `0` and `7`
-/// (block hash glob: `E??????E*`).
-///
-/// This is because the bit 0 (`0x01`) at the index 5 means that position 0 has
-/// the alphabet with index `5` (`E`).  Likewise, the bit 7 (`0x80`) at the
-/// index 5 corresponds to the fact that position 7 has the alphabet with
-/// index `5` (`E`).
-///
-/// This representation makes it possible to make some dynamic programming
-/// algorithms bit-parallel.  In other words, some table updates of
-/// certain top-down dynamic programming algorithms can be
-/// represented as logical expressions (with some arithmetic ones
-/// to enable, for instance, horizontal propagation).  This is particularly
-/// effective on ssdeep because each block hash has a maximum size of
-/// [`BlockHash::FULL_SIZE`] (64; many 64-bit machines would handle that
-/// efficiently and even 32-bit machines can benefit from).
-///
-/// This is *so* fast that the bit-parallel approach is still faster
-/// even if we don't use any batching.
-///
-/// For an example of such algorithms, see
-/// [Bitap algorithm](https://en.wikipedia.org/wiki/Bitap_algorithm).
-///
-/// # Important Note: Length not included
-///
-/// Note that this struct does not contain its length inside.  The length must
-/// be given from outside each time you call the methods.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct BlockHashPositionArray {
-    pub(crate) representation: [u64; BlockHash::ALPHABET_SIZE]
-}
-
-impl BlockHashPositionArray {
-    /// Creates empty position array-based block hash object without length.
-    ///
-    /// Because the resulting object doesn't contain any characters, it is
-    /// only valid on length zero.
-    pub fn new() -> Self {
-        BlockHashPositionArray {
-            representation: [0u64; BlockHash::ALPHABET_SIZE]
-        }
-    }
-
-    /// Returns the raw representation of the block hash position array.
-    pub fn representation(&self) -> [u64; BlockHash::ALPHABET_SIZE] {
-        self.representation
-    }
-
-    /// Clears the current representation of the block hash.
-    pub fn clear(&mut self) {
-        self.representation.fill(0);
-    }
-
-    /// Initialize (encode) the object from a given byte array and length
-    /// without clearing or checking validity.
-    ///
-    /// This method is intended to be used just after clearing the position
-    /// array (i.e. just after the initialization).
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   The length of `blockhash` must not exceed 64.
-    /// *   All elements in `blockhash` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    #[inline]
-    pub(crate) fn init_from_partial(&mut self, blockhash: &[u8]) {
-        debug_assert!(blockhash.len() <= 64);
-        optionally_unsafe! {
-            for (i, &ch) in blockhash.iter().enumerate() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
-                self.representation[ch as usize] |= 1u64 << i; // grcov-excl-br-line:ARRAY
-            }
-        }
-    }
-
-    /// Clear and initialize (encode) the object from a given slice.
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   The length of `blockhash` must not exceed 64.
-    /// *   All elements in `blockhash` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    pub fn init_from(&mut self, blockhash: &[u8]) {
-        assert!(blockhash.len() <= 64);
-        assert!(blockhash.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        self.clear();
-        self.init_from_partial(blockhash);
-    }
-
-    /// The internal implementation of [`Self::is_equiv_unchecked`].
-    #[inline]
-    pub(crate) fn is_equiv_internal(&self, len: u8, other: &[u8]) -> bool {
-        debug_assert!(other.len() <= 64);
-        debug_assert!(self.is_valid(len));
-        if (len as usize) != other.len() { return false; }
-        optionally_unsafe! {
-            for (i, &ch) in other.iter().enumerate() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
-                let value = self.representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                if value & (1u64 << i) == 0 {
-                    return false;
-                }
-            }
-        }
-        true
-    }
-
-    /// Compare whether two block hashes are equivalent.
-    ///
-    /// # Safety
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   The length of `other` must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    ///
-    /// If they are not satisfied, it will return a meaningless value.
-    #[cfg(feature = "unsafe")]
-    #[inline(always)]
-    pub unsafe fn is_equiv_unchecked(&self, len: u8, other: &[u8]) -> bool {
-        self.is_equiv_internal(len, other)
-    }
-
-    /// Compare whether two block hashes are equivalent.
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   The length of `other` must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    pub fn is_equiv(&self, len: u8, other: &[u8]) -> bool {
-        assert!(other.len() <= 64);
-        assert!(self.is_valid(len));
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        self.is_equiv_internal(len, other)
-    }
-
-    /// Performs full validity checking of a position array
-    /// considering a given length.
-    ///
-    /// # Incompatibility Notice
-    ///
-    /// From v0.2.0, this method will not check whether the object contains a
-    /// normalized string (new method will be created for v0.1.x's
-    /// [`is_valid`](Self::is_valid) bahavior).
-    pub fn is_valid(&self, len: u8) -> bool {
-        if len > 64 { return false; }
-        let expected_total: u64 =
-            (if len == 64 { 0 } else { 1u64 << len as u32 })
-            .wrapping_sub(1);
-        let mut total: u64 = 0;
-        for pos in self.representation {
-            if Self::element_has_sequences_const::<{BlockHash::MAX_SEQUENCE_SIZE as u32 + 1}>(pos) {
-                // Long repeating character sequence is found.
-                return false;
-            }
-            if (total & pos) != 0 {
-                // Two or more alphabets are placed in the same position.
-                return false;
-            }
-            total |= pos;
-        }
-        if total != expected_total {
-            // Not all characters are placed in the position array
-            // or a character is placed outside "the string".
-            return false;
-        }
-        true
-    }
-
-    /// The internal implementation of [`Self::has_common_substring_unchecked`].
-    #[inline(always)]
-    pub(crate) fn has_common_substring_internal(&self, len: u8, other: &[u8]) -> bool {
-        debug_assert!((len as u32) <= 64);
-        debug_assert!(self.is_valid(len));
-        if (len as usize) < BlockHash::MIN_LCS_FOR_COMPARISON
-            || other.len() < BlockHash::MIN_LCS_FOR_COMPARISON
-        {
-            return false;
-        }
-        optionally_unsafe! {
-            let mut d: u64;
-            let mut r: usize = BlockHash::MIN_LCS_FOR_COMPARISON - 1;
-            let mut l: usize;
-            while r < other.len() {
-                l = r - (BlockHash::MIN_LCS_FOR_COMPARISON - 1);
-                let mut i: usize = other.len() - 1 - r;
-                invariant!(i < other.len());
-                invariant!((other[i] as usize) < BlockHash::ALPHABET_SIZE);
-                d = self.representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
-                while d != 0 {
-                    r -= 1;
-                    i += 1;
-                    invariant!(i < other.len());
-                    invariant!((other[i] as usize) < BlockHash::ALPHABET_SIZE);
-                    d = (d << 1) & self.representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
-                    if r == l && d != 0 {
-                        return true;
-                    }
-                }
-                // Boyer–Moore-like skipping
-                r += BlockHash::MIN_LCS_FOR_COMPARISON;
-            }
-        }
-        false
-    }
-
-    /// Checks whether two given strings have common substrings with a length
-    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
-    ///
-    /// # Algorithm Implemented
-    ///
-    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
-    /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the k-LCF problem
-    /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
-    /// (which searches the longest common substring with
-    /// up to k errors under the Hamming distance).
-    ///
-    /// This algorithm is modified:
-    /// *   to search only perfect matches (up to 0 errors),
-    /// *   to return as soon as possible if it finds a common substring and
-    /// *   to share the position array representation with
-    ///     [`edit_distance`](Self::edit_distance)
-    ///     (the original algorithm used reverse "incidence matrix").
-    ///
-    /// # Safety
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    ///
-    /// If they are not satisfied, it will return a meaningless value.
-    #[cfg(feature = "unsafe")]
-    #[inline(always)]
-    pub unsafe fn has_common_substring_unchecked(&self, len: u8, other: &[u8]) -> bool {
-        self.has_common_substring_internal(len, other)
-    }
-
-    /// Checks whether two given strings have common substrings with a length
-    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
-    ///
-    /// # Algorithm Implemented
-    ///
-    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
-    /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the k-LCF problem
-    /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
-    /// (which searches the longest common substring with
-    /// up to k errors under the Hamming distance).
-    ///
-    /// This algorithm is modified:
-    /// *   to search only perfect matches (up to 0 errors),
-    /// *   to return as soon as possible if it finds a common substring and
-    /// *   to share the position array representation with
-    ///     [`edit_distance`](Self::edit_distance)
-    ///     (the original algorithm used reverse "incidence matrix").
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    pub fn has_common_substring(&self, len: u8, other: &[u8]) -> bool {
-        assert!((len as u32) <= 64);
-        assert!(self.is_valid(len));
-        self.has_common_substring_internal(len, other)
-    }
-
-    /// The internal implementation of [`Self::edit_distance_unchecked`].
-    #[inline(always)]
-    pub(crate) fn edit_distance_internal(&self, len: u8, other: &[u8]) -> u32 {
-        debug_assert!((len as u32) <= 64);
-        debug_assert!(u32::try_from(other.len()).is_ok());
-        debug_assert!(self.is_valid(len));
-        if len == 0 { return other.len() as u32; }
-        let mut cur = len as u32;
-        optionally_unsafe! {
-            let msb: u64 = 1u64 << (len - 1);
-            let mut pv: u64 = 0xffff_ffff_ffff_ffff_u64;
-            let mut nv: u64 = 0;
-            for &ch in other.iter() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
-                let mt: u64 = self.representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                let zd: u64 = ((mt & pv).wrapping_add(pv) ^ pv) | mt | nv;
-                let nh: u64 = pv & zd;
-                cur -= u32::from((nh & msb) != 0);
-                let x: u64 = nv | !(pv | zd) | (pv & !mt & 1u64);
-                let y: u64 = u64::wrapping_sub(pv, nh) >> 1;
-                /*
-                    i-th bit of ph does not depend on i-th bit of y
-                    (only upper bits of ph are affected).
-                    So, ph does not depend on invalid bit in y.
-                */
-                let ph: u64 = u64::wrapping_add(x, y) ^ y;
-                cur += u32::from((ph & msb) != 0);
-                let t: u64 = (ph << 1).wrapping_add(1);
-                nv = t & zd;
-                pv = (nh << 1) | !(t | zd) | (t & u64::wrapping_sub(pv, nh));
-            }
-        }
-        cur
-    }
-
-    /// Computes the edit distance between two given strings
-    ///
-    /// Specifically, it computes the Longest Common Subsequence (LCS)
-    /// distance, allowing character insertion and deletion as two primitive
-    /// operations (in cost 1).
-    ///
-    /// # Algorithm Implemented
-    ///
-    /// [[Hyyrö et al., 2005] (doi:10.1007/11427186_33)](https://doi.org/10.1007/11427186_33)
-    /// presented a way to compute so called Indel-Distance using a
-    /// bit-parallel approach and this method is based on it.
-    ///
-    /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring"
-    /// similar to a pattern string.
-    ///
-    /// # Safety
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    ///
-    /// If they are not satisfied, it will return a meaningless distance.
-    #[cfg(feature = "unsafe")]
-    #[inline(always)]
-    pub unsafe fn edit_distance_unchecked(&self, len: u8, other: &[u8]) -> u32 {
-        self.edit_distance_internal(len, other)
-    }
-
-    /// Computes the edit distance between two given strings
-    ///
-    /// Specifically, it computes the Longest Common Subsequence (LCS)
-    /// distance, allowing character insertion and deletion as two primitive
-    /// operations (in cost 1).
-    ///
-    /// # Algorithm Implemented
-    ///
-    /// [[Hyyrö et al., 2005] (doi:10.1007/11427186_33)](https://doi.org/10.1007/11427186_33)
-    /// presented a way to compute so called Indel-Distance using a
-    /// bit-parallel approach and this method is based on it.
-    ///
-    /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring"
-    /// similar to a pattern string.
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed 64.
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    pub fn edit_distance(&self, len: u8, other: &[u8]) -> u32 {
-        assert!((len as u32) <= 64);
-        assert!(u32::try_from(other.len()).is_ok());
-        assert!(self.is_valid(len));
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        self.edit_distance_internal(len, other)
-    }
-
-    /// The internal implementation of [`Self::score_strings_raw_unchecked`].
-    #[inline(always)]
-    pub(crate) fn score_strings_raw_internal(&self, len: u8, other: &[u8]) -> u32 {
-        debug_assert!(other.len() <= BlockHash::FULL_SIZE);
-        debug_assert!((len as usize) <= BlockHash::FULL_SIZE);
-        debug_assert!(self.is_valid(len));
-        if !self.has_common_substring_internal(len, other) {
-            return 0;
-        }
-        let dist = self.edit_distance_internal(len, other);
-        // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
-        optionally_unsafe! {
-            // rustc/LLVM cannot prove that
-            // (len as u32 + other.len() as u32)
-            //     <= BlockHash::MIN_LCS_FOR_COMPARISON * 2 .
-            // Place this invariant to avoid division-by-zero checking.
-            invariant!((len as u32 + other.len() as u32) > 0);
-        }
-        /*
-            Possible arithmetic operations to check overflow:
-            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
-            2.  100 * BlockHash::FULL_SIZE
-        */
-        100 - (100 * (
-            (dist * BlockHash::FULL_SIZE as u32) / (len as u32 + other.len() as u32) // grcov-excl-br-line:DIVZERO
-        )) / BlockHash::FULL_SIZE as u32
-    }
-
-    /// Compare two block hashes and computes the similarity score
-    /// without capping.
-    ///
-    /// This method does not "cap" the score to prevent exaggregating the
-    /// matches that are not meaningful enough, making this function block size
-    /// independent.
-    ///
-    /// # Safety
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
-    /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    ///
-    /// If they are not satisfied, it will return a meaningless score.
-    #[cfg(feature = "unsafe")]
-    #[inline(always)]
-    pub unsafe fn score_strings_raw_unchecked(&self, len: u8, other: &[u8]) -> u32 {
-        self.score_strings_raw_internal(len, other)
-    }
-
-    /// Compare two block hashes and computes the similarity score
-    /// without capping.
-    ///
-    /// This method does not "cap" the score to prevent exaggregating the
-    /// matches that are not meaningful enough, making this function block size
-    /// independent.
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
-    /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    pub fn score_strings_raw(&self, len: u8, other: &[u8]) -> u32 {
-        assert!((len as usize) <= BlockHash::FULL_SIZE);
-        assert!(other.len() <= BlockHash::FULL_SIZE);
-        assert!(self.is_valid(len));
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        self.score_strings_raw_internal(len, other)
-    }
-
-    /// The internal implementation of [`Self::score_strings_unchecked`].
-    #[inline(never)]
-    pub(crate) fn score_strings_internal(&self, len: u8, other: &[u8], log_block_size: u8) -> u32 {
-        /*
-            WARNING: Don't be confused!
-            This is one of the very few functions so that log_block_size can be
-            equal to BlockSize::NUM_VALID (which is normally invalid).
-        */
-        debug_assert!((len as usize) <= BlockHash::FULL_SIZE);
-        debug_assert!(other.len() <= BlockHash::FULL_SIZE);
-        debug_assert!((log_block_size as usize) <= BlockSize::NUM_VALID);
-        debug_assert!(self.is_valid(len));
-        let score = self.score_strings_raw_internal(len, other);
-        // Cap the score to prevent exaggregating the match size if block size is small enough.
-        if log_block_size >= FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
-            return score;
-        }
-        let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_internal(
-            log_block_size,
-            len,
-            other.len() as u8
-        );
-        u32::min(score, score_cap)
-    }
-
-    /// Compare two block hashes and computes the similarity score.
-    ///
-    /// This method "caps" the score to prevent exaggregating the matches that
-    /// are not meaningful enough.  This behavior depends on the block size
-    /// (score cap gets higher when block size gets higher).
-    ///
-    /// # Safety
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
-    /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    /// *   `log_block_size` [must be valid](crate::hash::block::BlockSize::is_log_valid).
-    ///
-    /// If they are not satisfied, it will return a meaningless score.
-    #[cfg(feature = "unsafe")]
-    #[inline(always)]
-    pub unsafe fn score_strings_unchecked(&self, len: u8, other: &[u8], log_block_size: u8) -> u32 {
-        self.score_strings_internal(len, other, log_block_size)
-    }
-
-    /// Compare two block hashes and computes the similarity score.
-    ///
-    /// This method "caps" the score to prevent exaggregating the matches that
-    /// are not meaningful enough.  This behavior depends on the block size
-    /// (score cap gets higher when block size gets higher).
-    ///
-    /// # Usage Constraints
-    ///
-    /// *   This object must be valid on a given length `len`.
-    /// *   `len` (the length of this object) must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
-    /// *   The length of `other` must not exceed [`BlockHash::FULL_SIZE`].
-    /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    /// *   `log_block_size` [must be valid](crate::hash::block::BlockSize::is_log_valid).
-    #[inline(never)]
-    pub fn score_strings(&self, len: u8, other: &[u8], log_block_size: u8) -> u32 {
-        assert!((len as usize) <= BlockHash::FULL_SIZE);
-        assert!(other.len() <= BlockHash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        assert!((log_block_size as usize) <= BlockSize::NUM_VALID);
-        assert!(self.is_valid(len));
-        self.score_strings_internal(len, other, log_block_size)
-    }
-
-    /// Checks whether a given position array entry has a sequence of the given
-    /// length (or longer).
-    ///
-    /// # Performance Analysis
-    ///
-    /// This function expects many constant foldings assuming constant `len`.
-    /// [`has_sequences_const`](Self::element_has_sequences_const) forces
-    /// to do that.
-    #[inline(always)]
-    pub const fn element_has_sequences(pa_elem: u64, len: u32) -> bool {
-        if len == 0 { return true; }
-        if len == 1 { return pa_elem != 0; }
-        if len == u64::BITS { return pa_elem == u64::MAX; }
-        if len >  u64::BITS { return false; }
-        let cont_01 = pa_elem;
-        let cont_02 = cont_01 & (cont_01 >>  1);
-        let cont_04 = cont_02 & (cont_02 >>  2);
-        let cont_08 = cont_04 & (cont_04 >>  4);
-        let cont_16 = cont_08 & (cont_08 >>  8);
-        let cont_32 = cont_16 & (cont_16 >> 16);
-        let mut len = len;
-        let mut shift;
-        let mut mask =
-            if len < 4 {
-                // MSB == 2
-                len &= !2;
-                shift = 2;
-                cont_02
-            }
-            else if len < 8 {
-                // MSB == 4
-                len &= !4;
-                shift = 4;
-                cont_04
-            }
-            else if len < 16 {
-                // MSB == 8
-                len &= !8;
-                shift = 8;
-                cont_08
-            }
-            else if len < 32 {
-                // MSB == 16
-                len &= !16;
-                shift = 16;
-                cont_16
-            }
-            else /* if len < 64 */ {
-                // MSB == 32
-                len &= !32;
-                shift = 32;
-                cont_32
-            };
-        if (len & 16) != 0 { mask &= cont_16 >> shift; shift += 16; }
-        if (len &  8) != 0 { mask &= cont_08 >> shift; shift +=  8; }
-        if (len &  4) != 0 { mask &= cont_04 >> shift; shift +=  4; }
-        if (len &  2) != 0 { mask &= cont_02 >> shift; shift +=  2; }
-        if (len &  1) != 0 { mask &= cont_01 >> shift; }
-        mask != 0
-    }
-
-    /// The generic variant of [`element_has_sequences`](Self::element_has_sequences).
-    ///
-    /// It improves the performance by intensive constant foldings.
-    #[inline(always)]
-    pub const fn element_has_sequences_const<const LEN: u32>(pa_elem: u64) -> bool {
-        Self::element_has_sequences(pa_elem, LEN)
-    }
-}
-
-impl Default for BlockHashPositionArray {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl core::fmt::Debug for BlockHashPositionArray {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_fmt(format_args!("{:?}", &self.representation))
-    }
-}
+use position_array::{
+    BlockHashPositionArrayData,
+    BlockHashPositionArrayImpl,
+    BlockHashPositionArrayImplInternal,
+    BlockHashPositionArrayImplMutInternal,
+    BlockHashPositionArrayRef,
+    BlockHashPositionArrayMutRef,
+};
+#[cfg(feature = "unsafe")]
+use position_array::BlockHashPositionArrayImplUnsafe;
 
 
 /// An efficient position array-based fuzzy hash comparison target.
@@ -658,13 +67,17 @@ impl core::fmt::Debug for BlockHashPositionArray {
 pub struct FuzzyHashCompareTarget {
     /// The position array representation of block hash 1.
     ///
-    /// See [`BlockHashPositionArray`] for details.
-    pub(crate) blockhash1: BlockHashPositionArray,
+    /// See also:
+    /// 1.  [`BlockHashPositionArrayData`]
+    /// 2.  [`BlockHashPositionArrayImpl`]
+    pub(crate) blockhash1: [u64; BlockHash::ALPHABET_SIZE],
 
     /// The position array representation of block hash 2.
     ///
-    /// See [`BlockHashPositionArray`] for details.
-    pub(crate) blockhash2: BlockHashPositionArray,
+    /// See also:
+    /// 1.  [`BlockHashPositionArrayData`]
+    /// 2.  [`BlockHashPositionArrayImpl`]
+    pub(crate) blockhash2: [u64; BlockHash::ALPHABET_SIZE],
 
     /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
     pub(crate) len_blockhash1: u8,
@@ -675,6 +88,24 @@ pub struct FuzzyHashCompareTarget {
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     pub(crate) log_blocksize: u8,
+}
+
+/// The return type of [`FuzzyHashCompareTarget::block_hash_1`] and
+/// [`FuzzyHashCompareTarget::block_hash_2`].
+#[cfg(not(feature = "unsafe"))]
+macro_rules! compare_target_block_hash_pub_impl {
+    ($a:lifetime) => {
+        impl $a + BlockHashPositionArrayImpl
+    };
+}
+
+/// The return type of [`FuzzyHashCompareTarget::block_hash_1`] and
+/// [`FuzzyHashCompareTarget::block_hash_2`].
+#[cfg(feature = "unsafe")]
+macro_rules! compare_target_block_hash_pub_impl {
+    ($a:lifetime) => {
+        impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe
+    };
 }
 
 impl FuzzyHashCompareTarget {
@@ -740,8 +171,8 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn new() -> Self {
         FuzzyHashCompareTarget {
-            blockhash1: BlockHashPositionArray::new(),
-            blockhash2: BlockHashPositionArray::new(),
+            blockhash1: [0u64; BlockHash::ALPHABET_SIZE],
+            blockhash2: [0u64; BlockHash::ALPHABET_SIZE],
             len_blockhash1: 0,
             len_blockhash2: 0,
             log_blocksize: 0,
@@ -758,6 +189,227 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn block_size(&self) -> u32 {
         BlockSize::from_log_unchecked(self.log_blocksize)
+    }
+
+    /// Position array-based representation of the block hash 1.
+    ///
+    /// This method provices raw access to the internal efficient block hash
+    /// representation and fast bit-parallel string functions.
+    ///
+    /// You are not recommended to use this unless
+    /// you know the internal details deeply.
+    ///
+    /// The result has the same lifetime as this object and implements
+    /// following traits:
+    ///
+    /// 1.  [`BlockHashPositionArrayData`]
+    /// 2.  [`BlockHashPositionArrayImpl`]
+    /// 3.  [`BlockHashPositionArrayImplUnsafe`]
+    ///     (only if the `unsafe` feature is enabled)
+    #[inline(always)]
+    pub fn block_hash_1(&self) -> compare_target_block_hash_pub_impl!('_) {
+        BlockHashPositionArrayRef(&self.blockhash1, &self.len_blockhash1)
+    }
+
+    /// Position array-based representation of the block hash 1.
+    ///
+    /// This is the same as [`block_hash_1`](Self::block_hash_1) except that
+    /// it exposes some internals.
+    ///
+    /// See also: [`block_hash_1`](Self::block_hash_1)
+    ///
+    /// # Examples (Public part)
+    ///
+    /// Because this documentation test is not suitable for a part of the public
+    /// documentation, it is listed here.
+    ///
+    /// ```
+    /// use core::str::FromStr;
+    /// use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    ///
+    /// let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// let base_bh1:     &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let base_bh1_mod: &[u8] = &[1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // [0] is replaced
+    /// let bh1 = target.block_hash_1();
+    ///
+    /// assert!(bh1.is_valid());                // Should be always true
+    /// assert!(bh1.is_valid_and_normalized()); // Should be always true
+    /// assert_eq!(bh1.len(), base_bh1.len() as u8);
+    /// assert!( bh1.is_equiv(base_bh1));
+    /// assert!(!bh1.is_equiv(base_bh1_mod));
+    /// assert!(!bh1.is_equiv(&[0, 1, 2, 3, 4, 5, 6, 7])); // "ABCDEFGH" (subset)
+    /// assert!( bh1.has_common_substring(&[ 0,  1,  2,  3,  4,  5,  6,  7])); // 0..=6 or 1..=7 matches (enough length)
+    /// assert!(!bh1.has_common_substring(&[10, 11, 12, 13, 14, 15, 16, 17])); // 10..=15 matches but doesn't have enough length
+    /// assert_eq!(bh1.edit_distance(base_bh1), 0);     // edit distance with itself
+    /// assert_eq!(bh1.edit_distance(base_bh1_mod), 2); // replace a character: cost 2
+    /// assert_eq!(bh1.score_strings_raw(base_bh1), 100); // compare with itself
+    /// assert_eq!(bh1.score_strings(base_bh1, 0),   16); // compare with itself, capped (block size 3)
+    ///
+    /// #[cfg(feature = "unsafe")]
+    /// unsafe {
+    ///     use ssdeep::internal_comparison::BlockHashPositionArrayImplUnsafe;
+    ///     // Test unchecked counterparts
+    ///     assert!( bh1.is_equiv_unchecked(base_bh1));
+    ///     assert!(!bh1.is_equiv_unchecked(base_bh1_mod));
+    ///     assert!(!bh1.is_equiv_unchecked(&[0, 1, 2, 3, 4, 5, 6, 7]));
+    ///     assert!( bh1.has_common_substring_unchecked(&[ 0,  1,  2,  3,  4,  5,  6,  7]));
+    ///     assert!(!bh1.has_common_substring_unchecked(&[10, 11, 12, 13, 14, 15, 16, 17]));
+    ///     assert_eq!(bh1.edit_distance_unchecked(base_bh1), 0);
+    ///     assert_eq!(bh1.edit_distance_unchecked(base_bh1_mod), 2);
+    ///     assert_eq!(bh1.score_strings_raw_unchecked(base_bh1), 100);
+    ///     assert_eq!(bh1.score_strings_unchecked(base_bh1, 0),   16);
+    /// }
+    /// ```
+    ///
+    /// # Examples (Private part which should fail)
+    ///
+    /// It allows access to internal functions of [`BlockHashPositionArrayImplInternal`].
+    ///
+    /// In the examples below, it makes sure that they are not
+    /// accessible from outside.
+    ///
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.is_equiv_internal(base_bh1));
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.has_common_substring_internal(&[0, 1, 2, 3, 4, 5, 6, 7]));
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert_eq!(bh1.edit_distance_internal(base_bh1), 0);
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert_eq!(bh1.score_strings_raw_internal(base_bh1), 100);
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert_eq!(bh1.score_strings_internal(base_bh1, 0), 16);
+    /// ```
+    #[inline(always)]
+    fn block_hash_1_internal(&self)
+        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
+    {
+        BlockHashPositionArrayRef(&self.blockhash1, &self.len_blockhash1)
+    }
+
+    /// Position array-based representation of the block hash 1.
+    ///
+    /// This is internal only *and* mutable.
+    ///
+    /// See also: [`block_hash_1`](Self::block_hash_1)
+    ///
+    /// # Examples (That should fail)
+    ///
+    /// In the examples below, it makes sure that they are not
+    /// accessible from outside.
+    ///
+    /// It allows access to internal functions of
+    /// [`BlockHashPositionArrayImplMut`](crate::compare::position_array::BlockHashPositionArrayImplMut)
+    /// and [`BlockHashPositionArrayImplMutInternal`].
+    ///
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let mut target = FuzzyHashCompareTarget::new();
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.init_from(base_bh1));
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let mut target = FuzzyHashCompareTarget::new();
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.set_len_internal(16));
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let mut target = FuzzyHashCompareTarget::new();
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.clear_representation_only());
+    /// ```
+    /// ```compile_fail
+    /// # use core::str::FromStr;
+    /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
+    /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
+    /// # let mut target = FuzzyHashCompareTarget::new();
+    /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    /// let bh1 = target.block_hash_1();
+    /// assert!(bh1.init_from_partial(base_bh1));
+    /// ```
+    #[inline(always)]
+    fn block_hash_1_mut(&mut self)
+        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplMutInternal
+    {
+        BlockHashPositionArrayMutRef(&mut self.blockhash1, &mut self.len_blockhash1)
+    }
+
+    /// Position array-based representation of the block hash 2.
+    ///
+    /// See also: [`block_hash_1`](Self::block_hash_1)
+    #[inline(always)]
+    pub fn block_hash_2(&self) -> compare_target_block_hash_pub_impl!('_) {
+        BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
+    }
+
+    /// Position array-based representation of the block hash 2.
+    ///
+    /// This is the same as [`block_hash_2`](Self::block_hash_2) except that
+    /// it exposes some internals.
+    ///
+    /// See also: [`block_hash_1_internal`](Self::block_hash_1_internal)
+    #[inline(always)]
+    fn block_hash_2_internal(&self)
+        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
+    {
+        BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
+    }
+
+    /// Position array-based representation of the block hash 2.
+    ///
+    /// This is internal only *and* mutable.
+    ///
+    /// See also: [`block_hash_1_mut`](Self::block_hash_1_mut)
+    #[inline(always)]
+    fn block_hash_2_mut(&mut self)
+        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplMutInternal
+    {
+        BlockHashPositionArrayMutRef(&mut self.blockhash2, &mut self.len_blockhash2)
     }
 
     /// Initialize the object from a given fuzzy hash
@@ -783,8 +435,8 @@ impl FuzzyHashCompareTarget {
         self.len_blockhash2 = hash.len_blockhash2;
         self.log_blocksize = hash.log_blocksize;
         // Initialize position arrays based on the original block hashes
-        self.blockhash1.init_from_partial(hash.block_hash_1());
-        self.blockhash2.init_from_partial(hash.block_hash_2());
+        self.block_hash_1_mut().init_from_partial(hash.block_hash_1());
+        self.block_hash_2_mut().init_from_partial(hash.block_hash_2());
     }
 
     /// Initialize the object from a given fuzzy hash.
@@ -798,8 +450,8 @@ impl FuzzyHashCompareTarget {
         BlockHashSize<S2>: ConstrainedBlockHashSize,
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
-        self.blockhash1.clear();
-        self.blockhash2.clear();
+        self.block_hash_1_mut().clear_representation_only();
+        self.block_hash_2_mut().clear_representation_only();
         self.init_from_partial(hash);
     }
 
@@ -816,8 +468,8 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let hash = hash.as_ref();
-        self.blockhash1.is_equiv_internal(self.len_blockhash1, hash.block_hash_1()) &&
-        self.blockhash2.is_equiv_internal(self.len_blockhash2, hash.block_hash_2())
+        self.block_hash_1_internal().is_equiv_internal(hash.block_hash_1()) &&
+        self.block_hash_2_internal().is_equiv_internal(hash.block_hash_2())
     }
 
     /// Compare whether two fuzzy hashes are equivalent.
@@ -923,8 +575,8 @@ impl FuzzyHashCompareTarget {
     /// Because of its purpose, this method is not designed to be fast.
     pub fn is_valid(&self) -> bool {
         BlockSize::is_log_valid(self.log_blocksize)
-            && self.blockhash1.is_valid(self.len_blockhash1)
-            && self.blockhash2.is_valid(self.len_blockhash2)
+            && self.block_hash_1().is_valid_and_normalized()
+            && self.block_hash_2().is_valid_and_normalized()
     }
 
     /// The internal implementation of [`Self::compare_unequal_near_eq_unchecked`].
@@ -942,13 +594,11 @@ impl FuzzyHashCompareTarget {
         debug_assert!(!self.is_equiv(other));
         debug_assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
         u32::max(
-            self.blockhash1.score_strings_internal(
-                self.len_blockhash1,
+            self.block_hash_1_internal().score_strings_internal(
                 other.block_hash_1(),
                 self.log_blocksize
             ),
-            self.blockhash2.score_strings_internal(
-                self.len_blockhash2,
+            self.block_hash_2_internal().score_strings_internal(
                 other.block_hash_2(),
                 self.log_blocksize + 1
             )
@@ -1089,8 +739,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
-        self.blockhash2.score_strings_internal(
-            self.len_blockhash2,
+        self.block_hash_2_internal().score_strings_internal(
             other.block_hash_1(),
             other.log_blocksize
         )
@@ -1154,8 +803,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
-        self.blockhash1.score_strings_internal(
-            self.len_blockhash1,
+        self.block_hash_1_internal().score_strings_internal(
             other.block_hash_2(),
             self.log_blocksize
         )
@@ -1414,22 +1062,6 @@ mod const_asserts {
                 <= BlockSize::from_log_unchecked(log_block_size) as u64 / BlockSize::MIN as u64
     }
 
-    // Prerequisite for 64-bit position array
-    // grcov-excl-br-start
-    #[cfg(test)]
-    #[test]
-    fn test_position_array_fits_in_64_bits() {
-        assert!(
-            u32::try_from(BlockHash::FULL_SIZE)
-                .and_then(|x| Ok(x <= u64::BITS))
-                .unwrap_or(false)
-        );
-    }
-    // grcov-excl-br-end
-
-    // Prerequisite for 64-bit position array
-    const_assert!(BlockHash::FULL_SIZE <= 64);
-
     // Compare with the precomputed value
     // (block_size / BlockSize::MIN >= 15, log_block_size >= 4 [2^log_block_size >= 16])
     const_assert_eq!(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER, 4);
@@ -1446,31 +1078,6 @@ mod const_asserts {
     fn test_log_block_size_capping_border() {
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
         assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
-    }
-    // grcov-excl-br-end
-
-    // Test whether no arithmetic overflow occurs on
-    // the similarity score computation.
-    // grcov-excl-br-start
-    #[cfg(test)]
-    #[test]
-    fn test_score_arithmetic_overflow() {
-        /*
-            Possible arithmetic operations to check overflow:
-            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
-            2.  100 * BlockHash::FULL_SIZE
-        */
-        assert!(
-            u32::try_from(BlockHash::FULL_SIZE).ok()
-                .and_then(|x| x.checked_mul(2))
-                .and_then(|x| x.checked_mul(u32::try_from(BlockHash::FULL_SIZE).unwrap()))
-                .is_some()
-        );
-        assert!(
-            u32::try_from(BlockHash::FULL_SIZE).ok()
-                .and_then(|x| x.checked_mul(100))
-                .is_some()
-        );
     }
     // grcov-excl-br-end
 }

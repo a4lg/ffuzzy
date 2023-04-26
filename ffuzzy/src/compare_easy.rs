@@ -11,7 +11,7 @@ use crate::hash::parser_state::{
 };
 
 
-/// The operand (side) which caused a parse error
+/// The operand (side) which caused a parse error.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorSide {

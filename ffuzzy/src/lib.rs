@@ -283,7 +283,14 @@ pub mod internal_hashes {
 
 /// Module containing internal efficient block hash implementation.
 pub mod internal_comparison {
-    pub use super::compare::BlockHashPositionArray;
+    pub use super::compare::position_array::{
+        BlockHashPositionArray,
+        BlockHashPositionArrayElement,
+        BlockHashPositionArrayData,
+        BlockHashPositionArrayImpl,
+    };
+    #[cfg(feature = "unsafe")]
+    pub use super::compare::position_array::BlockHashPositionArrayImplUnsafe;
 }
 
 /// Module containing certain constraints about fuzzy hash data.

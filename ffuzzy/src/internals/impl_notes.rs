@@ -60,17 +60,17 @@
 //!
 //! ## Links (to non-suffixed methods)
 //!
-//! *   [`crate::compare::BlockHashPositionArray::is_equiv`]
-//! *   [`crate::compare::BlockHashPositionArray::has_common_substring`]
-//! *   [`crate::compare::BlockHashPositionArray::edit_distance`]
-//! *   [`crate::compare::BlockHashPositionArray::score_strings_raw`]
-//! *   [`crate::compare::BlockHashPositionArray::score_strings`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_eq`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::compare_near_eq`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_lt`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_gt`]
 //! *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal`]
+//! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::is_equiv`]
+//! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::has_common_substring`]
+//! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::edit_distance`]
+//! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings_raw`]
+//! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings`]
 //! *   [`crate::hash::FuzzyHashData::compare_unequal`]
 //! *   [`crate::hash::FuzzyHashData::init_from_internals_raw`]
 //! *   [`crate::hash::FuzzyHashData::new_from_internals`]

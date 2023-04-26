@@ -7,57 +7,174 @@
 #[cfg(feature = "alloc")]
 use alloc::format;
 
-use crate::compare::BlockHashPositionArray;
 use crate::compare::FuzzyHashCompareTarget;
+use crate::compare::position_array::{
+    BlockHashPositionArray,
+    BlockHashPositionArrayData,
+    BlockHashPositionArrayDataMut,
+    BlockHashPositionArrayImpl,
+    BlockHashPositionArrayImplInternal,
+};
+#[cfg(feature = "unsafe")]
+use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
 use crate::hash::{FuzzyHash, LongFuzzyHash};
 use crate::hash::block::{BlockSize, BlockSizeRelation, BlockHash};
-use crate::test_utils::{assert_fits_in, test_auto_clone, test_recommended_default};
+use crate::test_utils::{assert_fits_in, test_recommended_default};
 
 
 #[test]
-fn test_datamodel_position_array() {
+fn test_position_array_basic() {
     test_recommended_default!(BlockHashPositionArray);
-    test_auto_clone::<BlockHashPositionArray>(&BlockHashPositionArray::new());
+}
+
+#[test]
+fn test_position_array_usage() {
+    let mut pa = BlockHashPositionArray::new();
+    // Test "[BLOCKHASH]:AAABCDEFG:HIJKLMMM" (normalized)
+    pa.init_from(&[0, 0, 0, 1, 2, 3, 4, 5, 6]);
+    assert_eq!(pa.len(), 9);
+    assert!(pa.is_valid());
+    assert!(pa.is_valid_and_normalized());
+    assert!(pa.has_common_substring(&[0, 0, 0, 1, 2, 3, 4]));
+    assert!(pa.has_common_substring(&[0, 1, 2, 3, 4, 5, 6]));
+    assert!(!pa.has_common_substring(&[1, 2, 3, 4, 5, 6, 7]));
+    assert!(!pa.has_common_substring(&[0, 0, 0, 0, 1, 2, 3]));
+    pa.init_from(&[7, 8, 9, 10, 11, 12, 12, 12]);
+    assert_eq!(pa.len(), 8);
+    assert!(pa.is_valid());
+    assert!(pa.is_valid_and_normalized());
+    // Test "[BLOCKHASH]:AAAABCDEFG:HIJKLMMMM" (not normalized)
+    // BlockHashPositionArray itself does not do the normalization.
+    pa.init_from(&[0, 0, 0, 0, 1, 2, 3, 4, 5, 6]);
+    assert_eq!(pa.len(), 10);
+    assert!(pa.is_valid());
+    assert!(!pa.is_valid_and_normalized());
+    assert!(pa.has_common_substring(&[0, 0, 0, 0, 1, 2, 3]));
+    assert!(pa.has_common_substring(&[0, 0, 0, 1, 2, 3, 4]));
+    assert!(pa.has_common_substring(&[0, 1, 2, 3, 4, 5, 6]));
+    assert!(!pa.has_common_substring(&[1, 2, 3, 4, 5, 6, 7]));
+    pa.init_from(&[7, 8, 9, 10, 11, 12, 12, 12, 12]);
+    assert_eq!(pa.len(), 9);
+    assert!(pa.is_valid());
+    assert!(!pa.is_valid_and_normalized());
+    // Clearing the position array resets the contents to the initial value.
+    pa.clear();
+    assert_eq!(pa.len(), 0);
+    assert_eq!(pa, BlockHashPositionArray::new());
+}
+
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_position_array_debug() {
+    let mut pa = BlockHashPositionArray::new();
+    assert_eq!(
+        format!("{:?}", pa),
+        "BlockHashPositionArray { \
+            representation: [\
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+            ], \
+            len: 0 \
+        }"
+    );
+    // Test "[BLOCKHASH]:AAAABCDEFG:HIJKLMMMM"
+    // BlockHashPositionArray itself does not do the normalization.
+    pa.init_from(&[0, 0, 0, 0, 1, 2, 3, 4, 5, 6]);
+    assert_eq!(
+        format!("{:?}", pa),
+        "BlockHashPositionArray { \
+            representation: [\
+                15, 16, 32, 64, 128, 256, 512, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+            ], \
+            len: 10 \
+        }"
+    ); // 15 == 1 + 2 + 4 + 8
+    pa.init_from(&[7, 8, 9, 10, 11, 12, 12, 12, 12]);
+    assert_eq!(
+        format!("{:?}", pa),
+        "BlockHashPositionArray { \
+            representation: [\
+                0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16, 480, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+            ], \
+            len: 9 \
+        }"
+    ); // 480 == 32 + 64 + 128 + 256
 }
 
 
 #[test]
-fn test_datamodel_position_array_block_hash_content() {
+fn test_position_array_block_hash_content() {
+    // Prerequisite for inequality test:
+    assert_eq!(BlockHash::ALPHABET_SIZE % 2, 0);
+    // Test block hash contents
     crate::hash::test_utils::test_blockhash_content_all(&|bh, bh_norm| {
         /*
             Initialization and validness:
             *   init_from
             *   is_valid
-        */
-        // Initialize with not normalized block hash.
-        let mut pa = BlockHashPositionArray::new();
-        pa.init_from(bh);
-        for testlen in u8::MIN..=u8::MAX {
-            assert_eq!(pa.is_valid(testlen), testlen == bh.len() as u8 && bh == bh_norm);
-        }
-        // Initialize with normalized block hash.
-        let len_norm = bh_norm.len() as u8;
-        pa.init_from(bh_norm);
-        for testlen in u8::MIN..=u8::MAX {
-            assert_eq!(pa.is_valid(testlen), testlen == len_norm);
-        }
-        /*
-            Equivalence (partial):
+            *   is_valid_and_normalized
             *   is_equiv
             *   is_equiv_internal
             *   is_equiv_unchecked
         */
-        assert!(pa.is_equiv(len_norm, bh_norm));
-        // Equivalence to `bh` iff `bh` is already normalized.
-        assert_eq!(pa.is_equiv(len_norm, bh), bh == bh_norm);
-        // Equivalent comparison using `is_equiv_internal`.
-        assert!(pa.is_equiv_internal(len_norm, bh_norm));
-        assert_eq!(pa.is_equiv_internal(len_norm, bh), bh == bh_norm);
-        // Equivalent comparison using `is_equiv_unchecked`.
+        // Initialize with not normalized block hash.
+        let mut pa = BlockHashPositionArray::new();
+        pa.init_from(bh);
+        assert!(pa.is_valid());
+        assert!(pa.is_equiv(bh));
+        assert!(pa.is_equiv_internal(bh));
+        assert_eq!(pa.is_valid_and_normalized(), bh == bh_norm);
         #[cfg(feature = "unsafe")]
         unsafe {
-            assert!(pa.is_equiv_unchecked(len_norm, bh_norm));
-            assert_eq!(pa.is_equiv_unchecked(len_norm, bh), bh == bh_norm);
+            pa.is_equiv_unchecked(bh);
+        }
+        // Initialize with normalized block hash.
+        pa.init_from(bh_norm);
+        assert!(pa.is_valid());
+        assert!(pa.is_equiv(bh_norm));
+        assert!(pa.is_equiv_internal(bh_norm));
+        assert!(pa.is_valid_and_normalized());
+        assert_eq!(pa.is_equiv(bh), bh == bh_norm);
+        assert_eq!(pa.is_equiv_internal(bh), bh == bh_norm);
+        #[cfg(feature = "unsafe")]
+        unsafe {
+            assert!(pa.is_equiv_unchecked(bh_norm));
+            assert_eq!(pa.is_equiv_unchecked(bh), bh == bh_norm);
+        }
+        /*
+            Is empty:
+            *   is_empty
+        */
+        assert_eq!(pa.is_empty(), bh_norm.len() == 0);
+        /*
+            Inequality:
+            *   is_equiv
+            *   is_equiv_internal
+            *   is_equiv_unchecked
+        */
+        if bh_norm.len() != 0 {
+            let mut bh_norm_mod = [0u8; BlockHash::FULL_SIZE];
+            let bh_norm_mod = bh_norm_mod[0..bh_norm.len()].as_mut();
+            bh_norm_mod.copy_from_slice(bh_norm);
+            for i in 0..bh_norm.len() {
+                bh_norm_mod[i] ^= 1; // requires that ALPHABET_SIZE is an even number.
+                assert!(!pa.is_equiv(bh_norm_mod));
+                assert!(!pa.is_equiv_internal(bh_norm_mod));
+                #[cfg(feature = "unsafe")]
+                unsafe {
+                    assert!(!pa.is_equiv_unchecked(bh_norm_mod));
+                }
+                bh_norm_mod[i] ^= 1;
+            }
         }
         /*
             Substring (with itself):
@@ -69,17 +186,17 @@ fn test_datamodel_position_array_block_hash_content() {
             the checking the length of it.
         */
         assert_eq!(
-            pa.has_common_substring(len_norm, bh_norm),
+            pa.has_common_substring(bh_norm),
             bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
         );
         assert_eq!(
-            pa.has_common_substring_internal(len_norm, bh_norm),
+            pa.has_common_substring_internal(bh_norm),
             bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
         );
         #[cfg(feature = "unsafe")]
         unsafe {
             assert_eq!(
-                pa.has_common_substring_unchecked(len_norm, bh_norm),
+                pa.has_common_substring_unchecked(bh_norm),
                 bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON
             );
         }
@@ -91,11 +208,11 @@ fn test_datamodel_position_array_block_hash_content() {
 
             Note: edit distance with itself should always return 0.
         */
-        assert_eq!(pa.edit_distance(len_norm, bh_norm), 0);
-        assert_eq!(pa.edit_distance_internal(len_norm, bh_norm), 0);
+        assert_eq!(pa.edit_distance(bh_norm), 0);
+        assert_eq!(pa.edit_distance_internal(bh_norm), 0);
         #[cfg(feature = "unsafe")]
         unsafe {
-            assert_eq!(pa.edit_distance_unchecked(len_norm, bh_norm), 0);
+            assert_eq!(pa.edit_distance_unchecked(bh_norm), 0);
         }
         /*
             Scoring (with itself):
@@ -106,12 +223,14 @@ fn test_datamodel_position_array_block_hash_content() {
             Note: raw similarity score with itself should always return 100
             unless the block hash is too small (in this case, it should be 0).
         */
+        let len_norm = u8::try_from(bh_norm.len()).unwrap();
         let expected_score = if bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON { 100 } else { 0 };
-        assert_eq!(pa.score_strings_raw(len_norm, bh_norm), expected_score);
-        assert_eq!(pa.score_strings_raw_internal(len_norm, bh_norm), expected_score);
+        assert_eq!(pa.score_strings_raw(bh_norm), expected_score);
+        assert_eq!(pa.score_strings_raw_internal(bh_norm), expected_score);
+        assert_eq!(pa.score_strings(bh_norm, FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER), expected_score);
         #[cfg(feature = "unsafe")]
         unsafe {
-            assert_eq!(pa.score_strings_raw_unchecked(len_norm, bh_norm), expected_score);
+            assert_eq!(pa.score_strings_raw_unchecked(bh_norm), expected_score);
         }
         let log_block_size = 0u8;
         let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_internal(
@@ -120,13 +239,111 @@ fn test_datamodel_position_array_block_hash_content() {
             len_norm
         ).min(100);
         let capped_score = expected_score.min(score_cap);
-        assert_eq!(pa.score_strings(len_norm, bh_norm, log_block_size), capped_score);
-        assert_eq!(pa.score_strings_internal(len_norm, bh_norm, log_block_size), capped_score);
+        assert_eq!(pa.score_strings(bh_norm, log_block_size), capped_score);
+        assert_eq!(pa.score_strings_internal(bh_norm, log_block_size), capped_score);
         #[cfg(feature = "unsafe")]
         unsafe {
-            assert_eq!(pa.score_strings_unchecked(len_norm, bh_norm, log_block_size), capped_score);
+            assert_eq!(pa.score_strings_unchecked(bh_norm, log_block_size), capped_score);
         }
     });
+}
+
+
+#[test]
+fn test_position_array_corruption() {
+    // Prerequisites
+    assert_eq!(BlockHash::FULL_SIZE, 64);
+    assert_eq!(BlockHash::ALPHABET_SIZE, 64);
+    // Not Corrupted
+    {
+        let pa = BlockHashPositionArray::new();
+        assert!(pa.is_valid());
+        assert!(pa.is_valid_and_normalized());
+    }
+    // Block hash length (and some of its contents)
+    {
+        let mut pa = BlockHashPositionArray::new();
+        assert_eq!(pa.len, 0);
+        // Just changing the length will make this invalid
+        // because there's "no character" at position 0.
+        for len in 1..=u8::MAX {
+            pa.len = len;
+            assert!(!pa.is_valid());
+            assert!(!pa.is_valid_and_normalized());
+        }
+        // Setting same character sequence with matching length will make this valid.
+        for len in 1u8..=64 {
+            let target_value = if len == 64 { u64::MAX } else { (1 << len) - 1 };
+            pa.len = len;
+            for i in 0..pa.representation.len() {
+                pa.representation[i] = target_value;
+                assert!(pa.is_valid());
+                assert_eq!(pa.is_valid_and_normalized(), (len as usize) <= BlockHash::MAX_SEQUENCE_SIZE);
+                pa.representation[i] = 0;
+                assert!(!pa.is_valid());
+                assert!(!pa.is_valid_and_normalized());
+            }
+        }
+        pa.len = 64;
+        pa.representation[0] = u64::MAX;
+        assert!(pa.is_valid());
+        assert!(!pa.is_valid_and_normalized());
+        for len in (64 + 1)..=u8::MAX {
+            pa.len = len;
+            assert!(!pa.is_valid());
+            assert!(!pa.is_valid_and_normalized());
+        }
+    }
+    // Block hash contents (outside the valid hash)
+    {
+        for len in 0..=BlockHash::FULL_SIZE {
+            let mut pa = BlockHashPositionArray::new();
+            for i in 0..len {
+                pa.representation[i] = 1 << i;
+            }
+            pa.len = len as u8;
+            assert!(pa.is_valid());
+            assert!(pa.is_valid_and_normalized());
+            for invalid_pos in (len as u32)..u64::BITS {
+                let bitpos = 1u64 << invalid_pos;
+                for ch in 0..pa.representation.len() {
+                    pa.representation[ch] |= bitpos;
+                    assert!(!pa.is_valid());
+                    assert!(!pa.is_valid_and_normalized());
+                    pa.representation[ch] &= !bitpos;
+                    assert!(pa.is_valid());
+                    assert!(pa.is_valid_and_normalized());
+                }
+            }
+        }
+    }
+    // Block hash contents (inside the valid hash)
+    {
+        for len in 0..=BlockHash::FULL_SIZE {
+            let mut pa = BlockHashPositionArray::new();
+            for i in 0..len {
+                pa.representation[i] = 1 << i;
+            }
+            pa.len = len as u8;
+            assert!(pa.is_valid());
+            assert!(pa.is_valid_and_normalized());
+            // If the position array either:
+            // *   have "duplicate characters" in some position or
+            // *   have "no characters" in some position,
+            // it is invalid.
+            for invalid_pos in 0..len {
+                let bitpos = 1u64 << (invalid_pos as u32);
+                for ch in 0..pa.representation.len() {
+                    pa.representation[ch] ^= bitpos;
+                    assert!(!pa.is_valid());
+                    assert!(!pa.is_valid_and_normalized());
+                    pa.representation[ch] ^= bitpos;
+                    assert!(pa.is_valid());
+                    assert!(pa.is_valid_and_normalized());
+                }
+            }
+        }
+    }
 }
 
 
@@ -208,6 +425,32 @@ fn test_datamodel_generic() {
                             assert!(!target.is_equiv(&hash));
                             assert!(target.is_equiv_except_block_size(&hash));
                         }
+                        // Check BlockHashPositionArrayRef
+                        let mut target = FuzzyHashCompareTarget::from(&$hash);
+                        assert_eq!(target.block_hash_1().is_empty(), target.block_hash_1().len() == 0);
+                        assert_eq!(target.block_hash_2().is_empty(), target.block_hash_2().len() == 0);
+                        assert_eq!(target.block_hash_1().len(), target.len_blockhash1);
+                        assert_eq!(target.block_hash_2().len(), target.len_blockhash2);
+                        assert_eq!(target.block_hash_1().representation(), &target.blockhash1);
+                        assert_eq!(target.block_hash_2().representation(), &target.blockhash2);
+                        assert_eq!(target.block_hash_1_internal().len(), target.len_blockhash1);
+                        assert_eq!(target.block_hash_2_internal().len(), target.len_blockhash2);
+                        assert_eq!(target.block_hash_1_internal().representation(), &target.blockhash1);
+                        assert_eq!(target.block_hash_2_internal().representation(), &target.blockhash2);
+                        // Check BlockHashPositionArrayMutRef
+                        let bh1_len = target.block_hash_1_mut().len();
+                        let bh2_len = target.block_hash_2_mut().len();
+                        assert_eq!(bh1_len, target.len_blockhash1);
+                        assert_eq!(bh2_len, target.len_blockhash2);
+                        let mut bh = [0u64; BlockHash::ALPHABET_SIZE];
+                        bh.copy_from_slice(target.block_hash_1_mut().representation_mut());
+                        assert_eq!(bh, target.blockhash1);
+                        assert_eq!(&bh, target.block_hash_1_mut().representation());
+                        assert_eq!(&bh, target.block_hash_1().representation());
+                        bh.copy_from_slice(target.block_hash_2_mut().representation_mut());
+                        assert_eq!(bh, target.blockhash2);
+                        assert_eq!(&bh, target.block_hash_2_mut().representation());
+                        assert_eq!(&bh, target.block_hash_2().representation());
                     };
                 }
                 if len_blockhash2 <= BlockHash::HALF_SIZE {
@@ -353,16 +596,16 @@ fn test_datamodel_corruption() {
         target.len_blockhash1 = 1;
         assert!(!target.is_valid());
         // Setting some character on position 0 will make this valid.
-        for i in 0..target.blockhash1.representation.len() {
-            target.blockhash1.representation[i] = 1;  // Position 0 is character index i.
+        for i in 0..target.blockhash1.len() {
+            target.blockhash1[i] = 1;  // Position 0 is character index i.
             assert!(target.is_valid());
-            target.blockhash1.representation[i] = 0;
+            target.blockhash1[i] = 0;
             assert!(!target.is_valid());
         }
         // Fill with valid pattern (maximum length)
         for i in 0..64usize {
             assert!(i < 64);
-            target.blockhash1.representation[i] = 1 << (i as u32);
+            target.blockhash1[i] = 1 << (i as u32);
         }
         target.len_blockhash1 = 64;
         assert!(target.is_valid());
@@ -381,15 +624,15 @@ fn test_datamodel_corruption() {
         target.len_blockhash2 = 1;
         assert!(!target.is_valid());
         // Setting some character on position 0 will make this valid.
-        for i in 0..target.blockhash2.representation.len() {
-            target.blockhash2.representation[i] = 1;  // Position 0 is character index i.
+        for i in 0..target.blockhash2.len() {
+            target.blockhash2[i] = 1;  // Position 0 is character index i.
             assert!(target.is_valid());
-            target.blockhash2.representation[i] = 0;
+            target.blockhash2[i] = 0;
         }
         // Fill with valid pattern (maximum length)
         for i in 0..64usize {
             assert!(i < 64);
-            target.blockhash2.representation[i] = 1 << (i as u32);
+            target.blockhash2[i] = 1 << (i as u32);
         }
         target.len_blockhash2 = 64;
         assert!(target.is_valid());
@@ -406,17 +649,17 @@ fn test_datamodel_corruption() {
             // Fill with valid contents
             for i in 0..len {
                 assert!(i < 64);
-                target.blockhash1.representation[i] = 1 << (i as u32);
+                target.blockhash1[i] = 1 << (i as u32);
             }
             target.len_blockhash1 = len as u8;
             assert!(target.is_valid());
             // If we have a character past the block hash, it's invalid.
             for invalid_pos in (len as u32)..u64::BITS {
                 let bitpos = 1u64 << invalid_pos;
-                for ch in 0..target.blockhash1.representation.len() {
-                    target.blockhash1.representation[ch] |= bitpos;
+                for ch in 0..target.blockhash1.len() {
+                    target.blockhash1[ch] |= bitpos;
                     assert!(!target.is_valid());
-                    target.blockhash1.representation[ch] &= !bitpos;
+                    target.blockhash1[ch] &= !bitpos;
                     assert!(target.is_valid());
                 }
             }
@@ -429,17 +672,17 @@ fn test_datamodel_corruption() {
             // Fill with valid contents
             for i in 0..len {
                 assert!(i < 64);
-                target.blockhash2.representation[i] = 1 << (i as u32);
+                target.blockhash2[i] = 1 << (i as u32);
             }
             target.len_blockhash2 = len as u8;
             assert!(target.is_valid());
             // If we have a character past the block hash, it's invalid.
             for invalid_pos in (len as u32)..u64::BITS {
                 let bitpos = 1u64 << invalid_pos;
-                for ch in 0..target.blockhash2.representation.len() {
-                    target.blockhash2.representation[ch] ^= bitpos;
+                for ch in 0..target.blockhash2.len() {
+                    target.blockhash2[ch] ^= bitpos;
                     assert!(!target.is_valid());
-                    target.blockhash2.representation[ch] ^= bitpos;
+                    target.blockhash2[ch] ^= bitpos;
                     assert!(target.is_valid());
                 }
             }
@@ -452,7 +695,7 @@ fn test_datamodel_corruption() {
             // Fill with valid contents
             for i in 0..len {
                 assert!(i < 64);
-                target.blockhash1.representation[i] = 1 << (i as u32);
+                target.blockhash1[i] = 1 << (i as u32);
             }
             target.len_blockhash1 = len as u8;
             assert!(target.is_valid());
@@ -462,10 +705,10 @@ fn test_datamodel_corruption() {
             // it is invalid.
             for invalid_pos in 0..len {
                 let bitpos = 1u64 << (invalid_pos as u32);
-                for ch in 0..target.blockhash1.representation.len() {
-                    target.blockhash1.representation[ch] ^= bitpos;
+                for ch in 0..target.blockhash1.len() {
+                    target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid());
-                    target.blockhash1.representation[ch] ^= bitpos;
+                    target.blockhash1[ch] ^= bitpos;
                     assert!(target.is_valid());
                 }
             }
@@ -478,7 +721,7 @@ fn test_datamodel_corruption() {
             // Fill with valid contents
             for i in 0..len {
                 assert!(i < 64);
-                target.blockhash2.representation[i] = 1 << (i as u32);
+                target.blockhash2[i] = 1 << (i as u32);
             }
             target.len_blockhash2 = len as u8;
             assert!(target.is_valid());
@@ -488,10 +731,10 @@ fn test_datamodel_corruption() {
             // it is invalid.
             for invalid_pos in 0..len {
                 let bitpos = 1u64 << (invalid_pos as u32);
-                for ch in 0..target.blockhash2.representation.len() {
-                    target.blockhash2.representation[ch] ^= bitpos;
+                for ch in 0..target.blockhash2.len() {
+                    target.blockhash2[ch] ^= bitpos;
                     assert!(!target.is_valid());
-                    target.blockhash2.representation[ch] ^= bitpos;
+                    target.blockhash2[ch] ^= bitpos;
                     assert!(target.is_valid());
                 }
             }
@@ -501,12 +744,12 @@ fn test_datamodel_corruption() {
     {
         // Block hash "AAA" (max sequence size): valid
         let mut target = FuzzyHashCompareTarget::new();
-        target.blockhash1.representation[0] = (1u64 << (BlockHash::MAX_SEQUENCE_SIZE as u32)) - 1;
+        target.blockhash1[0] = (1u64 << (BlockHash::MAX_SEQUENCE_SIZE as u32)) - 1;
         target.len_blockhash1 = BlockHash::MAX_SEQUENCE_SIZE as u8;
         assert!(target.is_valid());
         // Block hash "AAAA" (max sequence size + 1): invalid
-        target.blockhash1.representation[0] <<= 1;
-        target.blockhash1.representation[0] |= 1;
+        target.blockhash1[0] <<= 1;
+        target.blockhash1[0] |= 1;
         target.len_blockhash1 += 1;
         assert!(!target.is_valid());
     }
@@ -514,12 +757,12 @@ fn test_datamodel_corruption() {
     {
         // Block hash "AAA" (max sequence size): valid
         let mut target = FuzzyHashCompareTarget::new();
-        target.blockhash2.representation[0] = (1u64 << (BlockHash::MAX_SEQUENCE_SIZE as u32)) - 1;
+        target.blockhash2[0] = (1u64 << (BlockHash::MAX_SEQUENCE_SIZE as u32)) - 1;
         target.len_blockhash2 = BlockHash::MAX_SEQUENCE_SIZE as u8;
         assert!(target.is_valid());
         // Block hash "AAAA" (max sequence size + 1): invalid
-        target.blockhash2.representation[0] <<= 1;
-        target.blockhash2.representation[0] |= 1;
+        target.blockhash2[0] <<= 1;
+        target.blockhash2[0] |= 1;
         target.len_blockhash2 += 1;
         assert!(!target.is_valid());
     }
@@ -769,8 +1012,6 @@ fn test_debug() {
     // Test debug output of BlockHashPositionArray and its representation.
     assert_eq!(format!("{:?}", hash.blockhash1), expected_empty_bh);
     assert_eq!(format!("{:?}", hash.blockhash2), expected_empty_bh);
-    assert_eq!(format!("{:?}", hash.blockhash1.representation()), expected_empty_bh);
-    assert_eq!(format!("{:?}", hash.blockhash2.representation()), expected_empty_bh);
     // Test "3072:AAAABCDEFG:HIJKLMMMM"
     // (normalized into "3072:AAABCDEFG:HIJKLMMM")
     let s = b"3072:AAAABCDEFG:HIJKLMMMM";
@@ -803,35 +1044,33 @@ fn test_debug() {
     // Test debug output of BlockHashPositionArray and its representation.
     assert_eq!(format!("{:?}", hash.blockhash1), expected_bh1);
     assert_eq!(format!("{:?}", hash.blockhash2), expected_bh2);
-    assert_eq!(format!("{:?}", hash.blockhash1.representation()), expected_bh1);
-    assert_eq!(format!("{:?}", hash.blockhash2.representation()), expected_bh2);
 }
 
 
 #[test]
 fn test_has_sequences() {
-    use crate::compare::BlockHashPositionArray;
+    use crate::compare::position_array::BlockHashPositionArrayElement;
     // All zero
-    assert!(BlockHashPositionArray::element_has_sequences(0, 0));
+    assert!(BlockHashPositionArrayElement::has_sequences(0, 0));
     for len in 1u32..=100 {
-        assert!(!BlockHashPositionArray::element_has_sequences(0, len));
+        assert!(!BlockHashPositionArrayElement::has_sequences(0, len));
     }
     // All one
-    assert!(BlockHashPositionArray::element_has_sequences(u64::MAX, 0));
+    assert!(BlockHashPositionArrayElement::has_sequences(u64::MAX, 0));
     for len in 1u32..=64 {
-        assert!(BlockHashPositionArray::element_has_sequences(u64::MAX, len));
+        assert!(BlockHashPositionArrayElement::has_sequences(u64::MAX, len));
     }
-    assert!(!BlockHashPositionArray::element_has_sequences(u64::MAX, 65));
+    assert!(!BlockHashPositionArrayElement::has_sequences(u64::MAX, 65));
     // Test pattern: stripes
     const STRIPE_1: u64 = 0xaaaa_aaaa_aaaa_aaaa;
     const STRIPE_2: u64 = 0x5555_5555_5555_5555;
     for len in 0u32..=1 {
-        assert!(BlockHashPositionArray::element_has_sequences(STRIPE_1, len));
-        assert!(BlockHashPositionArray::element_has_sequences(STRIPE_2, len));
+        assert!(BlockHashPositionArrayElement::has_sequences(STRIPE_1, len));
+        assert!(BlockHashPositionArrayElement::has_sequences(STRIPE_2, len));
     }
     for len in 2u32..=100 {
-        assert!(!BlockHashPositionArray::element_has_sequences(STRIPE_1, len));
-        assert!(!BlockHashPositionArray::element_has_sequences(STRIPE_2, len));
+        assert!(!BlockHashPositionArrayElement::has_sequences(STRIPE_1, len));
+        assert!(!BlockHashPositionArrayElement::has_sequences(STRIPE_2, len));
     }
     // Test pattern: specific length (≧ 2) sequences
     for len in 2u32..=64 {
@@ -853,7 +1092,7 @@ fn test_has_sequences() {
                 // Subpattern 1: pure bits
                 let target = seq;
                 assert_eq!(
-                    BlockHashPositionArray::element_has_sequences(target, test_len),
+                    BlockHashPositionArrayElement::has_sequences(target, test_len),
                     test_len <= len
                 );
                 // Subpattern 2 and 3: stripes
@@ -864,12 +1103,12 @@ fn test_has_sequences() {
                     target |= seq;
                     if test_len < 2 {
                         // Matches to stripe itself
-                        assert!(BlockHashPositionArray::element_has_sequences(target, test_len));
+                        assert!(BlockHashPositionArrayElement::has_sequences(target, test_len));
                     }
                     else {
                         // Possibly matches to the sequence
                         assert_eq!(
-                            BlockHashPositionArray::element_has_sequences(target, test_len),
+                            BlockHashPositionArrayElement::has_sequences(target, test_len),
                             test_len <= len
                         );
                     }
@@ -895,10 +1134,10 @@ fn test_has_sequences() {
             if offset + len + 1 == 64 {
                 has_seq = true;
             }
-            assert_eq!(has_seq, BlockHashPositionArray::element_has_sequences(target, len));
+            assert_eq!(has_seq, BlockHashPositionArrayElement::has_sequences(target, len));
             if has_seq {
                 for test_len in 0..len {
-                    assert!(BlockHashPositionArray::element_has_sequences(target, test_len));
+                    assert!(BlockHashPositionArrayElement::has_sequences(target, test_len));
                 }
             }
             else {
@@ -913,11 +1152,11 @@ fn test_has_sequences() {
                 */
                 let max_seq_len = u32::max(u64::BITS - 1 - offset, offset);
                 for test_len in 0..len {
-                    assert_eq!(test_len <= max_seq_len, BlockHashPositionArray::element_has_sequences(target, test_len));
+                    assert_eq!(test_len <= max_seq_len, BlockHashPositionArrayElement::has_sequences(target, test_len));
                 }
             }
             for test_len in (len + 1)..=100 {
-                assert!(!BlockHashPositionArray::element_has_sequences(target, test_len));
+                assert!(!BlockHashPositionArrayElement::has_sequences(target, test_len));
             }
         }
     }
@@ -979,20 +1218,17 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
             block_hashes.insert(Vec::from(hash.block_hash_2()));
         }
     }
-    let mut pa: BlockHashPositionArray = BlockHashPositionArray::new();
+    let mut pa = BlockHashPositionArray::new();
     for bh1 in &block_hashes {
-        if bh1.len() < BlockHash::MIN_LCS_FOR_COMPARISON { continue; }
         for bh2 in &block_hashes {
-            if bh2.len() < BlockHash::MIN_LCS_FOR_COMPARISON { continue; }
             // Make position array (pa) from given block hash (bh1).
-            let bh1_len = u8::try_from(bh1.len()).unwrap();
             pa.init_from(bh1.as_slice());
             // Test whether the results of a naïve implementation and
             // the fast implementation matches.
             let expected_value = has_common_substring_naive(bh1.as_slice(), bh2.as_slice());
             assert_eq!(
                 expected_value,
-                pa.has_common_substring(bh1_len, bh2.as_slice())
+                pa.has_common_substring(bh2.as_slice())
             );
         }
     }
@@ -1019,19 +1255,21 @@ fn verify_edit_distance_by_real_blockhash_vectors() {
             block_hashes.insert(Vec::from(hash.block_hash_2()));
         }
     }
-    let mut pa: BlockHashPositionArray = BlockHashPositionArray::new();
+    let mut pa = BlockHashPositionArray::new();
+    let mut target = FuzzyHashCompareTarget::new();
     for bh1 in &block_hashes {
-        if bh1.len() == 0 { continue; }
         for bh2 in &block_hashes {
             // Make position array (blockhash1) from given block hash (bh1).
-            let bh1_len = u8::try_from(bh1.len()).unwrap();
             pa.init_from(bh1.as_slice());
+            target.init_from(LongFuzzyHash::new_from_internals(BlockSize::MIN, bh1.as_slice(), &[]));
             let dist_from_dp_impl =
                 crate::compare::test_utils::edit_distn(bh1.as_slice(), bh2.as_slice()) as u32;
-            let dist_from_fast_impl = pa.edit_distance(bh1_len, bh2.as_slice());
+            let dist_from_fast_impl_1 = pa.edit_distance(bh2.as_slice());
+            let dist_from_fast_impl_2 = target.block_hash_1().edit_distance(bh2.as_slice());
             // Test whether the results of a port of old implementation
             // and the fast implementation matches.
-            assert_eq!(dist_from_dp_impl, dist_from_fast_impl);
+            assert_eq!(dist_from_dp_impl, dist_from_fast_impl_1);
+            assert_eq!(dist_from_dp_impl, dist_from_fast_impl_2);
         }
     }
 }
