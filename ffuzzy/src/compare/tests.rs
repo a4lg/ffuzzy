@@ -892,17 +892,11 @@ fn has_common_substring_naive(
     const TARGET_LEN: usize = FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH;
     let mut set1: HashSet<&[u8]> = HashSet::new();
     let mut set2: HashSet<&[u8]> = HashSet::new();
-    if str1.len() >= TARGET_LEN {
-        for i in 0..=str1.len()-TARGET_LEN {
-            // Extract TARGET_LEN-sized chunks from str1
-            set1.insert(&str1[i..i + TARGET_LEN]);
-        }
+    for window in str1.windows(TARGET_LEN) {
+        set1.insert(window);
     }
-    if str2.len() >= TARGET_LEN {
-        for i in 0..=str2.len()-TARGET_LEN {
-            // Extract TARGET_LEN-sized chunks from str2
-            set2.insert(&str2[i..i + TARGET_LEN]);
-        }
+    for window in str2.windows(TARGET_LEN) {
+        set2.insert(window);
     }
     !set1.is_disjoint(&set2)
 }
