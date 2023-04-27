@@ -149,7 +149,15 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
                         .checked_mul(10)
                         .and_then(|x| x.checked_add((*ch - b'0') as u32))
                     {
-                        Some(bs) => { block_size = bs; }
+                        Some(bs) => {
+                            block_size = bs;
+                            if block_size == 0 {
+                                return Err(ParseError(
+                                    ParseErrorKind::BlockSizeStartsWithZero,
+                                    ParseErrorOrigin::BlockSize, 0
+                                ));
+                            }
+                        }
                         None => { is_block_size_in_range = false; }
                     }
                 }

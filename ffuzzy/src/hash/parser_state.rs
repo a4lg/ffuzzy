@@ -10,6 +10,8 @@
 pub enum ParseErrorKind {
     /// Block size: is empty.
     BlockSizeIsEmpty,
+    /// Block size: starts with zero.
+    BlockSizeStartsWithZero,
     /// Block size: is not valid.
     BlockSizeIsInvalid,
     /// Block size: is too large to parse.
@@ -25,12 +27,13 @@ pub enum ParseErrorKind {
 impl core::fmt::Display for ParseErrorKind {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
-            ParseErrorKind::BlockHashIsTooLong    => "block hash is too long.",
-            ParseErrorKind::BlockSizeIsEmpty      => "block size field is empty.",
-            ParseErrorKind::BlockSizeIsInvalid    => "block size is not valid.",
-            ParseErrorKind::BlockSizeIsTooLarge   => "block size is too large.",
-            ParseErrorKind::UnexpectedCharacter   => "an unexpected character is encountered.",
-            ParseErrorKind::UnexpectedEndOfString => "end-of-string is not expected.",
+            ParseErrorKind::BlockHashIsTooLong      => "block hash is too long.",
+            ParseErrorKind::BlockSizeIsEmpty        => "block size field is empty.",
+            ParseErrorKind::BlockSizeStartsWithZero => "block size starts with '0'.",
+            ParseErrorKind::BlockSizeIsInvalid      => "block size is not valid.",
+            ParseErrorKind::BlockSizeIsTooLarge     => "block size is too large.",
+            ParseErrorKind::UnexpectedCharacter     => "an unexpected character is encountered.",
+            ParseErrorKind::UnexpectedEndOfString   => "end-of-string is not expected.",
         })
     }
 }
@@ -149,12 +152,13 @@ mod tests {
     #[test]
     fn test_parse_error_enums_display_and_debug() {
         // Display
-        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),    "block hash is too long.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),      "block size field is empty.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),    "block size is not valid.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),   "block size is too large.");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),   "an unexpected character is encountered.");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString), "end-of-string is not expected.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large.");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered.");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected.");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
@@ -163,6 +167,7 @@ mod tests {
             ParseErrorKind,
             [
                 BlockSizeIsEmpty,
+                BlockSizeStartsWithZero,
                 BlockSizeIsInvalid,
                 BlockSizeIsTooLarge,
                 BlockHashIsTooLong,

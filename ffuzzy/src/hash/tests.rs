@@ -927,6 +927,8 @@ fn test_parse_patterns() {
         assert_parse_ng!(<$ty>::from_bytes(b"4::"),  BlockSizeIsInvalid,    BlockSize, 0);
         assert_parse_ng!(<$ty>::from_bytes(b"16::"), BlockSizeIsInvalid,    BlockSize, 0);
         assert_parse_ok!(<$ty>::from_bytes(b"3::"));
+        assert_parse_ng!(<$ty>::from_bytes(b"03::"), BlockSizeStartsWithZero, BlockSize, 0);
+        assert_parse_ng!(<$ty>::from_bytes(b"04::"), BlockSizeStartsWithZero, BlockSize, 0);
         assert_parse_ng!(<$ty>::from_bytes(b"4294967295::"), BlockSizeIsInvalid,  BlockSize, 0); // u32::MAX
         assert_parse_ng!(<$ty>::from_bytes(b"4294967296::"), BlockSizeIsTooLarge, BlockSize, 0); // u32::MAX + 1
         assert_parse_ng!(<$ty>::from_bytes(b"\
