@@ -947,6 +947,249 @@ impl FuzzyHashCompareTarget {
             BlockSizeRelation::NearGt => self.compare_unequal_near_gt_internal(other),
         }
     }
+
+    /// The internal implementation of [`Self::is_comparison_candidate_near_eq_unchecked`].
+    #[inline]
+    fn is_comparison_candidate_near_eq_internal<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        debug_assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        self.block_hash_1_internal().has_common_substring_internal(other.block_hash_1()) ||
+        self.block_hash_2_internal().has_common_substring_internal(other.block_hash_2())
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearEq`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Safety
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearEq`].
+    ///
+    /// If the condition above is not satisfied, it will return
+    /// a meaningless value.
+    #[cfg(feature = "unsafe")]
+    #[inline(always)]
+    pub unsafe fn is_comparison_candidate_near_eq_unchecked<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        self.is_comparison_candidate_near_eq_internal(other)
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearEq`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Usage Constraints
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearEq`].
+    #[inline(always)]
+    pub fn is_comparison_candidate_near_eq<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        self.is_comparison_candidate_near_eq_internal(other)
+    }
+
+    /// The internal implementation of [`Self::is_comparison_candidate_near_lt_unchecked`].
+    #[inline]
+    fn is_comparison_candidate_near_lt_internal<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        debug_assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        self.block_hash_2_internal().has_common_substring_internal(other.block_hash_1())
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearLt`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Safety
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearLt`].
+    ///
+    /// If the condition above is not satisfied, it will return
+    /// a meaningless value.
+    #[cfg(feature = "unsafe")]
+    #[inline(always)]
+    pub unsafe fn is_comparison_candidate_near_lt_unchecked<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        self.is_comparison_candidate_near_lt_internal(other)
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearLt`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Usage Constraints
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearLt`].
+    #[inline(always)]
+    pub fn is_comparison_candidate_near_lt<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        self.is_comparison_candidate_near_lt_internal(other)
+    }
+
+    /// The internal implementation of [`Self::is_comparison_candidate_near_gt_unchecked`].
+    #[inline]
+    fn is_comparison_candidate_near_gt_internal<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        debug_assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        self.block_hash_1_internal().has_common_substring_internal(other.block_hash_2())
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearGt`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Safety
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearGt`].
+    ///
+    /// If the condition above is not satisfied, it will return
+    /// a meaningless value.
+    #[cfg(feature = "unsafe")]
+    #[inline(always)]
+    pub unsafe fn is_comparison_candidate_near_gt_unchecked<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        self.is_comparison_candidate_near_gt_internal(other)
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison
+    /// assuming that their block sizes have a relation of
+    /// [`BlockSizeRelation::NearGt`].
+    ///
+    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    ///
+    /// # Usage Constraints
+    ///
+    /// *   Both fuzzy hashes (`self` and `other`) must have
+    ///     block size relation of [`BlockSizeRelation::NearGt`].
+    #[inline(always)]
+    pub fn is_comparison_candidate_near_gt<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        self.is_comparison_candidate_near_gt_internal(other)
+    }
+
+    /// Tests whether `other` is a candidate for edit distance-based comparison.
+    ///
+    /// If this function returns [`false`] **and** `self` and `other` are not
+    /// [equivalent](Self::is_equiv), their similarity will be calculated to 0.
+    ///
+    /// # Use Case (Example)
+    ///
+    /// This operation is useful to divide a set of *unique* (normalized)
+    /// fuzzy hashes into smaller distinct sets.  The similarity score can be
+    /// non-zero if and only if two fuzzy hashes belong to the same set.
+    ///
+    /// # Safety (Warning)
+    ///
+    /// This function (and its variants) can return [`false`] if `self` and
+    /// `other` are equivalent (the base fuzzy hash object of `self` and `other`
+    /// are the same and their similarity score is 100).
+    ///
+    /// Because of this, we have to use a set of *unique* fuzzy hash values
+    /// on the use case above to prevent false-negative matches.
+    #[inline]
+    pub fn is_comparison_candidate<const S1: usize, const S2: usize>(
+        &self,
+        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+    ) -> bool
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        let other = other.as_ref();
+        match BlockSize::compare_sizes(self.log_blocksize, other.log_blocksize) {
+            BlockSizeRelation::Far => false,
+            BlockSizeRelation::NearEq => self.is_comparison_candidate_near_eq_internal(other),
+            BlockSizeRelation::NearLt => self.is_comparison_candidate_near_lt_internal(other),
+            BlockSizeRelation::NearGt => self.is_comparison_candidate_near_gt_internal(other),
+        }
+    }
 }
 
 impl<const S1: usize, const S2: usize>

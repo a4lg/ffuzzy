@@ -802,6 +802,49 @@ fn test_score_cap_on_block_hash_comparison() {
 }
 
 #[test]
+fn test_compare_candidate_itself() {
+    let mut target = FuzzyHashCompareTarget::new();
+    for log_block_size in 0..BlockSize::NUM_VALID {
+        for len_blockhash1 in 0..=BlockHash::FULL_SIZE {
+            assert_fits_in!(len_blockhash1, u8);
+            let mut blockhash1 = [0u8; BlockHash::FULL_SIZE];
+            for i in 0..len_blockhash1 {
+                assert!(i < BlockHash::ALPHABET_SIZE);
+                blockhash1[i] = i as u8;
+            }
+            for len_blockhash2 in 0..=BlockHash::FULL_SIZE {
+                assert_fits_in!(len_blockhash2, u8);
+                let mut blockhash2 = [0u8; BlockHash::FULL_SIZE];
+                for i in 0..len_blockhash2 {
+                    assert!(i < BlockHash::ALPHABET_SIZE);
+                    blockhash2[i] = (BlockHash::ALPHABET_SIZE - 1 - i) as u8;
+                }
+                let hash = LongFuzzyHash::new_from_internals_raw(
+                    log_block_size as u8,
+                    &blockhash1,
+                    &blockhash2,
+                    len_blockhash1 as u8,
+                    len_blockhash2 as u8
+                );
+                target.init_from(&hash);
+                // If `target` and `hash` are equivalent, current expected value is
+                // whether either of block hashes have enough length.
+                let expected_value =
+                    len_blockhash1 >= BlockHash::MIN_LCS_FOR_COMPARISON ||
+                    len_blockhash2 >= BlockHash::MIN_LCS_FOR_COMPARISON;
+                assert_eq!(expected_value, target.is_comparison_candidate(&hash));
+                assert_eq!(expected_value, target.is_comparison_candidate_near_eq(&hash));
+                assert_eq!(expected_value, target.is_comparison_candidate_near_eq_internal(&hash));
+                #[cfg(feature = "unsafe")]
+                unsafe {
+                    assert_eq!(expected_value, target.is_comparison_candidate_near_eq_unchecked(&hash));
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn test_comparison() {
     /*
         Sample data for block hash comparisons:
@@ -878,8 +921,31 @@ fn test_comparison() {
             match BlockSize::compare_sizes(log_block_size_1, log_block_size_2) {
                 BlockSizeRelation::Far => {
                     assert_eq!(score, 0);
+                    assert!(!target_s.is_comparison_candidate(&hash2_s));
+                    assert!(!target_s.is_comparison_candidate(&hash2_l));
+                    assert!(!target_l.is_comparison_candidate(&hash2_s));
+                    assert!(!target_l.is_comparison_candidate(&hash2_l));
                 }
                 BlockSizeRelation::NearEq => {
+                    assert!(target_s.is_comparison_candidate(&hash2_s));
+                    assert!(target_s.is_comparison_candidate(&hash2_l));
+                    assert!(target_l.is_comparison_candidate(&hash2_s));
+                    assert!(target_l.is_comparison_candidate(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_eq(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_eq(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_eq(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_eq(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_eq_internal(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_eq_internal(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_eq_internal(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_eq_internal(&hash2_l));
+                    #[cfg(feature = "unsafe")]
+                    unsafe {
+                        assert!(target_s.is_comparison_candidate_near_eq_unchecked(&hash2_s));
+                        assert!(target_s.is_comparison_candidate_near_eq_unchecked(&hash2_l));
+                        assert!(target_l.is_comparison_candidate_near_eq_unchecked(&hash2_s));
+                        assert!(target_l.is_comparison_candidate_near_eq_unchecked(&hash2_l));
+                    }
                     // Compare two block hashes (lower block size: [0] and [2], higher block size: [1] and [3])
                     // and take the maximum (considering the capping).
                     let score_cap_1 = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size_1, hash1_s.len_blockhash1, hash2_s.len_blockhash1);
@@ -920,6 +986,25 @@ fn test_comparison() {
                     }
                 }
                 BlockSizeRelation::NearGt => {
+                    assert!(target_s.is_comparison_candidate(&hash2_s));
+                    assert!(target_s.is_comparison_candidate(&hash2_l));
+                    assert!(target_l.is_comparison_candidate(&hash2_s));
+                    assert!(target_l.is_comparison_candidate(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_gt(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_gt(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_gt(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_gt(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_gt_internal(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_gt_internal(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_gt_internal(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_gt_internal(&hash2_l));
+                    #[cfg(feature = "unsafe")]
+                    unsafe {
+                        assert!(target_s.is_comparison_candidate_near_gt_unchecked(&hash2_s));
+                        assert!(target_s.is_comparison_candidate_near_gt_unchecked(&hash2_l));
+                        assert!(target_l.is_comparison_candidate_near_gt_unchecked(&hash2_s));
+                        assert!(target_l.is_comparison_candidate_near_gt_unchecked(&hash2_l));
+                    }
                     // BS1 > BS2 but not too far.
                     // Compare [0] and [3] and cap the raw score.
                     let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size_1, hash1_s.len_blockhash1, hash2_s.len_blockhash2);
@@ -944,6 +1029,25 @@ fn test_comparison() {
                     }
                 }
                 BlockSizeRelation::NearLt => {
+                    assert!(target_s.is_comparison_candidate(&hash2_s));
+                    assert!(target_s.is_comparison_candidate(&hash2_l));
+                    assert!(target_l.is_comparison_candidate(&hash2_s));
+                    assert!(target_l.is_comparison_candidate(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_lt(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_lt(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_lt(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_lt(&hash2_l));
+                    assert!(target_s.is_comparison_candidate_near_lt_internal(&hash2_s));
+                    assert!(target_s.is_comparison_candidate_near_lt_internal(&hash2_l));
+                    assert!(target_l.is_comparison_candidate_near_lt_internal(&hash2_s));
+                    assert!(target_l.is_comparison_candidate_near_lt_internal(&hash2_l));
+                    #[cfg(feature = "unsafe")]
+                    unsafe {
+                        assert!(target_s.is_comparison_candidate_near_lt_unchecked(&hash2_s));
+                        assert!(target_s.is_comparison_candidate_near_lt_unchecked(&hash2_l));
+                        assert!(target_l.is_comparison_candidate_near_lt_unchecked(&hash2_s));
+                        assert!(target_l.is_comparison_candidate_near_lt_unchecked(&hash2_l));
+                    }
                     // BS1 < BS2 but not too far.
                     // Compare [1] and [2] and cap the raw score.
                     let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size_2, hash1_s.len_blockhash2, hash2_s.len_blockhash1);
