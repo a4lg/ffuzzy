@@ -878,6 +878,48 @@ fn test_has_sequences() {
         }
         // check whether the loop above touched all bits.
         assert_eq!(aggr_bits, u64::MAX);
+        // Subpattern 4: repeated ones and one zero, repeated
+        for offset in 0..=len {
+            let mut has_seq = false;
+            let mut target = u64::MAX;
+            if offset == len {
+                has_seq = true;
+            }
+            if offset != 64 {
+                target &= !(1u64 << offset);
+            }
+            for pos in ((offset + len + 1)..64).step_by(usize::try_from(len + 1).unwrap()) {
+                has_seq = true;
+                target &= !(1u64 << pos);
+            }
+            if offset + len + 1 == 64 {
+                has_seq = true;
+            }
+            assert_eq!(has_seq, BlockHashPositionArray::element_has_sequences(target, len));
+            if has_seq {
+                for test_len in 0..len {
+                    assert!(BlockHashPositionArray::element_has_sequences(target, test_len));
+                }
+            }
+            else {
+                /*
+                    `has_seq == false` means,
+                    we have zeroed exactly one bit (at `offset`) and that caused
+                    the specified length (`len`) sequence to disappear.
+
+                    *   Bits 0..=(offset-1)  [len:    offset]: one
+                    *   Bit  offset          [len:         1]: zero
+                    *   Bits (offset+1)..=63 [len: 63-offset]: one
+                */
+                let max_seq_len = u32::max(u64::BITS - 1 - offset, offset);
+                for test_len in 0..len {
+                    assert_eq!(test_len <= max_seq_len, BlockHashPositionArray::element_has_sequences(target, test_len));
+                }
+            }
+            for test_len in (len + 1)..=100 {
+                assert!(!BlockHashPositionArray::element_has_sequences(target, test_len));
+            }
+        }
     }
 }
 
