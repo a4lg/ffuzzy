@@ -493,7 +493,7 @@ mod algorithms {
 ///
 /// # Safety
 ///
-/// Template parameters should not be considered stable because some template
+/// Generic parameters should not be considered stable because some generic
 /// parameters are just there because of the current restrictions of Rust's
 /// constant generics (that will be resolved after the feature
 /// `generic_const_exprs` is stabilized).
