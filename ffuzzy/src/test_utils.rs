@@ -90,6 +90,7 @@ macro_rules! test_for_each_type_impl {
     };
 }
 
+/// Test whether the expression fits in the specified type.
 #[doc(alias = "assert_fits_in")]
 macro_rules! assert_fits_in_impl {
     ($expr: expr, $ty: ty) => {
