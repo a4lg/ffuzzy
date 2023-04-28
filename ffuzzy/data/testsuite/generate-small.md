@@ -37,7 +37,7 @@ This is "Hello, World!" test vectors.
 | `NN`          | Two digits between `01` and `14` representing the final file size |
 
 Those files will not trigger any piece splitting (at all) and all except
-14-bytes `nopiece-behavior-14.bin` does not make the final rolling hash
+14 bytes `nopiece-behavior-14.bin` does not make the final rolling hash
 value zero.
 
 

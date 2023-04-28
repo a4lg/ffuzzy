@@ -4,7 +4,7 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 #![cfg(any(all(test, feature = "std", feature = "tests-slow"), doc))]
 
-/// Computes the edit distance between two given strings
+/// Computes the edit distance between two given strings.
 ///
 /// Both `s1` and `s2` are [`slice`]s of [`u8`].
 ///

@@ -712,7 +712,7 @@ where
     /// of the fuzzy hash.
     ///
     /// Required size of the `buffer` is
-    /// [`len_in_str()`](Self::len_in_str)-bytes.  This size is exact.
+    /// [`len_in_str()`](Self::len_in_str) bytes.  This size is exact.
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {

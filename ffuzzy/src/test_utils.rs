@@ -68,7 +68,7 @@ macro_rules! test_recommended_default_impl {
     }};
 }
 
-/// Test for each type
+/// Test for each type.
 #[doc(alias = "test_for_each_type")]
 macro_rules! test_for_each_type_impl {
     ($test: ident, []) => {};

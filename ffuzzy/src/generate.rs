@@ -242,7 +242,7 @@ const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 struct BlockHashContext {
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
-    /// Block hash contents
+    /// Block hash contents.
     blockhash: [u8; BlockHash::FULL_SIZE],
     /// The last block hash character used when truncating.
     blockhash_ch_half: u8,

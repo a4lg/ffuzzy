@@ -19,7 +19,7 @@ use crate::macros::{optionally_unsafe, invariant};
 mod tests;
 
 
-/// RLE Encodings as used in [`FuzzyHashDualData`]
+/// RLE Encodings as used in [`FuzzyHashDualData`].
 ///
 /// # Bit Fields
 ///
@@ -38,7 +38,7 @@ mod tests;
 /// This `offset` is the one of a normalized block hash.
 ///
 /// 2 bits of length is enough to compress
-/// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1`-bytes into one byte, making the
+/// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
 /// long sequence able to be compressed in a fixed-size RLE block.
 ///
 /// The encoded length is one less than actual length for efficiency.
