@@ -981,9 +981,7 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
     }
     let mut pa: BlockHashPositionArray = BlockHashPositionArray::new();
     for bh1 in &block_hashes {
-        if bh1.len() < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH { continue; }
         for bh2 in &block_hashes {
-            if bh2.len() < FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH { continue; }
             // Make position array (pa) from given block hash (bh1).
             let bh1_len = u8::try_from(bh1.len()).unwrap();
             pa.init_from(bh1.as_slice());
