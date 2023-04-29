@@ -59,6 +59,27 @@
 //! In this crate, [`DualFuzzyHash`] and [`LongDualFuzzyHash`] allows storing both forms
 //! efficiently, achieving the compression ratio of about 5 / 8.
 //!
+//! ### Advanced pre-filtering
+//!
+//! To narrow fuzzy hash pairs to compare, ffuzzy v0.2 provides two ways for
+//! pre-filtering:
+//!
+//! #### Raw access to block hash substring windows
+//!
+//! The [`block_hash_1_windows()`](FuzzyHashData::block_hash_1_windows) and [`block_hash_2_windows()`](FuzzyHashData::block_hash_2_windows) methods provide raw
+//! access to block hash substring windows.  To edit distance-based comparison to
+//! occur on two block hashes, at least one common substring must be exist.
+//!
+//! This is intended for relatively large scale clustering (involving separate
+//! database).
+//!
+//! #### Convenient methods for pre-filtering
+//!
+//! The [`is_comparison_candidate()`](FuzzyHashCompareTarget::is_comparison_candidate) method and its variants test whether the two
+//! fuzzy hashes are a candidate of edit distance-based comparison.
+//!
+//! This is intended for relatively small, in-memory pre-filtering.
+//!
 //!
 //! ## Usage: Basic
 //!
