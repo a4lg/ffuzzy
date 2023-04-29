@@ -194,7 +194,18 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
 
 
 /// The implementation of the block hash position array (unsafe; immutable).
-pub(crate) trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
+///
+/// # Examples
+///
+/// This trait should not be accessible from outside.
+///
+/// ```compile_fail
+/// use ssdeep::internal_comparison::BlockHashPositionArrayImplInternal;
+/// ```
+/// ```compile_fail
+/// use ssdeep::compare::position_array::BlockHashPositionArrayImplInternal;
+/// ```
+pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
     /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::is_equiv_unchecked`].
     #[inline]
     fn is_equiv_internal(&self, other: &[u8]) -> bool {
