@@ -485,12 +485,16 @@ fn test_datamodel_blockhash_contents() {
                 ($target: ident) => {
                     assert!($target.is_valid());
                     assert!($target.is_normalized());
-                    unsafe {
-                        let transmuted_1: RawFuzzyHashType = core::mem::transmute(norm_hash);
-                        let transmuted_2: RawFuzzyHashType = core::mem::transmute($target);
-                        assert!(transmuted_2.is_normalized());
-                        assert!(transmuted_1.full_eq(&transmuted_2));
-                    }
+                    let mut transplanted_1: RawFuzzyHashType = RawFuzzyHashType::new();
+                    let mut transplanted_2: RawFuzzyHashType = RawFuzzyHashType::new();
+                    transplanted_1.log_blocksize = norm_hash.log_blocksize;
+                    transplanted_1.blockhash1    = norm_hash.blockhash1;
+                    transplanted_1.blockhash2    = norm_hash.blockhash2;
+                    transplanted_2.log_blocksize = $target.log_blocksize;
+                    transplanted_2.blockhash1    = $target.blockhash1;
+                    transplanted_2.blockhash2    = $target.blockhash2;
+                    assert!(transplanted_2.is_normalized());
+                    assert!(transplanted_1.full_eq(&transplanted_2));
                 };
             }
             test_norm_eq!(norm_ref_hash);
