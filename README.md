@@ -43,40 +43,6 @@ libfuzzy and even comparable to ffuzzy++ (depends on various conditions, though)
 specialized large scale clustering applications.
 
 
-## Features New in this Crate
-
-### Dual fuzzy hash object
-
-While the fuzzy hash generator normally produces fuzzy hashes without
-normalization but comparing two fuzzy hashes requires two normalized ones.
-It enforced users to preserve both normalized and raw fuzzy hashes to collerate
-the original (raw) fuzzy hash and the comparison-friendly (normalized) one.
-
-In this crate, `DualFuzzyHash` and `LongDualFuzzyHash` allows storing both forms
-efficiently, achieving the compression ratio of about 5 / 8.
-
-### Advanced pre-filtering
-
-To narrow fuzzy hash pairs to compare, ffuzzy v0.2 provides two ways for
-pre-filtering:
-
-#### Raw access to block hash substring windows
-
-The `block_hash_1_windows()` and `block_hash_2_windows()` methods provide raw
-access to block hash substring windows.  To edit distance-based comparison to
-occur on two block hashes, at least one common substring must be exist.
-
-This is intended for relatively large scale clustering (involving separate
-database).
-
-#### Convenient methods for pre-filtering
-
-The `is_comparison_candidate()` method and its variants test whether the two
-fuzzy hashes are a candidate of edit distance-based comparison.
-
-This is intended for relatively small, in-memory pre-filtering.
-
-
 ## Usage: Basic
 
 ### Hashing a File
@@ -159,7 +125,41 @@ assert_eq!(target.compare(&hash2), 88);
 ```
 
 
-## Features
+## Features New in this Crate
+
+### Dual fuzzy hash object
+
+While the fuzzy hash generator normally produces fuzzy hashes without
+normalization but comparing two fuzzy hashes requires two normalized ones.
+It enforced users to preserve both normalized and raw fuzzy hashes to collerate
+the original (raw) fuzzy hash and the comparison-friendly (normalized) one.
+
+In this crate, `DualFuzzyHash` and `LongDualFuzzyHash` allows storing both forms
+efficiently, achieving the compression ratio of about 5 / 8.
+
+### Advanced pre-filtering
+
+To narrow fuzzy hash pairs to compare, ffuzzy v0.2 provides two ways for
+pre-filtering:
+
+#### Raw access to block hash substring windows
+
+The `block_hash_1_windows()` and `block_hash_2_windows()` methods provide raw
+access to block hash substring windows.  To edit distance-based comparison to
+occur on two block hashes, at least one common substring must be exist.
+
+This is intended for relatively large scale clustering (involving separate
+database).
+
+#### Convenient methods for pre-filtering
+
+The `is_comparison_candidate()` method and its variants test whether the two
+fuzzy hashes are a candidate of edit distance-based comparison.
+
+This is intended for relatively small, in-memory pre-filtering.
+
+
+## Crate Features
 
 *   `alloc`, `std` (default)  
     This crate supports `no_std` (by disabling both of them) and
