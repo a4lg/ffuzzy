@@ -593,7 +593,10 @@ where
     /// ```
     #[inline]
     pub fn block_hash_1(&self) -> &[u8] {
-        &self.blockhash1[..self.len_blockhash1 as usize]
+        optionally_unsafe! {
+            invariant!((self.len_blockhash1 as usize) <= S1);
+        }
+        &self.blockhash1[..self.len_blockhash1 as usize] // grcov-excl-br-line:ARRAY
     }
 
     /// A reference to the block hash 1 (in fixed-size array).
@@ -631,7 +634,10 @@ where
     /// ```
     #[inline]
     pub fn block_hash_2(&self) -> &[u8] {
-        &self.blockhash2[..self.len_blockhash2 as usize]
+        optionally_unsafe! {
+            invariant!((self.len_blockhash2 as usize) <= S2);
+        }
+        &self.blockhash2[..self.len_blockhash2 as usize] // grcov-excl-br-line:ARRAY
     }
 
     /// A reference to the block hash 2 (in fixed-size array).
