@@ -290,17 +290,18 @@ impl BlockHashContext {
 /// ## Normalization
 ///
 /// The output of the generator is not normalized.  If you want to convert it
-/// to a normalized form, use separate methods like [`RawFuzzyHash::normalize`].
+/// to a normalized form, use separate methods like
+/// [`RawFuzzyHash::normalize()`].
 ///
 /// In other words, this generator (itself) does not have the direct  equivalent
 /// to the `FUZZY_FLAG_ELIMSEQ` flag of libfuzzy's `fuzzy_digest` function.
 ///
 /// ## Truncation
 ///
-/// By default (using [`finalize`](Self::finalize) method), the output has a
+/// By default (using [`finalize()`](Self::finalize()) method), the output has a
 /// short, truncated form.
 ///
-/// By using [`finalize_without_truncation`](Self::finalize_without_truncation),
+/// By using [`finalize_without_truncation()`](Self::finalize_without_truncation()),
 /// you can retrieve a non-truncated form as a result.  This is equivalent to
 /// the `FUZZY_FLAG_NOTRUNC` flag of libfuzzy's `fuzzy_digest` function.
 ///
@@ -308,11 +309,11 @@ impl BlockHashContext {
 ///
 /// This type has three update methods accepting three different types:
 ///
-/// 1.  [`update`](Self::update)
+/// 1.  [`update()`](Self::update())
 ///     (accepting a slice of [`u8`] - byte buffer)
-/// 2.  [`update_by_iter`](Self::update_by_iter)
+/// 2.  [`update_by_iter()`](Self::update_by_iter())
 ///     (accepting an iterator of [`u8`] - stream of bytes)
-/// 3.  [`update_by_byte`](Self::update_by_byte)
+/// 3.  [`update_by_byte()`](Self::update_by_byte())
 ///     (accepting [`u8`] - single byte)
 ///
 /// # Input Size
@@ -326,7 +327,7 @@ impl BlockHashContext {
 /// meaningful enough.  This *soft* lower limit (inclusive) is declared as
 /// [`MIN_RECOMMENDED_INPUT_SIZE`](Self::MIN_RECOMMENDED_INPUT_SIZE) and
 /// you can check the
-/// [`may_warn_about_small_input_size`](Self::may_warn_about_small_input_size)
+/// [`may_warn_about_small_input_size()`](Self::may_warn_about_small_input_size())
 /// method to check whether the size is too small to be meaningful enough.
 ///
 /// Note: even if it's doubtful to be meaningful enough, a fuzzy hash generated
@@ -334,8 +335,8 @@ impl BlockHashContext {
 /// just because they are too small.  This *soft* limit is for diagnostics.
 ///
 /// If you know the total size of the input, you can improve the performance by
-/// using either the [`set_fixed_input_size`](Self::set_fixed_input_size) method
-/// or the [`set_fixed_input_size_in_usize`](Self::set_fixed_input_size_in_usize)
+/// using either the [`set_fixed_input_size()`](Self::set_fixed_input_size()) method
+/// or the [`set_fixed_input_size_in_usize()`](Self::set_fixed_input_size_in_usize())
 /// method.
 ///
 /// # Examples
@@ -368,7 +369,7 @@ pub struct Generator {
     input_size: u64,
 
     /// Optional fixed size set by the
-    /// [`set_fixed_input_size`](Self::set_fixed_input_size) method.
+    /// [`set_fixed_input_size()`](Self::set_fixed_input_size()) method.
     fixed_size: Option<u64>,
 
     /// Border size to consider advancing [`bhidx_start`](Self::bhidx_start)
@@ -394,7 +395,7 @@ pub struct Generator {
     /// See also:
     ///
     /// *   [`bhidx_start`](Self::bhidx_start)
-    /// *   [`set_fixed_input_size`](Self::set_fixed_input_size)
+    /// *   [`set_fixed_input_size()`](Self::set_fixed_input_size())
     bhidx_end_limit: usize,
 
     /// Rolling hash mask to prevent piece split matching
@@ -423,10 +424,10 @@ pub struct Generator {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GeneratorError {
-    /// [The fixed size](Generator::set_fixed_input_size) has a mismatch with
+    /// [The fixed size](Generator::set_fixed_input_size()) has a mismatch with
     /// either the previously set value or the final input size.
     FixedSizeMismatch,
-    /// [The fixed size](Generator::set_fixed_input_size) is
+    /// [The fixed size](Generator::set_fixed_input_size()) is
     /// [too large](Generator::MAX_INPUT_SIZE).
     FixedSizeTooLarge,
     /// The total input size on finalization is
@@ -439,7 +440,7 @@ pub enum GeneratorError {
     /// 1.  Truncation is disabled,
     /// 2.  The output type is a short form  
     ///     (because of those conditions, it only occurs on a raw
-    ///     [`Generator::finalize_raw`] call) and
+    ///     [`Generator::finalize_raw()`] call) and
     /// 3.  The resulting block hash 2 is longer than that of the
     ///     short form limit ([`BlockHash::HALF_SIZE`]).
     OutputOverflow,
@@ -543,9 +544,9 @@ impl Generator {
     /// The result is based on either the fixed size or the current input size.
     /// So, this method should be used after calling either:
     ///
-    /// *   [`set_fixed_input_size`](Self::set_fixed_input_size)
+    /// *   [`set_fixed_input_size()`](Self::set_fixed_input_size())
     ///     or similar methods
-    /// *   [`finalize`](Self::finalize)
+    /// *   [`finalize()`](Self::finalize())
     ///     or similar methods
     ///
     /// and before resetting the state.
@@ -561,7 +562,8 @@ impl Generator {
     ///
     /// This method returns a good candidate but not always suitable for the
     /// final fuzzy hash.  The final guess is performed in the
-    /// [`guess_output_log_block_size`](Self::guess_output_log_block_size) method.
+    /// [`guess_output_log_block_size()`](Self::guess_output_log_block_size())
+    /// method.
     fn get_log_block_size_from_input_size(size: u64, start: usize) -> usize {
         let size_unit = Self::guessed_preferred_max_input_size_at(0);
         if size <= size_unit { return start; }
@@ -604,7 +606,7 @@ impl Generator {
     /// Set the fixed input size for optimal performance.
     ///
     /// This is a thin wrapper of the
-    /// [`set_fixed_input_size`](Self::set_fixed_input_size) method.
+    /// [`set_fixed_input_size()`](Self::set_fixed_input_size()) method.
     ///
     /// Although that this implementation handles [`u64`] as the native input
     /// size type and
@@ -616,7 +618,7 @@ impl Generator {
     /// It accepts `size` in [`usize`] and if this size is larger than
     /// 64-bits, an error containing [`GeneratorError::FixedSizeTooLarge`]
     /// is returned.  Other than that, this is the same as
-    /// [`set_fixed_input_size`](Self::set_fixed_input_size).
+    /// [`set_fixed_input_size()`](Self::set_fixed_input_size()).
     #[inline]
     pub fn set_fixed_input_size_in_usize(&mut self, size: usize) -> Result<(), GeneratorError> {
         // grcov-excl-br-start
@@ -632,7 +634,7 @@ impl Generator {
     }
 }
 
-/// Template to generate [`Generator::update`]-like methods.
+/// Template to generate [`Generator::update()`]-like methods.
 ///
 /// *   `$self`  
 ///     A mutable reference to the [`Generator`] object.
@@ -892,7 +894,7 @@ impl Generator {
     /// Guess the final block size based on the current internal state.
     ///
     /// First, the generator prefers the return value of
-    /// [`get_log_block_size_from_input_size`](Self::get_log_block_size_from_input_size).
+    /// [`get_log_block_size_from_input_size()`](Self::get_log_block_size_from_input_size()).
     ///
     /// But if the resulting fuzzy hash is too short, we have to half
     /// the block size until it finds a fuzzy hash of suitable length.
@@ -929,7 +931,7 @@ impl Generator {
 
     /// Retrieves the resulting fuzzy hash.
     ///
-    /// Usually, you should use the [`finalize`](Self::finalize) method (a
+    /// Usually, you should use the [`finalize()`](Self::finalize()) method (a
     /// wrapper of this method) instead because it passes the `TRUNC` option
     /// [`true`] to this method (as the default ssdeep option).
     ///

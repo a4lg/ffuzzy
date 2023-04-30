@@ -24,7 +24,7 @@ mod tests;
 ///
 /// # Bit Fields
 ///
-/// Current design of the RLE block is basic RLE encoded bytes,
+/// Current design of the RLE block is basic and compact RLE encoded bytes
 /// each consisting of following bitfields:
 ///
 /// *   6 bits of offset
@@ -36,7 +36,8 @@ mod tests;
 /// offset zero as the terminator (if the offset is zero, the length must be
 /// encoded as zero, making the RLE block zero-terminated).
 ///
-/// This `offset` is the one of a normalized block hash.
+/// This `offset` is the one of a normalized block hash (and must be the last
+/// character offset of the sequence).
 ///
 /// 2 bits of length is enough to compress
 /// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
@@ -46,6 +47,9 @@ mod tests;
 /// For instance, encoded `length` of `0` actually means repeating a character
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
+///
+/// 2 bits of length is still small.  If we need to extend a character 5
+/// (`4 + 1`) times or more, we need multiple RLE encodings.
 #[allow(non_snake_case)]
 mod RleEncoding {
     /// Bits used to represent the position (offset).
@@ -91,6 +95,7 @@ mod RleEncoding {
         const_assert!(BlockHash::MAX_SEQUENCE_SIZE + 1 <= MAX_RUN_LENGTH);
     }
 
+    /// Encode an RLE encoding from a (position, length) pair.
     #[inline(always)]
     pub(crate) fn encode(pos: u8, len: u8) -> u8 {
         debug_assert!(len != 0);
@@ -100,6 +105,7 @@ mod RleEncoding {
         pos | ((len - 1) << BITS_POSITION)
     }
 
+    /// Decode an RLE encoding into a (position, length) pair.
     #[inline(always)]
     pub(crate) fn decode(value: u8) -> (u8, u8) {
         (value & MASK_POSITION, (value >> BITS_POSITION) + 1)
@@ -469,11 +475,11 @@ mod algorithms {
 /// (compared to two fuzzy hash objects, one normalized and another raw).
 ///
 /// With this, you can compare many fuzzy hashes efficiently while preserving
-/// the original string representation without requiring too much memory.
+/// the original string representation without requesting too much memory.
 ///
-/// Some methods accept [`AsRef`] to the normalized [`FuzzyHashData`] and on
-/// such cases, it is possible to pass this object directly
-/// (e.g. [`FuzzyHashCompareTarget::compare`](crate::compare::FuzzyHashCompareTarget::compare)).
+/// Some methods accept [`AsRef`] to the normalized [`FuzzyHashData`].
+/// On such cases, it is possible to pass this object directly
+/// (e.g. [`FuzzyHashCompareTarget::compare()`](crate::compare::FuzzyHashCompareTarget::compare())).
 ///
 /// # Ordering
 ///
@@ -486,27 +492,30 @@ mod algorithms {
 ///     [`FuzzyHashData`] objects (inside) will be ordered
 ///     in an implementation-defined manner.
 ///
-/// The implementation-defined order is not guaranteed to be stable.  For
-/// instance, different versions of this crate may order them differently.
-/// However, it is guaranteed deterministic so that you can have the same order
-/// in the same program.
+/// The implementation-defined order is not currently guaranteed to be stable.
+/// For instance, different versions of this crate may order them differently.
+/// However, it is guaranteed deterministic so that you can expect the same
+/// order in the same program.
 ///
 /// # Safety
 ///
-/// Generic parameters should not be considered stable because some generic
-/// parameters are just there because of the current restrictions of Rust's
-/// constant generics (that will be resolved after the feature
+/// Generic parameters of this type should not be considered stable because some
+/// generic parameters are just there because of the current restrictions of
+/// Rust's constant generics (that will be resolved after the feature
 /// `generic_const_exprs` is stabilized).
 ///
-/// **Do not** use [`FuzzyHashDualData`] directly.  Instead, use instantiations
-/// of this generic type, [`DualFuzzyHash`] and/or [`LongDualFuzzyHash`]
-/// (for most cases, [`DualFuzzyHash`] will be sufficient).
+/// **Do not** use [`FuzzyHashDualData`] directly.
 ///
-/// # Examples (Basic; requires the `alloc` feature)
+/// Instead, use instantiations of this generic type:
+/// *   [`DualFuzzyHash`] (will be sufficient on most cases)
+/// *   [`LongDualFuzzyHash`]
+///
+/// # Examples
 ///
 /// ```
 /// # #[cfg(feature = "alloc")]
 /// # {
+/// // Requires the "alloc" feature to use `to_string` method (default enabled).
 /// use core::str::FromStr;
 /// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
 ///
@@ -515,10 +524,26 @@ mod algorithms {
 ///
 /// let dual_hash = DualFuzzyHash::from_str(hash_str_raw).unwrap();
 ///
-/// // This object can contain both
+/// // This object can effectively contain both
 /// // normalized and raw fuzzy hash representations.
 /// assert_eq!(dual_hash.to_raw_form().to_string(),   hash_str_raw);
 /// assert_eq!(dual_hash.to_normalized().to_string(), hash_str_norm);
+///
+/// let another_hash = FuzzyHash::from_str(
+///     "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK"
+/// ).unwrap();
+///
+/// // You can directly compare a DualFuzzyHash against a FuzzyHash.
+/// //
+/// // This is almost as fast as comparison between two FuzzyHash objects
+/// // because the native representation inside DualFuzzyHash
+/// // is a FuzzyHash object.
+/// assert_eq!(another_hash.compare(dual_hash), 88);
+///
+/// // But DualFuzzyHash is not a drop-in replacement of FuzzyHash.
+/// // You need to use `as_ref_normalized()` to compare a FuzzyHash against
+/// // a DualFuzzyHash (direct comparison may be provided on later versions).
+/// assert_eq!(dual_hash.as_ref_normalized().compare(&another_hash), 88);
 /// # }
 /// ```
 #[repr(align(8))]
@@ -623,7 +648,7 @@ where
         );
     }
 
-    /// The internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked()`].
     fn init_from_raw_form_internals_raw_internal(
         &mut self,
         log_block_size: u8,
@@ -720,7 +745,7 @@ where
         );
     }
 
-    /// The internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked()`].
     #[allow(dead_code)]
     fn new_from_raw_form_internals_raw_internal(
         log_block_size: u8,
@@ -858,8 +883,8 @@ where
 
     /// Returns the clone of the normalized fuzzy hash.
     ///
-    /// Where possible, [`as_ref_normalized`](Self::as_ref_normalized) or
-    /// [`AsRef::as_ref`] should be used instead.
+    /// Where possible, [`as_ref_normalized()`](Self::as_ref_normalized()) or
+    /// [`AsRef::as_ref()`] should be used instead.
     #[inline(always)]
     pub fn to_normalized(&self) -> FuzzyHashData<S1, S2, true> {
         self.norm_hash

@@ -22,7 +22,7 @@ pub enum ParseErrorSide {
 }
 
 /// The error type representing a parse error for one of the operands
-/// specified to the [`compare`] function.
+/// specified to the [`compare()`] function.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseErrorEither(ParseErrorSide, ParseError);
 

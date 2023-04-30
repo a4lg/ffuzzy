@@ -9,7 +9,7 @@
 ///
 /// Inside this block, you may place statements that may change the behavior
 /// depending on the feature `unstable`.  For instance, you may place
-/// [`invariant!`] inside this block.
+/// [`invariant!()`] inside this block.
 ///
 /// ```ignore
 /// # // Because this is an internal macro, we must ignore on the doctest
@@ -26,8 +26,8 @@
 /// ```
 ///
 /// An advanced usage can be found on
-/// the [`crate::generate::Generator::update`] implementation
-/// (the `generator_update_template!` macro).
+/// the [`crate::generate::Generator::update()`] implementation
+/// (the `generator_update_template!()` macro).
 #[doc(alias = "optionally_unsafe")]
 macro_rules! optionally_unsafe_impl {
     {$($tokens: tt)*} => {
@@ -45,20 +45,21 @@ macro_rules! optionally_unsafe_impl {
 
 /// Declare an invariant for optimization.
 ///
-/// When feature `unsafe` is disabled, it only places [`debug_assert!`].
-/// If both `unsafe` and `nightly` are enabled, [`core::intrinsics::assume`] is
-/// used (which requires `core_intrinsics` Rust unstable feature).
-/// If only `unsafe` is enabled, [`core::hint::unreachable_unchecked`] is used.
+/// When feature `unsafe` is disabled, it only places [`debug_assert!()`].
+/// If both `unsafe` and `nightly` are enabled, [`core::intrinsics::assume()`]
+/// is used (which requires the `core_intrinsics` Rust unstable feature).
+/// If only the `unsafe` feautre is enabled,
+/// [`core::hint::unreachable_unchecked()`] is used.
 ///
 /// If `unsafe` and `nightly` are enabled, enable unstable `core_intrinsics`
 /// feature.
 ///
 /// The difference is, since `unsafe` (without `nightly`) implementation uses
 /// plain `if` statement, non-intuitive expression may appear in the code (on
-/// the other hand, [`core::intrinsics::assume`] guarantees that it does not
+/// the other hand, [`core::intrinsics::assume()`] guarantees that it does not
 /// emit any code).
 ///
-/// Use this macro along with [`optionally_unsafe!`].
+/// Use this macro along with [`optionally_unsafe!{}`].
 #[doc(alias = "invariant")]
 macro_rules! invariant_impl {
     ($expr: expr) => {

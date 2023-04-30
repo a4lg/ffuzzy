@@ -129,7 +129,7 @@ pub fn hash_stream<R: Read>(reader: &mut R)
 /// So, this function is always safe.
 ///
 /// If the file size could change while generating a fuzzy hash,
-/// use [`hash_stream`] instead.
+/// use [`hash_stream()`] instead.
 pub fn hash_file<P: AsRef<Path>>(path: P)
     -> Result<RawFuzzyHash, GeneratorOrIOError>
 {

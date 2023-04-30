@@ -39,11 +39,12 @@ pub(crate) const BASE64_TABLE_U8: [u8; 64] = [
 ///
 /// # Performance Analysis
 ///
-/// The original `base64_index` function (now `base64_tests::base64_index_simple`)
-/// did not perform well.  After profiling, we found that the old one
-/// caused over 90% of parser-related branch misses on LLVM.
+/// The original `base64_index()` function (now
+/// `base64_tests::base64_index_simple()`) did not perform well.  After
+/// profiling, we found that the old one caused over 90% of parser-related
+/// branch misses.
 ///
-/// Replacing [`base64_index`] with the branchless implementation
+/// Replacing [`base64_index()`] with the branchless implementation
 /// significantly improved the parser performance.
 const BASE64_REV_TABLE_U8: [u8; 256] = [
     0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40,

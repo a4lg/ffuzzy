@@ -38,7 +38,8 @@ pub(crate) fn test_auto_clone<T: Clone + Eq + core::fmt::Debug>(orig_value: &T) 
 }
 
 
-/// Test automatically generated Debug implementation of an enum.
+/// Test automatically generated [`Debug`](core::fmt::Debug)
+/// implementation of an enum with no variants with structs or tuples.
 #[cfg(feature = "alloc")]
 #[doc(alias = "test_auto_debug_for_enum")]
 macro_rules! test_auto_debug_for_enum_impl {
@@ -58,7 +59,7 @@ macro_rules! test_auto_debug_for_enum_impl {
     };
 }
 
-/// Test recommended Default implementation.
+/// Test recommended [`Default`] implementation.
 #[doc(alias = "test_recommended_default")]
 macro_rules! test_recommended_default_impl {
     ($ty: ty) => {{

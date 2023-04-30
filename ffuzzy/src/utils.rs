@@ -4,9 +4,9 @@
 
 /// Computes the base-2 logarithm (floored) of an [`u64`] value.
 ///
-/// This is the wrapper with fallbacks for stable [`u64::ilog2`].
+/// This is the wrapper with fallbacks for stable [`u64::ilog2()`].
 ///
-/// # Development Notes
+/// # Development Notes (TODO)
 ///
 /// Consider removing it once MSRV of 1.67 is acceptable.
 #[inline(always)]

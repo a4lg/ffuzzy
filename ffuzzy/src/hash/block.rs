@@ -26,7 +26,7 @@ use crate::macros::{optionally_unsafe, invariant};
 /// (the [`Far`](Self::Far) variant).
 ///
 /// In this crate, it can efficiently handle such relations by using the
-/// [*base-2 logarithms* form of the block size](crate::FuzzyHashData#block-size)
+/// [*base-2 logarithms* form of the block size](crate::hash::FuzzyHashData#block-size)
 /// (no multiplication required).
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,7 +58,7 @@ impl BlockSizeRelation {
 
 /// Utility related to block size part of the fuzzy hash.
 ///
-/// See also: ["Block Size" section of `FuzzyHashData`](crate::FuzzyHashData#block-size)
+/// See also: ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
 #[allow(non_snake_case)]
 pub mod BlockSize {
     use super::*;
@@ -73,8 +73,9 @@ pub mod BlockSize {
 
     /// The number of valid block sizes.
     ///
-    /// `NUM_VALID` is the smallest value which 2<sup>n</sup>
-    /// exceeds [`u32::MAX`].
+    /// `NUM_VALID` is the smallest value which 2<sup>n</sup> exceeds
+    /// [`u32::MAX`] and this value itself is not valid as a *base-2 logarithm*
+    /// form of the block size (in fact, this is the *smallest* invalid value).
     pub const NUM_VALID: usize = 31;
 
     /// Checks whether a given block size is valid.
@@ -116,7 +117,7 @@ pub mod BlockSize {
     /// It returns [`None`] if `log_block_size` is not valid.
     ///
     /// See also:
-    /// ["Block Size" section of `FuzzyHashData`](crate::FuzzyHashData#block-size)
+    /// ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
     #[inline]
     pub fn from_log(log_block_size: u8) -> Option<u32> {
         if is_log_valid(log_block_size) {
@@ -130,8 +131,8 @@ pub mod BlockSize {
     /// Precomputed block size strings.
     ///
     /// All valid block sizes are precomputed as raw strings to avoid
-    /// calling [`u32::to_string`](std::string::ToString::to_string)
-    /// from [`FuzzyHash::to_string`](crate::FuzzyHash::to_string).
+    /// calling [`u32::to_string()`](std::string::ToString::to_string())
+    /// from [`FuzzyHash::to_string()`](crate::hash::FuzzyHash::to_string()).
     pub(crate) const BLOCK_SIZES_STR: [&str; NUM_VALID] = [
         "3",
         "6",
@@ -196,7 +197,7 @@ pub mod BlockSize {
         0x1e, 0x09, 0x13, 0x0f, 0x1d, 0x12, 0x1c, 0x1b,
     ];
 
-    /// The internal implementation of [`log_from_valid_unchecked`].
+    /// The internal implementation of [`log_from_valid_unchecked()`].
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         let value = LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
@@ -314,7 +315,7 @@ pub mod BlockSize {
 
 /// Utility (constants) related to block hash part of the fuzzy hash.
 ///
-/// See also: ["Block Hashes" section of `FuzzyHashData`](crate::FuzzyHashData#block-hashes)
+/// See also: ["Block Hashes" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-hashes)
 #[allow(non_snake_case)]
 pub mod BlockHash {
     /// The number of alphabets used in the block hash part of a fuzzy hash.
@@ -325,30 +326,34 @@ pub mod BlockHash {
     /// (since ssdeep generates a 6-bit hash value per "piece").
     pub const ALPHABET_SIZE: usize = 64;
 
-    /// The maximum size of each block hash.
+    /// The maximum size of the block hash.
     ///
     /// ssdeep is a fuzzy *hash*.  We should be able to easily interchange
     /// the hash value and storing 6-bit hash values for all pieces is not useful
     /// enough.
     /// This constant limits the number of "pieces" to store in each block hash.
     ///
-    /// Note that, since ssdeep is not a cryptographic hash, it's important to
-    /// limit the size of the block hash to prevent an adversary to generate a
-    /// number of "pieces" by placing an adversarial pattern (that would make
-    /// the resulting hash huge if the size of the block hash is not limited
-    /// properly).
+    /// Note that, since ssdeep is not a cryptographic hash and is in variable
+    /// length, it's important to limit the size of the block hash to prevent
+    /// an adversary to generate a number of "pieces" by placing an adversarial
+    /// pattern (that would make the resulting hash huge if the size of the
+    /// block hash is not limited properly).
     pub const FULL_SIZE: usize = 64;
 
-    /// The half size of each block hash.
+    /// The half (truncated) size of the block hash.
     ///
-    /// This is used when a fuzzy hash is generated.
+    /// This is the half of [`FULL_SIZE`].
+    ///
     /// Normally, the second block hash is truncated to this size.
+    ///
+    /// See also:
+    /// ["Truncation" section of `FuzzyHashData`](crate::hash::FuzzyHashData#truncation)
     pub const HALF_SIZE: usize = FULL_SIZE / 2;
 
     /// The maximum size of the sequence so that the same character can be
     /// repeated in a block hash.
     ///
-    /// See also: ["Normalization" section of `FuzzyHashData`](crate::FuzzyHashData#normalization)
+    /// See also: ["Normalization" section of `FuzzyHashData`](crate::hash::FuzzyHashData#normalization)
     pub const MAX_SEQUENCE_SIZE: usize = 3;
 
     /// The minimum length of the common substring to compute edit distance

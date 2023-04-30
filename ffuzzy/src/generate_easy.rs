@@ -9,9 +9,10 @@ use crate::hash::RawFuzzyHash;
 
 /// Generates a fuzzy hash from a given buffer.
 ///
-/// # Example (requires the `alloc` feature)
+/// # Example
 ///
 /// ```
+/// // Requires the "alloc" feature to use `to_string` method (default enabled).
 /// # #[cfg(feature = "alloc")]
 /// assert_eq!(
 ///     ssdeep::hash_buf(b"Hello, World!\n").unwrap().to_string(),

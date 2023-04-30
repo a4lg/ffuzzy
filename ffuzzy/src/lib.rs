@@ -17,7 +17,7 @@
 //!
 //! Some interface originates from [ffuzzy++](https://github.com/a4lg/ffuzzypp),
 //! a C++ port of libfuzzy written by Tsukasa OI with additional features.  They
-//! enabled more efficient handling of fuzzy hashes on large scale clustering.
+//! enable more efficient handling of fuzzy hashes on large scale clustering.
 //!
 //! If you understand both [the property of fuzzy hashes](FuzzyHashData) and
 //! this crate well, you can cluster the fuzzy hashes over 5 times faster than
@@ -54,7 +54,7 @@
 //! ```rust
 //! # #[cfg(not(all(feature = "std", feature = "easy-functions")))]
 //! # fn main() {}
-//! // Required Features: "std" and "easy-functions"
+//! // Required Features: "std" and "easy-functions" (default enabled)
 //! # #[cfg(all(feature = "std", feature = "easy-functions"))]
 //! fn main() -> Result<(), ssdeep::GeneratorOrIOError> {
 //!     let fuzzy_hash = ssdeep::hash_file("data/examples/hello.txt")?;
@@ -67,7 +67,7 @@
 //! ### Comparing Two Fuzzy Hashes
 //!
 //! ```rust
-//! // Required Feature: "easy-functions"
+//! // Required Feature: "easy-functions" (default enabled)
 //! # #[cfg(feature = "easy-functions")]
 //! # {
 //! let score = ssdeep::compare(
@@ -83,17 +83,18 @@
 //! ### Hashing a Buffer
 //!
 //! ```rust
+//! // Requires the "alloc" feature to use the `to_string` method (default enabled).
 //! use ssdeep::{Generator, RawFuzzyHash};
 //!
 //! let mut generator = Generator::new();
 //! let buf: &[u8] = b"Hello, World!";
 //!
 //! // Optional but supplying the *total* input size first improves the performance.
-//! // `buf.len` for `update` and `1` for `update_by_iter` (see below).
+//! // `buf.len` for `update()` and `1` for `update_by_iter()` (see below).
 //! generator.set_fixed_input_size_in_usize(buf.len() + 1).unwrap();
 //!
 //! // Update the internal state of the generator.
-//! // Of course, you can call `update`-family functions multiple times.
+//! // Of course, you can call `update()`-family methods multiple times.
 //! generator.update(buf);
 //! generator.update_by_iter(core::iter::repeat(b'\n').take(1));  // append one '\n'
 //!
@@ -105,6 +106,7 @@
 //! ### Comparing Fuzzy Hashes
 //!
 //! ```rust
+//! // Requires the "alloc" feature to use the `to_string` method (default enabled).
 //! use core::str::FromStr;
 //! use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
 //!
@@ -150,13 +152,15 @@
 //! ### Advanced pre-filtering
 //!
 //! To narrow fuzzy hash pairs to compare, ffuzzy v0.2 provides two ways for
-//! pre-filtering:
+//! pre-filtering (*Note:* you have to make sure that each value in the set of
+//! normalized fuzzy hashes is unique):
 //!
 //! #### Raw access to block hash substring windows
 //!
 //! The [`block_hash_1_windows()`](FuzzyHashData::block_hash_1_windows) and [`block_hash_2_windows()`](FuzzyHashData::block_hash_2_windows) methods provide raw
 //! access to block hash substring windows.  To edit distance-based comparison to
-//! occur on two block hashes, at least one common substring must be exist.
+//! occur on two block hashes with the same effective block size, at least one
+//! common substring must be exist.
 //!
 //! This is intended for relatively large scale clustering (involving separate
 //! database).
@@ -171,7 +175,7 @@
 //!
 //! ## Crate Features
 //!
-//! *   `alloc`, `std` (default)  
+//! *   `alloc` and `std` (default)  
 //!     This crate supports `no_std` (by disabling both of them) and
 //!     `alloc` and `std` are built on the minimum `no_std` implementation.
 //!     Those features enable implementations that depend on `alloc` and `std`,

@@ -15,7 +15,7 @@ pub mod BlockHashPositionArrayElement {
     /// # Performance Analysis
     ///
     /// This function expects many constant foldings assuming constant `len`.
-    /// [`has_sequences_const`] forces to do that.
+    /// [`has_sequences_const()`] forces to do that.
     #[inline(always)]
     pub const fn has_sequences(pa_elem: u64, len: u32) -> bool {
         if len == 0 { return true; }
@@ -69,7 +69,7 @@ pub mod BlockHashPositionArrayElement {
         mask != 0
     }
 
-    /// The generic variant of [`has_sequences`](has_sequences).
+    /// The generic variant of [`has_sequences()`](has_sequences()).
     ///
     /// It improves the performance by intensive constant foldings.
     #[inline(always)]
@@ -133,7 +133,7 @@ pub trait BlockHashPositionArrayData {
     ///
     /// Note that, unlike v0.1.x, this method does not check whether the object
     /// contains a normalized string.  For this purpose, use
-    /// [`is_valid_and_normalized`](Self::is_valid_and_normalized) instead.
+    /// [`is_valid_and_normalized()`](Self::is_valid_and_normalized()) instead.
     fn is_valid(&self) -> bool {
         let len = self.len();
         if len > 64 { return false; }
@@ -159,7 +159,8 @@ pub trait BlockHashPositionArrayData {
     /// Performs full validity checking and the normalization test
     /// of a position array object.
     ///
-    /// If it returns [`true`], the string is already normalized.
+    /// If it returns [`true`], the position array representation is valid *and*
+    /// the corresponding string is already normalized.
     ///
     /// To pass this validity test, the string cannot contain a sequence
     /// consisting of the same character longer than
@@ -206,7 +207,7 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
 /// use ssdeep::compare::position_array::BlockHashPositionArrayImplInternal;
 /// ```
 pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::is_equiv_unchecked`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::is_equiv_unchecked()`].
     #[inline]
     fn is_equiv_internal(&self, other: &[u8]) -> bool {
         debug_assert!(self.is_valid());
@@ -226,7 +227,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         true
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::has_common_substring_unchecked`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::has_common_substring_unchecked()`].
     #[inline(always)]
     fn has_common_substring_internal(&self, other: &[u8]) -> bool {
         debug_assert!(self.is_valid());
@@ -264,7 +265,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         false
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::edit_distance_unchecked`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::edit_distance_unchecked()`].
     #[inline(always)]
     fn edit_distance_internal(&self, other: &[u8]) -> u32 {
         let len = self.len();
@@ -301,7 +302,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         cur
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_raw_unchecked`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_raw_unchecked()`].
     #[inline(always)]
     fn score_strings_raw_internal(&self, other: &[u8]) -> u32 {
         let len = self.len();
@@ -330,7 +331,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         )) / BlockHash::FULL_SIZE as u32
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_unchecked`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_unchecked()`].
     #[inline(never)]
     fn score_strings_internal(&self, other: &[u8], log_block_size: u8) -> u32 {
         /*
@@ -384,16 +385,16 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     ///
     /// This function implements a Boyer–Moore-like bit-parallel algorithm to
     /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the k-LCF problem
+    /// Backward Shift-Add algorithm for the *k*-LCF problem
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
     /// (which searches the longest common substring with
-    /// up to k errors under the Hamming distance).
+    /// up to *k* errors under the Hamming distance).
     ///
     /// This algorithm is modified:
     /// *   to search only perfect matches (up to 0 errors),
     /// *   to return as soon as possible if it finds a common substring and
     /// *   to share the position array representation with
-    ///     [`BlockHashPositionArrayImpl::edit_distance`]
+    ///     [`BlockHashPositionArrayImpl::edit_distance()`]
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Safety
@@ -519,16 +520,16 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///
     /// This function implements a Boyer–Moore-like bit-parallel algorithm to
     /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the k-LCF problem
+    /// Backward Shift-Add algorithm for the *k*-LCF problem
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
     /// (which searches the longest common substring with
-    /// up to k errors under the Hamming distance).
+    /// up to *k* errors under the Hamming distance).
     ///
     /// This algorithm is modified:
     /// *   to search only perfect matches (up to 0 errors),
     /// *   to return as soon as possible if it finds a common substring and
     /// *   to share the position array representation with
-    ///     [`edit_distance`](Self::edit_distance)
+    ///     [`edit_distance()`](Self::edit_distance())
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Usage Constraints

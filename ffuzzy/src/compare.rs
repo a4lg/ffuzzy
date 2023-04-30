@@ -42,9 +42,16 @@ use position_array::BlockHashPositionArrayImplUnsafe;
 /// in ssdeep 2.13).  Even if we generate this object each time we compare
 /// two fuzzy hashes, it's usually faster than `fuzzy_compare` in ssdeep 2.13.
 ///
-/// # Examples (requires the `alloc` feature)
+/// In fact, if you just compare two fuzzy hashes in this crate, a temporary
+/// [`FuzzyHashCompareTarget`] object is created from either side
+/// of the comparison.
+///
+/// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+///
+/// # Examples
 ///
 /// ```rust
+/// // Requires the global allocator to use `Vec` (default on std).
 /// # #[cfg(feature = "alloc")]
 /// # {
 /// use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
@@ -70,6 +77,7 @@ pub struct FuzzyHashCompareTarget {
     /// See also:
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
+    /// 3.  [`block_hash_1()`](Self::block_hash_1())
     blockhash1: [u64; BlockHash::ALPHABET_SIZE],
 
     /// The position array representation of block hash 2.
@@ -77,21 +85,27 @@ pub struct FuzzyHashCompareTarget {
     /// See also:
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
+    /// 3.  [`block_hash_2()`](Self::block_hash_2())
     blockhash2: [u64; BlockHash::ALPHABET_SIZE],
 
     /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
+    ///
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     len_blockhash1: u8,
+
     /// Length of the block hash 2 (up to [`BlockHash::FULL_SIZE`]).
+    ///
+    /// See also: [`block_hash_2()`](Self::block_hash_2())
     len_blockhash2: u8,
 
-    /// Base-2 logarithm form of the actual block size.
+    /// *Base-2 logarithm* form of the actual block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     log_blocksize: u8,
 }
 
-/// The return type of [`FuzzyHashCompareTarget::block_hash_1`] and
-/// [`FuzzyHashCompareTarget::block_hash_2`].
+/// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
+/// [`FuzzyHashCompareTarget::block_hash_2()`].
 #[cfg(not(feature = "unsafe"))]
 macro_rules! compare_target_block_hash_pub_impl {
     ($a:lifetime) => {
@@ -99,8 +113,8 @@ macro_rules! compare_target_block_hash_pub_impl {
     };
 }
 
-/// The return type of [`FuzzyHashCompareTarget::block_hash_1`] and
-/// [`FuzzyHashCompareTarget::block_hash_2`].
+/// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
+/// [`FuzzyHashCompareTarget::block_hash_2()`].
 #[cfg(feature = "unsafe")]
 macro_rules! compare_target_block_hash_pub_impl {
     ($a:lifetime) => {
@@ -213,10 +227,10 @@ impl FuzzyHashCompareTarget {
 
     /// Position array-based representation of the block hash 1.
     ///
-    /// This is the same as [`block_hash_1`](Self::block_hash_1) except that
+    /// This is the same as [`block_hash_1()`](Self::block_hash_1()) except that
     /// it exposes some internals.
     ///
-    /// See also: [`block_hash_1`](Self::block_hash_1)
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     ///
     /// # Examples (Public part)
     ///
@@ -325,7 +339,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// This is internal only *and* mutable.
     ///
-    /// See also: [`block_hash_1`](Self::block_hash_1)
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     ///
     /// # Examples (That should fail)
     ///
@@ -381,7 +395,7 @@ impl FuzzyHashCompareTarget {
 
     /// Position array-based representation of the block hash 2.
     ///
-    /// See also: [`block_hash_1`](Self::block_hash_1)
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     #[inline(always)]
     pub fn block_hash_2(&self) -> compare_target_block_hash_pub_impl!('_) {
         BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
@@ -389,10 +403,10 @@ impl FuzzyHashCompareTarget {
 
     /// Position array-based representation of the block hash 2.
     ///
-    /// This is the same as [`block_hash_2`](Self::block_hash_2) except that
+    /// This is the same as [`block_hash_2()`](Self::block_hash_2()) except that
     /// it exposes some internals.
     ///
-    /// See also: [`block_hash_1_internal`](Self::block_hash_1_internal)
+    /// See also: [`block_hash_1_internal()`](Self::block_hash_1_internal())
     #[inline(always)]
     fn block_hash_2_internal(&self)
         -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
@@ -404,7 +418,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// This is internal only *and* mutable.
     ///
-    /// See also: [`block_hash_1_mut`](Self::block_hash_1_mut)
+    /// See also: [`block_hash_1_mut()`](Self::block_hash_1_mut())
     #[inline(always)]
     fn block_hash_2_mut(&mut self)
         -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplMutInternal
@@ -488,7 +502,7 @@ impl FuzzyHashCompareTarget {
         self.is_equiv_except_block_size(hash)
     }
 
-    /// The internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked`].
+    /// The internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked()`].
     #[inline(always)]
     fn score_cap_on_block_hash_comparison_internal(
         log_block_size: u8,
@@ -509,7 +523,7 @@ impl FuzzyHashCompareTarget {
     /// # Safety
     ///
     /// If `log_block_size` is equal to or larger than
-    /// [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER),
+    /// [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER)
     /// and/or both lengths are too large, it may cause an
     /// arithmetic overflow and return an useless value.
     #[cfg(feature = "unsafe")]
@@ -579,7 +593,7 @@ impl FuzzyHashCompareTarget {
             && self.block_hash_2().is_valid_and_normalized()
     }
 
-    /// The internal implementation of [`Self::compare_unequal_near_eq_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_eq_unchecked()`].
     #[inline]
     fn compare_unequal_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
@@ -629,7 +643,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_eq_internal(other)
     }
 
-    /// **SLOW:** Compare two fuzzy hashes assuming both are different and
+    /// *Slow*: Compare two fuzzy hashes assuming both are different and
     /// their block sizes have a relation of [`BlockSizeRelation::NearEq`].
     ///
     /// # Usage Constraints
@@ -644,8 +658,8 @@ impl FuzzyHashCompareTarget {
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare_near_eq`](Self::compare_near_eq) (safe Rust)
-    /// *   [`compare_unequal_near_eq_unchecked`](Self::compare_unequal_near_eq_unchecked)
+    /// *   [`compare_near_eq()`](Self::compare_near_eq()) (safe Rust)
+    /// *   [`compare_unequal_near_eq_unchecked()`](Self::compare_unequal_near_eq_unchecked())
     ///     (unsafe Rust)
     #[inline(always)]
     pub fn compare_unequal_near_eq<const S1: usize, const S2: usize>(
@@ -663,7 +677,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_eq_internal(other)
     }
 
-    /// The internal implementation of [`Self::compare_near_eq_unchecked`].
+    /// The internal implementation of [`Self::compare_near_eq_unchecked()`].
     #[inline]
     fn compare_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
@@ -726,7 +740,7 @@ impl FuzzyHashCompareTarget {
         self.compare_near_eq_internal(other)
     }
 
-    /// The internal implementation of [`Self::compare_unequal_near_lt_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_lt_unchecked()`].
     #[inline(always)]
     fn compare_unequal_near_lt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -790,7 +804,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_lt_internal(other)
     }
 
-    /// The internal implementation of [`Self::compare_unequal_near_gt_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_near_gt_unchecked()`].
     #[inline(always)]
     fn compare_unequal_near_gt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -854,7 +868,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_near_gt_internal(other)
     }
 
-    /// The internal implementation of [`Self::compare_unequal_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_unchecked()`].
     #[inline]
     fn compare_unequal_internal<const S1: usize, const S2: usize>(
         &self,
@@ -897,7 +911,7 @@ impl FuzzyHashCompareTarget {
         self.compare_unequal_internal(other)
     }
 
-    /// **SLOW:** Compare two normalized fuzzy hashes assuming
+    /// *Slow*: Compare two normalized fuzzy hashes assuming
     /// both are different.
     ///
     /// # Usage Constraints
@@ -910,8 +924,8 @@ impl FuzzyHashCompareTarget {
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare`](Self::compare) (safe Rust)
-    /// *   [`compare_unequal_unchecked`](Self::compare_unequal_unchecked)
+    /// *   [`compare()`](Self::compare()) (safe Rust)
+    /// *   [`compare_unequal_unchecked()`](Self::compare_unequal_unchecked())
     ///     (unsafe Rust)
     #[inline(always)]
     pub fn compare_unequal<const S1: usize, const S2: usize>(
@@ -948,7 +962,7 @@ impl FuzzyHashCompareTarget {
         }
     }
 
-    /// The internal implementation of [`Self::is_comparison_candidate_near_eq_unchecked`].
+    /// The internal implementation of [`Self::is_comparison_candidate_near_eq_unchecked()`].
     #[inline]
     fn is_comparison_candidate_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
@@ -969,7 +983,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearEq`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Safety
     ///
@@ -996,7 +1010,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearEq`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Usage Constraints
     ///
@@ -1017,7 +1031,7 @@ impl FuzzyHashCompareTarget {
         self.is_comparison_candidate_near_eq_internal(other)
     }
 
-    /// The internal implementation of [`Self::is_comparison_candidate_near_lt_unchecked`].
+    /// The internal implementation of [`Self::is_comparison_candidate_near_lt_unchecked()`].
     #[inline]
     fn is_comparison_candidate_near_lt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1037,7 +1051,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearLt`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Safety
     ///
@@ -1064,7 +1078,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearLt`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Usage Constraints
     ///
@@ -1085,7 +1099,7 @@ impl FuzzyHashCompareTarget {
         self.is_comparison_candidate_near_lt_internal(other)
     }
 
-    /// The internal implementation of [`Self::is_comparison_candidate_near_gt_unchecked`].
+    /// The internal implementation of [`Self::is_comparison_candidate_near_gt_unchecked()`].
     #[inline]
     fn is_comparison_candidate_near_gt_internal<const S1: usize, const S2: usize>(
         &self,
@@ -1105,7 +1119,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearGt`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Safety
     ///
@@ -1132,7 +1146,7 @@ impl FuzzyHashCompareTarget {
     /// assuming that their block sizes have a relation of
     /// [`BlockSizeRelation::NearGt`].
     ///
-    /// See also: [`is_comparison_candidate`](Self::is_comparison_candidate)
+    /// See also: [`is_comparison_candidate()`](Self::is_comparison_candidate())
     ///
     /// # Usage Constraints
     ///
@@ -1239,7 +1253,7 @@ where
         target.compare(other.as_ref())
     }
 
-    /// The internal implementation of [`Self::compare_unequal_unchecked`].
+    /// The internal implementation of [`Self::compare_unequal_unchecked()`].
     #[inline]
     fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
@@ -1262,7 +1276,7 @@ where
         self.compare_unequal_internal(other)
     }
 
-    /// **SLOW:** Compare two fuzzy hashes assuming both are different.
+    /// *Slow*: Compare two fuzzy hashes assuming both are different.
     ///
     /// # Usage Constraints
     ///
@@ -1274,8 +1288,8 @@ where
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare`](Self::compare) (safe Rust)
-    /// *   [`compare_unequal_unchecked`](Self::compare_unequal_unchecked)
+    /// *   [`compare()`](Self::compare()) (safe Rust)
+    /// *   [`compare_unequal_unchecked()`](Self::compare_unequal_unchecked())
     ///     (unsafe Rust)
     #[inline(always)]
     pub fn compare_unequal(&self, other: impl AsRef<Self>) -> u32 {

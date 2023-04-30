@@ -3,7 +3,7 @@
 
 
 /// An enumeration representing a cause of
-/// a [`fuzzy hash`](crate::FuzzyHashData) parse error.
+/// a [fuzzy hash](crate::hash::FuzzyHashData) parse error.
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -40,9 +40,9 @@ impl core::fmt::Display for ParseErrorKind {
 
 
 /// A part which (possibly) caused a
-/// [`fuzzy hash`](crate::FuzzyHashData) parse error.
+/// [fuzzy hash](crate::hash::FuzzyHashData) parse error.
 ///
-/// See [`FuzzyHashData`](crate::FuzzyHashData) for corresponding parts.
+/// See [`FuzzyHashData`](crate::hash::FuzzyHashData) for corresponding parts.
 ///
 /// Since the parser ignores the file name part,
 /// this part is not in this enumeration.
@@ -69,7 +69,7 @@ impl core::fmt::Display for ParseErrorOrigin {
 
 
 /// The error type for parse operations of
-/// [`FuzzyHashData`](crate::FuzzyHashData).
+/// [`FuzzyHashData`](crate::hash::FuzzyHashData).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseError(
     pub(crate) ParseErrorKind,
@@ -77,7 +77,8 @@ pub struct ParseError(
     pub(crate) usize
 );
 
-/// The trait implementing a [`FuzzyHashData`](crate::FuzzyHashData) parse error.
+/// The trait implementing a [`FuzzyHashData`](crate::hash::FuzzyHashData)
+/// parse error.
 pub trait ParseErrorInfo {
     /// Returns the cause of the error.
     fn kind(&self) -> ParseErrorKind;

@@ -69,7 +69,7 @@ pub(crate) mod test_utils;
 /// probability is 1 / 393 216 per byte, half of the probability on the
 /// block hash 1.
 ///
-/// Since ssdeep uses [a 32-bit hash function](crate::internal_hashes::RollingHash)
+/// Since ssdeep uses [a 32-bit hash function](crate::generate::RollingHash)
 /// to decide whether to perform a piece-splitting, this probability will get
 /// inaccurate as the block size gets larger.
 ///
@@ -126,7 +126,7 @@ pub(crate) mod test_utils;
 ///
 /// The final similarity score is the maximum of two block hash comparisons
 /// (note that [the `score` function on small block sizes will cap the score to
-/// prevent exaggeration of matches](crate::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison)).
+/// prevent exaggeration of matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
 ///
 /// If you have two fuzzy hashes with different block sizes but they are *near*
 /// enough, we can still perform a block hash comparison.
@@ -184,13 +184,13 @@ pub(crate) mod test_utils;
 ///
 /// In this crate, this process is called *normalization*.
 ///
-/// ssdeep normally generates (as well as [`Generator`](crate::Generator)) not
-/// normalized, raw fuzzy hashes.  So, making a distinction between normalized
+/// ssdeep normally generates (as well as [`Generator`](crate::generate::Generator))
+/// not normalized, raw fuzzy hashes.  So, making a distinction between normalized
 /// and raw forms are important.
 ///
 /// ## Truncation
 ///
-/// ssdeep normally generates (as well as [`Generator`](crate::Generator))
+/// ssdeep normally generates (as well as [`Generator`](crate::generate::Generator))
 /// *truncated* fuzzy hashes.  In the truncated fuzzy hash, length of block hash
 /// 2 is limited to [`BlockHash::HALF_SIZE`], half of the maximum length of
 /// block hash 1 ([`BlockHash::FULL_SIZE`]).
@@ -199,6 +199,47 @@ pub(crate) mod test_utils;
 /// typically useless.  So, most operations are performed in short, truncated
 /// fuzzy hashes by default.  Short variants of [`FuzzyHashData`] is smaller
 /// than longer variants so it can be used to reduce memory footprint.
+///
+/// # Fuzzy Hash Comparison
+///
+/// For the basic concept of the comparison, see the
+/// ["Relations with Block Size" section](FuzzyHashData#relations-with-block-size)
+/// section.
+///
+/// In this section, we describe the full comparison algorithm.
+///
+/// 1.  If two normalized hashes `A` and `B` are completely the same,
+///     the similarity score is `100` (a perfect match) no matter what.
+///
+///     This case is not subject to the edit distance-based scoring
+///     For instance, [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
+///     may return `false` on such cases.
+///
+///     So, this case must be handled separately.
+///
+/// 2.  For each block hash pair (in which the effective block size match),
+///     compute the sub-similarity score as follows:
+///
+///     1.  Search for a common substring of the length of
+///         [`BlockHash::MIN_LCS_FOR_COMPARISON`] or longer.
+///
+///         If we could not find one, the sub-similarity score is `0` and no
+///         edit distance-based scoring is performed.
+///
+///     2.  Compute the edit distance between two block hashes and scale it
+///         *   from `0..=(A.len()+B.len())` (`0` is the perfect match)
+///         *   to `0..=100` (`100` is the perfect match).
+///
+///     3.  For small block sizes,
+///         [cap the score to prevent exaggregating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+///
+/// 3.  Take the maximum of sub-similarity scores
+///     (`0` if there's no sub-similarity scores
+///     i.e. [block sizes are far](BlockSizeRelation::Far)).
+///
+/// For actual comparison, a
+/// [`FuzzyHashCompareTarget`](crate::compare::FuzzyHashCompareTarget) object is used.
+/// See this struct for details.
 #[repr(align(8))]
 #[derive(Copy, Clone)]
 pub struct FuzzyHashData<const S1: usize, const S2: usize, const NORM: bool>
@@ -228,7 +269,7 @@ where
     /// [`BlockHash::FULL_SIZE`] or [`BlockHash::HALF_SIZE`]).
     pub(crate) len_blockhash2: u8,
 
-    /// Base-2 logarithm form of the actual block size.
+    /// *Base-2 logarithm* form of the actual block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     pub(crate) log_blocksize: u8,
@@ -302,7 +343,7 @@ where
         }
     }
 
-    /// The internal implementation of [`Self::init_from_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::init_from_internals_raw_unchecked()`].
     fn init_from_internals_raw_internal(
         &mut self,
         log_block_size: u8,
@@ -402,7 +443,7 @@ where
         );
     }
 
-    /// The internal implementation of [`Self::new_from_internals_raw_unchecked`].
+    /// The internal implementation of [`Self::new_from_internals_raw_unchecked()`].
     #[allow(dead_code)]
     fn new_from_internals_raw_internal(
         log_block_size: u8,
@@ -475,7 +516,7 @@ where
         hash
     }
 
-    /// The internal implementation of [`Self::new_from_internals_unchecked`].
+    /// The internal implementation of [`Self::new_from_internals_unchecked()`].
     fn new_from_internals_internal(
         block_size: u32,
         block_hash_1: &[u8],
@@ -576,19 +617,19 @@ where
 
     /// A reference to the block hash 1.
     ///
-    /// # Safety Tips
+    /// # Safety
     ///
     /// You cannot modify a fuzzy hash while block hashes are borrowed through
-    /// [`block_hash_1`](Self::block_hash_1) or
-    /// [`block_hash_2`](Self::block_hash_2).
+    /// [`block_hash_1()`](Self::block_hash_1()) or
+    /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
     /// # use std::str::FromStr;
     /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
     /// let bh1 = hash.block_hash_1();
-    /// hash.normalize_in_place(); // <- ERROR: because block hash 1 is borrowed.
+    /// hash.normalize_in_place(); // <- ERROR: because the block hash 1 is borrowed.
     /// // If normalize_in_place succeeds, bh1 will hold an invalid slice
-    /// // because block hash 1 is going to be length 3 after the normalization.
+    /// // because the block hash 1 is going to be length 3 after the normalization.
     /// assert_eq!(bh1.len(), 4);
     /// ```
     #[inline]
@@ -603,13 +644,15 @@ where
     ///
     /// Elements that are not a part of the block hash are filled with zeroes.
     ///
-    /// See also: [`block_hash_1`](Self::block_hash_1)
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     #[inline]
     pub fn block_hash_1_as_array(&self) -> &[u8; S1] {
         &self.blockhash1
     }
 
     /// The length of the block hash 1.
+    ///
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
     #[inline]
     pub fn block_hash_1_len(&self) -> usize {
         self.len_blockhash1 as usize
@@ -617,19 +660,19 @@ where
 
     /// A reference to the block hash 2.
     ///
-    /// # Safety Tips
+    /// # Safety
     ///
     /// You cannot modify a fuzzy hash while block hashes are borrowed through
-    /// [`block_hash_1`](Self::block_hash_1) or
-    /// [`block_hash_2`](Self::block_hash_2).
+    /// [`block_hash_1()`](Self::block_hash_1()) or
+    /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
     /// # use std::str::FromStr;
     /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
     /// let bh2 = hash.block_hash_2();
-    /// hash.normalize_in_place(); // <- ERROR: because block hash 2 is borrowed.
+    /// hash.normalize_in_place(); // <- ERROR: because the block hash 2 is borrowed.
     /// // If normalize_in_place succeeds, bh2 will hold an invalid slice
-    /// // because block hash 2 is going to be length 3 after the normalization.
+    /// // because the block hash 2 is going to be length 3 after the normalization.
     /// assert_eq!(bh2.len(), 4);
     /// ```
     #[inline]
@@ -644,13 +687,15 @@ where
     ///
     /// Elements that are not a part of the block hash are filled with zeroes.
     ///
-    /// See also: [`block_hash_2`](Self::block_hash_2)
+    /// See also: [`block_hash_2()`](Self::block_hash_2())
     #[inline]
     pub fn block_hash_2_as_array(&self) -> &[u8; S2] {
         &self.blockhash2
     }
 
     /// The length of the block hash 2.
+    ///
+    /// See also: [`block_hash_2()`](Self::block_hash_2())
     #[inline]
     pub fn block_hash_2_len(&self) -> usize {
         self.len_blockhash2 as usize
@@ -673,6 +718,9 @@ where
     }
 
     /// The maximum length in the string representation.
+    ///
+    /// This is the maximum possible value of
+    /// the [`len_in_str()`](Self::len_in_str()) method.
     pub const MAX_LEN_IN_STR: usize = BlockSize::MAX_BLOCK_SIZE_LEN_IN_CHARS
         + Self::MAX_BLOCK_HASH_SIZE_1
         + Self::MAX_BLOCK_HASH_SIZE_2
@@ -718,7 +766,7 @@ where
     /// of the fuzzy hash.
     ///
     /// Required size of the `buffer` is
-    /// [`len_in_str()`](Self::len_in_str) bytes.  This size is exact.
+    /// [`len_in_str()`](Self::len_in_str()) bytes.  This size is exact.
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {
@@ -883,12 +931,12 @@ where
 
     /// Performs full equality checking of the internal structure.
     ///
-    /// While [`PartialEq::eq`] for this type is designed to be fast by ignoring
-    /// non-block hash bytes, this method performs full equality checking,
-    /// *not* ignoring "non-block hash" bytes.
+    /// While [`PartialEq::eq()`] for this type is designed to be fast by
+    /// ignoring non-block hash bytes, this method performs full equality
+    /// checking, *not* ignoring "non-block hash" bytes.
     ///
     /// The primary purpose of this is debugging and it should always
-    /// return the same value as [`PartialEq::eq`] result unless...
+    /// return the same value as [`PartialEq::eq()`] result unless...
     ///
     /// 1.  There is a bug in this crate, corrupting this structure or
     /// 2.  A memory corruption is occurred somewhere else.
@@ -1228,9 +1276,9 @@ where
     /// Windows representing normalized substrings
     /// suitable for filtering block hashes to match (block hash 1).
     ///
-    /// To compare two normalized block hashes, the scoring function requires
-    /// that two strings contain a common substring with a length of
-    /// [`BlockHash::MIN_LCS_FOR_COMPARISON`].
+    /// To compare two normalized block hashes with the same effective block
+    /// size, the scoring function requires that two strings contain a common
+    /// substring with a length of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
     ///
     /// This method provides an access to substrings of that length, allowing
     /// the specialized clustering application to filter fuzzy hashes to compare
@@ -1274,7 +1322,7 @@ where
     /// Windows representing substrings
     /// suitable for filtering block hashes to match (block hash 2).
     ///
-    /// See also: [`block_hash_1_windows`](Self::block_hash_1_windows).
+    /// See also: [`block_hash_1_windows()`](Self::block_hash_1_windows()).
     #[inline]
     pub fn block_hash_2_windows(&self) -> core::slice::Windows<'_, u8> {
         self.block_hash_2().windows(BlockHash::MIN_LCS_FOR_COMPARISON)
@@ -1520,7 +1568,7 @@ impl<const NORM: bool>
 ///
 /// 1.  Preserve the original string representation of the fuzzy hash
 ///     (when parsing existing fuzzy hashes) or
-/// 2.  Retrieve a fuzzy hash generated by [`Generator`](crate::Generator)
+/// 2.  Retrieve a fuzzy hash generated by [`Generator`](crate::generate::Generator)
 ///     (not normalized by default ssdeep),
 ///
 /// use a raw form, [`RawFuzzyHash`].
