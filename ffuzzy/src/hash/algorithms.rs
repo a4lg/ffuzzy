@@ -5,6 +5,7 @@
 
 #[cfg(feature = "alloc")]
 use alloc::string::String;
+
 use crate::base64::{BASE64_INVALID, BASE64_TABLE_U8, base64_index};
 #[cfg(feature = "alloc")]
 use crate::base64::BASE64_TABLE;

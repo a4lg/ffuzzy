@@ -7,8 +7,10 @@
 use core::str::FromStr;
 #[cfg(feature = "alloc")]
 use alloc::format;
+
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256StarStar;
+
 use crate::generate::{
     PartialFNVHash, RollingHash, BlockHashContext,
     Generator, GeneratorError

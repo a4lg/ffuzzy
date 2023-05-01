@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 use core::cmp::Ordering;
+
 use crate::macros::{optionally_unsafe, invariant};
 
 
