@@ -12,7 +12,7 @@ use crate::base64::BASE64_INVALID;
 use crate::hash::{FuzzyHashData, LongFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{BlockSize, BlockHash};
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
-use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, RleEncodings};
+use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, RleEncoding};
 use crate::test_utils::{assert_fits_in, test_for_each_type};
 
 
@@ -496,9 +496,9 @@ fn test_datamodel_corruption() {
         // RLE Block: Non-zero RLE block after termination (block hash 1)
         {
             for i in 1..<$ty>::RLE_BLOCK_SIZE_1 {
-                for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
+                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
-                    hash.rle_block1[i] = 1 | (l << RleEncodings::BITS_POSITION);
+                    hash.rle_block1[i] = 1 | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);
                 }
             }
@@ -506,9 +506,9 @@ fn test_datamodel_corruption() {
         // RLE Block: Non-zero RLE block after termination (block hash 2)
         {
             for i in 1..<$ty>::RLE_BLOCK_SIZE_2 {
-                for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
+                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
-                    hash.rle_block2[i] = 1 | (l << RleEncodings::BITS_POSITION);
+                    hash.rle_block2[i] = 1 | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);
                 }
             }
@@ -516,14 +516,14 @@ fn test_datamodel_corruption() {
         // RLE Block: Position exceeds the block hash size (block hash 1)
         {
             let mut hash = hash;
-            for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
-                hash.rle_block1[0] = 6 | (l << RleEncodings::BITS_POSITION);
+            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block1[0] = 6 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash);
             }
             assert_eq!(hash.norm_hash.len_blockhash1, 7);
-            for i in hash.norm_hash.len_blockhash1..=RleEncodings::MASK_POSITION {
-                for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block1[0] = i | (l << RleEncodings::BITS_POSITION);
+            for i in hash.norm_hash.len_blockhash1..=RleEncoding::MASK_POSITION {
+                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block1[0] = i | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);
                 }
             }
@@ -531,14 +531,14 @@ fn test_datamodel_corruption() {
         // RLE Block: Position exceeds the block hash size (block hash 2)
         {
             let mut hash = hash;
-            for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
-                hash.rle_block2[0] = 6 | (l << RleEncodings::BITS_POSITION);
+            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block2[0] = 6 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash);
             }
             assert_eq!(hash.norm_hash.len_blockhash2, 7);
-            for i in hash.norm_hash.len_blockhash2..=RleEncodings::MASK_POSITION {
-                for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block2[0] = i | (l << RleEncodings::BITS_POSITION);
+            for i in hash.norm_hash.len_blockhash2..=RleEncoding::MASK_POSITION {
+                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block2[0] = i | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);
                 }
             }
@@ -546,44 +546,44 @@ fn test_datamodel_corruption() {
         // RLE Block: Position is not the tail of identical character sequence (1)
         {
             let mut hash = hash;
-            for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
+            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
                 if l != 0 {
-                    hash.rle_block1[0] = 0 | (l << RleEncodings::BITS_POSITION);
+                    hash.rle_block1[0] = 0 | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);   // "**B"
                 }
-                hash.rle_block1[0] = 1 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 1 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "*BB"
-                hash.rle_block1[0] = 2 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 2 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash); // "BBB" (valid)
-                hash.rle_block1[0] = 3 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 3 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "BBC"
-                hash.rle_block1[0] = 4 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 4 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "BCD"
-                hash.rle_block1[0] = 5 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 5 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "CDD"
-                hash.rle_block1[0] = 6 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block1[0] = 6 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash); // "DDD" (valid)
             }
         }
         // RLE Block: Position is not the tail of identical character sequence (2)
         {
             let mut hash = hash;
-            for l in 0..RleEncodings::MAX_RUN_LENGTH as u8 {
+            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
                 if l != 0 {
-                    hash.rle_block2[0] = 0 | (l << RleEncodings::BITS_POSITION);
+                    hash.rle_block2[0] = 0 | (l << RleEncoding::BITS_POSITION);
                     hash_is_invalid!(hash);   // "**E"
                 }
-                hash.rle_block2[0] = 1 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 1 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "*EE"
-                hash.rle_block2[0] = 2 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 2 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash); // "EEE" (valid)
-                hash.rle_block2[0] = 3 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 3 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "EEF"
-                hash.rle_block2[0] = 4 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 4 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "EFG"
-                hash.rle_block2[0] = 5 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 5 | (l << RleEncoding::BITS_POSITION);
                 hash_is_invalid!(hash);   // "FGG"
-                hash.rle_block2[0] = 6 | (l << RleEncodings::BITS_POSITION);
+                hash.rle_block2[0] = 6 | (l << RleEncoding::BITS_POSITION);
                 hash_is_valid!(hash); // "GGG" (valid)
             }
         }
@@ -613,8 +613,8 @@ fn test_datamodel_corruption() {
         }
         // RLE Block: Canonicality on extension using multiple RLE encodings (1)
         {
-            assert_eq!(RleEncodings::BITS_POSITION, 6);
-            assert_eq!(RleEncodings::MAX_RUN_LENGTH, 4);
+            assert_eq!(RleEncoding::BITS_POSITION, 6);
+            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
             let mut hash = hash;
             // Extend five characters
             hash.rle_block1[0] = 0xc2; // RLE(2, 4)
@@ -640,8 +640,8 @@ fn test_datamodel_corruption() {
         }
         // RLE Block: Canonicality on extension using multiple RLE encodings (2)
         {
-            assert_eq!(RleEncodings::BITS_POSITION, 6);
-            assert_eq!(RleEncodings::MAX_RUN_LENGTH, 4);
+            assert_eq!(RleEncoding::BITS_POSITION, 6);
+            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
             let mut hash = hash;
             // Extend five characters
             hash.rle_block2[0] = 0xc2; // RLE(2, 4)
@@ -667,8 +667,8 @@ fn test_datamodel_corruption() {
         }
         // RLE Block: Maximum extension exceeds maximum length on current config (1)
         {
-            assert_eq!(RleEncodings::BITS_POSITION, 6);
-            assert_eq!(RleEncodings::MAX_RUN_LENGTH, 4);
+            assert_eq!(RleEncoding::BITS_POSITION, 6);
+            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
             let mut hash = hash;
             // On the current design, it exceeds maximum length by 7 (len_blockhash1).
             hash.rle_block1.fill(0xc2); // Fill with RLE(2, 4)
@@ -693,8 +693,8 @@ fn test_datamodel_corruption() {
         }
         // RLE Block: Maximum extension exceeds maximum length on current config (2)
         {
-            assert_eq!(RleEncodings::BITS_POSITION, 6);
-            assert_eq!(RleEncodings::MAX_RUN_LENGTH, 4);
+            assert_eq!(RleEncoding::BITS_POSITION, 6);
+            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
             let mut hash = hash;
             // On the current design, it exceeds maximum length by 7 (len_blockhash2).
             hash.rle_block2.fill(0xc2); // Fill with RLE(2, 4)
@@ -1111,7 +1111,7 @@ fn test_debug() {
     let mut hash = DualFuzzyHash::from_str("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
-    hash.rle_block1[15] = RleEncodings::encode(2, 4);
+    hash.rle_block1[15] = RleEncoding::encode(2, 4);
     assert_eq!(
         format!("{:?}", hash),
         "FuzzyHashDualData { \

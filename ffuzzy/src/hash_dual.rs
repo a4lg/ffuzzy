@@ -20,7 +20,7 @@ use crate::macros::{optionally_unsafe, invariant};
 mod tests;
 
 
-/// RLE Encodings as used in [`FuzzyHashDualData`].
+/// An RLE Encoding as used in [`FuzzyHashDualData`].
 ///
 /// # Bit Fields
 ///
@@ -47,7 +47,7 @@ mod tests;
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
 #[allow(non_snake_case)]
-pub(crate) mod RleEncodings {
+pub(crate) mod RleEncoding {
     /// Bits used to represent the position (offset).
     ///
     /// This is the start offset to repeat the same character.
@@ -204,7 +204,7 @@ mod private {
                     );
                     // This lower bound might be too pessimistic.
                     const_assert!(
-                        div_ceil($block_hash_size, RleEncodings::MAX_RUN_LENGTH) <= $rle_size
+                        div_ceil($block_hash_size, RleEncoding::MAX_RUN_LENGTH) <= $rle_size
                     );
                 )*
             }
@@ -277,16 +277,16 @@ mod algorithms {
                         // Use the last character offset in the identical character sequence.
                         let base_offset = len - 1;
                         seq -= BlockHash::MAX_SEQUENCE_SIZE;
-                        let seq_fill_size = seq / RleEncodings::MAX_RUN_LENGTH;
+                        let seq_fill_size = seq / RleEncoding::MAX_RUN_LENGTH;
                         invariant!(rle_offset < rle_block_out.len());
                         invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
                         invariant!(rle_offset <= rle_offset + seq_fill_size);
                         rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                            .fill(RleEncodings::encode(base_offset as u8, RleEncodings::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                            .fill(RleEncoding::encode(base_offset as u8, RleEncoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
                         rle_offset += seq_fill_size;
                         invariant!(rle_offset < rle_block_out.len());
                         rle_block_out[rle_offset] =
-                            RleEncodings::encode(base_offset as u8, (seq % RleEncodings::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                            RleEncoding::encode(base_offset as u8, (seq % RleEncoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
                         rle_offset += 1;
                         invariant!(rle_offset <= rle_block_out.len());
                     }
@@ -303,16 +303,16 @@ mod algorithms {
                 // Use the last character offset in the identical character sequence.
                 let base_offset = len - 1;
                 seq -= BlockHash::MAX_SEQUENCE_SIZE;
-                let seq_fill_size = seq / RleEncodings::MAX_RUN_LENGTH;
+                let seq_fill_size = seq / RleEncoding::MAX_RUN_LENGTH;
                 invariant!(rle_offset < rle_block_out.len());
                 invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
                 invariant!(rle_offset <= rle_offset + seq_fill_size);
                 rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                    .fill(RleEncodings::encode(base_offset as u8, RleEncodings::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                    .fill(RleEncoding::encode(base_offset as u8, RleEncoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
                 rle_offset += seq_fill_size;
                 invariant!(rle_offset < rle_block_out.len());
                 rle_block_out[rle_offset] =
-                    RleEncodings::encode(base_offset as u8, (seq % RleEncodings::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                    RleEncoding::encode(base_offset as u8, (seq % RleEncoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
                 rle_offset += 1;
                 invariant!(rle_offset <= rle_block_out.len());
             }
@@ -341,7 +341,7 @@ mod algorithms {
             let mut len_out = blockhash_len_in;
             for rle in rle_block_in {
                 // Decode position and length
-                let (pos, len) = RleEncodings::decode(*rle);
+                let (pos, len) = RleEncoding::decode(*rle);
                 if pos == 0 {
                     break;
                 }
@@ -412,7 +412,7 @@ mod algorithms {
                 continue;
             }
             // Decode position and length
-            let (pos, len) = RleEncodings::decode(*rle);
+            let (pos, len) = RleEncoding::decode(*rle);
             // Check position
             if unlikely(
                 pos < BlockHash::MAX_SEQUENCE_SIZE as u8 - 1 || pos >= blockhash_len || pos < prev_pos
@@ -421,7 +421,7 @@ mod algorithms {
             }
             if prev_pos == pos {
                 // For extension with the same position, check canonicality.
-                if unlikely(prev_len != RleEncodings::MAX_RUN_LENGTH as u8) {
+                if unlikely(prev_len != RleEncoding::MAX_RUN_LENGTH as u8) {
                     return false;
                 }
             }
@@ -535,13 +535,13 @@ where
     /// RLE block 1 for reverse normalization of
     /// [block hash 1](crate::hash::FuzzyHashData::blockhash1).
     ///
-    /// See [`RleEncodings`] for encoding details.
+    /// See [`RleEncoding`] for encoding details.
     rle_block1: [u8; C1],
 
     /// RLE block 2 for reverse normalization of
     /// [block hash 2](crate::hash::FuzzyHashData::blockhash2).
     ///
-    /// See [`RleEncodings`] for encoding details.
+    /// See [`RleEncoding`] for encoding details.
     rle_block2: [u8; C2],
 
     /// A normalized fuzzy hash object for comparison and the base storage
@@ -1053,7 +1053,7 @@ where
         impl core::fmt::Debug for DebugBuilderForRLEBlockEntry {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 if self.0 != 0 {
-                    let (pos, len) = RleEncodings::decode(self.0);
+                    let (pos, len) = RleEncoding::decode(self.0);
                     f.debug_tuple("RLE")
                         .field(&pos).field(&len)
                         .finish()
