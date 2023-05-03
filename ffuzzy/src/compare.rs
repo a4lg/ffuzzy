@@ -631,6 +631,8 @@ impl core::fmt::Debug for BlockHashPositionArray {
 /// in ssdeep 2.13).  Even if we generate this object each time we compare
 /// two fuzzy hashes, it's usually faster than `fuzzy_compare` in ssdeep 2.13.
 ///
+/// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+///
 /// # Examples (requires the `alloc` feature)
 ///
 /// ```rust

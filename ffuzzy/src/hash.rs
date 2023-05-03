@@ -199,6 +199,44 @@ pub(crate) mod test_utils;
 /// typically useless.  So, most operations are performed in short, truncated
 /// fuzzy hashes by default.  Short variants of [`FuzzyHashData`] is smaller
 /// than longer variants so it can be used to reduce memory footprint.
+///
+/// # Fuzzy Hash Comparison
+///
+/// For the basic concept of the comparison, see the
+/// ["Relations with Block Size" section](FuzzyHashData#relations-with-block-size)
+/// section.
+///
+/// In this section, we describe the full comparison algorithm.
+///
+/// 1.  If two normalized hashes `A` and `B` are completely the same,
+///     the similarity score is `100` no matter what.
+///
+///     This case is not subject to the edit distance-based scoring and must be
+///     handled separately.
+///
+/// 2.  For each block hash pair (in which the effective block size match),
+///     compute the sub-similarity score as follows:
+///
+///     1.  Search for a common substring of the length of
+///         [`BlockHash::MIN_LCS_FOR_COMPARISON`] or longer.
+///
+///         If we could not find one, the sub-similarity score is `0` and no
+///         edit distance-based scoring is performed.
+///
+///     2.  Compute the edit distance between two block hashes and scale it
+///         *   from `0..=(A.len()+B.len())` (`0` is the perfect match)
+///         *   to `0..=100` (`100` is the perfect match).
+///
+///     3.  For small block sizes,
+///         [cap the score to prevent exaggregating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+///
+/// 3.  Take the maximum of sub-similarity scores
+///     (`0` if there's no sub-similarity scores
+///     i.e. [block sizes are far](BlockSizeRelation::Far)).
+///
+/// For actual comparison, a
+/// [`FuzzyHashCompareTarget`](crate::compare::FuzzyHashCompareTarget) object is used.
+/// See this struct for details.
 #[repr(align(8))]
 #[derive(Copy, Clone)]
 pub struct FuzzyHashData<const S1: usize, const S2: usize, const NORM: bool>
