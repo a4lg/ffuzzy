@@ -502,11 +502,13 @@ mod algorithms {
 /// of this generic type, [`DualFuzzyHash`] and/or [`LongDualFuzzyHash`]
 /// (for most cases, [`DualFuzzyHash`] will be sufficient).
 ///
-/// # Examples (Basic; requires the `alloc` feature)
+///
+/// # Examples
 ///
 /// ```
 /// # #[cfg(feature = "alloc")]
 /// # {
+/// // Requires the "alloc" feature to use `to_string` method (default enabled).
 /// use core::str::FromStr;
 /// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
 ///
@@ -515,10 +517,26 @@ mod algorithms {
 ///
 /// let dual_hash = DualFuzzyHash::from_str(hash_str_raw).unwrap();
 ///
-/// // This object can contain both
+/// // This object can effectively contain both
 /// // normalized and raw fuzzy hash representations.
 /// assert_eq!(dual_hash.to_raw_form().to_string(),   hash_str_raw);
 /// assert_eq!(dual_hash.to_normalized().to_string(), hash_str_norm);
+///
+/// let another_hash = FuzzyHash::from_str(
+///     "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK"
+/// ).unwrap();
+///
+/// // You can directly compare a DualFuzzyHash against a FuzzyHash.
+/// //
+/// // This is almost as fast as comparison between two FuzzyHash objects
+/// // because the native representation inside DualFuzzyHash
+/// // is a FuzzyHash object.
+/// assert_eq!(another_hash.compare(dual_hash), 88);
+///
+/// // But DualFuzzyHash is not a drop-in replacement of FuzzyHash.
+/// // You need to use `as_ref_normalized()` to compare a FuzzyHash against
+/// // a DualFuzzyHash (direct comparison may be provided on later versions).
+/// assert_eq!(dual_hash.as_ref_normalized().compare(&another_hash), 88);
 /// # }
 /// ```
 #[repr(align(8))]
