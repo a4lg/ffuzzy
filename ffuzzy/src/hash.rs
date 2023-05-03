@@ -571,7 +571,7 @@ where
     /// The block size of the fuzzy hash.
     #[inline]
     pub fn block_size(&self) -> u32 {
-        BlockSize::from_log_unchecked(self.log_blocksize)
+        BlockSize::from_log_internal(self.log_blocksize)
     }
 
     /// A reference to the block hash 1.
@@ -1172,7 +1172,7 @@ where
             f.debug_struct("FuzzyHashData")
                 .field("LONG", &Self::IS_LONG_FORM)
                 .field("NORM", &Self::IS_NORMALIZED_FORM)
-                .field("block_size", &BlockSize::from_log_unchecked(self.log_blocksize))
+                .field("block_size", &BlockSize::from_log_internal(self.log_blocksize))
                 .field("blockhash1", &core::str::from_utf8(&buffer1[..self.len_blockhash1 as usize]).unwrap()) // grcov-excl-br-line:ARRAY
                 .field("blockhash2", &core::str::from_utf8(&buffer2[..self.len_blockhash2 as usize]).unwrap()) // grcov-excl-br-line:ARRAY
                 .finish()

@@ -923,7 +923,7 @@ fn test_ord() {
                 for bh2 in &sorted_dict {
                     for bh1_entry in bh1 {
                         for bh2_entry in bh2 {
-                            let mut s = BlockSize::from_log_unchecked(i).to_string();
+                            let mut s = BlockSize::from_log_internal(i).to_string();
                             s += ":";
                             s += *bh1_entry;
                             s += ":";

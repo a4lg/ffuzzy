@@ -798,7 +798,7 @@ where
     /// The block size of the fuzzy hash.
     #[inline]
     pub fn block_size(&self) -> u32 {
-        BlockSize::from_log_unchecked(self.norm_hash.log_blocksize)
+        BlockSize::from_log_internal(self.norm_hash.log_blocksize)
     }
 
     /// A reference to the normalized fuzzy hash.
@@ -1092,7 +1092,7 @@ where
             let buffer2 = self.norm_hash.blockhash2.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
             f.debug_struct("FuzzyHashDualData")
                 .field("LONG", &(S2 == BlockHash::FULL_SIZE))
-                .field("block_size", &BlockSize::from_log_unchecked(self.norm_hash.log_blocksize))
+                .field("block_size", &BlockSize::from_log_internal(self.norm_hash.log_blocksize))
                 .field("blockhash1", &core::str::from_utf8(&buffer1[..self.norm_hash.len_blockhash1 as usize]).unwrap())
                 .field("blockhash2", &core::str::from_utf8(&buffer2[..self.norm_hash.len_blockhash2 as usize]).unwrap())
                 .field("rle_block1", &(DebugBuilderForValidRLEBlock::new(&self.rle_block1)))

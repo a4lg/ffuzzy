@@ -1434,7 +1434,7 @@ fn test_ord() {
     for i in 0u8..=3 {
         for bs1 in sorted_dict {
             for bs2 in sorted_dict {
-                let mut s = BlockSize::from_log_unchecked(i).to_string();
+                let mut s = BlockSize::from_log_internal(i).to_string();
                 s += ":";
                 s += bs1;
                 s += ":";
