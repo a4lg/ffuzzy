@@ -3,7 +3,7 @@
 
 
 /// An enumeration representing a cause of
-/// a [`fuzzy hash`](crate::FuzzyHashData) parse error.
+/// a [fuzzy hash](crate::FuzzyHashData) parse error.
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,7 +37,7 @@ impl core::fmt::Display for ParseErrorKind {
 
 
 /// A part which (possibly) caused a
-/// [`fuzzy hash`](crate::FuzzyHashData) parse error.
+/// [fuzzy hash](crate::FuzzyHashData) parse error.
 ///
 /// See [`FuzzyHashData`](crate::FuzzyHashData) for corresponding parts.
 ///
