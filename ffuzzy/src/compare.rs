@@ -778,7 +778,7 @@ impl FuzzyHashCompareTarget {
     /// The block size of the comparison target.
     #[inline]
     pub fn block_size(&self) -> u32 {
-        BlockSize::from_log_unchecked(self.log_blocksize)
+        BlockSize::from_log_internal(self.log_blocksize)
     }
 
     /// Initialize the object from a given fuzzy hash
@@ -1432,7 +1432,7 @@ mod const_asserts {
         // or greater than 100 (meaning, no capping is required).
         (100 + FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u64 - 1) /
             FuzzyHashCompareTarget::MIN_LCS_FOR_BLOCKHASH as u64
-                <= BlockSize::from_log_unchecked(log_block_size) as u64 / BlockSize::MIN as u64
+                <= BlockSize::from_log_internal(log_block_size) as u64 / BlockSize::MIN as u64
     }
 
     // Prerequisite for 64-bit position array

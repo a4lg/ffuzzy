@@ -88,16 +88,26 @@ pub mod BlockSize {
         log_block_size < NUM_VALID as u8
     }
 
+    /// The internal implementation of [`from_log_unchecked`].
+    #[inline(always)]
+    pub(crate) const fn from_log_internal(log_block_size: u8) -> u32 {
+        MIN << log_block_size
+    }
+
     /// Converts *base-2 logarithm* form of the block size to the actual one
     /// without checking validity of the block size.
+    ///
+    /// # Safety
     ///
     /// `log_block_size` must be valid.
     ///
     /// See also:
-    /// ["Block Size" section of `FuzzyHashData`](crate::FuzzyHashData#block-size)
+    /// ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
+    #[cfg(feature = "unsafe")]
     #[inline(always)]
-    pub(crate) const fn from_log_unchecked(log_block_size: u8) -> u32 {
-        MIN << log_block_size
+    pub unsafe fn from_log_unchecked(log_block_size: u8) -> u32 {
+        debug_assert!(is_log_valid(log_block_size));
+        from_log_internal(log_block_size)
     }
 
     /// Converts *base-2 logarithm* form of the block size to the actual one.
@@ -109,7 +119,7 @@ pub mod BlockSize {
     #[inline]
     pub fn from_log(log_block_size: u8) -> Option<u32> {
         if is_log_valid(log_block_size) {
-            Some(from_log_unchecked(log_block_size))
+            Some(from_log_internal(log_block_size))
         }
         else {
             None
