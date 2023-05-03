@@ -78,7 +78,7 @@ pub mod BlockSize {
 
     /// Checks whether a given block size is valid.
     #[inline]
-    pub(crate) fn is_valid(block_size: u32) -> bool {
+    pub fn is_valid(block_size: u32) -> bool {
         (block_size % MIN == 0) && (block_size / MIN).is_power_of_two()
     }
 
