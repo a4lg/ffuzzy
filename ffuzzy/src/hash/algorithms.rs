@@ -9,10 +9,11 @@ use alloc::string::String;
 use crate::base64::{BASE64_INVALID, BASE64_TABLE_U8, base64_index};
 #[cfg(feature = "alloc")]
 use crate::base64::BASE64_TABLE;
-use crate::hash::BlockHashParseState;
-use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::block::{
     BlockHash, BlockSize, BlockHashSize, ConstrainedBlockHashSize
+};
+use crate::hash::parser_state::{
+    BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin
 };
 use crate::macros::{optionally_unsafe, invariant};
 

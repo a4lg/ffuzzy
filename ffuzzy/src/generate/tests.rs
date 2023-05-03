@@ -15,8 +15,7 @@ use crate::generate::{
     PartialFNVHash, RollingHash, BlockHashContext,
     Generator, GeneratorError
 };
-use crate::hash::FuzzyHashData;
-use crate::hash::RawFuzzyHash;
+use crate::hash::{FuzzyHashData, RawFuzzyHash};
 use crate::hash::block::{BlockSize, BlockHash};
 use crate::test_utils::{cover_auto_clone, cover_default, test_auto_clone, test_recommended_default};
 #[cfg(feature = "alloc")]
@@ -969,8 +968,8 @@ fn test_generator_large_triggers() {
 #[cfg(feature = "std")]
 #[test]
 fn test_generator_small_precomputed_vectors() {
-    use std::io::{BufRead, BufReader, Read};
     use std::fs::File;
+    use std::io::{BufRead, BufReader, Read};
     use std::str::FromStr;
     use crate::hash::LongRawFuzzyHash;
 

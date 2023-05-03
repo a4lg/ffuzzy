@@ -89,7 +89,6 @@ pub(crate) fn base64_index(ch: u8) -> u8 {
 #[doc(hidden)]
 mod const_asserts {
     use super::*;
-
     use static_assertions::const_assert_eq;
 
     const_assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());

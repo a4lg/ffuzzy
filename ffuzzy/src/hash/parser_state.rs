@@ -138,9 +138,9 @@ mod tests {
     use super::*;
     #[cfg(feature = "alloc")]
     use alloc::format;
+    use crate::test_utils::test_auto_clone;
     #[cfg(feature = "alloc")]
     use crate::test_utils::test_auto_debug_for_enum;
-    use crate::test_utils::test_auto_clone;
 
     #[test]
     fn test_parse_error_enums_clone() {

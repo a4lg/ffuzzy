@@ -73,7 +73,6 @@ pub(crate) mod RleEncoding {
     #[allow(clippy::int_plus_one)]
     mod const_asserts {
         use super::*;
-
         use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
         use crate::hash::block::BlockHash;
 
