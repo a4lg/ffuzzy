@@ -39,7 +39,7 @@ impl ParseErrorInfo for ParseErrorEither {
 
 impl core::fmt::Display for ParseErrorEither {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Error occurred while parsing fuzzy hash {3} ({1}, at byte offset {2}): {0}",
+        write!(f, "error occurred while parsing fuzzy hash {3} ({1}, at byte offset {2}): {0}",
             self.kind(),
             self.origin(),
             self.offset(),
@@ -187,17 +187,17 @@ mod tests {
         let err_eos_bh1 = ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2);
         let err_bs_invalid = ParseError(ParseErrorKind::BlockSizeIsInvalid, ParseErrorOrigin::BlockSize, 0);
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Left, err_empty)),
-            "Error occurred while parsing fuzzy hash 1 (block size, at byte offset 0): end-of-string is not expected.");
+            "error occurred while parsing fuzzy hash 1 (block size, at byte offset 0): end-of-string is not expected");
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Right, err_empty)),
-            "Error occurred while parsing fuzzy hash 2 (block size, at byte offset 0): end-of-string is not expected.");
+            "error occurred while parsing fuzzy hash 2 (block size, at byte offset 0): end-of-string is not expected");
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Left, err_eos_bh1)),
-            "Error occurred while parsing fuzzy hash 1 (block hash 1, at byte offset 2): end-of-string is not expected.");
+            "error occurred while parsing fuzzy hash 1 (block hash 1, at byte offset 2): end-of-string is not expected");
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Right, err_eos_bh1)),
-            "Error occurred while parsing fuzzy hash 2 (block hash 1, at byte offset 2): end-of-string is not expected.");
+            "error occurred while parsing fuzzy hash 2 (block hash 1, at byte offset 2): end-of-string is not expected");
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Left, err_bs_invalid)),
-            "Error occurred while parsing fuzzy hash 1 (block size, at byte offset 0): block size is not valid.");
+            "error occurred while parsing fuzzy hash 1 (block size, at byte offset 0): block size is not valid");
         assert_eq!(format!("{}", ParseErrorEither(ParseErrorSide::Right, err_bs_invalid)),
-            "Error occurred while parsing fuzzy hash 2 (block size, at byte offset 0): block size is not valid.");
+            "error occurred while parsing fuzzy hash 2 (block size, at byte offset 0): block size is not valid");
     }
 }
 // grcov-excl-br-end

@@ -458,10 +458,10 @@ impl GeneratorError {
 impl core::fmt::Display for GeneratorError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
-            GeneratorError::FixedSizeMismatch => "current state mismatches to the fixed size previously set.",
-            GeneratorError::FixedSizeTooLarge => "fixed size is too large to generate a fuzzy hash.",
-            GeneratorError::InputSizeTooLarge => "input size is too large to generate a fuzzy hash.",
-            GeneratorError::OutputOverflow    => "output is too large for specific fuzzy hash variant.",
+            GeneratorError::FixedSizeMismatch => "current state mismatches to the fixed size previously set",
+            GeneratorError::FixedSizeTooLarge => "fixed size is too large to generate a fuzzy hash",
+            GeneratorError::InputSizeTooLarge => "input size is too large to generate a fuzzy hash",
+            GeneratorError::OutputOverflow    => "output is too large for specific fuzzy hash variant",
         })
     }
 }

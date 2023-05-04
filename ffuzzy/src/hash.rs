@@ -288,8 +288,8 @@ pub enum FuzzyHashOperationError {
 impl core::fmt::Display for FuzzyHashOperationError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
-            FuzzyHashOperationError::BlockHashOverflow     => "overflow will occur while copying the block hash.",
-            FuzzyHashOperationError::StringizationOverflow => "overflow will occur while converting to the string representation.",
+            FuzzyHashOperationError::BlockHashOverflow     => "overflow will occur while copying the block hash",
+            FuzzyHashOperationError::StringizationOverflow => "overflow will occur while converting to the string representation",
         })
     }
 }

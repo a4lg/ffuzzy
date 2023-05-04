@@ -192,7 +192,7 @@ mod tests {
             let big_error = GeneratorOrIOError::GeneratorError(err);
             let str2 = format!("{}", big_error);
             assert_eq!(str1, str2);
-            assert_eq!(str1, "current state mismatches to the fixed size previously set.");
+            assert_eq!(str1, "current state mismatches to the fixed size previously set");
             // Test default Debug impltmentation for GeneratorError
             assert!(format!("{:?}", big_error).starts_with("GeneratorError("));
         }

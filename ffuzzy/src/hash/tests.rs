@@ -91,9 +91,9 @@ fn test_fuzzy_hash_operation_error_basic() {
 #[test]
 fn cover_fuzzy_hash_operation_error_display() {
     assert_eq!(format!("{}", FuzzyHashOperationError::BlockHashOverflow),
-        "overflow will occur while copying the block hash.");
+        "overflow will occur while copying the block hash");
     assert_eq!(format!("{}", FuzzyHashOperationError::StringizationOverflow),
-        "overflow will occur while converting to the string representation.");
+        "overflow will occur while converting to the string representation");
 }
 
 
