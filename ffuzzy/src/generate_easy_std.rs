@@ -187,7 +187,7 @@ mod tests {
         let mut generator = Generator::new();
         generator.set_fixed_input_size(0).unwrap(); // Give wrong size.
         let err = hash_stream_common(&mut generator, &mut file);
-        if let Err(GeneratorOrIOError::GeneratorError(err)) = err { // grcov-excl-br-line
+        if let Err(GeneratorOrIOError::GeneratorError(err)) = err {
             let str1 = format!("{}", err);
             let big_error = GeneratorOrIOError::GeneratorError(err);
             let str2 = format!("{}", big_error);

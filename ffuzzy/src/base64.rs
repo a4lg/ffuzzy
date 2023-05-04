@@ -77,7 +77,7 @@ pub(crate) const BASE64_INVALID: u8 = 0x40;
 /// [`BASE64_REV_TABLE_U8`] covers all possible values of [`u8`].
 #[inline]
 pub(crate) fn base64_index(ch: u8) -> u8 {
-    BASE64_REV_TABLE_U8[ch as usize] // grcov-excl-br-line
+    BASE64_REV_TABLE_U8[ch as usize] // grcov-excl-br-line:ARRAY
 }
 
 

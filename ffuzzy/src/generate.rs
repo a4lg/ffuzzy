@@ -856,7 +856,7 @@ impl Generator {
     /// Process data, updating the internal state.
     pub fn update(&mut self, buffer: &[u8]) -> &mut Self {
         self.input_size =
-            if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line
+            if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
                 self.input_size.saturating_add(size)
             }
             else {
