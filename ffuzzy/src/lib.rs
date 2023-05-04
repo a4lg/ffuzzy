@@ -256,6 +256,13 @@
 // Unless in the maintainance mode, allow old lint names.
 #![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
 
+// Tests: constant (and/or obvious) assertions should be allowed.
+#![cfg_attr(test, allow(clippy::assertions_on_constants))]
+// Tests: obvious +1 and -1 along with comparison should be allowed.
+#![cfg_attr(test, allow(clippy::int_plus_one))]
+// Tests: obvious 1 * n like operations should be allowed.
+#![cfg_attr(test, allow(clippy::identity_op))]
+
 #[cfg(feature = "alloc")]
 extern crate alloc;
 #[cfg(test)]
