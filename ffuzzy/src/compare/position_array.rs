@@ -796,6 +796,13 @@ impl BlockHashPositionArray {
     pub fn init_from(&mut self, blockhash: &[u8]) {
         BlockHashPositionArrayImplMut::init_from(self, blockhash);
     }
+
+    /// Set the length without checking validity.
+    #[cfg(test)]
+    #[inline(always)]
+    pub(crate) fn set_len_unchecked_on_test(&mut self, len: u8) {
+        self.len = len;
+    }
 }
 
 impl BlockHashPositionArrayData
