@@ -18,7 +18,7 @@ use crate::hash::parser_state::{
 use crate::macros::{optionally_unsafe, invariant};
 
 
-pub(crate) mod algorithms;
+mod algorithms;
 pub mod block;
 pub mod parser_state;
 #[cfg(test)]
@@ -303,7 +303,7 @@ where
     }
 
     /// The internal implementation of [`Self::init_from_internals_raw_unchecked`].
-    pub(crate) fn init_from_internals_raw_internal(
+    fn init_from_internals_raw_internal(
         &mut self,
         log_block_size: u8,
         block_hash_1: &[u8; S1],
@@ -404,7 +404,7 @@ where
 
     /// The internal implementation of [`Self::new_from_internals_raw_unchecked`].
     #[allow(dead_code)]
-    pub(crate) fn new_from_internals_raw_internal(
+    fn new_from_internals_raw_internal(
         log_block_size: u8,
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
@@ -476,7 +476,7 @@ where
     }
 
     /// The internal implementation of [`Self::new_from_internals_unchecked`].
-    pub(crate) fn new_from_internals_internal(
+    fn new_from_internals_internal(
         block_size: u32,
         block_hash_1: &[u8],
         block_hash_2: &[u8]

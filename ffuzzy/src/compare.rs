@@ -70,24 +70,24 @@ pub struct FuzzyHashCompareTarget {
     /// See also:
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
-    pub(crate) blockhash1: [u64; BlockHash::ALPHABET_SIZE],
+    blockhash1: [u64; BlockHash::ALPHABET_SIZE],
 
     /// The position array representation of block hash 2.
     ///
     /// See also:
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
-    pub(crate) blockhash2: [u64; BlockHash::ALPHABET_SIZE],
+    blockhash2: [u64; BlockHash::ALPHABET_SIZE],
 
     /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
-    pub(crate) len_blockhash1: u8,
+    len_blockhash1: u8,
     /// Length of the block hash 2 (up to [`BlockHash::FULL_SIZE`]).
-    pub(crate) len_blockhash2: u8,
+    len_blockhash2: u8,
 
     /// Base-2 logarithm form of the actual block size.
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
-    pub(crate) log_blocksize: u8,
+    log_blocksize: u8,
 }
 
 /// The return type of [`FuzzyHashCompareTarget::block_hash_1`] and
@@ -490,7 +490,7 @@ impl FuzzyHashCompareTarget {
 
     /// The internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked`].
     #[inline(always)]
-    pub(crate) fn score_cap_on_block_hash_comparison_internal(
+    fn score_cap_on_block_hash_comparison_internal(
         log_block_size: u8,
         len_block_hash_lhs: u8,
         len_block_hash_rhs: u8
@@ -856,7 +856,7 @@ impl FuzzyHashCompareTarget {
 
     /// The internal implementation of [`Self::compare_unequal_unchecked`].
     #[inline]
-    pub(crate) fn compare_unequal_internal<const S1: usize, const S2: usize>(
+    fn compare_unequal_internal<const S1: usize, const S2: usize>(
         &self,
         other: impl AsRef<FuzzyHashData<S1, S2, true>>
     ) -> u32
@@ -1241,7 +1241,7 @@ where
 
     /// The internal implementation of [`Self::compare_unequal_unchecked`].
     #[inline]
-    pub(crate) fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
+    fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
         debug_assert!(self != other);
         let target = FuzzyHashCompareTarget::from(self);

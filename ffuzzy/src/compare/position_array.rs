@@ -677,7 +677,7 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDa
 
 
 /// The implementation of the block hash position array (safe; mutable).
-pub(crate) trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
+trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
     /// Clear and initialize (encode) the object from a given slice.
     ///
     /// # Usage Constraints
@@ -762,9 +762,9 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     /// The block hash position array representation.
-    pub(crate) representation: [u64; BlockHash::ALPHABET_SIZE],
+    representation: [u64; BlockHash::ALPHABET_SIZE],
     /// The length of this block hash.
-    pub(crate) len: u8,
+    len: u8,
 }
 
 impl BlockHashPositionArray {

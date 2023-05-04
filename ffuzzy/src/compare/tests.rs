@@ -14,6 +14,7 @@ use crate::compare::position_array::{
     BlockHashPositionArrayDataMut,
     BlockHashPositionArrayImpl,
     BlockHashPositionArrayImplInternal,
+    BlockHashPositionArrayImplMutInternal,
 };
 #[cfg(feature = "unsafe")]
 use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
@@ -263,33 +264,33 @@ fn test_position_array_corruption() {
     // Block hash length (and some of its contents)
     {
         let mut pa = BlockHashPositionArray::new();
-        assert_eq!(pa.len, 0);
+        assert_eq!(pa.len(), 0);
         // Just changing the length will make this invalid
         // because there's "no character" at position 0.
         for len in 1..=u8::MAX {
-            pa.len = len;
+            pa.set_len_internal(len);
             assert!(!pa.is_valid());
             assert!(!pa.is_valid_and_normalized());
         }
         // Setting same character sequence with matching length will make this valid.
         for len in 1u8..=64 {
             let target_value = if len == 64 { u64::MAX } else { (1 << len) - 1 };
-            pa.len = len;
-            for i in 0..pa.representation.len() {
-                pa.representation[i] = target_value;
+            pa.set_len_internal(len);
+            for i in 0..pa.representation_mut().len() {
+                pa.representation_mut()[i] = target_value;
                 assert!(pa.is_valid());
                 assert_eq!(pa.is_valid_and_normalized(), (len as usize) <= BlockHash::MAX_SEQUENCE_SIZE);
-                pa.representation[i] = 0;
+                pa.representation_mut()[i] = 0;
                 assert!(!pa.is_valid());
                 assert!(!pa.is_valid_and_normalized());
             }
         }
-        pa.len = 64;
-        pa.representation[0] = u64::MAX;
+        pa.set_len_internal(64);
+        pa.representation_mut()[0] = u64::MAX;
         assert!(pa.is_valid());
         assert!(!pa.is_valid_and_normalized());
         for len in (64 + 1)..=u8::MAX {
-            pa.len = len;
+            pa.set_len_internal(len);
             assert!(!pa.is_valid());
             assert!(!pa.is_valid_and_normalized());
         }
@@ -299,18 +300,18 @@ fn test_position_array_corruption() {
         for len in 0..=BlockHash::FULL_SIZE {
             let mut pa = BlockHashPositionArray::new();
             for i in 0..len {
-                pa.representation[i] = 1 << i;
+                pa.representation_mut()[i] = 1 << i;
             }
-            pa.len = len as u8;
+            pa.set_len_internal(len as u8);
             assert!(pa.is_valid());
             assert!(pa.is_valid_and_normalized());
             for invalid_pos in (len as u32)..u64::BITS {
                 let bitpos = 1u64 << invalid_pos;
-                for ch in 0..pa.representation.len() {
-                    pa.representation[ch] |= bitpos;
+                for ch in 0..pa.representation_mut().len() {
+                    pa.representation_mut()[ch] |= bitpos;
                     assert!(!pa.is_valid());
                     assert!(!pa.is_valid_and_normalized());
-                    pa.representation[ch] &= !bitpos;
+                    pa.representation_mut()[ch] &= !bitpos;
                     assert!(pa.is_valid());
                     assert!(pa.is_valid_and_normalized());
                 }
@@ -322,9 +323,9 @@ fn test_position_array_corruption() {
         for len in 0..=BlockHash::FULL_SIZE {
             let mut pa = BlockHashPositionArray::new();
             for i in 0..len {
-                pa.representation[i] = 1 << i;
+                pa.representation_mut()[i] = 1 << i;
             }
-            pa.len = len as u8;
+            pa.set_len_internal(len as u8);
             assert!(pa.is_valid());
             assert!(pa.is_valid_and_normalized());
             // If the position array either:
@@ -333,11 +334,11 @@ fn test_position_array_corruption() {
             // it is invalid.
             for invalid_pos in 0..len {
                 let bitpos = 1u64 << (invalid_pos as u32);
-                for ch in 0..pa.representation.len() {
-                    pa.representation[ch] ^= bitpos;
+                for ch in 0..pa.representation_mut().len() {
+                    pa.representation_mut()[ch] ^= bitpos;
                     assert!(!pa.is_valid());
                     assert!(!pa.is_valid_and_normalized());
-                    pa.representation[ch] ^= bitpos;
+                    pa.representation_mut()[ch] ^= bitpos;
                     assert!(pa.is_valid());
                     assert!(pa.is_valid_and_normalized());
                 }

@@ -47,7 +47,7 @@ mod tests;
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
 #[allow(non_snake_case)]
-pub(crate) mod RleEncoding {
+mod RleEncoding {
     /// Bits used to represent the position (offset).
     ///
     /// This is the start offset to repeat the same character.
@@ -570,11 +570,11 @@ where
 
     /// The number of RLE block entries in the block hash 1.
     #[allow(dead_code)]
-    pub(crate) const RLE_BLOCK_SIZE_1: usize = C1;
+    const RLE_BLOCK_SIZE_1: usize = C1;
 
     /// The number of RLE block entries in the block hash 2.
     #[allow(dead_code)]
-    pub(crate) const RLE_BLOCK_SIZE_2: usize = C2;
+    const RLE_BLOCK_SIZE_2: usize = C2;
 
     /// Denotes whether the fuzzy type only contains a normalized form.
     ///
@@ -624,7 +624,7 @@ where
     }
 
     /// The internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked`].
-    pub(crate) fn init_from_raw_form_internals_raw_internal(
+    fn init_from_raw_form_internals_raw_internal(
         &mut self,
         log_block_size: u8,
         block_hash_1: &[u8; S1],
@@ -722,7 +722,7 @@ where
 
     /// The internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked`].
     #[allow(dead_code)]
-    pub(crate) fn new_from_raw_form_internals_raw_internal(
+    fn new_from_raw_form_internals_raw_internal(
         log_block_size: u8,
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],

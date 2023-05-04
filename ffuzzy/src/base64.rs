@@ -103,7 +103,7 @@ mod tests {
     ///
     /// If `ch` is not a valid Base64 alphabet, [`None`] is returned.
     #[inline]
-    pub(crate) fn base64_index_simple(ch: u8) -> Option<u8> {
+    fn base64_index_simple(ch: u8) -> Option<u8> {
         match ch {
             b'A'..=b'Z' => Some(ch - b'A'),
             b'a'..=b'z' => Some(ch - (b'a' - 26u8)),
