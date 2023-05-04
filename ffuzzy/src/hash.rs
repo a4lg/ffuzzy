@@ -1179,7 +1179,7 @@ where
     /// Unlike this method, [`Debug`](core::fmt::Debug::fmt) implementation
     /// does not cause problems if a given fuzzy hash is broken.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut buffer = [0u8; LongRawFuzzyHash::MAX_LEN_IN_STR];
+        let mut buffer = [0u8; crate::MAX_LEN_IN_STR];
         self.store_into_bytes(&mut buffer).unwrap();
         cfg_if::cfg_if! {
             if #[cfg(feature = "unsafe")] {

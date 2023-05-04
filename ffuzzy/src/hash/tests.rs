@@ -1281,7 +1281,7 @@ fn test_store_into_bytes_with_str() {
     let norm1 = TEST_VECTOR_SHORT_FHASH_NORM_1.as_bytes();
     macro_rules! test {
         ($ty: ty, $expected_norm0: expr) => {{
-            let mut buffer = [0; LongFuzzyHash::MAX_LEN_IN_STR + 1];
+            let mut buffer = [0; crate::MAX_LEN_IN_STR + 1];
             // Input size is the exact size
             buffer.fill(1);
             let h = <$ty>::from_bytes(norm1).unwrap();
@@ -1322,7 +1322,7 @@ fn test_store_into_bytes_with_str() {
                 h.store_into_bytes(&mut buffer[..h.len_in_str() - 1]),
                 Err(FuzzyHashOperationError::StringizationOverflow)
             );
-            assert_eq!(buffer, [5; LongFuzzyHash::MAX_LEN_IN_STR + 1]);
+            assert_eq!(buffer, [5; crate::MAX_LEN_IN_STR + 1]);
             // Input size is smaller than requested (buffer is unchanged).
             buffer.fill(6);
             let h = <$ty>::from_bytes(norm0).unwrap();
@@ -1331,7 +1331,7 @@ fn test_store_into_bytes_with_str() {
                 h.store_into_bytes(&mut buffer[..h.len_in_str() - 1]),
                 Err(FuzzyHashOperationError::StringizationOverflow)
             );
-            assert_eq!(buffer, [6; LongFuzzyHash::MAX_LEN_IN_STR + 1]);
+            assert_eq!(buffer, [6; crate::MAX_LEN_IN_STR + 1]);
         }};
     }
     test!(FuzzyHash, norm1);

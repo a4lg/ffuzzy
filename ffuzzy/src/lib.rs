@@ -294,6 +294,11 @@ pub mod constraints {
     };
 }
 
+/// The maximum length in the string representation.
+///
+/// This is the maximum length of the longest valid fuzzy hash.
+pub const MAX_LEN_IN_STR: usize = hash::LongRawFuzzyHash::MAX_LEN_IN_STR;
+
 
 
 
