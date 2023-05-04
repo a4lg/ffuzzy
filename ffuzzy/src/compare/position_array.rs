@@ -677,7 +677,7 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDa
 
 
 /// The implementation of the block hash position array (safe; mutable).
-trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
+pub(crate) trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
     /// Clear and initialize (encode) the object from a given slice.
     ///
     /// # Usage Constraints
