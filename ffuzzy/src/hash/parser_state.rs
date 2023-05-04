@@ -27,13 +27,13 @@ pub enum ParseErrorKind {
 impl core::fmt::Display for ParseErrorKind {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
-            ParseErrorKind::BlockHashIsTooLong      => "block hash is too long.",
-            ParseErrorKind::BlockSizeIsEmpty        => "block size field is empty.",
-            ParseErrorKind::BlockSizeStartsWithZero => "block size starts with '0'.",
-            ParseErrorKind::BlockSizeIsInvalid      => "block size is not valid.",
-            ParseErrorKind::BlockSizeIsTooLarge     => "block size is too large.",
-            ParseErrorKind::UnexpectedCharacter     => "an unexpected character is encountered.",
-            ParseErrorKind::UnexpectedEndOfString   => "end-of-string is not expected.",
+            ParseErrorKind::BlockHashIsTooLong      => "block hash is too long",
+            ParseErrorKind::BlockSizeIsEmpty        => "block size field is empty",
+            ParseErrorKind::BlockSizeStartsWithZero => "block size starts with '0'",
+            ParseErrorKind::BlockSizeIsInvalid      => "block size is not valid",
+            ParseErrorKind::BlockSizeIsTooLarge     => "block size is too large",
+            ParseErrorKind::UnexpectedCharacter     => "an unexpected character is encountered",
+            ParseErrorKind::UnexpectedEndOfString   => "end-of-string is not expected",
         })
     }
 }
@@ -97,7 +97,7 @@ impl ParseErrorInfo for ParseError {
 
 impl core::fmt::Display for ParseError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Error occurred while parsing a fuzzy hash ({1}, at byte offset {2}): {0}",
+        write!(f, "error occurred while parsing a fuzzy hash ({1}, at byte offset {2}): {0}",
             self.kind(),
             self.origin(),
             self.offset()
@@ -152,13 +152,13 @@ mod tests {
     #[test]
     fn test_parse_error_enums_display_and_debug() {
         // Display
-        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid.");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large.");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered.");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected.");
+        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
         assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
@@ -222,11 +222,11 @@ mod tests {
         let err_bs_invalid = ParseError(ParseErrorKind::BlockSizeIsInvalid, ParseErrorOrigin::BlockSize, 0);
         // Display
         assert_eq!(format!("{}", err_empty),
-            "Error occurred while parsing a fuzzy hash (block size, at byte offset 0): end-of-string is not expected.");
+            "error occurred while parsing a fuzzy hash (block size, at byte offset 0): end-of-string is not expected");
         assert_eq!(format!("{}", err_eos_bh1),
-            "Error occurred while parsing a fuzzy hash (block hash 1, at byte offset 2): end-of-string is not expected.");
+            "error occurred while parsing a fuzzy hash (block hash 1, at byte offset 2): end-of-string is not expected");
         assert_eq!(format!("{}", err_bs_invalid),
-            "Error occurred while parsing a fuzzy hash (block size, at byte offset 0): block size is not valid.");
+            "error occurred while parsing a fuzzy hash (block size, at byte offset 0): block size is not valid");
         // Debug
         assert_eq!(format!("{:?}", err_empty), "ParseError(UnexpectedEndOfString, BlockSize, 0)");
         assert_eq!(format!("{:?}", err_eos_bh1), "ParseError(UnexpectedEndOfString, BlockHash1, 2)");

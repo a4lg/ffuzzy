@@ -573,14 +573,10 @@ fn test_generator_error_basic() {
 #[cfg(feature = "alloc")]
 #[test]
 fn test_generator_error_display() {
-    assert_eq!(format!("{}", GeneratorError::FixedSizeMismatch),
-        "current state mismatches to the fixed size previously set.");
-    assert_eq!(format!("{}", GeneratorError::FixedSizeTooLarge),
-        "fixed size is too large to generate a fuzzy hash.");
-    assert_eq!(format!("{}", GeneratorError::InputSizeTooLarge),
-        "input size is too large to generate a fuzzy hash.");
-    assert_eq!(format!("{}", GeneratorError::OutputOverflow),
-        "output is too large for specific fuzzy hash variant.");
+    assert_eq!(format!("{}", GeneratorError::FixedSizeMismatch), "current state mismatches to the fixed size previously set");
+    assert_eq!(format!("{}", GeneratorError::FixedSizeTooLarge), "fixed size is too large to generate a fuzzy hash");
+    assert_eq!(format!("{}", GeneratorError::InputSizeTooLarge), "input size is too large to generate a fuzzy hash");
+    assert_eq!(format!("{}", GeneratorError::OutputOverflow),    "output is too large for specific fuzzy hash variant");
 }
 
 #[test]
