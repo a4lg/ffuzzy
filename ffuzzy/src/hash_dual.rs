@@ -43,13 +43,14 @@ mod tests;
 /// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
 /// long sequence able to be compressed in a fixed-size RLE block.
 ///
-/// The encoded length is one less than actual length for efficiency.
+/// The encoded length is one less than the actual length for efficiency.
 /// For instance, encoded `length` of `0` actually means repeating a character
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
 ///
 /// 2 bits of length is still small.  If we need to extend a character 5
-/// (`4 + 1`) times or more, we need multiple RLE encodings.
+/// (`4 + 1`) times or more, we need multiple RLE encodings (with the same
+/// offset field).
 #[allow(non_snake_case)]
 mod RleEncoding {
     /// Bits used to represent the position (offset).
@@ -542,7 +543,7 @@ mod algorithms {
 ///
 /// // But DualFuzzyHash is not a drop-in replacement of FuzzyHash.
 /// // You need to use `as_normalized()` to compare a FuzzyHash against
-/// // a DualFuzzyHash (direct comparison may be provided on later versions).
+/// // a DualFuzzyHash (direct comparison may be provided on the later version).
 /// assert_eq!(dual_hash.as_normalized().compare(&another_hash), 88);
 /// # }
 /// ```
