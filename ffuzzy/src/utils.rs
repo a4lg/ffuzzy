@@ -35,8 +35,8 @@ pub(crate) fn u64_ilog2(value: u64) -> u32 {
 /// on the debug build.
 #[inline(always)]
 pub(crate) fn u64_lsb_ones(n: u32) -> u64 {
-    debug_assert!(n <= 64);
-    (if n == 64 { 0 } else { 1u64 << n }).wrapping_sub(1)
+    debug_assert!(n <= u64::BITS);
+    (if n == u64::BITS { 0 } else { 1u64 << n }).wrapping_sub(1)
 }
 
 
