@@ -4,6 +4,7 @@
 use crate::compare::FuzzyHashCompareTarget;
 use crate::hash::block::{BlockSize, BlockHash};
 use crate::macros::{optionally_unsafe, invariant};
+use crate::utils::u64_lsb_ones;
 
 
 /// A module containing utilities for an element of block hash position array.
@@ -137,9 +138,7 @@ pub trait BlockHashPositionArrayData {
     fn is_valid(&self) -> bool {
         let len = self.len();
         if len > 64 { return false; }
-        let expected_total: u64 =
-            (if len == 64 { 0 } else { 1u64 << len as u32 })
-            .wrapping_sub(1);
+        let expected_total: u64 = u64_lsb_ones(len as u32);
         let mut total: u64 = 0;
         for &pos in self.representation() {
             if (total & pos) != 0 {

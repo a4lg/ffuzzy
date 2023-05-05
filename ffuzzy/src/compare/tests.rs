@@ -20,6 +20,7 @@ use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
 use crate::hash::{FuzzyHash, LongFuzzyHash};
 use crate::hash::block::{BlockSize, BlockSizeRelation, BlockHash};
 use crate::test_utils::{assert_fits_in, test_recommended_default};
+use crate::utils::u64_lsb_ones;
 
 
 #[test]
@@ -273,7 +274,7 @@ fn test_position_array_corruption() {
         }
         // Setting same character sequence with matching length will make this valid.
         for len in 1u8..=64 {
-            let target_value = if len == 64 { u64::MAX } else { (1 << len) - 1 };
+            let target_value = u64_lsb_ones(len as u32);
             pa.set_len_unchecked_on_test(len);
             for i in 0..pa.representation_mut().len() {
                 pa.representation_mut()[i] = target_value;
@@ -1178,15 +1179,7 @@ fn test_has_sequences() {
     }
     // Test pattern: specific length (≧ 2) sequences
     for len in 2u32..=64 {
-        let base = (1u64 << (len - 1)) - 1;
-        let base = base | (base << 1);
-        if len == 64 {
-            assert_eq!(base.wrapping_add(1), 0);
-        }
-        else {
-            assert!(base.wrapping_add(1).is_power_of_two());
-            assert_eq!(crate::utils::u64_ilog2(base.wrapping_add(1)), len);
-        }
+        let base = u64_lsb_ones(len);
         let mut aggr_bits: u64 = 0;
         for shift in 0..=(u64::BITS - len) {
             let seq = base << shift;
