@@ -27,3 +27,37 @@ pub(crate) fn u64_ilog2(value: u64) -> u32 {
         }
     }
 }
+
+
+
+
+
+// grcov-excl-br-start
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_u64_ilog2_examples() {
+        assert_eq!(u64_ilog2(1), 0);
+        assert_eq!(u64_ilog2(2), 1);
+        assert_eq!(u64_ilog2(3), 1);
+        assert_eq!(u64_ilog2(4), 2);
+        assert_eq!(u64_ilog2(5), 2);
+        assert_eq!(u64_ilog2(6), 2);
+        assert_eq!(u64_ilog2(7), 2);
+        assert_eq!(u64_ilog2(8), 3);
+        assert_eq!(u64_ilog2(9), 3);
+    }
+
+    #[test]
+    fn test_u64_ilog2_borders() {
+        for n in 1..=(u64::BITS - 1) {
+            let border = 1u64 << n;
+            assert_eq!(u64_ilog2(border - 1), n - 1, "failed on {}", n);
+            assert_eq!(u64_ilog2(border    ), n,     "failed on {}", n);
+            assert_eq!(u64_ilog2(border + 1), n,     "failed on {}", n);
+        }
+    }
+}
+// grcov-excl-br-end
