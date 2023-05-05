@@ -541,9 +541,9 @@ mod algorithms {
 /// assert_eq!(another_hash.compare(dual_hash), 88);
 ///
 /// // But DualFuzzyHash is not a drop-in replacement of FuzzyHash.
-/// // You need to use `as_ref_normalized()` to compare a FuzzyHash against
+/// // You need to use `as_normalized()` to compare a FuzzyHash against
 /// // a DualFuzzyHash (direct comparison may be provided on later versions).
-/// assert_eq!(dual_hash.as_ref_normalized().compare(&another_hash), 88);
+/// assert_eq!(dual_hash.as_normalized().compare(&another_hash), 88);
 /// # }
 /// ```
 #[repr(align(8))]
@@ -830,8 +830,19 @@ where
     /// To note, this operation should be fast enough because this type
     /// contains this object directly.
     #[inline(always)]
-    pub fn as_ref_normalized(&self) -> &FuzzyHashData<S1, S2, true> {
+    pub fn as_normalized(&self) -> &FuzzyHashData<S1, S2, true> {
         &self.norm_hash
+    }
+
+    /// A reference to the normalized fuzzy hash.
+    ///
+    /// This method is superseded by [`as_normalized()`](Self::as_normalized()).
+    ///
+    /// This method will be removed on the next major release.
+    #[deprecated]
+    #[inline(always)]
+    pub fn as_ref_normalized(&self) -> &FuzzyHashData<S1, S2, true> {
+        self.as_normalized()
     }
 
     /// Constructs an object from a raw fuzzy hash.
@@ -883,7 +894,7 @@ where
 
     /// Returns the clone of the normalized fuzzy hash.
     ///
-    /// Where possible, [`as_ref_normalized()`](Self::as_ref_normalized()) or
+    /// Where possible, [`as_normalized()`](Self::as_normalized()) or
     /// [`AsRef::as_ref()`] should be used instead.
     #[inline(always)]
     pub fn to_normalized(&self) -> FuzzyHashData<S1, S2, true> {

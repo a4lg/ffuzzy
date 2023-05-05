@@ -191,7 +191,7 @@ fn test_datamodel_blockhash_contents() {
         3. Conversion
             *   to_raw_form
             *   to_normalized
-            *   as_ref_normalized
+            *   as_normalized
         4. Normalization
             *   is_normalized
             *   normalize_in_place
@@ -247,7 +247,7 @@ fn test_datamodel_blockhash_contents() {
             let new_raw_hash = dual_hash.to_raw_form();
             let mut new_raw_hash_2 = RawFuzzyHashType::new();
             dual_hash.into_mut_raw_form(&mut new_raw_hash_2);
-            let new_norm_hash = *dual_hash.as_ref_normalized();
+            let new_norm_hash = *dual_hash.as_normalized();
             let new_norm_hash_2 = dual_hash.to_normalized();
             assert!(new_raw_hash.is_valid());
             assert!(new_raw_hash_2.is_valid());
@@ -276,7 +276,7 @@ fn test_datamodel_blockhash_contents() {
             };
             assert!(norm_dual_hash.is_valid());
             assert!(norm_dual_hash.is_normalized());
-            let new_norm_hash_as_norm = *norm_dual_hash.as_ref_normalized();
+            let new_norm_hash_as_norm = *norm_dual_hash.as_normalized();
             let new_norm_hash_as_norm_2 = norm_dual_hash.to_normalized();
             let new_norm_hash_as_raw = norm_dual_hash.to_raw_form();
             assert!(new_norm_hash_as_norm.is_valid());
@@ -810,7 +810,7 @@ fn test_as_ref() {
         let hash = <$ty>::new();
         let norm_hash_1: &NormalizedType = &hash.norm_hash;
         let norm_hash_2: &NormalizedType = hash.as_ref();
-        let norm_hash_3: &NormalizedType = hash.as_ref_normalized();
+        let norm_hash_3: &NormalizedType = hash.as_normalized();
         let p1 = norm_hash_1 as *const NormalizedType;
         let p2 = norm_hash_2 as *const NormalizedType;
         let p3 = norm_hash_3 as *const NormalizedType;
@@ -937,7 +937,7 @@ fn test_ord() {
         // Test consistency between Vec order and comparison results
         for (i1, h1) in hashes.iter().enumerate() {
             for (i2, h2) in hashes.iter().enumerate() {
-                match h1.as_ref_normalized().cmp(h2.as_ref_normalized()) {
+                match h1.as_normalized().cmp(h2.as_normalized()) {
                     Ordering::Equal => {
                         // Because "equal" elements (by normalized hashes) are
                         // surrounded by "lesser" elements and "greater" elements,
