@@ -77,16 +77,18 @@ assert_eq!(score, 46);
 use ssdeep::{Generator, RawFuzzyHash};
 
 let mut generator = Generator::new();
-let buf: &[u8] = b"Hello, World!";
+let buf1: &[u8] = b"Hello, ";
+let buf2: &[u8] = b"World!";
 
 // Optional but supplying the *total* input size first improves the performance.
-// `buf.len` for `update()` and `1` for `update_by_iter()` (see below).
-generator.set_max_input_size_in_usize(buf.len() + 1).unwrap();
+// This is the total size of three update calls below.
+generator.set_fixed_input_size_in_usize(buf1.len() + buf2.len() + 1).unwrap();
 
 // Update the internal state of the generator.
-// Of course, you can call `update()`-family methods multiple times.
-generator.update(buf);
-generator.update_by_iter(core::iter::repeat(b'\n').take(1));  // append one '\n'
+// Of course, you can call `update()`-family functions multiple times.
+generator.update(buf1);
+generator.update_by_iter(buf2.iter().cloned());
+generator.update_by_byte(b'\n');
 
 // Retrieve the fuzzy hash and convert to the string.
 let hash: RawFuzzyHash = generator.finalize().unwrap();
