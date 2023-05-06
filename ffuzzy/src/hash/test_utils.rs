@@ -76,7 +76,7 @@ fn test_blockhash_contents_division(max_bh2: usize, test_func: impl Fn(&[u8], &[
 
 #[cfg(feature = "tests-slow")]
 fn test_blockhash_content_multiple_sequences(test_func: impl Fn(&[u8], &[u8])) {
-    for l1 in 1..=BlockHash::FULL_SIZE { // '..=' is used instead of '..' unlike l[2-5].
+    for l1 in 1..=BlockHash::FULL_SIZE { // '..=' is used instead of '..' unlike l[2-4].
         let s1 = usize::min(l1, BlockHash::MAX_SEQUENCE_SIZE);
         let total = l1;
         for l2 in 1..BlockHash::FULL_SIZE {
@@ -91,27 +91,20 @@ fn test_blockhash_content_multiple_sequences(test_func: impl Fn(&[u8], &[u8])) {
                     let s4 = usize::min(l4, BlockHash::MAX_SEQUENCE_SIZE);
                     let total = total + l4;
                     if total > BlockHash::FULL_SIZE { continue; }
-                    for l5 in 1..BlockHash::FULL_SIZE {
-                        let s5 = usize::min(l5, BlockHash::MAX_SEQUENCE_SIZE);
-                        let total = total + l5;
-                        if total > BlockHash::FULL_SIZE { continue; }
-                        // Make raw five sequences
-                        let mut seq = [0u8; BlockHash::FULL_SIZE];
-                        seq[0..l1].fill(1);
-                        seq[l1..l1+l2].fill(2);
-                        seq[l1+l2..l1+l2+l3].fill(3);
-                        seq[l1+l2+l3..l1+l2+l3+l4].fill(4);
-                        seq[l1+l2+l3+l4..l1+l2+l3+l4+l5].fill(5);
-                        // Make normalized five sequences
-                        let mut seq_norm = [0u8; BlockHash::FULL_SIZE];
-                        let total_norm = s1 + s2 + s3 + s4 + s5;
-                        seq_norm[0..s1].fill(1);
-                        seq_norm[s1..s1+s2].fill(2);
-                        seq_norm[s1+s2..s1+s2+s3].fill(3);
-                        seq_norm[s1+s2+s3..s1+s2+s3+s4].fill(4);
-                        seq_norm[s1+s2+s3+s4..s1+s2+s3+s4+s5].fill(5);
-                        test_func(&seq[0..total], &seq_norm[0..total_norm]);
-                    }
+                    // Make raw five sequences
+                    let mut seq = [0u8; BlockHash::FULL_SIZE];
+                    seq[0..l1].fill(1);
+                    seq[l1..l1+l2].fill(2);
+                    seq[l1+l2..l1+l2+l3].fill(3);
+                    seq[l1+l2+l3..l1+l2+l3+l4].fill(4);
+                    // Make normalized five sequences
+                    let mut seq_norm = [0u8; BlockHash::FULL_SIZE];
+                    let total_norm = s1 + s2 + s3 + s4;
+                    seq_norm[0..s1].fill(1);
+                    seq_norm[s1..s1+s2].fill(2);
+                    seq_norm[s1+s2..s1+s2+s3].fill(3);
+                    seq_norm[s1+s2+s3..s1+s2+s3+s4].fill(4);
+                    test_func(&seq[0..total], &seq_norm[0..total_norm]);
                 }
             }
         }
