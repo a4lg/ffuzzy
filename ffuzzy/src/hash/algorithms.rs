@@ -561,13 +561,13 @@ mod tests {
             // MetEndOfString
             for out_len in 0..=N {
                 for out_offset in 0..(N - out_len + 1) {
-                    macro_rules! test {($NORM: expr) => {
+                    macro_rules! test {($norm: expr) => {
                         let mut buffer_out = [u8::MAX; N];
                         let mut buffer_len = u8::MAX;
                         let mut offset = out_offset;
                         // We can correctly parse the string and will result in MetEndOfString.
                         assert_eq!(
-                            parse_block_hash_from_bytes::<N, $NORM>(
+                            parse_block_hash_from_bytes::<N, $norm>(
                                 &mut buffer_out,
                                 &mut buffer_len,
                                 &str_buffer[..out_offset + out_len],
@@ -603,14 +603,14 @@ mod tests {
                     for offset_1 in 0..=insert_offset {
                         for offset_2 in offset_1 + 1..=N {
                             if !(offset_1..offset_2).contains(&insert_offset) { continue; }
-                            macro_rules! test {($NORM: expr) => {
+                            macro_rules! test {($norm: expr) => {
                                 let pos_term = insert_offset - offset_1;
                                 let mut buffer_out = [u8::MAX; N];
                                 let mut buffer_len = u8::MAX;
                                 let mut offset = offset_1;
                                 // We can parse the string and will result in expected status.
                                 assert_eq!(
-                                    parse_block_hash_from_bytes::<N, $NORM>(
+                                    parse_block_hash_from_bytes::<N, $norm>(
                                         &mut buffer_out,
                                         &mut buffer_len,
                                         &str_buffer[..offset_2],
