@@ -1001,6 +1001,7 @@ where
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
     core::hash::Hash for FuzzyHashDualData<S1, S2, C1, C2>
 where

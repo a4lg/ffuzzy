@@ -941,6 +941,7 @@ impl Generator {
     /// continue feeding more data and updating the internal state without
     /// problems.  Still, it's hard to find such use cases so that using
     /// [`Generator`] like this is useful.
+    #[allow(clippy::branches_sharing_code)]
     pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(&self)
         -> Result<FuzzyHashData<S1, S2, false>, GeneratorError>
     where
