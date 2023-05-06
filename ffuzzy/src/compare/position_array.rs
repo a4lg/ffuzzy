@@ -190,6 +190,9 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
     /// This method must return the same reference to the
     /// [`BlockHashPositionArrayData::representation`].
     fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE];
+
+    /// Returne the raw mutable representation of the block hash position array.
+    fn len_mut(&mut self) -> &mut u8;
 }
 
 
@@ -648,6 +651,13 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDa
         self.representation_mut().fill(0);
     }
 
+    /// Clears the current representation of the block hash.
+    #[inline(always)]
+    fn clear(&mut self) {
+        self.clear_representation_only();
+        *self.len_mut() = 0;
+    }
+
     /// Sets the length of the block hash.
     fn set_len_internal(&mut self, len: u8);
 
@@ -735,6 +745,11 @@ impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
     fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE] {
         self.0
     }
+
+    #[inline(always)]
+    fn len_mut(&mut self) -> &mut u8 {
+        self.1
+    }
 }
 
 impl<'a> BlockHashPositionArrayImplInternal for BlockHashPositionArrayRef<'a> {}
@@ -781,8 +796,7 @@ impl BlockHashPositionArray {
 
     /// Clears the current representation of the block hash.
     pub fn clear(&mut self) {
-        BlockHashPositionArrayImplMutInternal::clear_representation_only(self);
-        BlockHashPositionArrayImplMutInternal::set_len_internal(self, 0);
+        BlockHashPositionArrayImplMutInternal::clear(self);
     }
 
     /// Clear and initialize (encode) the object from a given slice.
@@ -794,13 +808,6 @@ impl BlockHashPositionArray {
     ///     [`BlockHash::ALPHABET_SIZE`].
     pub fn init_from(&mut self, blockhash: &[u8]) {
         BlockHashPositionArrayImplMut::init_from(self, blockhash);
-    }
-
-    /// Set the length without checking validity.
-    #[cfg(test)]
-    #[inline(always)]
-    pub(crate) fn set_len_unchecked_on_test(&mut self, len: u8) {
-        self.len = len;
     }
 }
 
@@ -821,6 +828,10 @@ impl BlockHashPositionArrayDataMut
 {
     fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE] {
         &mut self.representation
+    }
+
+    fn len_mut(&mut self) -> &mut u8 {
+        &mut self.len
     }
 }
 

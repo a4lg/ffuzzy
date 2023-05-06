@@ -268,14 +268,14 @@ fn test_position_array_corruption() {
         // Just changing the length will make this invalid
         // because there's "no character" at position 0.
         for len in 1..=u8::MAX {
-            pa.set_len_unchecked_on_test(len);
+            *pa.len_mut() = len;
             assert!(!pa.is_valid());
             assert!(!pa.is_valid_and_normalized());
         }
         // Setting same character sequence with matching length will make this valid.
         for len in 1u8..=64 {
             let target_value = u64_lsb_ones(len as u32);
-            pa.set_len_unchecked_on_test(len);
+            *pa.len_mut() = len;
             for i in 0..pa.representation_mut().len() {
                 pa.representation_mut()[i] = target_value;
                 assert!(pa.is_valid());
@@ -285,12 +285,12 @@ fn test_position_array_corruption() {
                 assert!(!pa.is_valid_and_normalized());
             }
         }
-        pa.set_len_unchecked_on_test(64);
+        *pa.len_mut() = 64;
         pa.representation_mut()[0] = u64::MAX;
         assert!(pa.is_valid());
         assert!(!pa.is_valid_and_normalized());
         for len in (64 + 1)..=u8::MAX {
-            pa.set_len_unchecked_on_test(len);
+            *pa.len_mut() = len;
             assert!(!pa.is_valid());
             assert!(!pa.is_valid_and_normalized());
         }
@@ -302,7 +302,7 @@ fn test_position_array_corruption() {
             for i in 0..len {
                 pa.representation_mut()[i] = 1 << i;
             }
-            pa.set_len_unchecked_on_test(len as u8);
+            *pa.len_mut() = len as u8;
             assert!(pa.is_valid());
             assert!(pa.is_valid_and_normalized());
             for invalid_pos in (len as u32)..u64::BITS {
@@ -325,7 +325,7 @@ fn test_position_array_corruption() {
             for i in 0..len {
                 pa.representation_mut()[i] = 1 << i;
             }
-            pa.set_len_unchecked_on_test(len as u8);
+            *pa.len_mut() = len as u8;
             assert!(pa.is_valid());
             assert!(pa.is_valid_and_normalized());
             // If the position array either:
