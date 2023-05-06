@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
+// SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
+// SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+
+/*
+    This is the alternative `update()` method to test branch coverage.
+    *   based on the commit a48ac05eb03781d88c768c71e47f51e17616bd42
+    *   no "unsafe" feature
+    *   macros expanded and modified slightly
+        (for clear indication of branches)
+*/
+
+    /// Process data, updating the internal state.
+    pub fn update(&mut self, buffer: &[u8]) -> &mut Self {
+        self.input_size =
+            if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
+                self.input_size.saturating_add(size)
+            }
+            else {
+                // grcov-excl-start: Only reproduces in 128-bit usize environments.
+                Self::MAX_INPUT_SIZE + 1
+                // grcov-excl-stop
+            };
+        let mut _bh: &mut BlockHashContext;
+        for ch in buffer.iter().cloned() {
+            self.roll_hash.update_by_byte(ch);
+            if self.is_last {
+                self.h_last.update_by_byte(ch);
+            }
+            for _bh1 in &mut self.bh_context[self.bhidx_start..self.bhidx_end] {
+                _bh = _bh1;
+                (*_bh).h_full.update_by_byte(ch);
+                (*_bh).h_half.update_by_byte(ch);
+            }
+            let h_org = self.roll_hash.value().wrapping_add(1);
+            let mut h = h_org / BlockSize::MIN;
+            if unlikely(h_org == 0) {
+                continue;
+            }
+            if likely(h & self.roll_mask != 0) {
+                continue;
+            }
+            if h_org % BlockSize::MIN != 0 {
+                continue;
+            }
+            h >>= self.bhidx_start;
+            let mut _i = self.bhidx_start;
+            loop {
+                let idx = self.bh_context[_i].blockhash_index; // grcov-excl-br-line:ARRAY
+                if unlikely(idx == 0) {
+                    // New block size candidate is found.
+                    if self.bhidx_end > self.bhidx_end_limit {
+                        // If this is not constrained by bhidx_end_limit
+                        // (set by the fixed input size) and it has reached
+                        // to the largest index, enable "last" FNV hash updates.
+                        // It will be used for block hash 2 if the final block size
+                        // is the maximum valid one.
+                        if self.bhidx_end_limit == BlockSize::NUM_VALID - 1 && !self.is_last {
+                            self.h_last = self.bh_context[_i].h_full; // grcov-excl-br-line:ARRAY
+                            self.is_last = true;
+                        }
+                    } else {
+                        // Reset the block hash context and advance bhidx_end
+                        // so that the generator can begin block hash context updates.
+                        self.bh_context[_i + 1].reset(); // grcov-excl-br-line:ARRAY
+                        self.bh_context[_i + 1].h_full = self.bh_context[_i].h_full; // grcov-excl-br-line:ARRAY
+                        self.bh_context[_i + 1].h_half = self.bh_context[_i].h_half; // grcov-excl-br-line:ARRAY
+                        self.bhidx_end += 1;
+                    }
+                }
+                _bh = &mut self.bh_context[_i]; // grcov-excl-br-line:ARRAY
+                _bh.blockhash[_bh.blockhash_index] = _bh.h_full.value(); // grcov-excl-br-line:ARRAY
+                _bh.blockhash_ch_half = _bh.h_half.value();
+                if _bh.blockhash_index < BlockHash::FULL_SIZE - 1 {
+                    _bh.blockhash_index += 1;
+                    _bh.h_full = PartialFNVHash::new();
+                    if _bh.blockhash_index < BlockHash::HALF_SIZE {
+                        _bh.blockhash_ch_half = BLOCKHASH_CHAR_NIL;
+                        _bh.h_half = PartialFNVHash::new();
+                    }
+                }
+                else
+                {
+                    if self.bhidx_end - self.bhidx_start >= 2
+                    {
+                        if self.elim_border < self.fixed_size.unwrap_or(self.input_size) {
+                            let idx = self.bh_context[_i + 1].blockhash_index; // grcov-excl-br-line:ARRAY
+                            if idx >= BlockHash::HALF_SIZE {
+                                // (Block hash elimination)
+                                // Current block hash context will be never used on the final fuzzy hash.
+                                // Advance bhidx_start and prepare for the next block hash elimination.
+                                self.bhidx_start += 1;
+                                self.roll_mask = self.roll_mask.wrapping_mul(2).wrapping_add(1);
+                                self.elim_border = self.elim_border.wrapping_mul(2);
+                            }
+                        }
+                    }
+                }
+                // Loop between bhidx_start and the maximum matched index.
+                if (h & 1) != 0 {
+                    break;
+                }
+                h >>= 1;
+                _i += 1;
+                if _i >= self.bhidx_end {
+                    break;
+                }
+            }
+        }
+        self
+    }
