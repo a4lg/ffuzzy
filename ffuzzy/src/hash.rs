@@ -624,8 +624,7 @@ where
     /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
-    /// # use std::str::FromStr;
-    /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
+    /// let mut hash: ssdeep::FuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
     /// let bh1 = hash.block_hash_1();
     /// hash.normalize_in_place(); // <- ERROR: because the block hash 1 is borrowed.
     /// // If normalize_in_place succeeds, bh1 will hold an invalid slice
@@ -667,8 +666,7 @@ where
     /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
-    /// # use std::str::FromStr;
-    /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
+    /// let mut hash: ssdeep::FuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
     /// let bh2 = hash.block_hash_2();
     /// hash.normalize_in_place(); // <- ERROR: because the block hash 2 is borrowed.
     /// // If normalize_in_place succeeds, bh2 will hold an invalid slice
@@ -1290,7 +1288,6 @@ where
     /// # Example (pseudocode)
     ///
     /// ```
-    /// use core::str::FromStr;
     /// use ssdeep::FuzzyHash;
     ///
     /// // It stores a fuzzy hash with keys (with duplicates) like this:
@@ -1300,7 +1297,7 @@ where
     ///
     /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
     /// // let hash_str = ...;
-    /// let hash = FuzzyHash::from_str(hash_str).unwrap();
+    /// let hash: FuzzyHash = str::parse(hash_str).unwrap();
     /// for window in hash.block_hash_1_windows() {
     ///     insert_to_database(
     ///         (hash.log_block_size(), window),

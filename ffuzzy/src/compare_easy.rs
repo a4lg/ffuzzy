@@ -3,8 +3,6 @@
 
 #![cfg(feature = "easy-functions")]
 
-use core::str::FromStr;
-
 use crate::hash::LongFuzzyHash;
 use crate::hash::parser_state::{
     ParseError, ParseErrorKind, ParseErrorOrigin, ParseErrorInfo
@@ -72,11 +70,11 @@ impl std::error::Error for ParseErrorEither {}
 /// );
 /// ```
 pub fn compare(lhs: &str, rhs: &str) -> Result<u32, ParseErrorEither> {
-    let lhs = match LongFuzzyHash::from_str(lhs) {
+    let lhs: LongFuzzyHash = match str::parse(lhs) {
         Ok(value) => { value }
         Err(err)  => { return Err(ParseErrorEither(ParseErrorSide::Left, err)); }
     };
-    let rhs = match LongFuzzyHash::from_str(rhs) {
+    let rhs: LongFuzzyHash = match str::parse(rhs) {
         Ok(value) => { value }
         Err(err)  => { return Err(ParseErrorEither(ParseErrorSide::Right, err)); }
     };

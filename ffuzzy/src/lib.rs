@@ -109,14 +109,13 @@
 //!
 //! ```rust
 //! // Requires the "alloc" feature to use the `to_string` method (default enabled).
-//! use core::str::FromStr;
 //! use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
 //!
 //! // Those fuzzy hash strings are "normalized" so that easier to compare.
 //! let str1 = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
 //! let str2 = "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK";
-//! let hash1: FuzzyHash = FuzzyHash::from_str(str1).unwrap();
-//! let hash2: FuzzyHash = FuzzyHash::from_str(str2).unwrap();
+//! let hash1: FuzzyHash = str::parse(str1).unwrap();
+//! let hash2: FuzzyHash = str::parse(str2).unwrap();
 //!
 //! // Note that converting the (normalized) fuzzy hash object back to the string
 //! // may not preserve the original string.  To preserve the original fuzzy hash

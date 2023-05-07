@@ -238,11 +238,10 @@ impl FuzzyHashCompareTarget {
     /// documentation, it is listed here.
     ///
     /// ```
-    /// use core::str::FromStr;
     /// use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
     ///
-    /// let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// let base_bh1:     &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let base_bh1_mod: &[u8] = &[1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // [0] is replaced
     /// let bh1 = target.block_hash_1();
@@ -284,46 +283,41 @@ impl FuzzyHashCompareTarget {
     /// accessible from outside.
     ///
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
-    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let bh1 = target.block_hash_1();
     /// assert!(bh1.is_equiv_internal(base_bh1));
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
-    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let bh1 = target.block_hash_1();
     /// assert!(bh1.has_common_substring_internal(&[0, 1, 2, 3, 4, 5, 6, 7]));
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
-    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let bh1 = target.block_hash_1();
     /// assert_eq!(bh1.edit_distance_internal(base_bh1), 0);
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
-    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let bh1 = target.block_hash_1();
     /// assert_eq!(bh1.score_strings_raw_internal(base_bh1), 100);
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
-    /// # let target = FuzzyHashCompareTarget::from(FuzzyHash::from_str("3:ABCDEFGHIJKLMNOP:").unwrap());
+    /// # let target = FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("3:ABCDEFGHIJKLMNOP:").unwrap());
     /// # let base_bh1: &[u8] = &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     /// let bh1 = target.block_hash_1();
     /// assert_eq!(bh1.score_strings_internal(base_bh1, 0), 16);
@@ -351,7 +345,6 @@ impl FuzzyHashCompareTarget {
     /// and [`BlockHashPositionArrayImplMutInternal`].
     ///
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
     /// # let mut target = FuzzyHashCompareTarget::new();
@@ -360,7 +353,6 @@ impl FuzzyHashCompareTarget {
     /// assert!(bh1.init_from(base_bh1));
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
     /// # let mut target = FuzzyHashCompareTarget::new();
@@ -369,7 +361,6 @@ impl FuzzyHashCompareTarget {
     /// assert!(bh1.set_len_internal(16));
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
     /// # let mut target = FuzzyHashCompareTarget::new();
@@ -378,7 +369,6 @@ impl FuzzyHashCompareTarget {
     /// assert!(bh1.clear_representation_only());
     /// ```
     /// ```compile_fail
-    /// # use core::str::FromStr;
     /// # use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
     /// # use ssdeep::internal_comparison::{BlockHashPositionArrayData, BlockHashPositionArrayImpl};
     /// # let mut target = FuzzyHashCompareTarget::new();

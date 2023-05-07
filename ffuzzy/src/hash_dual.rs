@@ -517,20 +517,19 @@ mod algorithms {
 /// # #[cfg(feature = "alloc")]
 /// # {
 /// // Requires the "alloc" feature to use `to_string` method (default enabled).
-/// use core::str::FromStr;
 /// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
 ///
 /// let hash_str_raw  = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
 /// let hash_str_norm = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccei:+Klhav84a5sxJ";
 ///
-/// let dual_hash = DualFuzzyHash::from_str(hash_str_raw).unwrap();
+/// let dual_hash: DualFuzzyHash = str::parse(hash_str_raw).unwrap();
 ///
 /// // This object can effectively contain both
 /// // normalized and raw fuzzy hash representations.
 /// assert_eq!(dual_hash.to_raw_form().to_string(),   hash_str_raw);
 /// assert_eq!(dual_hash.to_normalized().to_string(), hash_str_norm);
 ///
-/// let another_hash = FuzzyHash::from_str(
+/// let another_hash: FuzzyHash = str::parse(
 ///     "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK"
 /// ).unwrap();
 ///

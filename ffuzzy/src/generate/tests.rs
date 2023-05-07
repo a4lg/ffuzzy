@@ -4,7 +4,6 @@
 
 #![cfg(test)]
 
-use core::str::FromStr;
 #[cfg(feature = "alloc")]
 use alloc::format;
 
@@ -632,7 +631,7 @@ fn test_generator_empty() {
         assert_eq!(hash.block_size(), BlockSize::MIN);
         assert_eq!(hash.block_hash_1_len(), 0);
         assert_eq!(hash.block_hash_2_len(), 0);
-        let hash_expected = FuzzyHashType::from_str("3::").unwrap();
+        let hash_expected: FuzzyHashType = str::parse("3::").unwrap();
         assert_eq!(hash, hash_expected);
     }}
     test_for_each_generator_finalization!(test);
@@ -641,7 +640,7 @@ fn test_generator_empty() {
 #[test]
 fn test_generator_usage() {
     const STR: &[u8] = b"Hello, World!\n";
-    let expected_hash = RawFuzzyHash::from_str("3:aaX8v:aV").unwrap();
+    let expected_hash: RawFuzzyHash = str::parse("3:aaX8v:aV").unwrap();
 
     // Usage: Single function call or series of calls
     // Update function 1: update_by_byte
@@ -854,12 +853,12 @@ fn test_generator_large_triggers() {
     for generator in [&generator1, &generator2, &generator3] {
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
         assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024));
-        let hash_expected_long = LongRawFuzzyHash::from_str(
+        let hash_expected_long: LongRawFuzzyHash = str::parse(
             "1610612736\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
         ).unwrap();
-        let hash_expected_short = RawFuzzyHash::from_str(
+        let hash_expected_short: RawFuzzyHash = str::parse(
             "1610612736\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
@@ -893,7 +892,7 @@ fn test_generator_large_triggers() {
         assert!(!generator.may_warn_about_small_input_size());
         macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
             type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-            let hash_expected = FuzzyHashType::from_str(
+            let hash_expected: FuzzyHashType = str::parse(
                 "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
             ).unwrap();
             assert_eq!(
@@ -966,7 +965,6 @@ fn test_generator_large_triggers() {
 fn test_generator_small_precomputed_vectors() {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
-    use std::str::FromStr;
     use crate::hash::LongRawFuzzyHash;
 
     let index = BufReader::new(
@@ -993,7 +991,7 @@ fn test_generator_small_precomputed_vectors() {
         let flags = u8::from_str_radix(tokens[1], 10).unwrap();
         // $3: expected fuzzy hash
         let fuzzy_str = tokens[2];
-        let fuzzy_expected = LongRawFuzzyHash::from_str(fuzzy_str).unwrap();
+        let fuzzy_expected: LongRawFuzzyHash = str::parse(fuzzy_str).unwrap();
         /*
             Read the corresponding file.
         */

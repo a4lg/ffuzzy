@@ -1297,7 +1297,6 @@ fn test_has_common_substring_naive() {
 #[cfg(all(feature = "std", feature = "tests-slow"))]
 #[test]
 fn verify_has_common_substring_by_real_blockhash_vectors() {
-    use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
@@ -1310,7 +1309,7 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
     ] {
         let index = BufReader::new(File::open(filename).unwrap());
         for hash in index.lines() {
-            let hash = LongFuzzyHash::from_str(&hash.unwrap()).unwrap();
+            let hash: LongFuzzyHash = str::parse(&hash.unwrap()).unwrap();
             block_hashes.insert(Vec::from(hash.block_hash_1()));
             block_hashes.insert(Vec::from(hash.block_hash_2()));
         }
@@ -1334,7 +1333,6 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
 #[cfg(all(feature = "std", feature = "tests-slow"))]
 #[test]
 fn verify_edit_distance_by_real_blockhash_vectors() {
-    use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
@@ -1347,7 +1345,7 @@ fn verify_edit_distance_by_real_blockhash_vectors() {
     ] {
         let index = BufReader::new(File::open(filename).unwrap());
         for hash in index.lines() {
-            let hash = LongFuzzyHash::from_str(&hash.unwrap()).unwrap();
+            let hash: LongFuzzyHash = str::parse(&hash.unwrap()).unwrap();
             block_hashes.insert(Vec::from(hash.block_hash_1()));
             block_hashes.insert(Vec::from(hash.block_hash_2()));
         }
