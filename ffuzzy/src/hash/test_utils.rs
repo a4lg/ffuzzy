@@ -7,11 +7,19 @@
 use crate::hash::block::BlockHash;
 
 
+#[test]
+fn test_common_prerequisites() {
+    // Generic requirements
+    assert!(BlockHash::ALPHABET_SIZE <= BlockHash::FULL_SIZE);
+    // test_blockhash_content_multiple_sequences (4: number of sequences)
+    assert!(BlockHash::ALPHABET_SIZE > 4);
+}
+
+
 fn test_blockhash_content_no_sequences(variant: bool, test_func: impl Fn(&[u8], &[u8])) {
     for len in 0..=BlockHash::FULL_SIZE {
         let mut bh = [0u8; BlockHash::FULL_SIZE];
         for (i, ch) in bh[..len].iter_mut().enumerate() {
-            assert!(i < BlockHash::ALPHABET_SIZE);
             *ch = (if !variant { i } else { BlockHash::ALPHABET_SIZE - 1 - i }) as u8;
         }
         test_func(&bh[0..len], &bh[0..len]);
@@ -53,7 +61,6 @@ fn test_blockhash_content_division(len: usize, variant: bool, test_func: impl Fn
         let mut bh_norm = [0u8; BlockHash::FULL_SIZE];
         let mut bh_len_norm = 0usize;
         for i in 0..div {
-            assert!((i as usize) < BlockHash::ALPHABET_SIZE);
             let i0 = (i * sz / div) as usize;
             let i1 = ((i + 1) * sz / div) as usize;
             let seq_len_norm = usize::min(i1 - i0, BlockHash::MAX_SEQUENCE_SIZE);
