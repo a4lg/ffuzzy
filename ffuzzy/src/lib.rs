@@ -251,8 +251,10 @@
 #![cfg_attr(not(any(feature = "unsafe", test)), forbid(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
-// Unless in maintainance mode, allow unknown lints.
+// Unless in the maintainance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
+// Unless in the maintainance mode, allow old lint names.
+#![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
