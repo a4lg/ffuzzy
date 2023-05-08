@@ -790,7 +790,7 @@ fn test_generator_length_mismatch() {
     generator.update_by_iter(buf.iter().cloned());
     assert_eq!(generator.input_size(), buf.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
-    // Error occurs when finalization.
+    // No errors occur on finalization.
     assert!(generator.finalize().is_ok());
 }
 
