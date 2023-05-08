@@ -803,6 +803,7 @@ fn test_parsed_block_size() {
 }
 
 
+#[allow(deprecated)]
 #[test]
 fn test_as_ref() {
     macro_rules! test {($ty: ty) => {
@@ -811,11 +812,14 @@ fn test_as_ref() {
         let norm_hash_1: &NormalizedType = &hash.norm_hash;
         let norm_hash_2: &NormalizedType = hash.as_ref();
         let norm_hash_3: &NormalizedType = hash.as_normalized();
+        let norm_hash_4: &NormalizedType = hash.as_ref_normalized(); // deprecated
         let p1 = norm_hash_1 as *const NormalizedType;
         let p2 = norm_hash_2 as *const NormalizedType;
         let p3 = norm_hash_3 as *const NormalizedType;
+        let p4 = norm_hash_4 as *const NormalizedType;
         assert_eq!(p1, p2);
         assert_eq!(p1, p3);
+        assert_eq!(p1, p4);
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
