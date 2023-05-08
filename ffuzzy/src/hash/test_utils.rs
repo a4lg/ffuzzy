@@ -26,7 +26,10 @@ fn test_blockhash_content_no_sequences(variant: bool, test_func: impl Fn(&[u8], 
     }
 }
 
-fn test_blockhash_contents_no_sequences(test_func: impl Fn(&[u8], &[u8], &[u8], &[u8])) {
+pub(crate) fn test_blockhash_contents_no_sequences(test_func: impl Fn(&[u8], &[u8], &[u8], &[u8])) {
+    // Generated block hashes:
+    // 1.  "ABCDEFG..." (forward from the first Base64 alphabet)
+    // 2.  "/+98765..." (backward from the last Base64 alphabet)
     test_blockhash_content_no_sequences(false, |bh1, bh1_norm| {
         test_blockhash_content_no_sequences(true, |bh2, bh2_norm| {
             test_func(bh1, bh2, bh1_norm, bh2_norm);
