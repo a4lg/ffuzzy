@@ -70,7 +70,7 @@ use position_array::BlockHashPositionArrayImplUnsafe;
 /// }
 /// # }
 /// ```
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FuzzyHashCompareTarget {
     /// The position array representation of block hash 1.
     ///
