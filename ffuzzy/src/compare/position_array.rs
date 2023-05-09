@@ -866,7 +866,7 @@ mod const_asserts {
     fn test_position_array_fits_in_64_bits() {
         assert!(
             u32::try_from(BlockHash::FULL_SIZE)
-                .and_then(|x| Ok(x <= u64::BITS))
+                .map(|x| x <= u64::BITS)
                 .unwrap_or(false)
         );
     }
