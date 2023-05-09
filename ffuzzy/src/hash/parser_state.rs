@@ -135,7 +135,7 @@ pub(crate) enum BlockHashParseState {
 
 // grcov-excl-br-start
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     #[cfg(feature = "alloc")]
     use alloc::format;
@@ -144,94 +144,113 @@ mod tests {
     use crate::test_utils::test_auto_debug_for_enum;
 
     #[test]
-    fn test_parse_error_enums_clone() {
+    fn test_parse_error_kind() {
+        // Test Clone
         test_auto_clone::<ParseErrorKind>(&ParseErrorKind::BlockHashIsTooLong);
+        #[cfg(feature = "alloc")]
+        {
+            // Test Display
+            assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
+            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
+            assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
+            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
+            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
+            assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
+            assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
+            // Test Debug
+            test_auto_debug_for_enum!(
+                ParseErrorKind,
+                [
+                    BlockSizeIsEmpty,
+                    BlockSizeStartsWithZero,
+                    BlockSizeIsInvalid,
+                    BlockSizeIsTooLarge,
+                    BlockHashIsTooLong,
+                    UnexpectedCharacter,
+                    UnexpectedEndOfString,
+                ]
+            );
+        }
+    }
+
+    #[test]
+    fn test_parse_error_origin() {
+        // Test Clone
         test_auto_clone::<ParseErrorOrigin>(&ParseErrorOrigin::BlockSize);
-    }
-
-    #[cfg(feature = "alloc")]
-    #[test]
-    fn test_parse_error_enums_display_and_debug() {
-        // Display
-        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
-        // Debug
-        test_auto_debug_for_enum!(
-            ParseErrorKind,
-            [
-                BlockSizeIsEmpty,
-                BlockSizeStartsWithZero,
-                BlockSizeIsInvalid,
-                BlockSizeIsTooLarge,
-                BlockHashIsTooLong,
-                UnexpectedCharacter,
-                UnexpectedEndOfString,
-            ]
-        );
-        test_auto_debug_for_enum!(
-            ParseErrorOrigin,
-            [
-                BlockSize,
-                BlockHash1,
-                BlockHash2,
-            ]
-        );
+        #[cfg(feature = "alloc")]
+        {
+            // Test Display
+            assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
+            assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
+            assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
+            // Test Debug
+            test_auto_debug_for_enum!(
+                ParseErrorOrigin,
+                [
+                    BlockSize,
+                    BlockHash1,
+                    BlockHash2,
+                ]
+            );
+        }
     }
 
     #[test]
-    fn test_block_hash_parse_state_clone() {
+    fn test_block_hash_parse_state() {
+        // Test Clone
         test_auto_clone::<BlockHashParseState>(&BlockHashParseState::MetEndOfString);
-    }
-
-    #[cfg(feature = "alloc")]
-    #[test]
-    fn test_block_hash_parse_state_debug() {
-        test_auto_debug_for_enum!(
-            BlockHashParseState,
-            [
-                MetEndOfString,
-                MetComma,
-                MetColon,
-                OverflowError,
-                Base64Error,
-            ]
-        );
+        #[cfg(feature = "alloc")]
+        {
+            // no Display
+            // Test Debug
+            test_auto_debug_for_enum!(
+                BlockHashParseState,
+                [
+                    MetEndOfString,
+                    MetComma,
+                    MetColon,
+                    OverflowError,
+                    Base64Error,
+                ]
+            );
+        }
     }
 
     #[test]
     fn test_parse_error_basic() {
-        let err = ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2);
+        // Internal values
+        const KIND:   ParseErrorKind   = ParseErrorKind::UnexpectedEndOfString;
+        const ORIGIN: ParseErrorOrigin = ParseErrorOrigin::BlockHash1;
+        const OFFSET: usize = 2;
+        // Construct an error object.
+        let err = ParseError(KIND, ORIGIN, OFFSET);
+        // Test Clone
         test_auto_clone::<ParseError>(&err);
-        assert_eq!(err.kind(), ParseErrorKind::UnexpectedEndOfString);
-        assert_eq!(err.origin(), ParseErrorOrigin::BlockHash1);
-        assert_eq!(err.offset(), 2);
+        // Check internal values.
+        assert_eq!(err.kind(),   KIND);
+        assert_eq!(err.origin(), ORIGIN);
+        assert_eq!(err.offset(), OFFSET);
     }
+
+    #[cfg(feature = "alloc")]
+    pub(crate) const PARSE_ERROR_CASES: [(ParseError, &str, &str); 3] = [
+        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected",   "ParseError(UnexpectedEndOfString, BlockSize, 0)"),
+        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected", "ParseError(UnexpectedEndOfString, BlockHash1, 2)"),
+        (ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): block size is not valid",         "ParseError(BlockSizeIsInvalid, BlockSize, 0)"),
+    ];
 
     #[cfg(feature = "alloc")]
     #[test]
     fn test_parse_error_display_and_debug() {
-        let err_empty = ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize, 0);
-        let err_eos_bh1 = ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2);
-        let err_bs_invalid = ParseError(ParseErrorKind::BlockSizeIsInvalid, ParseErrorOrigin::BlockSize, 0);
-        // Display
-        assert_eq!(format!("{}", err_empty),
-            "error occurred while parsing a fuzzy hash (block size, at byte offset 0): end-of-string is not expected");
-        assert_eq!(format!("{}", err_eos_bh1),
-            "error occurred while parsing a fuzzy hash (block hash 1, at byte offset 2): end-of-string is not expected");
-        assert_eq!(format!("{}", err_bs_invalid),
-            "error occurred while parsing a fuzzy hash (block size, at byte offset 0): block size is not valid");
-        // Debug
-        assert_eq!(format!("{:?}", err_empty), "ParseError(UnexpectedEndOfString, BlockSize, 0)");
-        assert_eq!(format!("{:?}", err_eos_bh1), "ParseError(UnexpectedEndOfString, BlockHash1, 2)");
-        assert_eq!(format!("{:?}", err_bs_invalid), "ParseError(BlockSizeIsInvalid, BlockSize, 0)");
+        for (err, err_str_display, err_str_debug) in PARSE_ERROR_CASES {
+            // Test Display
+            assert_eq!(
+                format!("{}", err),
+                format!("error occurred while parsing a fuzzy hash {}", err_str_display)
+            );
+            // Test Debug
+            assert_eq!(format!("{:?}", err), err_str_debug);
+        }
     }
 }
 // grcov-excl-br-stop
