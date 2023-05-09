@@ -12,6 +12,10 @@ use crate::hash::RawFuzzyHash;
 use crate::macros::{optionally_unsafe, invariant};
 
 
+#[cfg(test)]
+mod tests;
+
+
 /// The error type describing either a generator error or an I/O error.
 ///
 /// This type contains either:
@@ -138,69 +142,3 @@ pub fn hash_file<P: AsRef<Path>>(path: P)
     generator.set_fixed_input_size(file.metadata()?.len())?; // grcov-excl-br-line:IO
     hash_stream_common(&mut generator, &mut file)
 }
-
-
-
-
-
-// grcov-excl-br-start
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_hash_file_ok() {
-        let hash = hash_file("data/examples/hello.txt");
-        assert!(hash.is_ok());
-        assert_eq!(hash.unwrap().to_string(), "3:aaX8v:aV");
-    }
-
-    #[test]
-    fn test_hash_file_noexist() {
-        let err = hash_file("data/examples/nonexistent.bin");
-        if let Err(GeneratorOrIOError::IOError(err)) = err {
-            let str1 = format!("{}", err);
-            let big_error = GeneratorOrIOError::IOError(err);
-            let str2 = format!("{}", big_error);
-            assert_eq!(str1, str2);
-            // Test default Debug impltmentation for IOError
-            assert!(format!("{:?}", big_error).starts_with("IOError("));
-        }
-        else {
-            // grcov-excl-start
-            panic!("The error must be an IOError and this line should not be reachable!");
-            // grcov-excl-stop
-        }
-    }
-
-    #[test]
-    fn test_hash_stream_common() {
-        let mut file = File::open("data/examples/hello.txt").unwrap();
-        let hash = hash_stream(&mut file);
-        assert!(hash.is_ok());
-        assert_eq!(hash.unwrap().to_string(), "3:aaX8v:aV");
-    }
-
-    #[test]
-    fn test_hash_stream_common_inconsistency() {
-        let mut file = File::open("data/examples/hello.txt").unwrap();
-        let mut generator = Generator::new();
-        generator.set_fixed_input_size(0).unwrap(); // Give wrong size.
-        let err = hash_stream_common(&mut generator, &mut file);
-        if let Err(GeneratorOrIOError::GeneratorError(err)) = err {
-            let str1 = format!("{}", err);
-            let big_error = GeneratorOrIOError::GeneratorError(err);
-            let str2 = format!("{}", big_error);
-            assert_eq!(str1, str2);
-            assert_eq!(str1, "current state mismatches to the fixed size previously set");
-            // Test default Debug impltmentation for GeneratorError
-            assert!(format!("{:?}", big_error).starts_with("GeneratorError("));
-        }
-        else {
-            // grcov-excl-start
-            panic!("The error must be an IOError and this line should not be reachable!");
-            // grcov-excl-stop
-        }
-    }
-}
-// grcov-excl-br-stop
