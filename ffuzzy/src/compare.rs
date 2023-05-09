@@ -416,6 +416,29 @@ impl FuzzyHashCompareTarget {
         BlockHashPositionArrayMutRef(&mut self.blockhash2, &mut self.len_blockhash2)
     }
 
+    /// Performs full equality checking of the internal structure.
+    ///
+    /// This type intentionally lacks the implementation of [`PartialEq`]
+    /// because of its large size.  However, there's a case where we need to
+    /// compare two comparison targets.
+    ///
+    /// The primary purpose of this is debugging and it compares all internal
+    /// members inside the structure (just like auto-generated
+    /// [`PartialEq::eq()`]).
+    ///
+    /// Note that, despite that it is only relevant to users when the `unsafe`
+    /// feature is enabled but made public without any features because this
+    /// method is not *unsafe*.
+    pub fn full_eq(&self, other: &Self) -> bool {
+        // The contents of this method is auto-generated from rust-analyzer
+        // (the only modification is the indentation).
+        self.blockhash1 == other.blockhash1 &&
+        self.blockhash2 == other.blockhash2 &&
+        self.len_blockhash1 == other.len_blockhash1 &&
+        self.len_blockhash2 == other.len_blockhash2 &&
+        self.log_blocksize == other.log_blocksize
+    }
+
     /// Initialize the object from a given fuzzy hash
     /// (without clearing the position arrays).
     ///
