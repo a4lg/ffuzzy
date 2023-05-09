@@ -1148,7 +1148,7 @@ mod const_asserts {
     // Compare with generated table
     const_assert_eq!(BlockHash::ALPHABET_SIZE, crate::generate::fnv_table::_ALPHABET_SIZE);
 
-    // ALPHABET_SIZE properties
+    // ALPHABET_SIZE and FNV_HASH_INIT properties (for PartialFNVHash)
     const_assert!(0 < BlockHash::ALPHABET_SIZE && BlockHash::ALPHABET_SIZE <= 256);
     const_assert!(BlockHash::ALPHABET_SIZE.is_power_of_two());
     const_assert!((FNV_HASH_INIT as u16) < (BlockHash::ALPHABET_SIZE as u16));
