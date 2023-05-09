@@ -118,15 +118,17 @@ mod tests {
     #[cfg(feature = "alloc")]
     #[test]
     fn test_base64_is_valid() {
-        let mut expected_curr = -1;
+        let mut covered_idxes = 0u64;
+        let mut expected_idx = 0;
         let mut assert_base64 = |idx: usize, ch| {
             // Test indices sequentially (0..=63).
             assert!(idx < 64);
-            expected_curr += 1;
-            assert_eq!(expected_curr, idx as i32);
+            assert_eq!(expected_idx, idx);
             assert_eq!(base64_index_simple(ch), Some(idx as u8));
             assert_eq!(BASE64_TABLE[idx], ch as char);
             assert_eq!(BASE64_TABLE_U8[idx], ch);
+            covered_idxes |= 1 << idx;
+            expected_idx += 1;
         };
         assert_base64( 0, b'A');
         assert_base64( 1, b'B');
@@ -192,11 +194,14 @@ mod tests {
         assert_base64(61, b'9');
         assert_base64(62, b'+');
         assert_base64(63, b'/');
+        // Make sure that all 64 alphabets are covered.
+        assert_eq!(covered_idxes, u64::MAX);
+        assert_eq!(expected_idx, 64);
     }
 
     #[cfg(feature = "std")]
     #[test]
-    fn test_alphabet() {
+    fn test_alphabets() {
         // Each alphabet must be representable in u8 (and in ASCII 7-bit).
         for ch in BASE64_TABLE {
             assert!((ch as u32) < 0x100);
@@ -214,7 +219,7 @@ mod tests {
     fn test_representations() {
         use alloc::string::String;
         assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());
-        for i in 0usize..BASE64_TABLE.len() {
+        for i in 0..BASE64_TABLE.len() {
             let repr_u8 = BASE64_TABLE_U8[i];
             let repr_ch = BASE64_TABLE[i];
             assert_eq!(String::from(repr_ch), core::str::from_utf8(&[repr_u8]).unwrap());
@@ -232,19 +237,21 @@ mod tests {
             if alphabets.contains(&ch) {
                 continue;
             }
-            // If ch is not a Base64 alphabet,
-            // base64_index for that ch must return None.
+            // If `ch` is not a Base64 alphabet,
+            // base64_index for that `ch` must return None.
             assert_eq!(base64_index_simple(ch), None);
         }
         // Invalid character has invalid index.
         assert!(BASE64_TABLE.len() <= BASE64_INVALID as usize);
         assert!(BASE64_TABLE_U8.len() <= BASE64_INVALID as usize);
+        // Just to make sure
+        assert!(BASE64_INVALID >= 64);
     }
 
     #[test]
     fn test_perf_impl() {
-        // Test that simple implementation and
-        // branchless implementation are equivalent.
+        // Test that the simple implementation and
+        // the branchless implementation are equivalent.
         for ch in u8::MIN..=u8::MAX {
             assert_eq!(
                 base64_index(ch),
