@@ -489,9 +489,8 @@ mod tests {
 
     #[test]
     fn test_prerequisites() {
-        // NUM_VALID and NUM_VALID + 1 must be valid u8 values.
+        // NUM_VALID must be a valid u8 value.
         crate::test_utils::assert_fits_in!(BlockSize::NUM_VALID, u8);
-        crate::test_utils::assert_fits_in!(BlockSize::NUM_VALID + 1, u8);
     }
 
     #[test]
