@@ -619,8 +619,8 @@ impl FuzzyHashCompareTarget {
     /// Because of its purpose, this method is not designed to be fast.
     pub fn is_valid(&self) -> bool {
         BlockSize::is_log_valid(self.log_blocksize)
-            && self.block_hash_1().is_valid_and_normalized()
-            && self.block_hash_2().is_valid_and_normalized()
+            && self.block_hash_1_internal().is_valid_and_normalized()
+            && self.block_hash_2_internal().is_valid_and_normalized()
     }
 
     /// The internal implementation of [`Self::compare_unequal_near_eq_unchecked()`].
