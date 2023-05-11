@@ -104,22 +104,39 @@ pub struct FuzzyHashCompareTarget {
     log_blocksize: u8,
 }
 
-/// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
-/// [`FuzzyHashCompareTarget::block_hash_2()`].
-#[cfg(not(feature = "unsafe"))]
-macro_rules! compare_target_block_hash_pub_impl {
-    ($a:lifetime) => {
-        impl $a + BlockHashPositionArrayImpl
-    };
-}
-
-/// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
-/// [`FuzzyHashCompareTarget::block_hash_2()`].
-#[cfg(feature = "unsafe")]
-macro_rules! compare_target_block_hash_pub_impl {
-    ($a:lifetime) => {
-        impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe
-    };
+cfg_if::cfg_if! {
+    if #[cfg(not(feature = "unsafe"))] {
+        /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
+        /// [`FuzzyHashCompareTarget::block_hash_2()`].
+        macro_rules! compare_target_block_hash_pub_impl {
+            ($a:lifetime) => {
+                impl $a + BlockHashPositionArrayImpl
+            };
+        }
+        /// The return type of [`FuzzyHashCompareTarget::block_hash_1_internal()`]
+        /// and [`FuzzyHashCompareTarget::block_hash_2_internal()`].
+        macro_rules! compare_target_block_hash_priv_impl {
+            ($a:lifetime) => {
+                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
+            };
+        }
+    }
+    else {
+        /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
+        /// [`FuzzyHashCompareTarget::block_hash_2()`].
+        macro_rules! compare_target_block_hash_pub_impl {
+            ($a:lifetime) => {
+                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe
+            };
+        }
+        /// The return type of [`FuzzyHashCompareTarget::block_hash_1_internal()`]
+        /// and [`FuzzyHashCompareTarget::block_hash_2_internal()`].
+        macro_rules! compare_target_block_hash_priv_impl {
+            ($a:lifetime) => {
+                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe + BlockHashPositionArrayImplInternal
+            };
+        }
+    }
 }
 
 impl FuzzyHashCompareTarget {
@@ -203,26 +220,6 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn block_size(&self) -> u32 {
         BlockSize::from_log_internal(self.log_blocksize)
-    }
-
-    /// Position array-based representation of the block hash 1.
-    ///
-    /// This method provices raw access to the internal efficient block hash
-    /// representation and fast bit-parallel string functions.
-    ///
-    /// You are not recommended to use this unless
-    /// you know the internal details deeply.
-    ///
-    /// The result has the same lifetime as this object and implements
-    /// following traits:
-    ///
-    /// 1.  [`BlockHashPositionArrayData`]
-    /// 2.  [`BlockHashPositionArrayImpl`]
-    /// 3.  [`BlockHashPositionArrayImplUnsafe`]
-    ///     (only if the `unsafe` feature is enabled)
-    #[inline(always)]
-    pub fn block_hash_1(&self) -> compare_target_block_hash_pub_impl!('_) {
-        BlockHashPositionArrayRef(&self.blockhash1, &self.len_blockhash1)
     }
 
     /// Position array-based representation of the block hash 1.
@@ -323,10 +320,30 @@ impl FuzzyHashCompareTarget {
     /// assert_eq!(bh1.score_strings_internal(base_bh1, 0), 16);
     /// ```
     #[inline(always)]
-    fn block_hash_1_internal(&self)
-        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
+    fn block_hash_1_internal(&self) -> compare_target_block_hash_priv_impl!('_)
     {
         BlockHashPositionArrayRef(&self.blockhash1, &self.len_blockhash1)
+    }
+
+    /// Position array-based representation of the block hash 1.
+    ///
+    /// This method provices raw access to the internal efficient block hash
+    /// representation and fast bit-parallel string functions.
+    ///
+    /// You are not recommended to use this unless
+    /// you know the internal details deeply.
+    ///
+    /// The result has the same lifetime as this object and implements
+    /// following traits:
+    ///
+    /// 1.  [`BlockHashPositionArrayData`]
+    /// 2.  [`BlockHashPositionArrayImpl`]
+    /// 3.  [`BlockHashPositionArrayImplUnsafe`]
+    ///     (only if the `unsafe` feature is enabled)
+    #[inline(always)]
+    pub fn block_hash_1(&self) -> compare_target_block_hash_pub_impl!('_) {
+        // Expose a subset of block_hash_1_internal()
+        self.block_hash_1_internal()
     }
 
     /// Position array-based representation of the block hash 1.
@@ -385,23 +402,23 @@ impl FuzzyHashCompareTarget {
 
     /// Position array-based representation of the block hash 2.
     ///
-    /// See also: [`block_hash_1()`](Self::block_hash_1())
-    #[inline(always)]
-    pub fn block_hash_2(&self) -> compare_target_block_hash_pub_impl!('_) {
-        BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
-    }
-
-    /// Position array-based representation of the block hash 2.
-    ///
     /// This is the same as [`block_hash_2()`](Self::block_hash_2()) except that
     /// it exposes some internals.
     ///
     /// See also: [`block_hash_1_internal()`](Self::block_hash_1_internal())
     #[inline(always)]
-    fn block_hash_2_internal(&self)
-        -> impl '_ + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
+    fn block_hash_2_internal(&self) -> compare_target_block_hash_priv_impl!('_)
     {
         BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
+    }
+
+    /// Position array-based representation of the block hash 2.
+    ///
+    /// See also: [`block_hash_1()`](Self::block_hash_1())
+    #[inline(always)]
+    pub fn block_hash_2(&self) -> compare_target_block_hash_pub_impl!('_) {
+        // Expose a subset of block_hash_2_internal()
+        self.block_hash_2_internal()
     }
 
     /// Position array-based representation of the block hash 2.
