@@ -68,20 +68,24 @@ fn test_parse_error_either_display_and_debug_with_side() {
         // Test Display
         assert_eq!(
             format!("{}", ParseErrorEither(ParseErrorSide::Left, err)),
-            format!("error occurred while parsing fuzzy hash 1 {}", err_str_display)
+            format!("error occurred while parsing fuzzy hash 1 {}", err_str_display),
+            "failed on err={:?}", err
         );
         assert_eq!(
             format!("{}", ParseErrorEither(ParseErrorSide::Right, err)),
-            format!("error occurred while parsing fuzzy hash 2 {}", err_str_display)
+            format!("error occurred while parsing fuzzy hash 2 {}", err_str_display),
+            "failed on err={:?}", err
         );
         // Test Debug
         assert_eq!(
             format!("{:?}", ParseErrorEither(ParseErrorSide::Left, err)),
-            format!("ParseErrorEither(Left, {})", err_str_debug)
+            format!("ParseErrorEither(Left, {})", err_str_debug),
+            "failed on err={:?}", err
         );
         assert_eq!(
             format!("{:?}", ParseErrorEither(ParseErrorSide::Right, err)),
-            format!("ParseErrorEither(Right, {})", err_str_debug)
+            format!("ParseErrorEither(Right, {})", err_str_debug),
+            "failed on err={:?}", err
         );
     }
 }
@@ -108,10 +112,10 @@ fn test_compare_error() {
     for (hash_str_invalid, err) in ERROR_CASES {
         // Left side has an error.
         assert_eq!(compare(hash_str_invalid, STR_VALID), Err(ParseErrorEither(ParseErrorSide::Left, err)),
-            "test case failed on the invalid hash string {:?} on the left", hash_str_invalid);
+            "failed on hash_str_invalid={:?} (left)", hash_str_invalid);
         // Right side has an error.
         assert_eq!(compare(STR_VALID, hash_str_invalid), Err(ParseErrorEither(ParseErrorSide::Right, err)),
-            "test case failed on the invalid hash string {:?} on the right", hash_str_invalid);
+            "failed on hash_str_invalid={:?} (right)", hash_str_invalid);
     }
     /*
         If both sides are invalid, an error with ParseErrorSide::Left is
@@ -126,7 +130,9 @@ fn test_compare_error() {
             // grcov-excl-start: Not very relevant to the true coverage.
             assert!(
                 err == Err(ParseErrorEither(ParseErrorSide::Left,  err_l)) ||
-                err == Err(ParseErrorEither(ParseErrorSide::Right, err_r))
+                err == Err(ParseErrorEither(ParseErrorSide::Right, err_r)),
+                "failed on hash_str_invalid_l={:?}, hash_str_invalid_r={:?}",
+                hash_str_invalid_l, hash_str_invalid_r
             );
             // grcov-excl-end
         }
