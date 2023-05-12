@@ -8,7 +8,7 @@ use crate::utils::{u64_ilog2, u64_lsb_ones};
 
 
 #[test]
-fn test_u64_ilog2_examples() {
+fn u64_ilog2_examples() {
     assert_eq!(u64_ilog2(1), 0);
     assert_eq!(u64_ilog2(2), 1);
     assert_eq!(u64_ilog2(3), 1);
@@ -21,7 +21,7 @@ fn test_u64_ilog2_examples() {
 }
 
 #[test]
-fn test_u64_ilog2_borders() {
+fn u64_ilog2_near_borders() {
     for n in 1..=(u64::BITS - 1) {
         let border = 1u64 << n;
         assert_eq!(u64_ilog2(border - 1), n - 1, "failed on n={:?}", n);
@@ -31,7 +31,7 @@ fn test_u64_ilog2_borders() {
 }
 
 #[test]
-fn test_u64_lsb_ones_table() {
+fn u64_lsb_ones_table() {
     let mut expected_idx = 0;
     let mut assert_next = |n, expected_value| {
         assert_eq!(expected_idx, n);
@@ -109,7 +109,7 @@ fn test_u64_lsb_ones_table() {
 }
 
 #[test]
-fn test_u64_lsb_ones_and_ilog2() {
+fn u64_lsb_ones_and_ilog2() {
     // Test correspondence between LSB ones (2^n-1)
     // and ilog2 (floor(log_2(n))).
     for n in 0..=(u64::BITS - 1) {
