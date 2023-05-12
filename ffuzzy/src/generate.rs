@@ -1161,7 +1161,7 @@ mod const_asserts {
     // grcov-excl-br-start
     #[cfg(test)]
     #[test]
-    fn test_rolling_hash_h3_shifts() {
+    fn rolling_hash_h3_shift_amount() {
         assert!(
             u32::try_from(
                 RollingHash::WINDOW_SIZE.checked_mul(RollingHash::H3_LSHIFT).unwrap()

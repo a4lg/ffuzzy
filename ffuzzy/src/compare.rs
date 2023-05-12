@@ -1362,7 +1362,7 @@ mod const_asserts {
     // grcov-excl-br-start
     #[cfg(test)]
     #[test]
-    fn test_log_block_size_capping_border() {
+    fn log_block_size_capping_border_is_correct() {
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
         assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     }

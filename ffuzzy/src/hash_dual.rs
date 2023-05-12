@@ -162,7 +162,7 @@ mod private {
 
                 #[cfg(test)]
                 #[test]
-                fn test_div_ceil_examples() {
+                fn div_ceil_examples() {
                     assert_eq!(div_ceil(0, 1), 0);
                     assert_eq!(div_ceil(1, 1), 1);
                     assert_eq!(div_ceil(2, 1), 2);

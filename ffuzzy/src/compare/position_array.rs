@@ -863,7 +863,7 @@ mod const_asserts {
     // grcov-excl-br-start
     #[cfg(test)]
     #[test]
-    fn test_position_array_fits_in_64_bits() {
+    fn position_array_fits_in_64_bits() {
         assert!(
             u32::try_from(BlockHash::FULL_SIZE)
                 .map(|x| x <= u64::BITS)
@@ -880,7 +880,7 @@ mod const_asserts {
     // grcov-excl-br-start
     #[cfg(test)]
     #[test]
-    fn test_score_arithmetic_overflow() {
+    fn score_arithmetic_causes_no_overflow() {
         /*
             Possible arithmetic operations to check overflow:
             1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
