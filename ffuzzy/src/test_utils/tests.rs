@@ -15,7 +15,7 @@ use crate::test_utils::{
 use crate::test_utils::test_auto_debug_for_enum;
 
 #[test]
-fn test_auto_clone_valid() {
+fn auto_clone_valid() {
     #[derive(PartialEq, Eq, Clone, Debug)]
     struct Example(u8);
     test_auto_clone(&Example(1));
@@ -24,7 +24,7 @@ fn test_auto_clone_valid() {
 
 #[test]
 #[should_panic]
-fn test_auto_clone_counterexample() {
+fn auto_clone_counterexample() {
     #[derive(PartialEq, Eq, Debug)]
     struct Counterexample(u8);
     impl Clone for Counterexample {
@@ -66,7 +66,7 @@ mod test_auto_debug_for_enum {
         }
     }
     #[test]
-    fn test_valid() {
+    fn valid_examples() {
         test_auto_debug_for_enum!(AutoEnumExample, []);
         test_auto_debug_for_enum!(AutoEnumExample, [ OK1 ]);
         test_auto_debug_for_enum!(AutoEnumExample, [ OK1, ]);
@@ -84,69 +84,69 @@ mod test_auto_debug_for_enum {
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_01() {
+    fn counterexample_01() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_02() {
+    fn counterexample_02() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_03() {
+    fn counterexample_03() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1 ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_04() {
+    fn counterexample_04() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_05() {
+    fn counterexample_05() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_06() {
+    fn counterexample_06() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_07() {
+    fn counterexample_07() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, OK2 ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_08() {
+    fn counterexample_08() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, OK2, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_09() {
+    fn counterexample_09() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, OK2 ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_10() {
+    fn counterexample_10() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, OK2, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_11() {
+    fn counterexample_11() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, Broken ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_12() {
+    fn counterexample_12() {
         test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, Broken, ]);
     }
 }
 
 
 #[test]
-fn test_recommended_default() {
+fn recommended_default_example() {
     #[derive(PartialEq, Eq, Debug)]
     struct Example(u8);
     impl Example {
@@ -161,7 +161,7 @@ fn test_recommended_default() {
 
 #[test]
 #[should_panic]
-fn test_recommended_default_counterexample() {
+fn recommended_default_counterexample() {
     #[derive(PartialEq, Eq, Debug)]
     struct Counterexample(u8);
     impl Counterexample {
@@ -192,7 +192,7 @@ mod test_for_each_type {
     }
 
     #[test]
-    fn test_valid() {
+    fn valid_examples() {
         test_for_each_type!(test, []);
         test_for_each_type!(test, [ OKType ]);
         test_for_each_type!(test, [ OKType, ]);
@@ -203,69 +203,69 @@ mod test_for_each_type {
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_01() {
+    fn counterexample_01() {
         test_for_each_type!(test, [ NGType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_02() {
+    fn counterexample_02() {
         test_for_each_type!(test, [ NGType, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_03() {
+    fn counterexample_03() {
         test_for_each_type!(test, [ NGType, OKType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_04() {
+    fn counterexample_04() {
         test_for_each_type!(test, [ NGType, OKType, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_05() {
+    fn counterexample_05() {
         test_for_each_type!(test, [ OKType, NGType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_06() {
+    fn counterexample_06() {
         test_for_each_type!(test, [ OKType, NGType, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_07() {
+    fn counterexample_07() {
         test_for_each_type!(test, [ NGType, OKType, OKType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_08() {
+    fn counterexample_08() {
         test_for_each_type!(test, [ NGType, OKType, OKType, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_09() {
+    fn counterexample_09() {
         test_for_each_type!(test, [ OKType, NGType, OKType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_10() {
+    fn counterexample_10() {
         test_for_each_type!(test, [ OKType, NGType, OKType, ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_11() {
+    fn counterexample_11() {
         test_for_each_type!(test, [ OKType, OKType, NGType ]);
     }
     #[test]
     #[should_panic]
-    fn test_counterexample_12() {
+    fn counterexample_12() {
         test_for_each_type!(test, [ OKType, OKType, NGType, ]);
     }
 }
 
 
 #[test]
-fn test_assert_fits_in() {
+fn assert_fits_in_examples() {
     // u8: 0..=255
     assert_fits_in!(  0i32, u8);
     assert_fits_in!(255u16, u8);
@@ -282,21 +282,21 @@ fn test_assert_fits_in() {
 
 #[test]
 #[should_panic]
-fn test_assert_fits_in_counterexample_1() {
+fn assert_fits_in_counterexample_1() {
     assert_fits_in!(256i32, u8);
 }
 #[test]
 #[should_panic]
-fn test_assert_fits_in_counterexample_2() {
+fn assert_fits_in_counterexample_2() {
     assert_fits_in!(-1i32, u8);
 }
 #[test]
 #[should_panic]
-fn test_assert_fits_in_counterexample_3() {
+fn assert_fits_in_counterexample_3() {
     assert_fits_in!(-129i32, i8);
 }
 #[test]
 #[should_panic]
-fn test_assert_fits_in_counterexample_4() {
+fn assert_fits_in_counterexample_4() {
     assert_fits_in!(128i32, i8);
 }

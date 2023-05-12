@@ -12,7 +12,7 @@ use crate::test_utils::test_auto_clone;
 
 
 #[test]
-fn test_parse_error_side() {
+fn parse_error_side_impls() {
     // Test Clone
     test_auto_clone::<ParseErrorSide>(&ParseErrorSide::Left);
     #[cfg(feature = "alloc")]
@@ -29,7 +29,7 @@ fn test_parse_error_side() {
 }
 
 #[test]
-fn test_parse_error_either_basic() {
+fn parse_error_either_basic_and_impls() {
     // Internal values
     const SIDE: ParseErrorSide     = ParseErrorSide::Left;
     const KIND: ParseErrorKind     = ParseErrorKind::UnexpectedEndOfString;
@@ -63,7 +63,7 @@ fn test_parse_error_either_basic() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_parse_error_either_display_and_debug_with_side() {
+fn parse_error_either_impls_display_and_debug_with_side() {
     for (err, err_str_display, err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
         // Test Display
         assert_eq!(
@@ -91,7 +91,7 @@ fn test_parse_error_either_display_and_debug_with_side() {
 }
 
 #[test]
-fn test_compare_ok() {
+fn compare_example() {
     assert_eq!(
         compare(
             "6:3ll7QzDkmJmMHkQoO/llSZEnEuLszmbMAWn:VqDk5QtLbW",
@@ -102,7 +102,7 @@ fn test_compare_ok() {
 }
 
 #[test]
-fn test_compare_error() {
+fn compare_errors() {
     const STR_VALID: &str = "3::";
     const ERROR_CASES: [(&str, ParseError); 3] = [
         ("",    ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0)),

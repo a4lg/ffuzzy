@@ -144,7 +144,7 @@ pub(crate) mod tests {
     use crate::test_utils::test_auto_debug_for_enum;
 
     #[test]
-    fn test_parse_error_kind() {
+    fn parse_error_kind_impls() {
         // Test Clone
         test_auto_clone::<ParseErrorKind>(&ParseErrorKind::BlockHashIsTooLong);
         #[cfg(feature = "alloc")]
@@ -174,7 +174,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn test_parse_error_origin() {
+    fn parse_error_origin_impls() {
         // Test Clone
         test_auto_clone::<ParseErrorOrigin>(&ParseErrorOrigin::BlockSize);
         #[cfg(feature = "alloc")]
@@ -196,7 +196,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn test_block_hash_parse_state() {
+    fn block_hash_parse_state_impls() {
         // Test Clone
         test_auto_clone::<BlockHashParseState>(&BlockHashParseState::MetEndOfString);
         #[cfg(feature = "alloc")]
@@ -217,7 +217,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn test_parse_error_basic() {
+    fn parse_error_basic_and_impls() {
         // Internal values
         const KIND:   ParseErrorKind   = ParseErrorKind::UnexpectedEndOfString;
         const ORIGIN: ParseErrorOrigin = ParseErrorOrigin::BlockHash1;
@@ -241,7 +241,7 @@ pub(crate) mod tests {
 
     #[cfg(feature = "alloc")]
     #[test]
-    fn test_parse_error_display_and_debug() {
+    fn parse_error_impls_display_and_debug() {
         for (err, err_str_display, err_str_debug) in PARSE_ERROR_CASES {
             // Test Display
             assert_eq!(

@@ -17,14 +17,14 @@ use crate::generate_easy_std::{
 
 
 #[test]
-fn test_hash_file_ok() {
+fn hash_file_usage() {
     let hash = hash_file("data/examples/hello.txt");
     assert!(hash.is_ok());
     assert_eq!(hash.unwrap().to_string(), "3:aaX8v:aV");
 }
 
 #[test]
-fn test_hash_file_not_exist() {
+fn hash_file_not_exist() {
     let err = hash_file("data/examples/nonexistent.bin");
     if let Err(GeneratorOrIOError::IOError(err)) = err {
         let str_display_bare = format!("{}", err);
@@ -52,7 +52,7 @@ fn test_hash_file_not_exist() {
 }
 
 #[test]
-fn test_hash_stream_common() {
+fn hash_stream_common_usage() {
     let mut file = File::open("data/examples/hello.txt").unwrap();
     let hash = hash_stream(&mut file);
     assert!(hash.is_ok());
@@ -60,7 +60,7 @@ fn test_hash_stream_common() {
 }
 
 #[test]
-fn test_hash_stream_common_inconsistency() {
+fn hash_stream_common_size_inconsistency() {
     let mut file = File::open("data/examples/hello.txt").unwrap();
     let mut generator = Generator::new();
     // Give wrong size to cause a GeneratorError::FixedSizeMismatch error.
@@ -93,7 +93,7 @@ fn test_hash_stream_common_inconsistency() {
 }
 
 #[test]
-fn test_hash_stream_common_io_fail() {
+fn hash_stream_common_io_fail() {
     // Custom Read implementation (which always fails)
     struct IOFail;
     impl Read for IOFail {

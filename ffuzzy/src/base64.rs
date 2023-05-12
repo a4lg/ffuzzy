@@ -117,7 +117,7 @@ mod tests {
 
     #[cfg(feature = "alloc")]
     #[test]
-    fn test_base64_is_valid() {
+    fn values_and_indices() {
         let mut covered_idxes = 0u64;
         let mut expected_idx = 0;
         let mut assert_base64 = |idx: usize, ch| {
@@ -201,7 +201,7 @@ mod tests {
 
     #[cfg(feature = "std")]
     #[test]
-    fn test_alphabets() {
+    fn alphabets() {
         // Each alphabet must be representable in u8 (and in ASCII 7-bit).
         for ch in BASE64_TABLE {
             assert!((ch as u32) < 0x100);
@@ -216,7 +216,7 @@ mod tests {
 
     #[cfg(feature = "alloc")]
     #[test]
-    fn test_representations() {
+    fn equiv_representations() {
         use alloc::string::String;
         assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());
         for i in 0..BASE64_TABLE.len() {
@@ -228,17 +228,18 @@ mod tests {
 
     #[cfg(feature = "std")]
     #[test]
-    fn test_invalid() {
+    fn invalid_chars() {
+        // Collect valid alphabets first.
         let mut alphabets = std::collections::HashSet::new();
         for ch in BASE64_TABLE_U8 {
             alphabets.insert(ch);
         }
+        // If `ch` is not a Base64 alphabet,
+        // base64_index for that `ch` must return None.
         for ch in u8::MIN..=u8::MAX {
             if alphabets.contains(&ch) {
                 continue;
             }
-            // If `ch` is not a Base64 alphabet,
-            // base64_index for that `ch` must return None.
             assert_eq!(base64_index_simple(ch), None);
         }
         // Invalid character has invalid index.
@@ -249,7 +250,7 @@ mod tests {
     }
 
     #[test]
-    fn test_perf_impl() {
+    fn compare_impls() {
         // Test that the simple implementation and
         // the branchless implementation are equivalent.
         for ch in u8::MIN..=u8::MAX {

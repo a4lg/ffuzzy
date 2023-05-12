@@ -36,7 +36,7 @@ pub fn hash_buf(buffer: &[u8]) -> Result<RawFuzzyHash, GeneratorError> {
 mod tests {
     #[cfg(feature = "alloc")]
     #[test]
-    fn test_hash_buf_usage() {
+    fn hash_buf_usage() {
         use crate::generate_easy::hash_buf;
         assert_eq!(
             hash_buf(b"Hello, World!\n").unwrap().to_string(),
@@ -47,7 +47,7 @@ mod tests {
     // TODO: Once existence of an 128-bit machine is realistic, change #[cfg] below.
     #[cfg(target_pointer_width = "64")]
     #[test]
-    fn test_hash_buf_too_large() {
+    fn hash_buf_input_too_large() {
         use crate::generate::{Generator, GeneratorError};
         use crate::generate_easy::hash_buf;
         unsafe {

@@ -488,13 +488,13 @@ mod tests {
     use alloc::string::ToString;
 
     #[test]
-    fn test_prerequisites() {
+    fn prerequisites() {
         // NUM_VALID must be a valid u8 value.
         crate::test_utils::assert_fits_in!(BlockSize::NUM_VALID, u8);
     }
 
     #[test]
-    fn test_block_size_validness_border() {
+    fn block_size_validness_near_the_border() {
         const WIDTH: u32 = 10;
         for log_block_size in 0..BlockSize::NUM_VALID as u8 {
             let block_size = BlockSize::from_log_internal(log_block_size);
@@ -535,7 +535,7 @@ mod tests {
 
     #[cfg(feature = "tests-slow")]
     #[test]
-    fn test_block_size_validness_all() {
+    fn block_size_validness_all() {
         assert!(!BlockSize::is_valid(0));
         let mut next_log_block_size = 0;
         let mut next_block_size_minus_1 = BlockSize::from_log_internal(next_log_block_size) - 1;
@@ -565,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn test_block_size_log_valid() {
+    fn block_size_log_validness() {
         for log_block_size in 0..BlockSize::NUM_VALID as u8 {
             assert!(BlockSize::is_log_valid(log_block_size),
                 "failed on log_block_size={:?}", log_block_size);
@@ -617,7 +617,7 @@ mod tests {
     }
 
     #[test]
-    fn test_block_size_log_invalid() {
+    fn block_size_log_invalid() {
         for log_block_size in BlockSize::NUM_VALID as u8..=u8::MAX {
             assert!(!BlockSize::is_log_valid(log_block_size),
                 "failed on log_block_size={:?}", log_block_size);
@@ -627,7 +627,7 @@ mod tests {
     }
 
     #[test]
-    fn test_block_size_strings() {
+    fn block_size_strings() {
         // Prerequisites
         assert_eq!(BlockSize::NUM_VALID, BlockSize::BLOCK_SIZES_STR.len());
         // Test all valid *base-2 logarithm* values.
@@ -650,7 +650,7 @@ mod tests {
 
 
     #[test]
-    fn test_block_size_relation_basic() {
+    fn block_size_relation_impls() {
         // Test Clone
         crate::test_utils::test_auto_clone::<BlockSizeRelation>(&BlockSizeRelation::Far);
         #[cfg(feature = "alloc")]
@@ -663,7 +663,7 @@ mod tests {
     }
 
     #[test]
-    fn test_block_size_relation_consistency() {
+    fn block_size_relation_consistency() {
         for bs1 in 0..BlockSize::NUM_VALID as u8 {
             for bs2 in 0..BlockSize::NUM_VALID as u8 {
                 // Use cmp.
