@@ -120,12 +120,7 @@ pub mod BlockSize {
     /// ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
     #[inline]
     pub fn from_log(log_block_size: u8) -> Option<u32> {
-        if is_log_valid(log_block_size) {
-            Some(from_log_internal(log_block_size))
-        }
-        else {
-            None
-        }
+        is_log_valid(log_block_size).then(|| from_log_internal(log_block_size))
     }
 
     /// Precomputed block size strings.
