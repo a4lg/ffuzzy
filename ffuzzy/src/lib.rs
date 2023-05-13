@@ -348,6 +348,7 @@ pub const MAX_LEN_IN_STR: usize = hash::LongRawFuzzyHash::MAX_LEN_IN_STR;
 /// Constant assertions related to the base requirements.
 #[doc(hidden)]
 mod const_asserts {
+    use super::*;
     use static_assertions::const_assert;
 
     // We expect that usize is at least 8 bits in width.
@@ -357,4 +358,11 @@ mod const_asserts {
     // exceeds 256 bytes.  Some tests even require that usize is at least
     // 32 bits.
     const_assert!(usize::BITS >= 8);
+
+    // MAX_LEN_IN_STR is sufficient to represent every variant of
+    // a fuzzy hash.
+    const_assert!(MAX_LEN_IN_STR >= FuzzyHash::MAX_LEN_IN_STR);
+    const_assert!(MAX_LEN_IN_STR >= RawFuzzyHash::MAX_LEN_IN_STR);
+    const_assert!(MAX_LEN_IN_STR >= LongFuzzyHash::MAX_LEN_IN_STR);
+    const_assert!(MAX_LEN_IN_STR >= LongRawFuzzyHash::MAX_LEN_IN_STR);
 }
