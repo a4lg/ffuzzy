@@ -22,18 +22,18 @@ use crate::test_utils::test_auto_debug_for_enum;
 
 
 #[test]
-fn test_partial_fnv_hash_basic() {
+fn partial_fnv_hash_impls() {
     test_recommended_default!(PartialFNVHash);
     test_auto_clone::<PartialFNVHash>(&PartialFNVHash::new());
 }
 
 #[test]
-fn test_partial_fnv_hash_initial() {
+fn partial_fnv_hash_initial_state() {
     assert_eq!(PartialFNVHash::new().value(), 0x27);
 }
 
 #[test]
-fn test_partial_fnv_hash_usage() {
+fn partial_fnv_hash_usage() {
     const STR: &[u8] = b"Hello, World!\n";
     const EXPECTED_HASH: u8 = 0x1e;
 
@@ -77,17 +77,20 @@ fn test_partial_fnv_hash_usage() {
 }
 
 #[cfg(feature = "alloc")]
+pub(crate) const EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH: &str = "PartialFNVHash(39)";
+
+#[cfg(feature = "alloc")]
 #[test]
-fn test_partial_fnv_hash_debug() {
+fn partial_fnv_hash_impl_debug() {
     // 39 == 0x27 == the lowest 6 bits of 0x28021967
     assert_eq!(
         format!("{:?}", PartialFNVHash::new()),
-        "PartialFNVHash(39)"
+        EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH
     );
 }
 
 #[test]
-fn test_partial_fnv_hash_with_regular_fnv1_test_vector() {
+fn verify_partial_fnv_hash_with_regular_fnv1_test_vector() {
     fn test(expected_value: u32, repetition: usize, buf: &[u8]) {
         // Overwrite the initial state with regular FNV-1-32's one (0x811c9dc5).
         // Test only the lowest 6 bits.
@@ -368,13 +371,13 @@ fn test_partial_fnv_hash_with_regular_fnv1_test_vector() {
 
 
 #[test]
-fn test_rolling_hash_basic() {
+fn rolling_hash_basic_impls() {
     test_recommended_default!(RollingHash);
     test_auto_clone::<RollingHash>(&RollingHash::new());
 }
 
 #[test]
-fn test_rolling_hash_usage() {
+fn rolling_hash_usage() {
     const STR: &[u8] = b"Hello, World!\n";
     const EXPECTED_HASH: u32 = 0x19179d98;
 
@@ -418,22 +421,26 @@ fn test_rolling_hash_usage() {
 }
 
 #[cfg(feature = "alloc")]
+pub(crate) const EXPECTED_DEBUG_INITIAL_ROLLING_HASH: &str =
+    "RollingHash { \
+        index: 0, \
+        h1: 0, \
+        h2: 0, \
+        h3: 0, \
+        window: [0, 0, 0, 0, 0, 0, 0] \
+    }";
+
+#[cfg(feature = "alloc")]
 #[test]
-fn test_rolling_hash_debug() {
+fn rolling_hash_impl_debug() {
     assert_eq!(
         format!("{:?}", RollingHash::new()),
-        "RollingHash { \
-            index: 0, \
-            h1: 0, \
-            h2: 0, \
-            h3: 0, \
-            window: [0, 0, 0, 0, 0, 0, 0] \
-        }"
+        EXPECTED_DEBUG_INITIAL_ROLLING_HASH
     );
 }
 
 #[test]
-fn test_rolling_hash_rolling_basic() {
+fn rolling_hash_rolling_basic() {
     // h2_multiplier := 1+2+...+WINDOW_SIZE
     let mut h2_multiplier = 0u32;
     for i in 0..RollingHash::WINDOW_SIZE {
@@ -442,22 +449,25 @@ fn test_rolling_hash_rolling_basic() {
     // Check rolling hash internals by supplying WINDOW_SIZE bytes
     let mut hash = RollingHash::new();
     // Repeating the process should not change the result.
-    for _ in 0..2 {
+    for iteration in 0..2 {
         for ch in u8::MIN..=u8::MAX {
             for _ in 0..RollingHash::WINDOW_SIZE {
                 hash.update_by_byte(ch);
             }
             // h1: Plain sum
-            assert_eq!(hash.h1, (ch as u32) * (RollingHash::WINDOW_SIZE as u32));
+            assert_eq!(hash.h1, (ch as u32) * (RollingHash::WINDOW_SIZE as u32),
+                "failed on iteration={:?}, ch={:?}", iteration, ch);
             // h2: Weighted sum
-            assert_eq!(hash.h2, (ch as u32) * h2_multiplier);
+            assert_eq!(hash.h2, (ch as u32) * h2_multiplier,
+                "failed on iteration={:?}, ch={:?}", iteration, ch);
             // h3: shift-xor
             let mut h3_expected = 0u32;
             for _ in 0..RollingHash::WINDOW_SIZE {
                 h3_expected <<= RollingHash::H3_LSHIFT;
                 h3_expected ^= ch as u32;
             }
-            assert_eq!(hash.h3, h3_expected);
+            assert_eq!(hash.h3, h3_expected,
+                "failed on iteration={:?}, ch={:?}", iteration, ch);
         }
     }
 }
@@ -467,7 +477,7 @@ fn fuzz_rolling_hash_rolling_random_with_config(num_iterations: usize, random_se
     let mut last_bytes = [0u8; RollingHash::WINDOW_SIZE];
     let mut rng = Xoshiro256StarStar::seed_from_u64(random_seed);
     let mut hash = RollingHash::new();
-    for _ in 0..num_iterations {
+    for iteration in 0..num_iterations {
         for i in 1..RollingHash::WINDOW_SIZE {
             last_bytes[i - 1] = last_bytes[i];
         }
@@ -476,22 +486,26 @@ fn fuzz_rolling_hash_rolling_random_with_config(num_iterations: usize, random_se
         hash.update_by_byte(last_ch);
         // h1: Plain sum
         let h1_expected = last_bytes[..].iter().fold(0u32, |acc, &x| acc + (x as u32));
-        assert_eq!(hash.h1, h1_expected);
+        assert_eq!(hash.h1, h1_expected, "failed on iteration={:?}", iteration);
         // h2: Weighted sum
         let mut h2_expected = 0u32;
         for (i, &ch) in last_bytes[..].iter().enumerate() {
             h2_expected += ((i as u32) + 1) * (ch as u32);
         }
-        assert_eq!(hash.h2, h2_expected);
+        assert_eq!(hash.h2, h2_expected, "failed on iteration={:?}", iteration);
         // h3: shift-xor
         let mut h3_expected = 0u32;
         for &ch in last_bytes[..].iter() {
             h3_expected <<= RollingHash::H3_LSHIFT;
             h3_expected ^= ch as u32;
         }
-        assert_eq!(hash.h3, h3_expected);
+        assert_eq!(hash.h3, h3_expected, "failed on iteration={:?}", iteration);
         // value: h1+h2+h3
-        assert_eq!(hash.value(), h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected));
+        assert_eq!(
+            hash.value(),
+            h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected),
+            "failed on iteration={:?}", iteration
+        );
     }
 }
 
@@ -512,18 +526,18 @@ fn fuzz_rolling_hash_rolling_random_slow() {
 
 
 #[test]
-fn test_block_hash_context_basic() {
+fn block_hash_context_impls() {
     cover_auto_clone::<BlockHashContext>(&BlockHashContext::new());
 }
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_block_hash_context_debug() {
+fn block_hash_context_impl_debug() {
     // 39 == 0x27 == the lowest 6 bits of 0x28021967
     // 255 == BLOCKHASH_CHAR_NIL
     assert_eq!(
         format!("{:?}", BlockHashContext::new()),
-        "BlockHashContext { \
+        format!("BlockHashContext {{ \
             blockhash_index: 0, \
             blockhash: [\
                 255, 255, 255, 255, 255, 255, 255, 255, \
@@ -536,9 +550,9 @@ fn test_block_hash_context_debug() {
                 255, 255, 255, 255, 255, 255, 255, 255\
             ], \
             blockhash_ch_half: 255, \
-            h_full: PartialFNVHash(39), \
-            h_half: PartialFNVHash(39) \
-        }"
+            h_full: {0}, \
+            h_half: {0} \
+        }}", EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH)
     );
 }
 
@@ -553,7 +567,7 @@ macro_rules! test_for_each_generator_finalization {
 }
 
 #[test]
-fn test_generator_error_basic() {
+fn generator_error_impls() {
     #[cfg(feature = "alloc")]
     {
         test_auto_debug_for_enum!(
@@ -571,7 +585,7 @@ fn test_generator_error_basic() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_generator_error_display() {
+fn generator_error_impl_display() {
     assert_eq!(format!("{}", GeneratorError::FixedSizeMismatch), "current state mismatches to the fixed size previously set");
     assert_eq!(format!("{}", GeneratorError::FixedSizeTooLarge), "fixed size is too large to generate a fuzzy hash");
     assert_eq!(format!("{}", GeneratorError::InputSizeTooLarge), "input size is too large to generate a fuzzy hash");
@@ -579,7 +593,7 @@ fn test_generator_error_display() {
 }
 
 #[test]
-fn test_generator_error_is_size_too_large_error() {
+fn generator_error_is_size_too_large_error() {
     assert!(!GeneratorError::FixedSizeMismatch.is_size_too_large_error());
     assert!(!GeneratorError::OutputOverflow.is_size_too_large_error());
     assert!(GeneratorError::FixedSizeTooLarge.is_size_too_large_error());
@@ -595,50 +609,68 @@ fn cover_generator_basic() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_generator_debug() {
+fn impl_debug() {
     // Make expected bh_context output dynamically.
     // format!("{:?}", BlockHashContext::new()) is tested by
-    // test_block_hash_context_debug above.
-    let s = core::iter::repeat(format!("{:?}", BlockHashContext::new()).as_str())
-        .take(BlockSize::NUM_VALID).collect::<alloc::vec::Vec<&str>>().join(", ");
+    // block_hash_context_impl_debug above.
+    let str_bh_contexts =
+        core::iter::repeat(format!("{:?}", BlockHashContext::new()).as_str())
+            .take(BlockSize::NUM_VALID).collect::<alloc::vec::Vec<&str>>().join(", ");
     // Test the generator
     assert_eq!(
         format!("{:?}", Generator::new()),
-        format!("Generator {{ \
-            input_size: 0, \
-            fixed_size: None, \
-            elim_border: 192, \
-            bhidx_start: 0, \
-            bhidx_end: 1, \
-            bhidx_end_limit: 30, \
-            roll_mask: 0, \
-            roll_hash: RollingHash {{ index: 0, h1: 0, h2: 0, h3: 0, window: [0, 0, 0, 0, 0, 0, 0] }}, \
-            bh_context: [{}], \
-            h_last: PartialFNVHash(39), \
-            is_last: false \
-        }}", s)
+        format!(
+            "Generator {{ \
+                input_size: 0, \
+                fixed_size: None, \
+                elim_border: 192, \
+                bhidx_start: 0, \
+                bhidx_end: 1, \
+                bhidx_end_limit: 30, \
+                roll_mask: 0, \
+                roll_hash: {0}, \
+                bh_context: [{2}], \
+                h_last: {1}, \
+                is_last: false \
+            }}",
+            EXPECTED_DEBUG_INITIAL_ROLLING_HASH,
+            EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH,
+            str_bh_contexts
+        )
     );
 }
 
 #[test]
-fn test_generator_empty() {
+fn empty_data() {
     let mut generator = Generator::new();
     generator.set_fixed_input_size(0).unwrap();
     assert!(generator.may_warn_about_small_input_size());
     macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
         let hash = generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap();
-        assert_eq!(hash.block_size(), BlockSize::MIN);
-        assert_eq!(hash.block_hash_1_len(), 0);
-        assert_eq!(hash.block_hash_2_len(), 0);
+        assert_eq!(hash.block_size(), BlockSize::MIN,
+            concat!(
+                "failed (1) on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+        assert_eq!(hash.block_hash_1_len(), 0,
+            concat!(
+                "failed (2) on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+        assert_eq!(hash.block_hash_2_len(), 0,
+            concat!(
+                "failed (3) on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
         let hash_expected: FuzzyHashType = str::parse("3::").unwrap();
-        assert_eq!(hash, hash_expected);
+        assert_eq!(hash, hash_expected,
+            concat!(
+                "failed (4) on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 }
 
 #[test]
-fn test_generator_usage() {
+fn usage() {
     const STR: &[u8] = b"Hello, World!\n";
     let expected_hash: RawFuzzyHash = str::parse("3:aaX8v:aV").unwrap();
 
@@ -661,28 +693,26 @@ fn test_generator_usage() {
     // Usage: Chaining (update_by_byte and folding)
     let mut generator = Generator::new();
     let p1 = &generator as *const Generator;
-    let h = STR.iter()
+    let generator_out = STR.iter()
         .fold(&mut generator, |hash, &ch| hash.update_by_byte(ch));
-    let p2 = h as *const Generator;
+    let p2 = generator_out as *const Generator;
     assert_eq!(p1, p2); // check if we are operating with the same object.
-    assert_eq!(h.finalize().unwrap(), expected_hash);
     assert_eq!(generator.finalize().unwrap(), expected_hash);
 
     // Usage: Chaining (all update functions)
     let mut generator = Generator::new();
     let p1 = &generator as *const Generator;
-    let h = generator
+    let generator_out = generator
         .update(b"Hello, ")
         .update_by_iter(b"World!".iter().cloned())
         .update_by_byte(b'\n');
-    let p2 = h as *const Generator;
+    let p2 = generator_out as *const Generator;
     assert_eq!(p1, p2); // check if we are operating with the same object.
-    assert_eq!(h.finalize().unwrap(), expected_hash);
     assert_eq!(generator.finalize().unwrap(), expected_hash);
 }
 
 #[test]
-fn test_get_log_block_size_from_input_size() {
+fn verify_get_log_block_size_from_input_size() {
     // Compare behavior with the naïve implementation.
     fn get_log_block_size_from_input_size_naive(size: u64, start: usize) -> usize {
         let mut log_block_size = start;
@@ -693,31 +723,36 @@ fn test_get_log_block_size_from_input_size() {
         }
         log_block_size
     }
-    for i in 0..BlockSize::NUM_VALID {
-        let size = Generator::guessed_preferred_max_input_size_at(i as u8);
-        for j in 0..BlockSize::NUM_VALID {
+    for index in 0..BlockSize::NUM_VALID {
+        let size = Generator::guessed_preferred_max_input_size_at(index as u8);
+        for start in 0..BlockSize::NUM_VALID {
             assert_eq!(
-                get_log_block_size_from_input_size_naive(size - 2, j),
-                Generator::get_log_block_size_from_input_size(size - 2, j)
+                get_log_block_size_from_input_size_naive(size - 2, start),
+                Generator::get_log_block_size_from_input_size(size - 2, start),
+                "failed on index={:?}, start={:?}", index, start
             );
             assert_eq!(
-                get_log_block_size_from_input_size_naive(size - 1, j),
-                Generator::get_log_block_size_from_input_size(size - 1, j)
+                get_log_block_size_from_input_size_naive(size - 1, start),
+                Generator::get_log_block_size_from_input_size(size - 1, start),
+                "failed on index={:?}, start={:?}", index, start
             );
             assert_eq!(
-                get_log_block_size_from_input_size_naive(size, j),
-                Generator::get_log_block_size_from_input_size(size, j)
+                get_log_block_size_from_input_size_naive(size, start),
+                Generator::get_log_block_size_from_input_size(size, start),
+                "failed on index={:?}, start={:?}", index, start
             );
             if size + 1 <= Generator::MAX_INPUT_SIZE {
                 assert_eq!(
-                    get_log_block_size_from_input_size_naive(size + 1, j),
-                    Generator::get_log_block_size_from_input_size(size + 1, j)
+                    get_log_block_size_from_input_size_naive(size + 1, start),
+                    Generator::get_log_block_size_from_input_size(size + 1, start),
+                    "failed on index={:?}, start={:?}", index, start
                 );
             }
             if size + 2 <= Generator::MAX_INPUT_SIZE {
                 assert_eq!(
-                    get_log_block_size_from_input_size_naive(size + 2, j),
-                    Generator::get_log_block_size_from_input_size(size + 2, j)
+                    get_log_block_size_from_input_size_naive(size + 2, start),
+                    Generator::get_log_block_size_from_input_size(size + 2, start),
+                    "failed on index={:?}, start={:?}", index, start
                 );
             }
         }
@@ -725,7 +760,7 @@ fn test_get_log_block_size_from_input_size() {
 }
 
 #[test]
-fn test_usage_fixed_size() {
+fn usage_fixed_size() {
     let mut generator = Generator::new();
     // Set the fixed size.
     assert_eq!(generator.set_fixed_input_size(100), Ok(()));
@@ -744,28 +779,31 @@ fn test_usage_fixed_size() {
 }
 
 #[test]
-fn test_generator_length_mismatch() {
+fn length_mismatches() {
+    const STR: &[u8] = b"Hello, World!";
     let mut generator = Generator::new();
-    let buf = "Hello, World!".as_bytes();
 
     // Use update
     // Intentionally give a wrong size (this operation itself should succeed).
-    assert_eq!(generator.set_fixed_input_size_in_usize(buf.len() - 1), Ok(()));
-    generator.update(buf);
-    assert_eq!(generator.input_size(), buf.len() as u64);
+    assert_eq!(generator.set_fixed_input_size_in_usize(STR.len() - 1), Ok(()));
+    generator.update(STR);
+    assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
-    // Error occurs when finalization.
+    // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
+            concat!(
+                "failed on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 
     // Use update (and use the correct size)
     generator.reset();
-    assert_eq!(generator.set_fixed_input_size_in_usize(buf.len()), Ok(()));
-    generator.update(buf);
-    assert_eq!(generator.input_size(), buf.len() as u64);
+    assert_eq!(generator.set_fixed_input_size_in_usize(STR.len()), Ok(()));
+    generator.update(STR);
+    assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
     // No errors occur on finalization.
     assert!(generator.finalize().is_ok());
@@ -773,22 +811,25 @@ fn test_generator_length_mismatch() {
     // Use update_by_iter
     // Intentionally give a wrong size (this operation itself should succeed).
     generator.reset();
-    assert_eq!(generator.set_fixed_input_size_in_usize(buf.len() - 1), Ok(()));
-    generator.update_by_iter(buf.iter().cloned());
-    assert_eq!(generator.input_size(), buf.len() as u64);
+    assert_eq!(generator.set_fixed_input_size_in_usize(STR.len() - 1), Ok(()));
+    generator.update_by_iter(STR.iter().cloned());
+    assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
-    // Error occurs when finalization.
+    // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch));
+        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
+            concat!(
+                "failed on ",
+                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 
     // Use update_by_iter (and use the correct size)
     generator.reset();
-    assert_eq!(generator.set_fixed_input_size_in_usize(buf.len()), Ok(()));
-    generator.update_by_iter(buf.iter().cloned());
-    assert_eq!(generator.input_size(), buf.len() as u64);
+    assert_eq!(generator.set_fixed_input_size_in_usize(STR.len()), Ok(()));
+    generator.update_by_iter(STR.iter().cloned());
+    assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
     // No errors occur on finalization.
     assert!(generator.finalize().is_ok());
@@ -796,8 +837,14 @@ fn test_generator_length_mismatch() {
 
 #[cfg(feature = "tests-very-slow")]
 #[test]
-fn test_generator_large_triggers() {
+fn large_data_triggers() {
     const ZERO_1M: [u8; 1024*1024] = [0; 1024*1024];
+    const LAST_USED_METHODS: [&str; 3] = [
+        "update",
+        "update_by_iter",
+        "update_by_byte"
+    ];
+
     let mut generator_orig = Generator::new();
     // Feed zero bytes until it reaches 96GiB-1MiB (98303MiB).
     // The loop variable is processed MiBs **after** feeding data to the generator.
@@ -850,9 +897,10 @@ fn test_generator_large_triggers() {
         generator3.update_by_byte(ch);
     }
     // Check all generators (for comparison; without last byte)
-    for generator in [&generator1, &generator2, &generator3] {
+    for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024));
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024),
+            "failed on last_method={}", LAST_USED_METHODS[i]);
         let hash_expected_long: LongRawFuzzyHash = str::parse(
             "1610612736\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
@@ -864,10 +912,14 @@ fn test_generator_large_triggers() {
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
         ).unwrap();
         let hash_expected_short_as_long = hash_expected_short.to_long_form();
-        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_long);
-        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow));
-        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long);
-        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>().unwrap(), hash_expected_short);
+        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_long,
+            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow),
+            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long,
+            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>().unwrap(), hash_expected_short,
+            "failed on last_method={}", LAST_USED_METHODS[i]);
     }
     // Append 7 bytes pattern 64 times **and** one 0x01.
     // Use update
@@ -887,16 +939,23 @@ fn test_generator_large_triggers() {
         println!(" 96GiB of  96GiB processed...");
     }
     // Check all generators
-    for generator in [&generator1, &generator2, &generator3] {
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1);
-        assert!(!generator.may_warn_about_small_input_size());
+    for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1,
+            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert!(!generator.may_warn_about_small_input_size(),
+            "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
             type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
             let hash_expected: FuzzyHashType = str::parse(
                 "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
             ).unwrap();
             assert_eq!(
-                hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap()
+                hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap(),
+                concat!(
+                    "failed on ",
+                    "trunc={:?}, bs1={:?}, bs2={:?}, last_method={}"),
+                $trunc, $bs1, $bs2,
+                LAST_USED_METHODS[i]
             );
         }}
         test_for_each_generator_finalization!(test);
@@ -951,10 +1010,17 @@ fn test_generator_large_triggers() {
         println!("192GiB of 192GiB processed...");
     }
     // Check all generators
-    for generator in [&generator1, &generator2, &generator3] {
-        assert!(generator.input_size > Generator::MAX_INPUT_SIZE);
+    for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
+        assert!(generator.input_size > Generator::MAX_INPUT_SIZE,
+            "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-            assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge));
+            assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge),
+                concat!(
+                    "failed on ",
+                    "trunc={:?}, bs1={:?}, bs2={:?}, last_method={}"),
+                $trunc, $bs1, $bs2,
+                LAST_USED_METHODS[i]
+            );
         }}
         test_for_each_generator_finalization!(test);
     }
@@ -962,7 +1028,7 @@ fn test_generator_large_triggers() {
 
 #[cfg(feature = "std")]
 #[test]
-fn test_generator_small_precomputed_vectors() {
+fn verify_with_small_precomputed_vectors() {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
     use crate::hash::LongRawFuzzyHash;
@@ -976,11 +1042,13 @@ fn test_generator_small_precomputed_vectors() {
             Read a line from the index file.
         */
         let index_ln = index_ln.unwrap();
-        if index_ln.len() == 0 || index_ln.chars().next() == Some('#') {
+        if index_ln.is_empty() || index_ln.starts_with('#') {
             continue;
         }
         let tokens: Vec<&str> = index_ln.split_whitespace().collect();
-        assert!(tokens.len() == 3);
+        assert!(tokens.len() == 3,
+            "failed while processing the test index file with line {:?}",
+            index_ln);
         // $1: filename
         let filename = tokens[0];
         // $2: flags (truncated or non-truncated, or check both)
@@ -988,7 +1056,7 @@ fn test_generator_small_precomputed_vectors() {
         const TEST_TRUNC_0: u8 = 2;
         const TEST_ELIMSEQ: u8 = 4; // Do the normalization.
         const TEST_WASLONG: u8 = 8; // Long fuzzy hash before normalization.
-        let flags = u8::from_str_radix(tokens[1], 10).unwrap();
+        let flags = str::parse::<u8>(tokens[1]).unwrap();
         // $3: expected fuzzy hash
         let fuzzy_str = tokens[2];
         let fuzzy_expected: LongRawFuzzyHash = str::parse(fuzzy_str).unwrap();
@@ -1014,6 +1082,7 @@ fn test_generator_small_precomputed_vectors() {
             // Test three ways to generate fuzzy hashes
             {
                 fn check_results(
+                    filename: &str,
                     generator: &Generator,
                     flags: u8,
                     fuzzy_str: &str,
@@ -1030,22 +1099,26 @@ fn test_generator_small_precomputed_vectors() {
                         fuzzy_generated.normalize_in_place();
                         fuzzy_generated_trunc.normalize_in_place();
                     }
-                    assert_eq!(*fuzzy_expected,       fuzzy_generated);
-                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc);
-                    assert_eq!(fuzzy_str, fuzzy_generated.to_string());
-                    assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string());
+                    assert_eq!(*fuzzy_expected, fuzzy_generated,
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                 }
                 generator.reset();
                 generator.update(contents.as_slice());
-                check_results(&generator, flags, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
                 generator.reset();
                 generator.update_by_iter(contents.iter().cloned());
-                check_results(&generator, flags, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
                 generator.reset();
                 for &b in contents.iter() {
                     generator.update_by_byte(b);
                 }
-                check_results(&generator, flags, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
             }
         }
         if (flags & TEST_TRUNC_0) != 0 {
@@ -1055,12 +1128,15 @@ fn test_generator_small_precomputed_vectors() {
             let is_long = fuzzy_expected.block_hash_2().len() > BlockHash::HALF_SIZE;
             let mut fuzzy_expected_trunc: RawFuzzyHash = RawFuzzyHash::new();
             match fuzzy_expected.try_into_mut_short(&mut fuzzy_expected_trunc) {
-                Ok(_)  => assert!(!is_long),
-                Err(_) => assert!(is_long),  // Consider truncation error.
+                Ok(_)  => assert!(!is_long,
+                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str),
+                Err(_) => assert!(is_long,
+                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str),  // Consider truncation error.
             }
             // Test three ways to generate fuzzy hashes
             {
                 fn check_results(
+                    filename: &str,
                     generator: &Generator,
                     flags: u8,
                     is_long: bool,
@@ -1074,12 +1150,14 @@ fn test_generator_small_precomputed_vectors() {
                     let mut fuzzy_generated_trunc: RawFuzzyHash = match generator
                         .finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>() {
                             Ok(h) => {
-                                assert!(!is_long);
+                                assert!(!is_long,
+                                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 h
                             },
                             Err(_) => {
                                 // Consider truncation error.
-                                assert!(is_long || (flags & TEST_WASLONG) != 0);
+                                assert!(is_long || (flags & TEST_WASLONG) != 0,
+                                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 if is_long {
                                     RawFuzzyHash::new()
                                 }
@@ -1092,24 +1170,28 @@ fn test_generator_small_precomputed_vectors() {
                         fuzzy_generated.normalize_in_place();
                         fuzzy_generated_trunc.normalize_in_place();
                     }
-                    assert_eq!(*fuzzy_expected,       fuzzy_generated);
-                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc);
-                    assert_eq!(fuzzy_str, fuzzy_generated.to_string());
+                    assert_eq!(*fuzzy_expected, fuzzy_generated,
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
+                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     if !is_long {
-                        assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string());
+                        assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
+                            "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     }
                 }
                 generator.reset();
                 generator.update(contents.as_slice());
-                check_results(&generator, flags, is_long, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, is_long, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
                 generator.reset();
                 generator.update_by_iter(contents.iter().cloned());
-                check_results(&generator, flags, is_long, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, is_long, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
                 generator.reset();
                 for &b in contents.iter() {
                     generator.update_by_byte(b);
                 }
-                check_results(&generator, flags, is_long, &fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
+                check_results(filename, &generator, flags, is_long, fuzzy_str, &fuzzy_expected, &fuzzy_expected_trunc);
             }
         }
     }
