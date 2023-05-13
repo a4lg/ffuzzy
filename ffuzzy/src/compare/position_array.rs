@@ -7,6 +7,10 @@ use crate::macros::{optionally_unsafe, invariant};
 use crate::utils::u64_lsb_ones;
 
 
+#[cfg(test)]
+pub(crate) mod tests;
+
+
 /// A module containing utilities for an element of block hash position array.
 #[allow(non_snake_case)]
 pub mod BlockHashPositionArrayElement {
