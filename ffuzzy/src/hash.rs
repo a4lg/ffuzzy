@@ -765,6 +765,14 @@ where
     ///
     /// Required size of the `buffer` is
     /// [`len_in_str()`](Self::len_in_str()) bytes.  This size is exact.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// On the version 0.3.0, the result type will be changed to
+    /// `Result<usize, FuzzyHashOperationError>` in which the non-error
+    /// result is equivalent to [`len_in_str()`](Self::len_in_str()).
+    ///
+    /// It will simplify handling the result.
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {

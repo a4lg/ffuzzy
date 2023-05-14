@@ -147,7 +147,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// # Incompatibility Notice
     ///
-    /// This constant will be removed on v0.3.0 (or v1.0.0 if stabilized).
+    /// This constant will be removed on the version 0.3.0.
     #[deprecated]
     pub const MIN_LCS_FOR_BLOCKHASH: usize = BlockHash::MIN_LCS_FOR_COMPARISON;
 
