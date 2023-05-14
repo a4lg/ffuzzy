@@ -622,7 +622,7 @@ where
     ///
     /// ```compile_fail
     /// # use std::str::FromStr;
-    /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
+    /// let mut hash = ssdeep::RawFuzzyHash::from_str("3:aaaa:bbbb").unwrap();
     /// let bh1 = hash.block_hash_1();
     /// hash.normalize_in_place(); // <- ERROR: because block hash 1 is borrowed.
     /// // If normalize_in_place succeeds, bh1 will hold an invalid slice
@@ -663,7 +663,7 @@ where
     ///
     /// ```compile_fail
     /// # use std::str::FromStr;
-    /// let mut hash = ssdeep::FuzzyHash::from_str("3:aaaa:bbbb").unwrap();
+    /// let mut hash = ssdeep::RawFuzzyHash::from_str("3:aaaa:bbbb").unwrap();
     /// let bh2 = hash.block_hash_2();
     /// hash.normalize_in_place(); // <- ERROR: because block hash 2 is borrowed.
     /// // If normalize_in_place succeeds, bh2 will hold an invalid slice
