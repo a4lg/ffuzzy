@@ -624,7 +624,7 @@ where
     /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
-    /// let mut hash: ssdeep::FuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
+    /// let mut hash: ssdeep::RawFuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
     /// let bh1 = hash.block_hash_1();
     /// hash.normalize_in_place(); // <- ERROR: because the block hash 1 is borrowed.
     /// // If normalize_in_place succeeds, bh1 will hold an invalid slice
@@ -666,7 +666,7 @@ where
     /// [`block_hash_2()`](Self::block_hash_2()).
     ///
     /// ```compile_fail
-    /// let mut hash: ssdeep::FuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
+    /// let mut hash: ssdeep::RawFuzzyHash = str::parse("3:aaaa:bbbb").unwrap();
     /// let bh2 = hash.block_hash_2();
     /// hash.normalize_in_place(); // <- ERROR: because the block hash 2 is borrowed.
     /// // If normalize_in_place succeeds, bh2 will hold an invalid slice
