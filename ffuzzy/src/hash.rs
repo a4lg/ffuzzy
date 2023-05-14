@@ -776,7 +776,8 @@ where
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {
-        if buffer.len() < self.len_in_str() {
+        let len_in_str = self.len_in_str();
+        if buffer.len() < len_in_str {
             return Err(FuzzyHashOperationError::StringizationOverflow);
         }
         optionally_unsafe! {
@@ -803,6 +804,10 @@ where
                 &self.blockhash2,
                 self.len_blockhash2
             );
+            if cfg!(debug_assertions) {
+                i += self.len_blockhash2 as usize;
+                debug_assert_eq!(i, len_in_str);
+            }
         }
         Ok(())
     }
