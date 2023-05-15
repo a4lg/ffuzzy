@@ -62,6 +62,12 @@ const BUFFER_SIZE: usize = 32768;
 ///
 /// This is an internal function to allow other functions to
 /// prepare a [`Generator`] object.
+///
+/// # Performance Consideration
+///
+/// It doesn't use [`BufReader`](std::io::BufReader) because the internal buffer
+/// is large enough.  Note that the default buffer size of `BufReader` is
+/// normally 8KiB (while [buffer size](BUFFER_SIZE) here has 32KiB).
 #[inline]
 fn hash_stream_common<R: Read>(
     generator: &mut Generator,
