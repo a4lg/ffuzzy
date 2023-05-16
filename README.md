@@ -32,7 +32,7 @@ source code for details).
 
 ## Performance
 
-While ffuzzy++ performed well in large scale clustering, some use cases were
+While ffuzzy++ performed well in the large scale clustering, some use cases were
 slower than libfuzzy.  In contrast, this crate expects (at least) comparable
 performance to libfuzzy even if only "easy" functions are used and no
 *unsafe* features are enabled.

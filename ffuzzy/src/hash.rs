@@ -763,8 +763,9 @@ where
     /// when `buffer` does not have enough size to store string representation
     /// of the fuzzy hash.
     ///
-    /// Required size of the `buffer` is
-    /// [`len_in_str()`](Self::len_in_str()) bytes.  This size is exact.
+    /// Required size of the `buffer` is [`len_in_str()`](Self::len_in_str()) bytes.
+    /// This required size is exact (`buffer` may be larger than that but
+    /// never be shorter).
     ///
     /// # Incompatibility Notice
     ///
@@ -772,7 +773,8 @@ where
     /// `Result<usize, FuzzyHashOperationError>` in which the non-error
     /// result is equivalent to [`len_in_str()`](Self::len_in_str()).
     ///
-    /// It will simplify handling the result.
+    /// It will simplify handling the result and the semantics are now similar
+    /// to e.g. [`std::io::Read::read()`].
     pub fn store_into_bytes(&self, buffer: &mut [u8])
         -> Result<(), FuzzyHashOperationError>
     {

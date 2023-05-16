@@ -21,7 +21,7 @@ The input data which is *not* obligated to support in this project includes:
 *   Invalid data (obviously)
 *   Data which ssdeep / libfuzzy accepts *but*
     cannot be an output of ssdeep / libfuzzy
-    *   e.g. a fuzzy hash prefixed by '0'  
+    *   e.g. a fuzzy hash prefixed by `'0'`  
              (the support for this kind of fuzzy hashes was removed
               in the version 0.2 of the `ffuzzy` crate)
     *   e.g. a fuzzy hash with long block hashes
