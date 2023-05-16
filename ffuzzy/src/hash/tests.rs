@@ -858,7 +858,6 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 let hash_is_normalized = <$ty>::IS_NORMALIZED_FORM || is_normalized || $is_input_norm;
                                 let bh1_expected = if hash_is_normalized { bh1_norm } else { bh1 };
                                 let bh2_expected = if hash_is_normalized { bh2_norm } else { bh2 };
-                                let bytes_expected = if hash_is_normalized { bytes_norm } else { bytes_raw };
                                 // Maximum length in the string representation
                                 assert!(hash.len_in_str() <= <$ty>::MAX_LEN_IN_STR, "failed ({}-1-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 if  hash.log_blocksize as usize == BlockSize::NUM_VALID - 1 &&
@@ -889,6 +888,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 // Check String
                                 #[cfg(feature = "alloc")]
                                 {
+                                    let bytes_expected = if hash_is_normalized { bytes_norm } else { bytes_raw };
                                     // from_bytes and from_str are equivalent.
                                     let hash_alt: $ty = str::parse::<$ty>(bytes_str).unwrap();
                                     assert_eq!(hash, hash_alt, "failed ({}-3-1-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
@@ -1042,6 +1042,7 @@ fn data_model_corruption() {
         2. Debug output (when invalid)
             *   fmt (Debug)
     */
+    #[cfg(feature = "alloc")]
     const EXPECTED_ILL_FORMED_PREFIX: &str = "FuzzyHashData { ILL_FORMED: true,";
     macro_rules! test {($ty: ty) => {
         let hash: $ty = <$ty>::new();
