@@ -923,7 +923,7 @@ fn comparison_with_block_size_pairs() {
     ];
     // Make sure that BLOCK_HASH_SAMPLE_DATA elements
     // can be stored in a truncated block hash.
-    for (i, &sample_data) in BLOCK_HASH_SAMPLE_DATA[..].iter().enumerate() {
+    for (i, &sample_data) in BLOCK_HASH_SAMPLE_DATA.iter().enumerate() {
         assert!(sample_data.len() <= BlockHash::HALF_SIZE, "failed on i={:?}", i);
     }
     let mut target_s = FuzzyHashCompareTarget::new();

@@ -485,17 +485,17 @@ fn fuzz_rolling_hash_rolling_random_with_config(num_iterations: usize, random_se
         last_bytes[last_bytes.len() - 1] = last_ch;
         hash.update_by_byte(last_ch);
         // h1: Plain sum
-        let h1_expected = last_bytes[..].iter().fold(0u32, |acc, &x| acc + (x as u32));
+        let h1_expected = last_bytes.iter().fold(0u32, |acc, &x| acc + (x as u32));
         assert_eq!(hash.h1, h1_expected, "failed on iteration={:?}", iteration);
         // h2: Weighted sum
         let mut h2_expected = 0u32;
-        for (i, &ch) in last_bytes[..].iter().enumerate() {
+        for (i, &ch) in last_bytes.iter().enumerate() {
             h2_expected += ((i as u32) + 1) * (ch as u32);
         }
         assert_eq!(hash.h2, h2_expected, "failed on iteration={:?}", iteration);
         // h3: shift-xor
         let mut h3_expected = 0u32;
-        for &ch in last_bytes[..].iter() {
+        for &ch in last_bytes.iter() {
             h3_expected <<= RollingHash::H3_LSHIFT;
             h3_expected ^= ch as u32;
         }
@@ -915,7 +915,7 @@ fn large_data_triggers() {
     generator1.update(&last_bytes[..]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter(last_bytes[..].iter().cloned());
+    generator2.update_by_iter(last_bytes.iter().cloned());
     // Use update_by_byte
     let mut generator3 = generator_base.clone();
     for &ch in last_bytes.iter() {
@@ -984,7 +984,7 @@ fn large_data_triggers() {
     generator1.update(&ZERO_1M[..]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter(ZERO_1M[..].iter().cloned());
+    generator2.update_by_iter(ZERO_1M.iter().cloned());
     // Use update_by_byte
     let mut generator3 = generator_base.clone();
     for _ in 0..(1024 * 1024) {
