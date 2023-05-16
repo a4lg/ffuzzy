@@ -4,6 +4,10 @@ Note that this list does not include Nightly features because the main focus of
 this memo is to describe what to do when we update the minimum supported Rust
 version (MSRV), which we only expect stable features.
 
+## 1.57.0
+
+*   `&array[..]` to `array.as_slice()`.
+
 ## 1.58.0
 
 *   Variable names in the format string
