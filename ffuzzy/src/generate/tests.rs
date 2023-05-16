@@ -645,18 +645,18 @@ fn empty_data() {
     let mut generator = Generator::new();
     generator.set_fixed_input_size(0).unwrap();
     assert!(generator.may_warn_about_small_input_size());
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
-        let hash = generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap();
+    macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
+        type FuzzyHashType = FuzzyHashData<$bh1sz, $bh2sz, false>;
+        let hash = generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>().unwrap();
         assert_eq!(hash.block_size(), BlockSize::MIN,
-            "failed (1) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+            "failed (1) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
         assert_eq!(hash.block_hash_1_len(), 0,
-            "failed (2) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+            "failed (2) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
         assert_eq!(hash.block_hash_2_len(), 0,
-            "failed (3) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+            "failed (3) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
         let hash_expected: FuzzyHashType = str::parse("3::").unwrap();
         assert_eq!(hash, hash_expected,
-            "failed (4) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+            "failed (4) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 }
@@ -783,9 +783,9 @@ fn length_mismatches() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
-            "failed on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+    macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::FixedSizeMismatch),
+            "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -807,9 +807,9 @@ fn length_mismatches() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-        assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
-            "failed on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
+    macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
+        assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::FixedSizeMismatch),
+            "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -932,15 +932,15 @@ fn large_data_triggers() {
             "failed on last_method={}", LAST_USED_METHODS[i]);
         assert!(!generator.may_warn_about_small_input_size(),
             "failed on last_method={}", LAST_USED_METHODS[i]);
-        macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-            type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
+        macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
+            type FuzzyHashType = FuzzyHashData<$bh1sz, $bh2sz, false>;
             let hash_expected: FuzzyHashType = str::parse(
                 "3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k"
             ).unwrap();
             assert_eq!(
-                hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap(),
-                "failed on trunc={:?}, bs1={:?}, bs2={:?}, last_method={}",
-                $trunc, $bs1, $bs2,
+                hash_expected, generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>().unwrap(),
+                "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}, last_method={}",
+                $trunc, $bh1sz, $bh2sz,
                 LAST_USED_METHODS[i]
             );
         }}
@@ -999,10 +999,10 @@ fn large_data_triggers() {
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         assert!(generator.input_size > Generator::MAX_INPUT_SIZE,
             "failed on last_method={}", LAST_USED_METHODS[i]);
-        macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
-            assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge),
-                "failed on trunc={:?}, bs1={:?}, bs2={:?}, last_method={}",
-                $trunc, $bs1, $bs2,
+        macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
+            assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::InputSizeTooLarge),
+                "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}, last_method={}",
+                $trunc, $bh1sz, $bh2sz,
                 LAST_USED_METHODS[i]
             );
         }}
