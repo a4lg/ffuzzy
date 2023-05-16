@@ -744,46 +744,46 @@ fn compare_slightly_different() {
                     macro_rules! compare {
                         ($bhidx: literal, $score: ident, $diff_hash: ident) => {
                             assert_eq!($score, target.compare_near_eq(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_near_eq_internal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_internal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_near_eq(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_near_eq_internal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-7) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-7) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare_unequal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-8) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-8) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare_unequal_internal(&$diff_hash),
-                                concat!("failed (", stringify!($bhidx), "-1-9) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                log_block_size, bh1_norm, bh2_norm);
+                                "failed ({}-1-9) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                $bhidx, log_block_size, bh1_norm, bh2_norm);
                             #[cfg(feature = "unsafe")]
                             unsafe {
                                 assert_eq!($score, target.compare_near_eq_unchecked(&$diff_hash),
-                                    concat!("failed (", stringify!($bhidx), "-1-10) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                    log_block_size, bh1_norm, bh2_norm);
+                                    "failed ({}-1-10) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, target.compare_unequal_unchecked(&$diff_hash),
-                                    concat!("failed (", stringify!($bhidx), "-1-11) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                    log_block_size, bh1_norm, bh2_norm);
+                                    "failed ({}-1-11) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, target.compare_unequal_near_eq_unchecked(&$diff_hash),
-                                    concat!("failed (", stringify!($bhidx), "-1-12) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                    log_block_size, bh1_norm, bh2_norm);
+                                    "failed ({}-1-12) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, hash.compare_unequal_unchecked(&$diff_hash),
-                                    concat!("failed (", stringify!($bhidx), "-1-13) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}"),
-                                    log_block_size, bh1_norm, bh2_norm);
+                                    "failed ({}-1-13) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    $bhidx, log_block_size, bh1_norm, bh2_norm);
                             }
                         };
                     }

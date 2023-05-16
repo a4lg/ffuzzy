@@ -649,22 +649,14 @@ fn empty_data() {
         type FuzzyHashType = FuzzyHashData<$bs1, $bs2, false>;
         let hash = generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap();
         assert_eq!(hash.block_size(), BlockSize::MIN,
-            concat!(
-                "failed (1) on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed (1) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
         assert_eq!(hash.block_hash_1_len(), 0,
-            concat!(
-                "failed (2) on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed (2) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
         assert_eq!(hash.block_hash_2_len(), 0,
-            concat!(
-                "failed (3) on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed (3) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
         let hash_expected: FuzzyHashType = str::parse("3::").unwrap();
         assert_eq!(hash, hash_expected,
-            concat!(
-                "failed (4) on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed (4) on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 }
@@ -793,9 +785,7 @@ fn length_mismatches() {
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
-            concat!(
-                "failed on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -819,9 +809,7 @@ fn length_mismatches() {
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
         assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::FixedSizeMismatch),
-            concat!(
-                "failed on ",
-                "trunc={:?}, bs1={:?}, bs2={:?}"), $trunc, $bs1, $bs2);
+            "failed on trunc={:?}, bs1={:?}, bs2={:?}", $trunc, $bs1, $bs2);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -951,9 +939,7 @@ fn large_data_triggers() {
             ).unwrap();
             assert_eq!(
                 hash_expected, generator.finalize_raw::<$trunc, $bs1, $bs2>().unwrap(),
-                concat!(
-                    "failed on ",
-                    "trunc={:?}, bs1={:?}, bs2={:?}, last_method={}"),
+                "failed on trunc={:?}, bs1={:?}, bs2={:?}, last_method={}",
                 $trunc, $bs1, $bs2,
                 LAST_USED_METHODS[i]
             );
@@ -1015,9 +1001,7 @@ fn large_data_triggers() {
             "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bs1: expr, $bs2: expr) => {
             assert_eq!(generator.finalize_raw::<$trunc, $bs1, $bs2>(), Err(GeneratorError::InputSizeTooLarge),
-                concat!(
-                    "failed on ",
-                    "trunc={:?}, bs1={:?}, bs2={:?}, last_method={}"),
+                "failed on trunc={:?}, bs1={:?}, bs2={:?}, last_method={}",
                 $trunc, $bs1, $bs2,
                 LAST_USED_METHODS[i]
             );
