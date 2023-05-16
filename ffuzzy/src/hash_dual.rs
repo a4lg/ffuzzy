@@ -939,8 +939,8 @@ where
 
     /// Returns whether the dual fuzzy hash is normalized.
     pub fn is_normalized(&self) -> bool {
-        self.rle_block1[..].iter().all(|&x| x == 0) &&
-        self.rle_block2[..].iter().all(|&x| x == 0)
+        self.rle_block1.iter().all(|&x| x == 0) &&
+        self.rle_block2.iter().all(|&x| x == 0)
     }
 
     /// Performs full validity checking of the internal structure.
@@ -1013,8 +1013,8 @@ where
     #[inline]
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.norm_hash.hash(state);
-        state.write(&self.rle_block1[..]);
-        state.write(&self.rle_block2[..]);
+        state.write(&self.rle_block1);
+        state.write(&self.rle_block2);
     }
 }
 
