@@ -300,3 +300,21 @@ fn assert_fits_in_counterexample_3() {
 fn assert_fits_in_counterexample_4() {
     assert_fits_in!(128i32, i8);
 }
+
+#[test]
+fn assert_fits_in_example_with_msg() {
+    // u8: 0..=255
+    assert_fits_in!(255i32, u8);
+    assert_fits_in!(255i32, u8, "should not fail here!");
+}
+
+#[test]
+#[should_panic(expected = "255i32 + 1 does not fit into u8")]
+fn assert_fits_in_counterexample_with_msg_1() {
+    assert_fits_in!(255i32 + 1, u8);
+}
+#[test]
+#[should_panic(expected = "test failed with code=256")]
+fn assert_fits_in_counterexample_with_msg_2() {
+    assert_fits_in!(255i32 + 1, u8, "test failed with code={}", 255i32 + 1);
+}
