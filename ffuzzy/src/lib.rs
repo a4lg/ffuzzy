@@ -24,6 +24,13 @@
 //! libfuzzy.
 //!
 //!
+//! ## Important Notice: Version 0.1.x is No Longer Actively Maintained
+//!
+//! Version 0.1.x is not actively maintained (since the release of version 0.2.2).
+//!
+//! You are recommended to use version 0.2.2 or later.
+//!
+//!
 //! ## License (GNU GPL v2 or later)
 //!
 //! This crate (as a whole library) is licensed under the terms of the GNU General
