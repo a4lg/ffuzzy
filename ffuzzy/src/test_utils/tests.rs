@@ -182,8 +182,8 @@ mod test_for_each_type {
     impl<const IS_OK: bool> TestTargetType<IS_OK> {
         const IS_OK: bool = IS_OK;
     }
-    type OKType = TestTargetType<true>;
-    type NGType = TestTargetType<false>;
+    type OkayType = TestTargetType<true>;
+    type FailType = TestTargetType<false>;
     macro_rules! test {
         ($ty: ty) => {
             // Passing `NGType` will cause an assertion failure.
@@ -194,72 +194,72 @@ mod test_for_each_type {
     #[test]
     fn valid_examples() {
         test_for_each_type!(test, []);
-        test_for_each_type!(test, [ OKType ]);
-        test_for_each_type!(test, [ OKType, ]);
-        test_for_each_type!(test, [ OKType, OKType ]);
-        test_for_each_type!(test, [ OKType, OKType, ]);
-        test_for_each_type!(test, [ OKType, OKType, OKType ]);
-        test_for_each_type!(test, [ OKType, OKType, OKType, ]);
+        test_for_each_type!(test, [ OkayType ]);
+        test_for_each_type!(test, [ OkayType, ]);
+        test_for_each_type!(test, [ OkayType, OkayType ]);
+        test_for_each_type!(test, [ OkayType, OkayType, ]);
+        test_for_each_type!(test, [ OkayType, OkayType, OkayType ]);
+        test_for_each_type!(test, [ OkayType, OkayType, OkayType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_01() {
-        test_for_each_type!(test, [ NGType ]);
+        test_for_each_type!(test, [ FailType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_02() {
-        test_for_each_type!(test, [ NGType, ]);
+        test_for_each_type!(test, [ FailType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_03() {
-        test_for_each_type!(test, [ NGType, OKType ]);
+        test_for_each_type!(test, [ FailType, OkayType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_04() {
-        test_for_each_type!(test, [ NGType, OKType, ]);
+        test_for_each_type!(test, [ FailType, OkayType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_05() {
-        test_for_each_type!(test, [ OKType, NGType ]);
+        test_for_each_type!(test, [ OkayType, FailType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_06() {
-        test_for_each_type!(test, [ OKType, NGType, ]);
+        test_for_each_type!(test, [ OkayType, FailType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_07() {
-        test_for_each_type!(test, [ NGType, OKType, OKType ]);
+        test_for_each_type!(test, [ FailType, OkayType, OkayType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_08() {
-        test_for_each_type!(test, [ NGType, OKType, OKType, ]);
+        test_for_each_type!(test, [ FailType, OkayType, OkayType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_09() {
-        test_for_each_type!(test, [ OKType, NGType, OKType ]);
+        test_for_each_type!(test, [ OkayType, FailType, OkayType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_10() {
-        test_for_each_type!(test, [ OKType, NGType, OKType, ]);
+        test_for_each_type!(test, [ OkayType, FailType, OkayType, ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_11() {
-        test_for_each_type!(test, [ OKType, OKType, NGType ]);
+        test_for_each_type!(test, [ OkayType, OkayType, FailType ]);
     }
     #[test]
     #[should_panic]
     fn counterexample_12() {
-        test_for_each_type!(test, [ OKType, OKType, NGType, ]);
+        test_for_each_type!(test, [ OkayType, OkayType, FailType, ]);
     }
 }
 
