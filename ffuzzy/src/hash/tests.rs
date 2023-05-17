@@ -55,18 +55,10 @@ fn fuzzy_hash_operation_error_impls() {
 
 
 macro_rules! test_for_each_block_hash_sizes {
-    ($test: ident) => {{
-        loop
-        {
-            $test!(BlockHash::FULL_SIZE, BlockHash::FULL_SIZE);
-            break;
-        }
-        loop
-        {
-            $test!(BlockHash::FULL_SIZE, BlockHash::HALF_SIZE);
-            break;
-        }
-    }};
+    ($test: ident) => {
+        loop { $test!(BlockHash::FULL_SIZE, BlockHash::FULL_SIZE); break; }
+        loop { $test!(BlockHash::FULL_SIZE, BlockHash::HALF_SIZE); break; }
+    };
 }
 
 
