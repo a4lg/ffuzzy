@@ -282,7 +282,7 @@ fn make_fuzzy_hash_bytes(
     p
 }
 
-struct FuzzyHashStringBytes {
+pub(crate) struct FuzzyHashStringBytes {
     buffer: [u8; crate::MAX_LEN_IN_STR],
     len: usize
 }

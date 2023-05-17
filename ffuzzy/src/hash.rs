@@ -22,7 +22,7 @@ mod algorithms;
 pub mod block;
 pub mod parser_state;
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
 #[cfg(any(test, doc))]
 pub(crate) mod test_utils;
 
