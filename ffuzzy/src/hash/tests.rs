@@ -757,7 +757,7 @@ fn data_model_block_hash_contents_and_normalization() {
                         assert_eq!(hash_normalized_from_raw, hash_norm, "failed (3-3-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
                         assert!(hash_normalized_from_raw.full_eq(&hash_norm), "failed (3-3-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
                         // normalize (normalized) - just clone
-                        let hash_normalized_from_norm: FuzzyHashType = hash_raw.normalize();
+                        let hash_normalized_from_norm: FuzzyHashType = hash_norm.normalize();
                         assert!(hash_normalized_from_norm.is_valid(), "failed (3-4-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
                         assert_eq!(hash_normalized_from_norm, hash_norm, "failed (3-4-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
                         assert!(hash_normalized_from_norm.full_eq(&hash_norm), "failed (3-4-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
