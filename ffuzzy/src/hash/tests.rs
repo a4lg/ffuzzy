@@ -860,23 +860,27 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 }
                                 // Check store_into_bytes
                                 let mut str_buffer = [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1];
+                                assert_eq!(hash.store_into_bytes(&mut str_buffer[..hash.len_in_str() - 1]), Err(FuzzyHashOperationError::StringizationOverflow),
+                                    "failed ({}-2-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(str_buffer, [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1],
+                                    "failed ({}-2-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 hash.store_into_bytes(&mut str_buffer).unwrap();
-                                assert_eq!(str_buffer[str_buffer.len() - 1], NULL_CH, "failed ({}-2-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(str_buffer[str_buffer.len() - 1], NULL_CH, "failed ({}-2-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 // Check store_into_bytes and len_in_str:
                                 // len_in_str is the exact length of the output.
                                 let len_in_str = str_buffer.iter().position(|&x| x == NULL_CH).unwrap();
-                                assert_eq!(hash.len_in_str(), len_in_str, "failed ({}-2-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash.len_in_str(), len_in_str, "failed ({}-2-4) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 let stored_bytes = &str_buffer[..len_in_str];
                                 // Outside the output string: must be untouched.
                                 assert!(str_buffer[len_in_str..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-5) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 // Check minimum string requirements
                                 assert!(stored_bytes.iter().all(|&x| is_ch_okay_for_output_byte(x)),
-                                    "failed ({}-2-4) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-6) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 // Converting back to the original hash preserves the value.
                                 let hash_back: $ty = <$ty>::from_bytes(stored_bytes).unwrap();
-                                assert_eq!(hash, hash_back, "failed ({}-2-5-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert!(hash.full_eq(&hash_back), "failed ({}-2-5-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash, hash_back, "failed ({}-2-7-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert!(hash.full_eq(&hash_back), "failed ({}-2-7-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 // Check String
                                 #[cfg(feature = "alloc")]
                                 {
