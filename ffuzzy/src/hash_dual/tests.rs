@@ -4,808 +4,44 @@
 
 #![cfg(test)]
 
-use core::str::FromStr;
 #[cfg(feature = "alloc")]
 use alloc::format;
 
-use crate::base64::BASE64_INVALID;
-use crate::hash::{FuzzyHashData, LongFuzzyHash, LongRawFuzzyHash};
-use crate::hash::block::{BlockSize, BlockHash};
+use crate::hash::FuzzyHashData;
+use crate::hash::block::BlockSize;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
+use crate::hash::tests::FuzzyHashStringBytes;
+use crate::hash::test_utils::test_blockhash_contents_all;
 use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, RleEncoding};
-use crate::test_utils::{assert_fits_in, test_for_each_type};
+use crate::test_utils::test_for_each_type;
 
 
 #[test]
-fn test_datamodel_new() {
+fn data_model_new() {
     macro_rules! test {
         ($ty: ty) => {
             let hash_new: $ty = <$ty>::new();
             let hash_default: $ty = <$ty>::default();
             let hash_cloned: $ty = hash_new.clone();
-            let hash_from_str: $ty = <$ty>::from_str("3::").unwrap();
+            let hash_from_str: $ty = str::parse("3::").unwrap();
             // Test validity of the empty value.
-            assert!(hash_new.is_valid());
-            assert!(hash_default.is_valid());
-            assert!(hash_cloned.is_valid());
+            assert!(hash_new.is_valid(),     "failed (1-1) on type={}", stringify!($ty));
+            assert!(hash_default.is_valid(), "failed (1-2) on type={}", stringify!($ty));
+            assert!(hash_cloned.is_valid(),  "failed (1-3) on type={}", stringify!($ty));
             // Test validity of fuzzy hashes converted from "empty" fuzzy hash string.
-            assert!(hash_from_str.is_valid());
+            assert!(hash_from_str.is_valid(), "failed (2) on type={}", stringify!($ty));
             // Compare two values.
-            assert_eq!(hash_new, hash_default);
-            assert_eq!(hash_new, hash_cloned);
-            assert_eq!(hash_new, hash_from_str);
+            assert_eq!(hash_new, hash_default,  "failed (3-1) on type={}", stringify!($ty));
+            assert_eq!(hash_new, hash_cloned,   "failed (3-1) on type={}", stringify!($ty));
+            assert_eq!(hash_new, hash_from_str, "failed (3-1) on type={}", stringify!($ty));
         };
     }
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
-
-#[test]
-fn test_datamodel_generic() {
-    /*
-        Tested methods:
-        1. Initialization from Internal Data (only valid cases)
-            *   init_from_raw_form_internals_raw_internal
-            *   init_from_raw_form_internals_raw_unchecked
-            *   new_from_raw_form_internals_raw_internal
-            *   new_from_raw_form_internals_raw_unchecked
-            *   init_from_raw_form_internals_raw
-            *   new_from_raw_form_internals_raw
-            *   clone
-        2. Direct Mapping to Internal Fuzzy Hash
-            *   log_block_size
-            *   block_size
-    */
-    macro_rules! test {($ty: ty) => {
-        for log_block_size in 0..BlockSize::NUM_VALID {
-            for len_blockhash1 in 0..=<$ty>::MAX_BLOCK_HASH_SIZE_1 {
-                assert_fits_in!(len_blockhash1, u8);
-                assert!(len_blockhash1 <= BlockHash::FULL_SIZE);
-                let mut blockhash1 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1]; // zero fill is mandatory
-                // Fill with sequences so that no normalization occurs.
-                for i in 0..len_blockhash1 {
-                    assert!(i < BlockHash::ALPHABET_SIZE);
-                    blockhash1[i] = i as u8;
-                }
-                for len_blockhash2 in 0..=<$ty>::MAX_BLOCK_HASH_SIZE_2 {
-                    assert_fits_in!(len_blockhash2, u8);
-                    assert!(len_blockhash2 <= BlockHash::FULL_SIZE);
-                    let mut blockhash2 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2]; // zero fill is mandatory
-                    // Fill with sequences so that no normalization occurs.
-                    for i in 0..len_blockhash2 {
-                        assert!(i < BlockHash::ALPHABET_SIZE);
-                        blockhash2[i] = (BlockHash::ALPHABET_SIZE - 1 - i) as u8;
-                    }
-                    let log_block_size_raw = u8::try_from(log_block_size).unwrap();
-                    let len_blockhash1_raw = u8::try_from(len_blockhash1).unwrap();
-                    let len_blockhash2_raw = u8::try_from(len_blockhash2).unwrap();
-                    let blockhash1_slice = &blockhash1[..len_blockhash1];
-                    let blockhash2_slice = &blockhash2[..len_blockhash2];
-                    // Make fuzzy hashes using various methods and
-                    // make sure that they are equivalent.
-                    let hash: $ty = {
-                        let mut hash1: $ty = <$ty>::new();
-                        hash1.init_from_raw_form_internals_raw(
-                            log_block_size_raw,
-                            &blockhash1,
-                            &blockhash2,
-                            len_blockhash1_raw,
-                            len_blockhash2_raw
-                        );
-                        let hash2: $ty = <$ty>::new_from_raw_form_internals_raw(
-                            log_block_size_raw,
-                            &blockhash1,
-                            &blockhash2,
-                            len_blockhash1_raw,
-                            len_blockhash2_raw
-                        );
-                        let mut hash3: $ty = <$ty>::new();
-                        hash3.init_from_raw_form_internals_raw_internal(
-                            log_block_size_raw,
-                            &blockhash1,
-                            &blockhash2,
-                            len_blockhash1_raw,
-                            len_blockhash2_raw);
-                        let hash4: $ty = <$ty>::new_from_raw_form_internals_raw_internal(
-                            log_block_size_raw,
-                            &blockhash1,
-                            &blockhash2,
-                            len_blockhash1_raw,
-                            len_blockhash2_raw
-                        );
-                        let hash5: $ty = hash1.clone();
-                        assert_eq!(hash1, hash2);
-                        assert_eq!(hash1, hash3);
-                        assert_eq!(hash1, hash4);
-                        assert_eq!(hash1, hash5);
-                        assert!(hash1.norm_hash.full_eq(&hash2.norm_hash));
-                        assert!(hash1.norm_hash.full_eq(&hash3.norm_hash));
-                        assert!(hash1.norm_hash.full_eq(&hash4.norm_hash));
-                        assert!(hash1.norm_hash.full_eq(&hash5.norm_hash));
-                        #[cfg(feature = "unsafe")]
-                        unsafe {
-                            let mut hash_u1 = <$ty>::new();
-                            hash_u1.init_from_raw_form_internals_raw_unchecked(
-                                log_block_size_raw,
-                                &blockhash1,
-                                &blockhash2,
-                                len_blockhash1_raw,
-                                len_blockhash2_raw
-                            );
-                            let hash_u2 = <$ty>::new_from_raw_form_internals_raw_unchecked(
-                                log_block_size_raw,
-                                &blockhash1,
-                                &blockhash2,
-                                len_blockhash1_raw,
-                                len_blockhash2_raw
-                            );
-                            assert_eq!(hash1, hash_u1);
-                            assert_eq!(hash1, hash_u2);
-                            assert!(hash1.norm_hash.full_eq(&hash_u1.norm_hash));
-                            assert!(hash1.norm_hash.full_eq(&hash_u2.norm_hash));
-                        }
-                        hash1
-                    };
-                    // Check validity
-                    assert!(hash.is_valid());
-                    assert!(hash.norm_hash.is_valid());
-                    // Check whether we have no RLE compression encodings
-                    assert_eq!(hash.rle_block1, [0u8; <$ty>::RLE_BLOCK_SIZE_1]);
-                    assert_eq!(hash.rle_block2, [0u8; <$ty>::RLE_BLOCK_SIZE_2]);
-                    // Check raw values
-                    assert_eq!(hash.norm_hash.blockhash1, blockhash1);
-                    assert_eq!(hash.norm_hash.blockhash2, blockhash2);
-                    assert_eq!(hash.norm_hash.len_blockhash1, len_blockhash1_raw);
-                    assert_eq!(hash.norm_hash.len_blockhash2, len_blockhash2_raw);
-                    assert_eq!(hash.norm_hash.log_blocksize, log_block_size_raw);
-                    // Check direct correspondence to raw values
-                    assert_eq!(hash.norm_hash.block_hash_1(), blockhash1_slice);
-                    assert_eq!(hash.norm_hash.block_hash_2(), blockhash2_slice);
-                    assert_eq!(hash.norm_hash.block_hash_1_as_array(), &blockhash1);
-                    assert_eq!(hash.norm_hash.block_hash_2_as_array(), &blockhash2);
-                    assert_eq!(hash.norm_hash.block_hash_1_len(), len_blockhash1);
-                    assert_eq!(hash.norm_hash.block_hash_2_len(), len_blockhash2);
-                    assert_eq!(hash.log_block_size(), log_block_size_raw);
-                    assert_eq!(hash.log_block_size(), hash.norm_hash.log_block_size());
-                    assert_eq!(hash.block_size(), hash.norm_hash.block_size());
-                }
-            }
-        }
-    }}
-    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
-}
-
-
-#[test]
-fn test_datamodel_blockhash_contents() {
-    /*
-        Tested methods:
-        1. Initialization from existing hashes
-            *   init_from_raw_form
-            *   from_raw_form
-            *   from_normalized
-            *   from
-        2. Initialization from strings (only valid cases)
-            *   from_str
-            *   from_bytes
-        3. Conversion
-            *   to_raw_form
-            *   to_normalized
-            *   as_normalized
-        4. Normalization
-            *   is_normalized
-            *   normalize_in_place
-        5. Stringization
-            *   to_raw_form_string
-            *   to_normalized_string
-    */
-    crate::hash::test_utils::test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
-        let is_norm = bh1.len() == bh1_norm.len() && bh2.len() == bh2_norm.len();
-        let mut buf_raw  = [0u8; LongDualFuzzyHash::MAX_LEN_IN_STR];
-        let mut buf_norm = [0u8; LongDualFuzzyHash::MAX_LEN_IN_STR];
-        let raw_hash =
-            LongRawFuzzyHash::new_from_internals(BlockSize::MIN, bh1, bh2);
-        let norm_hash =
-            LongFuzzyHash::new_from_internals(BlockSize::MIN, bh1_norm, bh2_norm);
-        raw_hash.store_into_bytes(&mut buf_raw).unwrap();
-        norm_hash.store_into_bytes(&mut buf_norm).unwrap();
-        let str_raw = core::str::from_utf8(&buf_raw[..raw_hash.len_in_str()]).unwrap();
-        let str_norm = core::str::from_utf8(&buf_norm[..norm_hash.len_in_str()]).unwrap();
-
-        macro_rules! test {($ty: ty) => {
-            type FuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
-            type RawFuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, false>;
-            if bh2.len() > <$ty>::MAX_BLOCK_HASH_SIZE_2 {
-                break;
-            }
-            let raw_hash_from_str = RawFuzzyHashType::from_str(str_raw).unwrap();
-            let norm_hash_from_str = FuzzyHashType::from_str(str_norm).unwrap();
-            assert!(raw_hash_from_str.is_valid());
-            assert!(norm_hash_from_str.is_valid());
-            let raw_hash = RawFuzzyHashType::new_from_internals(BlockSize::MIN, bh1, bh2);
-            let norm_hash = FuzzyHashType::new_from_internals(BlockSize::MIN, bh1_norm, bh2_norm);
-            assert!(raw_hash.is_valid());
-            assert!(norm_hash.is_valid());
-            assert_eq!(raw_hash, raw_hash_from_str);
-            assert_eq!(norm_hash, norm_hash_from_str);
-            // Check dual hash to raw/normalized hash operations
-            let dual_hash = {
-                let mut dual_hash1 = <$ty>::new();
-                assert!(dual_hash1.is_valid());
-                dual_hash1.init_from_raw_form(&raw_hash);
-                assert!(dual_hash1.is_valid());
-                let dual_hash2 = <$ty>::from_raw_form(&raw_hash);
-                assert_eq!(dual_hash1, dual_hash2);
-                let dual_hash3 = <$ty>::from(raw_hash);
-                assert_eq!(dual_hash1, dual_hash3);
-                let dual_hash4 = <$ty>::from_str(str_raw).unwrap();
-                assert_eq!(dual_hash1, dual_hash4);
-                let dual_hash5 = <$ty>::from_bytes(str_raw.as_bytes()).unwrap();
-                assert_eq!(dual_hash1, dual_hash5);
-                dual_hash1
-            };
-            let new_raw_hash = dual_hash.to_raw_form();
-            let mut new_raw_hash_2 = RawFuzzyHashType::new();
-            dual_hash.into_mut_raw_form(&mut new_raw_hash_2);
-            let new_norm_hash = *dual_hash.as_normalized();
-            let new_norm_hash_2 = dual_hash.to_normalized();
-            assert!(new_raw_hash.is_valid());
-            assert!(new_raw_hash_2.is_valid());
-            assert!(new_norm_hash.is_valid());
-            assert!(new_norm_hash_2.is_valid());
-            assert_eq!(raw_hash, new_raw_hash);
-            assert_eq!(raw_hash, new_raw_hash_2);
-            assert_eq!(norm_hash, new_norm_hash);
-            assert_eq!(norm_hash, new_norm_hash_2);
-            // ... possibly with normalization
-            assert_eq!(dual_hash.is_normalized(), is_norm);
-            assert_eq!(raw_hash.is_normalized(), is_norm);
-            let norm_dual_hash = {
-                let mut norm_dual_hash1 = dual_hash;
-                norm_dual_hash1.normalize_in_place();
-                assert!(norm_dual_hash1.is_valid());
-                let norm_dual_hash2 = <$ty>::from_normalized(&norm_hash);
-                assert_eq!(norm_dual_hash1, norm_dual_hash2);
-                let norm_dual_hash3 = <$ty>::from(norm_hash);
-                assert_eq!(norm_dual_hash1, norm_dual_hash3);
-                let norm_dual_hash4 = <$ty>::from_str(str_norm).unwrap();
-                assert_eq!(norm_dual_hash1, norm_dual_hash4);
-                let norm_dual_hash5 = <$ty>::from_bytes(str_norm.as_bytes()).unwrap();
-                assert_eq!(norm_dual_hash1, norm_dual_hash5);
-                norm_dual_hash1
-            };
-            assert!(norm_dual_hash.is_valid());
-            assert!(norm_dual_hash.is_normalized());
-            let new_norm_hash_as_norm = *norm_dual_hash.as_normalized();
-            let new_norm_hash_as_norm_2 = norm_dual_hash.to_normalized();
-            let new_norm_hash_as_raw = norm_dual_hash.to_raw_form();
-            assert!(new_norm_hash_as_norm.is_valid());
-            assert!(new_norm_hash_as_norm_2.is_valid());
-            assert!(new_norm_hash_as_raw.is_valid());
-            assert_eq!(norm_hash, new_norm_hash_as_norm);
-            assert_eq!(norm_hash, new_norm_hash_as_norm_2);
-            assert_eq!(norm_hash.to_raw_form(), new_norm_hash_as_raw);
-            // Check stringization
-            #[cfg(feature = "alloc")]
-            {
-                let dual_hash = <$ty>::from_raw_form(&raw_hash);
-                assert_eq!(dual_hash.to_raw_form_string(), raw_hash.to_string());
-                assert_eq!(dual_hash.to_normalized_string(), norm_hash.to_string());
-                assert_eq!(dual_hash.to_raw_form_string(), str_raw);
-                assert_eq!(dual_hash.to_normalized_string(), str_norm);
-                assert_eq!(norm_dual_hash.to_raw_form_string(), norm_hash.to_string());
-                assert_eq!(norm_dual_hash.to_normalized_string(), norm_hash.to_string());
-                assert_eq!(norm_dual_hash.to_raw_form_string(), str_norm);
-                assert_eq!(norm_dual_hash.to_normalized_string(), str_norm);
-            }
-        }}
-        test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
-    });
-}
-
-
-#[test]
-fn test_datamodel_corruption() {
-    /*
-        Tested methods:
-        1. Validity
-            *   is_valid
-        2. Debug output (when invalid)
-            *   fmt (Debug)
-    */
-    macro_rules! test {($ty: ty) => {
-        macro_rules! hash_is_valid {
-            ($hash: expr) => {
-                assert!($hash.is_valid());
-                assert!($hash.norm_hash.is_valid());
-            }
-        }
-        macro_rules! internal_hash_is_invalid {
-            ($hash: expr) => {
-                assert!(!$hash.is_valid());
-                assert!(!$hash.norm_hash.is_valid());
-                #[cfg(feature = "alloc")]
-                {
-                    assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"));
-                    assert!(format!("{:?}", $hash.norm_hash).starts_with("FuzzyHashData { ILL_FORMED: true,"));
-                }
-            };
-        }
-        let hash: $ty = <$ty>::new();
-        hash_is_valid!(hash);
-        // Internal (Normalized) Hash: Invalid block size
-        {
-            let mut hash = hash;
-            hash.norm_hash.log_blocksize = BlockSize::NUM_VALID as u8;
-            internal_hash_is_invalid!(hash);
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 1 size
-        {
-            let mut hash = hash;
-            hash.norm_hash.len_blockhash1 = <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8;
-            // Fill with valid pattern
-            for (i, ch) in hash.norm_hash.blockhash1.iter_mut().enumerate() {
-                assert!(i < BlockHash::ALPHABET_SIZE);
-                *ch = i as u8;
-            }
-            hash_is_valid!(hash); // Maximum length (inclusive)
-            assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_1 + 1, u8);
-            hash.norm_hash.len_blockhash1 = <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8 + 1;
-            internal_hash_is_invalid!(hash); // Maximum length + 1 (invalid)
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 2 size
-        {
-            let mut hash = hash;
-            hash.norm_hash.len_blockhash2 = <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8;
-            // Fill with valid pattern
-            for (i, ch) in hash.norm_hash.blockhash2.iter_mut().enumerate() {
-                assert!(i < BlockHash::ALPHABET_SIZE);
-                *ch = i as u8;
-            }
-            hash_is_valid!(hash); // Maximum length (inclusive)
-            assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_2 + 1, u8);
-            hash.norm_hash.len_blockhash2 = <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8 + 1;
-            internal_hash_is_invalid!(hash); // Maximum length + 1 (invalid)
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 1 contents (in the block hash)
-        {
-            for block_hash_1_len in 1..=<$ty>::MAX_BLOCK_HASH_SIZE_1 {
-                let mut hash = hash;
-                assert_fits_in!(block_hash_1_len, u8);
-                hash.norm_hash.len_blockhash1 = block_hash_1_len as u8;
-                // Fill with valid values first
-                for (i, ch) in hash.norm_hash.blockhash1[..block_hash_1_len].iter_mut().enumerate() {
-                    assert!(i < BlockHash::ALPHABET_SIZE);
-                    *ch = i as u8;
-                }
-                hash_is_valid!(hash);
-                // Put an invalid character in the block hash.
-                for i in 0..block_hash_1_len {
-                    let mut hash = hash;
-                    hash.norm_hash.blockhash1[i] = BASE64_INVALID;
-                    internal_hash_is_invalid!(hash);
-                }
-            }
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 2 contents (in the block hash)
-        {
-            for block_hash_2_len in 1..=<$ty>::MAX_BLOCK_HASH_SIZE_2 {
-                let mut hash = hash;
-                assert_fits_in!(block_hash_2_len, u8);
-                hash.norm_hash.len_blockhash2 = block_hash_2_len as u8;
-                // Fill with valid values first
-                for (i, ch) in hash.norm_hash.blockhash2[..block_hash_2_len].iter_mut().enumerate() {
-                    assert!(i < BlockHash::ALPHABET_SIZE);
-                    *ch = i as u8;
-                }
-                hash_is_valid!(hash);
-                // Put an invalid character in the block hash.
-                for i in 0..block_hash_2_len {
-                    let mut hash = hash;
-                    hash.norm_hash.blockhash2[i] = BASE64_INVALID;
-                    internal_hash_is_invalid!(hash);
-                }
-            }
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 1 contents (out of the block hash)
-        {
-            for block_hash_1_len in 1..<$ty>::MAX_BLOCK_HASH_SIZE_1 {
-                let mut hash = hash;
-                assert_fits_in!(block_hash_1_len, u8);
-                hash.norm_hash.len_blockhash1 = block_hash_1_len as u8;
-                // Fill with valid values first
-                for (i, ch) in hash.norm_hash.blockhash1[..block_hash_1_len].iter_mut().enumerate() {
-                    assert!(i < BlockHash::ALPHABET_SIZE);
-                    *ch = i as u8;
-                }
-                hash_is_valid!(hash);
-                // Put a non-zero character outside the block hash.
-                for i in block_hash_1_len..<$ty>::MAX_BLOCK_HASH_SIZE_1 {
-                    let mut hash = hash;
-                    hash.norm_hash.blockhash1[i] = 1;
-                    internal_hash_is_invalid!(hash);
-                }
-            }
-        }
-        // Internal (Normalized) Hash: Corrupt block hash 2 contents (out of the block hash)
-        {
-            for block_hash_2_len in 0..<$ty>::MAX_BLOCK_HASH_SIZE_2 {
-                let mut hash = hash;
-                assert_fits_in!(block_hash_2_len, u8);
-                hash.norm_hash.len_blockhash2 = block_hash_2_len as u8;
-                // Fill with valid values first
-                for (i, ch) in hash.norm_hash.blockhash2[..block_hash_2_len].iter_mut().enumerate() {
-                    assert!(i < BlockHash::ALPHABET_SIZE);
-                    *ch = i as u8;
-                }
-                hash_is_valid!(hash);
-                // Put a non-zero character outside the block hash.
-                for i in block_hash_2_len..<$ty>::MAX_BLOCK_HASH_SIZE_2 {
-                    let mut hash = hash;
-                    hash.norm_hash.blockhash2[i] = 1;
-                    internal_hash_is_invalid!(hash);
-                }
-            }
-        }
-        // Internal (Normalized) Hash: Break block hash 1 normalization
-        {
-            assert!(BlockHash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_1); // prerequisite
-            let mut hash = hash;
-            assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE, u8);
-            hash.norm_hash.len_blockhash1 = BlockHash::MAX_SEQUENCE_SIZE as u8;
-            hash_is_valid!(hash); // block hash 1 "AAA" (max sequence size): valid
-            assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE + 1, u8);
-            hash.norm_hash.len_blockhash1 = BlockHash::MAX_SEQUENCE_SIZE as u8 + 1;
-            internal_hash_is_invalid!(hash); // block hash 1 "AAAA" (max sequence size + 1): invalid
-        }
-        // Internal (Normalized) Hash: Break block hash 2 normalization
-        {
-            assert!(BlockHash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_2); // prerequisite
-            let mut hash = hash;
-            assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE, u8);
-            hash.norm_hash.len_blockhash2 = BlockHash::MAX_SEQUENCE_SIZE as u8;
-            hash_is_valid!(hash); // block hash 2 "AAA" (max sequence size): valid
-            assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE + 1, u8);
-            hash.norm_hash.len_blockhash2 = BlockHash::MAX_SEQUENCE_SIZE as u8 + 1;
-            internal_hash_is_invalid!(hash); // block hash 2 "AAAA" (max sequence size + 1): invalid
-        }
-        /*
-            WARNING:
-            Following tests HEAVILY depends on current RLE block design
-            and ssdeep constants.
-        */
-        macro_rules! hash_is_invalid {
-            ($hash: expr) => {
-                assert!(!$hash.is_valid());
-                #[cfg(feature = "alloc")]
-                {
-                    assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"));
-                }
-            };
-        }
-        // Make dummy hash
-        let mut hash: $ty = <$ty>::new();
-        hash.norm_hash.blockhash1[0..7].clone_from_slice(&[1, 1, 1, 2, 3, 3, 3]);
-        hash.norm_hash.blockhash2[0..7].clone_from_slice(&[4, 4, 4, 5, 6, 6, 6]);
-        hash.norm_hash.len_blockhash1 = 7;
-        hash.norm_hash.len_blockhash2 = 7;
-        hash_is_valid!(hash);
-        // RLE block is currently filled with zeroes.
-        assert!(hash.rle_block1.iter().all(|x| *x == 0));
-        assert!(hash.rle_block2.iter().all(|x| *x == 0));
-        // RLE Block: Non-zero RLE block after termination (block hash 1)
-        {
-            for i in 1..<$ty>::RLE_BLOCK_SIZE_1 {
-                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    let mut hash = hash;
-                    hash.rle_block1[i] = 1 | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);
-                }
-            }
-        }
-        // RLE Block: Non-zero RLE block after termination (block hash 2)
-        {
-            for i in 1..<$ty>::RLE_BLOCK_SIZE_2 {
-                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    let mut hash = hash;
-                    hash.rle_block2[i] = 1 | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);
-                }
-            }
-        }
-        // RLE Block: Position exceeds the block hash size (block hash 1)
-        {
-            let mut hash = hash;
-            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                hash.rle_block1[0] = 6 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash);
-            }
-            assert_eq!(hash.norm_hash.len_blockhash1, 7);
-            for i in hash.norm_hash.len_blockhash1..=RleEncoding::MASK_POSITION {
-                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block1[0] = i | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);
-                }
-            }
-        }
-        // RLE Block: Position exceeds the block hash size (block hash 2)
-        {
-            let mut hash = hash;
-            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                hash.rle_block2[0] = 6 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash);
-            }
-            assert_eq!(hash.norm_hash.len_blockhash2, 7);
-            for i in hash.norm_hash.len_blockhash2..=RleEncoding::MASK_POSITION {
-                for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block2[0] = i | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);
-                }
-            }
-        }
-        // RLE Block: Position is not the tail of identical character sequence (1)
-        {
-            let mut hash = hash;
-            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                if l != 0 {
-                    hash.rle_block1[0] = 0 | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);   // "**B"
-                }
-                hash.rle_block1[0] = 1 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "*BB"
-                hash.rle_block1[0] = 2 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash); // "BBB" (valid)
-                hash.rle_block1[0] = 3 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "BBC"
-                hash.rle_block1[0] = 4 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "BCD"
-                hash.rle_block1[0] = 5 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "CDD"
-                hash.rle_block1[0] = 6 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash); // "DDD" (valid)
-            }
-        }
-        // RLE Block: Position is not the tail of identical character sequence (2)
-        {
-            let mut hash = hash;
-            for l in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                if l != 0 {
-                    hash.rle_block2[0] = 0 | (l << RleEncoding::BITS_POSITION);
-                    hash_is_invalid!(hash);   // "**E"
-                }
-                hash.rle_block2[0] = 1 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "*EE"
-                hash.rle_block2[0] = 2 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash); // "EEE" (valid)
-                hash.rle_block2[0] = 3 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "EEF"
-                hash.rle_block2[0] = 4 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "EFG"
-                hash.rle_block2[0] = 5 | (l << RleEncoding::BITS_POSITION);
-                hash_is_invalid!(hash);   // "FGG"
-                hash.rle_block2[0] = 6 | (l << RleEncoding::BITS_POSITION);
-                hash_is_valid!(hash); // "GGG" (valid)
-            }
-        }
-        // RLE Block: Must be sorted by position (block hash 1)
-        {
-            let mut hash = hash;
-            // "BBBCDDD" -> "BBBBCDDDD"
-            hash.rle_block1[0] = 2;
-            hash.rle_block1[1] = 6;
-            hash_is_valid!(hash);
-            // Now swap the order (making the RLE block invalid)
-            hash.rle_block1[0] = 6;
-            hash.rle_block1[1] = 2;
-            hash_is_invalid!(hash);
-        }
-        // RLE Block: Must be sorted by position (block hash 2)
-        {
-            let mut hash = hash;
-            // "EEEFGGG" -> "EEEEFGGGG"
-            hash.rle_block2[0] = 2;
-            hash.rle_block2[1] = 6;
-            hash_is_valid!(hash);
-            // Now swap the order (making the RLE block invalid)
-            hash.rle_block2[0] = 6;
-            hash.rle_block2[1] = 2;
-            hash_is_invalid!(hash);
-        }
-        // RLE Block: Canonicality on extension using multiple RLE encodings (1)
-        {
-            assert_eq!(RleEncoding::BITS_POSITION, 6);
-            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
-            let mut hash = hash;
-            // Extend five characters
-            hash.rle_block1[0] = 0xc2; // RLE(2, 4)
-            hash.rle_block1[1] = 0x02; // RLE(2, 1)
-            hash_is_valid!(hash);
-            // Non-canonical encodings
-            hash.rle_block1[0] = 0x02; // RLE(2, 1)
-            hash.rle_block1[1] = 0xc2; // RLE(2, 4)
-            hash_is_invalid!(hash);
-            hash.rle_block1[0] = 0x42; // RLE(2, 2)
-            hash.rle_block1[1] = 0x82; // RLE(2, 3)
-            hash_is_invalid!(hash);
-            hash.rle_block1[0] = 0x82; // RLE(2, 3)
-            hash.rle_block1[1] = 0x42; // RLE(2, 2)
-            hash_is_invalid!(hash);
-            // Back to valid one (rle_block1[1] does not have maximum length)
-            hash.rle_block1[0] = 0xc2; // RLE(2, 4)
-            hash.rle_block1[1] = 0x02; // RLE(2, 1)
-            hash_is_valid!(hash);
-            // Test extension with another position
-            hash.rle_block1[2] = 0x06; // RLE(2, 1)
-            hash_is_valid!(hash);
-        }
-        // RLE Block: Canonicality on extension using multiple RLE encodings (2)
-        {
-            assert_eq!(RleEncoding::BITS_POSITION, 6);
-            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
-            let mut hash = hash;
-            // Extend five characters
-            hash.rle_block2[0] = 0xc2; // RLE(2, 4)
-            hash.rle_block2[1] = 0x02; // RLE(2, 1)
-            hash_is_valid!(hash);
-            // Non-canonical encodings
-            hash.rle_block2[0] = 0x02; // RLE(2, 1)
-            hash.rle_block2[1] = 0xc2; // RLE(2, 4)
-            hash_is_invalid!(hash);
-            hash.rle_block2[0] = 0x42; // RLE(2, 2)
-            hash.rle_block2[1] = 0x82; // RLE(2, 3)
-            hash_is_invalid!(hash);
-            hash.rle_block2[0] = 0x82; // RLE(2, 3)
-            hash.rle_block2[1] = 0x42; // RLE(2, 2)
-            hash_is_invalid!(hash);
-            // Back to valid one (rle_block2[1] does not have maximum length)
-            hash.rle_block2[0] = 0xc2; // RLE(2, 4)
-            hash.rle_block2[1] = 0x02; // RLE(2, 1)
-            hash_is_valid!(hash);
-            // Test extension with another position
-            hash.rle_block2[2] = 0x06; // RLE(2, 1)
-            hash_is_valid!(hash);
-        }
-        // RLE Block: Maximum extension exceeds maximum length on current config (1)
-        {
-            assert_eq!(RleEncoding::BITS_POSITION, 6);
-            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
-            let mut hash = hash;
-            // On the current design, it exceeds maximum length by 7 (len_blockhash1).
-            hash.rle_block1.fill(0xc2); // Fill with RLE(2, 4)
-            hash_is_invalid!(hash); // +7
-            // Decrease the trailing RLE block 7 times
-            // (until the hash becomes valid).
-            hash.rle_block1[hash.rle_block1.len() - 1] = 0x82;
-            hash_is_invalid!(hash); // +6
-            hash.rle_block1[hash.rle_block1.len() - 1] = 0x42;
-            hash_is_invalid!(hash); // +5
-            hash.rle_block1[hash.rle_block1.len() - 1] = 0x02;
-            hash_is_invalid!(hash); // +4
-            hash.rle_block1[hash.rle_block1.len() - 1] = 0x00;
-            hash.rle_block1[hash.rle_block1.len() - 2] = 0xc2;
-            hash_is_invalid!(hash); // +3
-            hash.rle_block1[hash.rle_block1.len() - 2] = 0x82;
-            hash_is_invalid!(hash); // +2
-            hash.rle_block1[hash.rle_block1.len() - 2] = 0x42;
-            hash_is_invalid!(hash); // +1
-            hash.rle_block1[hash.rle_block1.len() - 2] = 0x02;
-            hash_is_valid!(hash); // +0
-        }
-        // RLE Block: Maximum extension exceeds maximum length on current config (2)
-        {
-            assert_eq!(RleEncoding::BITS_POSITION, 6);
-            assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
-            let mut hash = hash;
-            // On the current design, it exceeds maximum length by 7 (len_blockhash2).
-            hash.rle_block2.fill(0xc2); // Fill with RLE(2, 4)
-            hash_is_invalid!(hash); // +7
-            // Decrease the trailing RLE block 7 times
-            // (until the hash becomes valid).
-            hash.rle_block2[hash.rle_block2.len() - 1] = 0x82;
-            hash_is_invalid!(hash); // +6
-            hash.rle_block2[hash.rle_block2.len() - 1] = 0x42;
-            hash_is_invalid!(hash); // +5
-            hash.rle_block2[hash.rle_block2.len() - 1] = 0x02;
-            hash_is_invalid!(hash); // +4
-            hash.rle_block2[hash.rle_block2.len() - 1] = 0x00;
-            hash.rle_block2[hash.rle_block2.len() - 2] = 0xc2;
-            hash_is_invalid!(hash); // +3
-            hash.rle_block2[hash.rle_block2.len() - 2] = 0x82;
-            hash_is_invalid!(hash); // +2
-            hash.rle_block2[hash.rle_block2.len() - 2] = 0x42;
-            hash_is_invalid!(hash); // +1
-            hash.rle_block2[hash.rle_block2.len() - 2] = 0x02;
-            hash_is_valid!(hash); // +0
-        }
-    }}
-    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
-}
-
-
-#[test]
-fn test_example_long_and_short() {
-    // Block hash 1: BlockHash::FULL_SIZE
-    // Block hash 2: BlockHash::HALF_SIZE + 1 (will overflow on DualFuzzyHash)
-    let hash_str = "3\
-        :0123456789012345678901234567890123456789012345678901234567890123\
-        :012345678901234567890123456789012";
-    assert_eq!(
-        DualFuzzyHash::from_str(hash_str),
-        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 32))
-    );
-    assert!(LongDualFuzzyHash::from_str(hash_str).is_ok());
-    // Block hash 1: BlockHash::FULL_SIZE
-    // Block hash 2: BlockHash::FULL_SIZE + 1 (will also overflow on LongDualFuzzyHash)
-    let hash_str = "3\
-        :0123456789012345678901234567890123456789012345678901234567890123\
-        :01234567890123456789012345678901234567890123456789012345678901234";
-    assert_eq!(
-        DualFuzzyHash::from_str(hash_str),
-        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 32))
-    );
-    assert_eq!(
-        LongDualFuzzyHash::from_str(hash_str),
-        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 64))
-    );
-}
-
-#[test]
-fn test_parse_failure() {
-    macro_rules! test {($ty: ty) => {
-        assert_eq!(
-            <$ty>::from_bytes(b""),
-            Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize, 0))
-        );
-    }}
-    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
-}
-
-#[test]
-fn test_parsed_block_size() {
-    /*
-        Tested methods:
-        1. String Parser (only valid cases)
-            *   from_bytes
-            *   from_str
-        2. Block size related functions
-            *   log_block_size
-            *   block_size
-    */
-    macro_rules! test {($ty: ty) => {
-        for (log_block_size, &str_block_size) in
-            BlockSize::BLOCK_SIZES_STR.iter().enumerate()
-        {
-            let block_size = u32::from_str(str_block_size).unwrap();
-            let str_block_size = str_block_size.as_bytes();
-            // For each BlockSize::BLOCK_SIZES_STR entry "[BS]", make "[BS]::"
-            // and parse as a fuzzy hash.
-            let mut buf = [0u8; <$ty>::MAX_LEN_IN_STR];
-            buf[..str_block_size.len()].clone_from_slice(str_block_size);
-            buf[str_block_size.len()] = b':';
-            buf[str_block_size.len() + 1] = b':';
-            // Use from_bytes.
-            let hash = <$ty>::from_bytes(&buf[..str_block_size.len() + 2]).unwrap();
-            assert!(hash.is_valid());
-            // Check log_block_size() and block_size()
-            assert_eq!(hash.log_block_size(), log_block_size as u8);
-            assert_eq!(hash.block_size(), block_size);
-            // Use from_str.
-            let hash = <$ty>::from_str(
-                core::str::from_utf8(&buf[..str_block_size.len() + 2]).unwrap()
-            ).unwrap();
-            assert!(hash.is_valid());
-            // Check log_block_size() and block_size()
-            assert_eq!(hash.log_block_size(), log_block_size as u8);
-            assert_eq!(hash.block_size(), block_size);
-        }
-    }}
-    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
-}
-
-
 #[allow(deprecated)]
 #[test]
-fn test_as_ref() {
+fn data_model_internal_ref() {
     macro_rules! test {($ty: ty) => {
         type NormalizedType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
         let hash = <$ty>::new();
@@ -817,9 +53,611 @@ fn test_as_ref() {
         let p2 = norm_hash_2 as *const NormalizedType;
         let p3 = norm_hash_3 as *const NormalizedType;
         let p4 = norm_hash_4 as *const NormalizedType;
-        assert_eq!(p1, p2);
-        assert_eq!(p1, p3);
-        assert_eq!(p1, p4);
+        assert_eq!(p1, p2, "failed (1) on type={}", stringify!($ty));
+        assert_eq!(p1, p3, "failed (2) on type={}", stringify!($ty));
+        assert_eq!(p1, p4, "failed (3) on type={}", stringify!($ty));
+    }}
+    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+}
+
+
+#[test]
+fn data_model_init_and_basic() {
+    /*
+        1. Initialization from other data
+            *   init_from_raw_form
+            *   from_raw_form
+            *   from (raw)
+            *   from_bytes
+            *   from_str
+                *   str::parse is used
+        2. Initialization from Internal Data (only valid cases)
+            *   init_from_raw_form_internals_raw
+            *   init_from_raw_form_internals_raw_internal
+            *   init_from_raw_form_internals_raw_unchecked
+            *   new_from_raw_form_internals_raw
+            *   new_from_raw_form_internals_raw_internal
+            *   new_from_raw_form_internals_raw_unchecked
+        3. Direct Mapping to Internal Fuzzy Hash
+            *   log_block_size
+            *   block_size
+            *   as_normalized
+        4. Plain Copy of the Internal Data
+            *   clone
+    */
+    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+        let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
+        for log_block_size in 0..BlockSize::NUM_VALID {
+            let log_block_size_raw = log_block_size as u8;
+            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+            let bytes_raw  = bobj_raw.as_bytes();
+            let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
+            macro_rules! test {
+                ($ty: ty) => {
+                    type FuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
+                    type RawFuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, false>;
+                    if (bh2.len() > <$ty>::MAX_BLOCK_HASH_SIZE_2) { break; }
+                    // Initialize raw block hash representations
+                    // (remaining bytes are zero-filled)
+                    let mut blockhash1 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1];
+                    let mut blockhash2 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2];
+                    let mut blockhash1_norm = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1];
+                    let mut blockhash2_norm = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2];
+                    blockhash1[..bh1.len()].copy_from_slice(bh1);
+                    blockhash2[..bh2.len()].copy_from_slice(bh2);
+                    blockhash1_norm[..bh1_norm.len()].copy_from_slice(bh1_norm);
+                    blockhash2_norm[..bh2_norm.len()].copy_from_slice(bh2_norm);
+                    // Prepare raw lengths
+                    let len_bh1_raw = u8::try_from(bh1.len()).unwrap();
+                    let len_bh2_raw = u8::try_from(bh2.len()).unwrap();
+                    let len_bh1_norm = u8::try_from(bh1_norm.len()).unwrap();
+                    let len_bh2_norm = u8::try_from(bh2_norm.len()).unwrap();
+                    // Create base fuzzy hashes (to compare)
+                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    // Create fuzzy hashes in various ways and make sure that they are all the same.
+                    let mut hash: $ty = <$ty>::new();
+                    hash.init_from_raw_form(&hash_raw);
+                    let hash1: $ty = <$ty>::from_raw_form(&hash_raw);
+                    let hash2: $ty = <$ty>::from(hash_raw);
+                    let mut hash3: $ty = <$ty>::new();
+                    hash3.init_from_raw_form_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let mut hash4: $ty = <$ty>::new();
+                    hash4.init_from_raw_form_internals_raw_internal(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let hash5: $ty =
+                        <$ty>::new_from_raw_form_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let hash6: $ty =
+                        <$ty>::new_from_raw_form_internals_raw_internal(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let hash7: $ty = <$ty>::from_bytes(bytes_raw).unwrap();
+                    let hash8: $ty = str::parse::<$ty>(bytes_str).unwrap();
+                    let hash9: $ty = hash1.clone();
+                    assert_eq!(hash, hash1, "failed (1-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash2, "failed (1-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash3, "failed (1-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash4, "failed (1-4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash5, "failed (1-5) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash6, "failed (1-6) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash7, "failed (1-7) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash8, "failed (1-8) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash, hash9, "failed (1-9) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    #[cfg(feature = "unsafe")]
+                    unsafe {
+                        let mut hash_u4: $ty = <$ty>::new();
+                        hash_u4.init_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                        let hash_u6: $ty =
+                            <$ty>::new_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                        assert_eq!(hash, hash_u4, "failed (1-10) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                        assert_eq!(hash, hash_u6, "failed (1-11) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    }
+                    // Validness
+                    assert!(hash.is_valid(), "failed (2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check raw values
+                    assert_eq!(hash.norm_hash, hash_norm, "failed (3-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.rle_block1 == [0u8; <$ty>::RLE_BLOCK_SIZE_1] && hash.rle_block2 == [0u8; <$ty>::RLE_BLOCK_SIZE_2], is_normalized,
+                        "failed (3-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check direct correspondence to raw values
+                    assert_eq!(hash.log_block_size(), log_block_size_raw, "failed (4-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.block_size(), block_size, "failed (4-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.as_normalized(), &hash_norm, "failed (4-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                };
+            }
+            test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+        }
+    });
+}
+
+#[test]
+fn data_model_init_from_normalized() {
+    /*
+        Initialization from other fuzzy hash (normalized):
+        *   from_normalized
+        *   from (normalized)
+    */
+    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+        for log_block_size in 0..BlockSize::NUM_VALID {
+            let log_block_size_raw = log_block_size as u8;
+            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+            let bytes_str = core::str::from_utf8(bobj_raw.as_bytes()).unwrap();
+            macro_rules! test {
+                ($ty: ty) => {
+                    type FuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
+                    type RawFuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, false>;
+                    if (bh2_norm.len() > <$ty>::MAX_BLOCK_HASH_SIZE_2) { break; }
+                    // Initialize raw block hash representations
+                    // (remaining bytes are zero-filled)
+                    let mut blockhash1_norm = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1];
+                    let mut blockhash2_norm = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2];
+                    blockhash1_norm[..bh1_norm.len()].copy_from_slice(bh1_norm);
+                    blockhash2_norm[..bh2_norm.len()].copy_from_slice(bh2_norm);
+                    // Prepare raw lengths
+                    let len_bh1_norm = u8::try_from(bh1_norm.len()).unwrap();
+                    let len_bh2_norm = u8::try_from(bh2_norm.len()).unwrap();
+                    // Create base fuzzy hashes (to compare)
+                    // ... changed from data_model_init_and_basic so that the raw fuzzy hash is
+                    // initialized from the normalized data.
+                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    // Create fuzzy hashes in various ways and make sure that they are all the same.
+                    let hash1: $ty = <$ty>::from_normalized(&hash_norm);
+                    let hash2: $ty = <$ty>::from(hash_norm);
+                    let hash3: $ty =
+                        <$ty>::new_from_raw_form_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    assert_eq!(hash1, hash2, "failed (1-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash1, hash3, "failed (1-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    let hash: $ty = hash1;
+                    // Validness
+                    assert!(hash.is_valid(), "failed (2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check internal data
+                    assert_eq!(hash.rle_block1, [0u8; <$ty>::RLE_BLOCK_SIZE_1], "failed (3-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.rle_block2, [0u8; <$ty>::RLE_BLOCK_SIZE_2], "failed (3-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check corresponding fuzzy hashes
+                    assert_eq!(hash.norm_hash, hash_norm, "failed (4-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.to_raw_form(), hash_raw, "failed (4-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check direct correspondence to raw values
+                    assert_eq!(hash.log_block_size(), log_block_size_raw, "failed (5-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.block_size(), block_size, "failed (5-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(hash.as_normalized(), &hash_norm, "failed (5-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                };
+            }
+            test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+        }
+    });
+}
+
+#[test]
+fn data_model_corresponding_fuzzy_hashes() {
+    /*
+        1. Corresponding Fuzzy Hashes
+            *   as_normalized
+            *   to_normalized
+            *   to_raw_form
+            *   into_mut_raw_form
+        2. Normalization
+            *   normalize_in_place
+    */
+    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+        let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
+        for log_block_size in 0..BlockSize::NUM_VALID {
+            let log_block_size_raw = log_block_size as u8;
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+            let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
+            let bytes_raw  = bobj_raw.as_bytes();
+            let bytes_norm = bobj_norm.as_bytes();
+            let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
+            macro_rules! test {
+                ($ty: ty) => {
+                    type FuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
+                    type RawFuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, false>;
+                    if (bh2.len() > <$ty>::MAX_BLOCK_HASH_SIZE_2) { break; }
+                    // Create base fuzzy hashes (to compare)
+                    let hash_raw: RawFuzzyHashType = RawFuzzyHashType::from_bytes(bytes_raw).unwrap();
+                    let hash_raw_from_norm: RawFuzzyHashType = RawFuzzyHashType::from_bytes(bytes_norm).unwrap();
+                    let hash_norm: FuzzyHashType = FuzzyHashType::from_bytes(bytes_norm).unwrap();
+                    // Create fuzzy hashes in various ways and make sure that they are all the same.
+                    let mut dual_hash_from_raw: $ty = <$ty>::from(hash_raw);
+                    let mut dual_hash_from_norm: $ty = <$ty>::from(hash_norm);
+                    let dual_hash_norm: $ty = dual_hash_from_norm;
+                    // Validness
+                    assert!(dual_hash_from_raw.is_valid(), "failed (2-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert!(dual_hash_from_norm.is_valid(), "failed (2-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check raw values
+                    assert_eq!(dual_hash_from_raw.norm_hash, hash_norm, "failed (3-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.norm_hash, hash_norm, "failed (3-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check normalization
+                    assert_eq!(dual_hash_from_raw.is_normalized(), is_normalized, "failed (3-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert!(dual_hash_from_norm.is_normalized(), "failed (3-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check corresponding hashes (1)
+                    assert_eq!(dual_hash_from_raw.as_normalized(), &hash_norm, "failed (4-1-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_raw.to_normalized(), hash_norm, "failed (4-1-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_raw.to_raw_form(), hash_raw, "failed (4-1-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    let mut hash_raw_dest: RawFuzzyHashType = RawFuzzyHashType::new();
+                    dual_hash_from_raw.into_mut_raw_form(&mut hash_raw_dest);
+                    assert_eq!(hash_raw_dest, hash_raw, "failed (4-1-4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.as_normalized(), &hash_norm, "failed (4-2-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.to_normalized(), hash_norm, "failed (4-2-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.to_raw_form(), hash_raw_from_norm, "failed (4-2-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    let mut hash_raw_dest: RawFuzzyHashType = RawFuzzyHashType::new();
+                    dual_hash_from_norm.into_mut_raw_form(&mut hash_raw_dest);
+                    assert_eq!(hash_raw_dest, hash_raw_from_norm, "failed (4-2-4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Normalize
+                    dual_hash_from_raw.normalize_in_place();
+                    dual_hash_from_norm.normalize_in_place();
+                    assert!(dual_hash_from_raw.is_valid(), "failed (5-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert!(dual_hash_from_norm.is_valid(), "failed (5-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_norm, dual_hash_from_raw, "failed (5-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_norm, dual_hash_from_norm, "failed (5-4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert!(dual_hash_norm.is_normalized(), "failed (5-5) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    // Check corresponding hashes (2)
+                    assert_eq!(dual_hash_norm.as_normalized(), &hash_norm, "failed (6-1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_norm.to_normalized(), hash_norm, "failed (6-2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_norm.to_raw_form(), hash_raw_from_norm, "failed (6-3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    let mut hash_raw_dest: RawFuzzyHashType = RawFuzzyHashType::new();
+                    dual_hash_norm.into_mut_raw_form(&mut hash_raw_dest);
+                    assert_eq!(hash_raw_dest, hash_raw_from_norm, "failed (6-4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                };
+            }
+            test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+        }
+    });
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn data_model_corresponding_fuzzy_hash_strings() {
+    use alloc::string::String;
+    /*
+        Corresponding Fuzzy Hash Strings:
+        *   to_normalized_string
+        *   to_raw_form_string
+    */
+    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+        for log_block_size in 0..BlockSize::NUM_VALID {
+            let log_block_size_raw = log_block_size as u8;
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+            let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
+            let bytes_raw  = bobj_raw.as_bytes();
+            let bytes_norm = bobj_norm.as_bytes();
+            let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
+            macro_rules! test {
+                ($ty: ty) => {
+                    type FuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, true>;
+                    type RawFuzzyHashType = FuzzyHashData<{<$ty>::MAX_BLOCK_HASH_SIZE_1}, {<$ty>::MAX_BLOCK_HASH_SIZE_2}, false>;
+                    if (bh2.len() > <$ty>::MAX_BLOCK_HASH_SIZE_2) { break; }
+                    // Create base fuzzy hashes (to compare)
+                    let hash_raw: RawFuzzyHashType = RawFuzzyHashType::from_bytes(bytes_raw).unwrap();
+                    let hash_norm: FuzzyHashType = FuzzyHashType::from_bytes(bytes_norm).unwrap();
+                    // Create strings
+                    let str_raw: String = hash_raw.to_string();
+                    let str_norm: String = hash_norm.to_string();
+                    // Create fuzzy hashes in various ways and make sure that they are all the same.
+                    let dual_hash_from_raw: $ty = <$ty>::from(hash_raw);
+                    let dual_hash_from_norm: $ty = <$ty>::from(hash_norm);
+                    // Compare strings
+                    assert_eq!(dual_hash_from_raw.to_raw_form_string(), str_raw, "failed (1) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_raw.to_normalized_string(), str_norm, "failed (2) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.to_raw_form_string(), str_norm, "failed (3) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                    assert_eq!(dual_hash_from_norm.to_normalized_string(), str_norm, "failed (4) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
+                };
+            }
+            test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+        }
+    });
+}
+
+
+#[test]
+fn data_model_corruption() {
+    /*
+        1. Validity
+            *   is_valid
+        2. Debug output (when invalid)
+            *   fmt (Debug)
+    */
+    // Prerequisites (partial)
+    assert_eq!(RleEncoding::BITS_POSITION, 6);
+    assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
+    /*
+        Note:
+        It assumes that is_valid() depends on norm_hash.is_valid().
+        If we don't assume that, we'd need to duplicate most of FuzzyHashData
+        corruption tests (that is very complex).
+
+        Quote from hash_dual.rs:
+            pub fn is_valid(&self) -> bool {
+                self.norm_hash.is_valid() &&
+            ...
+    */
+    macro_rules! hash_is_invalid {
+        ($ty: ty, $hash: expr, $fmt: literal) => {
+            assert!(!$hash.is_valid(), $fmt, 1, stringify!($ty));
+            #[cfg(feature = "alloc")]
+            {
+                assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
+                    $fmt, 2, stringify!($ty));
+            }
+        };
+        ($ty: ty, $hash: expr, $fmt: literal, $($arg:tt)+) => {
+            assert!(!$hash.is_valid(), $fmt, 1, stringify!($ty), $($arg)+);
+            #[cfg(feature = "alloc")]
+            {
+                assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
+                    $fmt, 2, stringify!($ty), $($arg)+);
+            }
+        };
+    }
+    macro_rules! test {($ty: ty) => {
+        /*
+            WARNING:
+            Following tests HEAVILY depends on current RLE block design
+            and ssdeep constants.
+        */
+        // Make dummy hash
+        let mut hash: $ty = <$ty>::new();
+        hash.norm_hash.blockhash1[..7].clone_from_slice(&[1, 1, 1, 2, 3, 3, 3]);
+        hash.norm_hash.blockhash2[..7].clone_from_slice(&[4, 4, 4, 5, 6, 6, 6]);
+        hash.norm_hash.len_blockhash1 = 7;
+        hash.norm_hash.len_blockhash2 = 7;
+        assert!(hash.is_valid(), "failed (1-1) on type={}", stringify!($ty));
+        assert!(hash.norm_hash.is_valid(), "failed (1-2) on type={}", stringify!($ty));
+        // RLE block is currently filled with zeroes.
+        assert!(hash.rle_block1.iter().all(|&x| x == 0), "failed (2-1) on type={}", stringify!($ty));
+        assert!(hash.rle_block2.iter().all(|&x| x == 0), "failed (2-2) on type={}", stringify!($ty));
+        // RLE Block: Non-zero RLE block after termination (block hash 1)
+        {
+            for index in 1..<$ty>::RLE_BLOCK_SIZE_1 {
+                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    let mut hash = hash;
+                    hash.rle_block1[index] = 1 | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (3-1-{}) on type={}, index={:?}, length={:?}", index, length);
+                }
+            }
+        }
+        // RLE Block: Non-zero RLE block after termination (block hash 2)
+        {
+            for index in 1..<$ty>::RLE_BLOCK_SIZE_2 {
+                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    let mut hash = hash;
+                    hash.rle_block2[index] = 1 | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (3-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                }
+            }
+        }
+        // RLE Block: Position exceeds the block hash size (block hash 1)
+        {
+            let mut hash = hash;
+            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block1[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (4-1-1) on type={}, length={:?}", stringify!($ty), length);
+            }
+            for index in hash.norm_hash.len_blockhash1..=RleEncoding::MASK_POSITION {
+                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block1[0] = index | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (4-1-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                }
+            }
+        }
+        // RLE Block: Position exceeds the block hash size (block hash 2)
+        {
+            let mut hash = hash;
+            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block2[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (4-2-1) on type={}, length={:?}", stringify!($ty), length);
+            }
+            for index in hash.norm_hash.len_blockhash2..=RleEncoding::MASK_POSITION {
+                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block2[0] = index | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (4-2-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                }
+            }
+        }
+        // RLE Block: Position is not the tail of identical character sequence (1)
+        {
+            let mut hash = hash;
+            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                if length != 0 {
+                    hash.rle_block1[0] = 0 | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (5-1-1-{}) on type={}, length={:?}", length);   // "**B"
+                }
+                hash.rle_block1[0] = 1 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-1-2-{}) on type={}, length={:?}", length);   // "*BB"
+                hash.rle_block1[0] = 2 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (5-1-3) on type={}", stringify!($ty)); // "BBB" (valid)
+                hash.rle_block1[0] = 3 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-1-4-{}) on type={}, length={:?}", length);   // "BBC"
+                hash.rle_block1[0] = 4 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-1-5-{}) on type={}, length={:?}", length);   // "BCD"
+                hash.rle_block1[0] = 5 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-1-6-{}) on type={}, length={:?}", length);   // "CDD"
+                hash.rle_block1[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (5-1-7) on type={}", stringify!($ty)); // "DDD" (valid)
+            }
+        }
+        // RLE Block: Position is not the tail of identical character sequence (2)
+        {
+            let mut hash = hash;
+            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                if length != 0 {
+                    hash.rle_block2[0] = 0 | (length << RleEncoding::BITS_POSITION);
+                    hash_is_invalid!($ty, hash, "failed (5-2-1-{}) on type={}, length={:?}", length);   // "**E"
+                }
+                hash.rle_block2[0] = 1 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-2-2-{}) on type={}, length={:?}", length);   // "*EE"
+                hash.rle_block2[0] = 2 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (5-2-3) on type={}", stringify!($ty)); // "EEE" (valid)
+                hash.rle_block2[0] = 3 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-2-4-{}) on type={}, length={:?}", length);   // "EEF"
+                hash.rle_block2[0] = 4 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-2-5-{}) on type={}, length={:?}", length);   // "EFG"
+                hash.rle_block2[0] = 5 | (length << RleEncoding::BITS_POSITION);
+                hash_is_invalid!($ty, hash, "failed (5-2-6-{}) on type={}, length={:?}", length);   // "FGG"
+                hash.rle_block2[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                assert!(hash.is_valid(), "failed (5-2-7) on type={}", stringify!($ty)); // "GGG" (valid)
+            }
+        }
+        // RLE Block: Must be sorted by position (block hash 1)
+        {
+            let mut hash = hash;
+            // "BBBCDDD" -> "BBBBCDDDD"
+            hash.rle_block1[0] = 2;
+            hash.rle_block1[1] = 6;
+            assert!(hash.is_valid(), "failed (6-1-1) on type={}", stringify!($ty));
+            // Now swap the order (making the RLE block invalid)
+            hash.rle_block1[0] = 6;
+            hash.rle_block1[1] = 2;
+            hash_is_invalid!($ty, hash, "failed (6-1-2-{}) on type={}");
+        }
+        // RLE Block: Must be sorted by position (block hash 2)
+        {
+            let mut hash = hash;
+            // "EEEFGGG" -> "EEEEFGGGG"
+            hash.rle_block2[0] = 2;
+            hash.rle_block2[1] = 6;
+            assert!(hash.is_valid(), "failed (6-2-1) on type={}", stringify!($ty));
+            // Now swap the order (making the RLE block invalid)
+            hash.rle_block2[0] = 6;
+            hash.rle_block2[1] = 2;
+            hash_is_invalid!($ty, hash, "failed (6-2-2-{}) on type={}");
+        }
+        // RLE Block: Canonicality on extension using multiple RLE encodings (1)
+        {
+            let mut hash = hash;
+            // Extend five characters
+            hash.rle_block1[0] = 0xc2; // RLE(2, 4)
+            hash.rle_block1[1] = 0x02; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-1-1) on type={}", stringify!($ty));
+            // Non-canonical encodings
+            hash.rle_block1[0] = 0x02; // RLE(2, 1)
+            hash.rle_block1[1] = 0xc2; // RLE(2, 4)
+            hash_is_invalid!($ty, hash, "failed (7-1-2-{}) on type={}");
+            hash.rle_block1[0] = 0x42; // RLE(2, 2)
+            hash.rle_block1[1] = 0x82; // RLE(2, 3)
+            hash_is_invalid!($ty, hash, "failed (7-1-3-{}) on type={}");
+            hash.rle_block1[0] = 0x82; // RLE(2, 3)
+            hash.rle_block1[1] = 0x42; // RLE(2, 2)
+            hash_is_invalid!($ty, hash, "failed (7-1-4-{}) on type={}");
+            // Back to valid one (rle_block1[1] does not have maximum length)
+            hash.rle_block1[0] = 0xc2; // RLE(2, 4)
+            hash.rle_block1[1] = 0x02; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-1-5) on type={}", stringify!($ty));
+            // Test extension with another position
+            hash.rle_block1[2] = 0x06; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-1-6) on type={}", stringify!($ty));
+        }
+        // RLE Block: Canonicality on extension using multiple RLE encodings (2)
+        {
+            let mut hash = hash;
+            // Extend five characters
+            hash.rle_block2[0] = 0xc2; // RLE(2, 4)
+            hash.rle_block2[1] = 0x02; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-2-1) on type={}", stringify!($ty));
+            // Non-canonical encodings
+            hash.rle_block2[0] = 0x02; // RLE(2, 1)
+            hash.rle_block2[1] = 0xc2; // RLE(2, 4)
+            hash_is_invalid!($ty, hash, "failed (7-2-2-{}) on type={}");
+            hash.rle_block2[0] = 0x42; // RLE(2, 2)
+            hash.rle_block2[1] = 0x82; // RLE(2, 3)
+            hash_is_invalid!($ty, hash, "failed (7-2-3-{}) on type={}");
+            hash.rle_block2[0] = 0x82; // RLE(2, 3)
+            hash.rle_block2[1] = 0x42; // RLE(2, 2)
+            hash_is_invalid!($ty, hash, "failed (7-2-4-{}) on type={}");
+            // Back to valid one (rle_block2[1] does not have maximum length)
+            hash.rle_block2[0] = 0xc2; // RLE(2, 4)
+            hash.rle_block2[1] = 0x02; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-2-5) on type={}", stringify!($ty));
+            // Test extension with another position
+            hash.rle_block2[2] = 0x06; // RLE(2, 1)
+            assert!(hash.is_valid(), "failed (7-2-6) on type={}", stringify!($ty));
+        }
+        // RLE Block: Maximum extension exceeds maximum length on current config (1)
+        {
+            let mut hash = hash;
+            // On the current design, it exceeds maximum length by 7 (len_blockhash1).
+            hash.rle_block1.fill(0xc2); // Fill with RLE(2, 4)
+            hash_is_invalid!($ty, hash, "failed (8-1-1-{}) on type={}"); // +7
+            // Decrease the trailing RLE block 7 times
+            // (until the hash becomes valid).
+            hash.rle_block1[hash.rle_block1.len() - 1] = 0x82;
+            hash_is_invalid!($ty, hash, "failed (8-1-2-{}) on type={}"); // +6
+            hash.rle_block1[hash.rle_block1.len() - 1] = 0x42;
+            hash_is_invalid!($ty, hash, "failed (8-1-3-{}) on type={}"); // +5
+            hash.rle_block1[hash.rle_block1.len() - 1] = 0x02;
+            hash_is_invalid!($ty, hash, "failed (8-1-4-{}) on type={}"); // +4
+            hash.rle_block1[hash.rle_block1.len() - 1] = 0x00;
+            hash.rle_block1[hash.rle_block1.len() - 2] = 0xc2;
+            hash_is_invalid!($ty, hash, "failed (8-1-5-{}) on type={}"); // +3
+            hash.rle_block1[hash.rle_block1.len() - 2] = 0x82;
+            hash_is_invalid!($ty, hash, "failed (8-1-6-{}) on type={}"); // +2
+            hash.rle_block1[hash.rle_block1.len() - 2] = 0x42;
+            hash_is_invalid!($ty, hash, "failed (8-1-7-{}) on type={}"); // +1
+            hash.rle_block1[hash.rle_block1.len() - 2] = 0x02;
+            assert!(hash.is_valid(), "failed (8-1-8) on type={}", stringify!($ty)); // +0
+        }
+        // RLE Block: Maximum extension exceeds maximum length on current config (2)
+        {
+            let mut hash = hash;
+            // On the current design, it exceeds maximum length by 7 (len_blockhash2).
+            hash.rle_block2.fill(0xc2); // Fill with RLE(2, 4)
+            hash_is_invalid!($ty, hash, "failed (8-2-1-{}) on type={}"); // +7
+            // Decrease the trailing RLE block 7 times
+            // (until the hash becomes valid).
+            hash.rle_block2[hash.rle_block2.len() - 1] = 0x82;
+            hash_is_invalid!($ty, hash, "failed (8-2-2-{}) on type={}"); // +6
+            hash.rle_block2[hash.rle_block2.len() - 1] = 0x42;
+            hash_is_invalid!($ty, hash, "failed (8-2-3-{}) on type={}"); // +5
+            hash.rle_block2[hash.rle_block2.len() - 1] = 0x02;
+            hash_is_invalid!($ty, hash, "failed (8-2-4-{}) on type={}"); // +4
+            hash.rle_block2[hash.rle_block2.len() - 1] = 0x00;
+            hash.rle_block2[hash.rle_block2.len() - 2] = 0xc2;
+            hash_is_invalid!($ty, hash, "failed (8-2-5-{}) on type={}"); // +3
+            hash.rle_block2[hash.rle_block2.len() - 2] = 0x82;
+            hash_is_invalid!($ty, hash, "failed (8-2-6-{}) on type={}"); // +2
+            hash.rle_block2[hash.rle_block2.len() - 2] = 0x42;
+            hash_is_invalid!($ty, hash, "failed (8-2-7-{}) on type={}"); // +1
+            hash.rle_block2[hash.rle_block2.len() - 2] = 0x02;
+            assert!(hash.is_valid(), "failed (8-2-8) on type={}", stringify!($ty)); // +0
+        }
+    }}
+    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+}
+
+
+#[test]
+fn parse_overflow_examples_long_and_short() {
+    // Block hash 1: BlockHash::FULL_SIZE
+    // Block hash 2: BlockHash::HALF_SIZE + 1 (will overflow on DualFuzzyHash)
+    const HASH_STR_1: &str = "3\
+        :0123456789012345678901234567890123456789012345678901234567890123\
+        :012345678901234567890123456789012";
+    assert_eq!(
+        str::parse::<DualFuzzyHash>(HASH_STR_1),
+        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 32))
+    );
+    assert!(str::parse::<LongDualFuzzyHash>(HASH_STR_1).is_ok());
+    // Block hash 1: BlockHash::FULL_SIZE
+    // Block hash 2: BlockHash::FULL_SIZE + 1 (will also overflow on LongDualFuzzyHash)
+    const HASH_STR_2: &str = "3\
+        :0123456789012345678901234567890123456789012345678901234567890123\
+        :01234567890123456789012345678901234567890123456789012345678901234";
+    assert_eq!(
+        str::parse::<DualFuzzyHash>(HASH_STR_2),
+        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 32))
+    );
+    assert_eq!(
+        str::parse::<LongDualFuzzyHash>(HASH_STR_2),
+        Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 64))
+    );
+}
+
+#[test]
+fn parse_errors() {
+    macro_rules! test {($ty: ty) => {
+        assert_eq!(
+            <$ty>::from_bytes(b""),
+            Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize, 0)),
+            "failed on type={}", stringify!($ty)
+        );
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
@@ -829,25 +667,29 @@ fn test_as_ref() {
 fn cover_hash() {
     macro_rules! test {($ty: ty) => {
         let mut hashes = std::collections::HashSet::<$ty>::new();
-        assert!(hashes.insert(<$ty>::new()));
-        assert!(!hashes.insert(<$ty>::new()));
+        assert!(hashes.insert(<$ty>::new()), "failed (1) on type={}", stringify!($ty));
+        assert!(!hashes.insert(<$ty>::new()), "failed (2) on type={}", stringify!($ty));
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
+
 #[cfg(feature = "std")]
 #[test]
-fn test_ord() {
+fn ord_and_sorting() {
     use core::cmp::Ordering;
     use alloc::string::ToString;
     use alloc::vec;
     use alloc::vec::Vec;
     use std::collections::HashSet;
-    // Sorted by block hash order (Base64 indices and length).
-    // Each internal vector indicates that they are equivalent
-    // after performing normalization.
-    // Note that 'A' has Base64 index zero and FuzzyHashData zero-fills
-    // each tail of block hashes (making the behavior more deterministic).
+    /*
+        Sorted by block hash order (Base64 indices and length).
+
+        Each internal vector indicates that they are equivalent
+        after performing normalization.
+        Note that 'A' has Base64 index zero and FuzzyHashData zero-fills
+        each tail of block hashes (making the behavior more deterministic).
+    */
     let sorted_dict = vec![
         vec![
             "ABBBR",
@@ -914,25 +756,25 @@ fn test_ord() {
     {
         let mut strings = HashSet::<&str>::new();
         for bh in &sorted_dict {
-            for bh_entry in bh {
-                assert!(strings.insert(*bh_entry));
+            for &bh_entry in bh {
+                assert!(strings.insert(bh_entry), "failed on bh_entry={:?}", bh_entry);
             }
         }
     }
     macro_rules! test {($ty: ty) => {
         // Construct sorted hashes list
         let mut hashes: Vec<$ty> = Vec::new();
-        for i in 0u8..=2 {
+        for log_block_size_raw in 0u8..=3 {
             for bh1 in &sorted_dict {
                 for bh2 in &sorted_dict {
-                    for bh1_entry in bh1 {
-                        for bh2_entry in bh2 {
-                            let mut s = BlockSize::from_log_internal(i).to_string();
+                    for &bh1_entry in bh1 {
+                        for &bh2_entry in bh2 {
+                            let mut s = BlockSize::from_log_internal(log_block_size_raw).to_string();
                             s += ":";
-                            s += *bh1_entry;
+                            s += bh1_entry;
                             s += ":";
-                            s += *bh2_entry;
-                            hashes.push(<$ty>::from_str(s.as_str()).unwrap());
+                            s += bh2_entry;
+                            hashes.push(str::parse(s.as_str()).unwrap());
                         }
                     }
                 }
@@ -948,19 +790,24 @@ fn test_ord() {
                         // they will make a consecutive "block".
                         // Just check whether direct comparison between h1 and h2
                         // can be used to determine whether the hashes are the same.
-                        assert_eq!(h1.cmp(&h2) == Ordering::Equal, i1 == i2);
+                        assert_eq!(h1.cmp(&h2) == Ordering::Equal, i1 == i2,
+                            "failed (1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                     Ordering::Greater => {
                         // Make sure that the result is the same as direct comparison between h1 and h2.
-                        assert_eq!(h1.cmp(&h2), Ordering::Greater);
+                        assert_eq!(h1.cmp(&h2), Ordering::Greater,
+                            "failed (2-1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                         // Check sorted indexes
-                        assert!(i1 > i2);
+                        assert!(i1 > i2,
+                            "failed (2-2) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                     Ordering::Less => {
                         // Make sure that the result is the same as direct comparison between h1 and h2.
-                        assert_eq!(h1.cmp(&h2), Ordering::Less);
+                        assert_eq!(h1.cmp(&h2), Ordering::Less,
+                            "failed (3-1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                         // Check sorted indexes
-                        assert!(i1 < i2);
+                        assert!(i1 < i2,
+                            "failed (3-2) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                 }
             }
@@ -971,14 +818,14 @@ fn test_ord() {
         let cloned = hashes.clone();
         hashes.reverse();
         hashes.sort();
-        assert_eq!(hashes, cloned);
+        assert_eq!(hashes, cloned, "failed (4) on type={}", stringify!($ty));
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_debug() {
+fn impl_debug() {
     // Test empty hashes
     let hash = DualFuzzyHash::new();
     assert_eq!(
@@ -1008,7 +855,7 @@ fn test_debug() {
     // "AAAA"  -> "AAA" + RLE expansion (length 1)
     // "BBBBB" -> "BBB" + RLE expansion (length 2)
     // Note that valid hash object will not show trailing RLENull encodings.
-    let hash = DualFuzzyHash::from_str("3\
+    let hash: DualFuzzyHash = str::parse("3\
         :AAAA\
         :01234567BBBBB").unwrap();
     assert_eq!(
@@ -1027,7 +874,7 @@ fn test_debug() {
         }"
     );
     // Long expansion: maximum block hash length (when in raw form; short)
-    let hash = DualFuzzyHash::from_str("3\
+    let hash: DualFuzzyHash = str::parse("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
     assert_eq!(
@@ -1050,7 +897,7 @@ fn test_debug() {
         }"
     );
     // Long expansion: maximum block hash length (when in raw form; long)
-    let hash = LongDualFuzzyHash::from_str("3\
+    let hash: LongDualFuzzyHash = str::parse("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
     assert_eq!(
@@ -1075,7 +922,7 @@ fn test_debug() {
         }"
     );
     // Corrupted RLE block (RLENull)
-    let mut hash = DualFuzzyHash::from_str("3\
+    let mut hash: DualFuzzyHash = str::parse("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
     hash.rle_block1[4] = 0;
@@ -1112,7 +959,7 @@ fn test_debug() {
     // Corrupted length after expansion (that would make an overflow)
     // Note that we use 31 'B's here instead of 32 'B's above to see
     // a valid RLENull (block hash 1 is invalid but 2 is valid).
-    let mut hash = DualFuzzyHash::from_str("3\
+    let mut hash: DualFuzzyHash = str::parse("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
     hash.rle_block1[15] = RleEncoding::encode(2, 4);
@@ -1148,21 +995,20 @@ fn test_debug() {
     );
 }
 
-// Each block hash repeats 4 times (thus normalization causes block hash changes)
 #[cfg(feature = "alloc")]
-const TEST_VECTOR_SHORT_FHASH_NORM_0: &str = "6:11112222333344445555:aaaabbbbccccddddeeee";
-// Each block hash repeats 3 times (normalization does not change the contents)
+const TEST_VECTOR_SHORT_FHASH_NORM_0: &str = "3:ABBCCCDDDDEEEEE:555554444333221";
 #[cfg(feature = "alloc")]
-const TEST_VECTOR_SHORT_FHASH_NORM_1: &str = "6:111222333444555:aaabbbcccdddeee";
+const TEST_VECTOR_SHORT_FHASH_NORM_1: &str = "3:ABBCCCDDDEEE:555444333221";
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_display() {
+fn impl_display() {
     macro_rules! test {($ty: ty) => {
-        let hash = <$ty>::from_str(TEST_VECTOR_SHORT_FHASH_NORM_0).unwrap();
+        let hash = str::parse::<$ty>(TEST_VECTOR_SHORT_FHASH_NORM_0).unwrap();
         assert_eq!(
             format!("{}", hash),
-            format!("{{{}|{}}}", TEST_VECTOR_SHORT_FHASH_NORM_1, TEST_VECTOR_SHORT_FHASH_NORM_0)
+            format!("{{{}|{}}}", TEST_VECTOR_SHORT_FHASH_NORM_1, TEST_VECTOR_SHORT_FHASH_NORM_0),
+            "failed on type={}", stringify!($ty)
         );
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
@@ -1170,11 +1016,11 @@ fn test_display() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_to_string() {
+fn impl_to_string() {
     macro_rules! test {($ty: ty) => {
-        let hash = <$ty>::from_str(TEST_VECTOR_SHORT_FHASH_NORM_0).unwrap();
-        assert_eq!(hash.to_raw_form_string(), TEST_VECTOR_SHORT_FHASH_NORM_0);
-        assert_eq!(hash.to_normalized_string(), TEST_VECTOR_SHORT_FHASH_NORM_1);
+        let hash = str::parse::<$ty>(TEST_VECTOR_SHORT_FHASH_NORM_0).unwrap();
+        assert_eq!(hash.to_raw_form_string(), TEST_VECTOR_SHORT_FHASH_NORM_0, "failed (1) on type={}", stringify!($ty));
+        assert_eq!(hash.to_normalized_string(), TEST_VECTOR_SHORT_FHASH_NORM_1, "failed (2) on type={}", stringify!($ty));
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
