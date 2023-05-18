@@ -306,9 +306,12 @@ pub use hash::{
 pub use hash::parser_state::{
     ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin
 };
-pub use hash::block::{
-    BlockSize, BlockSizeRelation, BlockHash
-};
+pub use hash::block::BlockSizeRelation;
+pub use hash::block::{block_size, block_hash};
+#[deprecated]
+pub use hash::block::block_size as BlockSize;
+#[deprecated]
+pub use hash::block::block_hash as BlockHash;
 pub use hash_dual::{
     FuzzyHashDualData,
     DualFuzzyHash, LongDualFuzzyHash
@@ -323,10 +326,12 @@ pub mod internal_hashes {
 pub mod internal_comparison {
     pub use super::compare::position_array::{
         BlockHashPositionArray,
-        BlockHashPositionArrayElement,
         BlockHashPositionArrayData,
         BlockHashPositionArrayImpl,
+        block_hash_position_array_element,
     };
+    #[deprecated]
+    pub use super::compare::position_array::block_hash_position_array_element as BlockHashPositionArrayElement;
     #[cfg(feature = "unsafe")]
     pub use super::compare::position_array::BlockHashPositionArrayImplUnsafe;
 }

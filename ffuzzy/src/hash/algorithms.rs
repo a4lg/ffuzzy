@@ -10,7 +10,7 @@ use crate::base64::{BASE64_INVALID, BASE64_TABLE_U8, base64_index};
 #[cfg(feature = "alloc")]
 use crate::base64::BASE64_TABLE;
 use crate::hash::block::{
-    BlockHash, BlockSize, BlockHashSize, ConstrainedBlockHashSize
+    block_hash, block_size, BlockHashSize, ConstrainedBlockHashSize
 };
 use crate::hash::parser_state::{
     BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin
@@ -40,8 +40,8 @@ where
             let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
             if curr == prev {
                 seq += 1;
-                if seq >= BlockHash::MAX_SEQUENCE_SIZE as u32 {
-                    seq = BlockHash::MAX_SEQUENCE_SIZE as u32;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
+                    seq = block_hash::MAX_SEQUENCE_SIZE as u32;
                     continue;
                 }
             }
@@ -76,7 +76,7 @@ where
         let curr: u8 = *ch;
         if *ch == prev {
             seq += 1;
-            if seq >= BlockHash::MAX_SEQUENCE_SIZE as u32 {
+            if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
                 return false;
             }
         }
@@ -105,7 +105,7 @@ where
     optionally_unsafe! {
         invariant!((len as usize) <= N);
         for idx in &hash[0..len as usize] { // grcov-excl-br-line:ARRAY
-            invariant!((*idx as usize) < BlockHash::ALPHABET_SIZE);
+            invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
             buf.push(BASE64_TABLE[*idx as usize]); // grcov-excl-br-line:ARRAY
         }
     }
@@ -127,7 +127,7 @@ where
     optionally_unsafe! {
         invariant!((len as usize) <= N);
         for (i, idx) in hash[0..len as usize].iter().enumerate() { // grcov-excl-br-line:ARRAY
-            invariant!((*idx as usize) < BlockHash::ALPHABET_SIZE);
+            invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
             invariant!(i < buf.len());
             buf[i] = BASE64_TABLE_U8[*idx as usize]; // grcov-excl-br-line:ARRAY
         }
@@ -183,7 +183,7 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
                         ParseErrorOrigin::BlockSize, 0
                     ));
                 }
-                if !BlockSize::is_valid(block_size) {
+                if !block_size::is_valid(block_size) {
                     return Err(ParseError(
                         ParseErrorKind::BlockSizeIsInvalid,
                         ParseErrorOrigin::BlockSize, 0
@@ -237,8 +237,8 @@ where
                 if NORM {
                     if curr == prev {
                         seq += 1;
-                        if seq >= BlockHash::MAX_SEQUENCE_SIZE as u32 {
-                            seq = BlockHash::MAX_SEQUENCE_SIZE as u32;
+                        if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
+                            seq = block_hash::MAX_SEQUENCE_SIZE as u32;
                             j += 1;
                             continue;
                         }

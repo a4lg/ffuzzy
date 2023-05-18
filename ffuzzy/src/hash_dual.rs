@@ -7,7 +7,7 @@ use alloc::string::String;
 use crate::base64::BASE64_TABLE_U8;
 use crate::hash::FuzzyHashData;
 use crate::hash::block::{
-    BlockSize, BlockHash,
+    block_size, block_hash,
     BlockHashSize, ConstrainedBlockHashSize,
     BlockHashSizes, ConstrainedBlockHashSizes
 };
@@ -32,7 +32,7 @@ mod tests;
 ///
 /// 6 bits is enough to store any block hash offset.
 ///
-/// Because [`BlockHash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
+/// Because [`block_hash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
 /// offset zero as the terminator (if the offset is zero, the length must be
 /// encoded as zero, making the RLE block zero-terminated).
 ///
@@ -40,7 +40,7 @@ mod tests;
 /// character offset of the sequence).
 ///
 /// 2 bits of length is enough to compress
-/// [`BlockHash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
+/// [`block_hash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
 /// long sequence able to be compressed in a fixed-size RLE block.
 ///
 /// The encoded length is one less than the actual length for efficiency.
@@ -51,8 +51,7 @@ mod tests;
 /// 2 bits of length is still small.  If we need to extend a character 5
 /// (`4 + 1`) times or more, we need multiple RLE encodings (with the same
 /// offset field).
-#[allow(non_snake_case)]
-mod RleEncoding {
+mod rle_encoding {
     /// Bits used to represent the position (offset).
     ///
     /// This is the start offset to repeat the same character.
@@ -79,7 +78,7 @@ mod RleEncoding {
     mod const_asserts {
         use super::*;
         use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
-        use crate::hash::block::BlockHash;
+        use crate::hash::block::block_hash;
 
         // Basic Constraints
         const_assert_ne!(BITS_POSITION, 0);
@@ -88,12 +87,12 @@ mod RleEncoding {
 
         // To use `offset` of zero can be used as the terminator,
         // MAX_SEQUENCE_SIZE must be larger than 1 (must be at least 2).
-        const_assert!(BlockHash::MAX_SEQUENCE_SIZE >= 2);
+        const_assert!(block_hash::MAX_SEQUENCE_SIZE >= 2);
 
         // Offset can contain any block hash index
-        const_assert!(BlockHash::FULL_SIZE <= (1usize << BITS_POSITION));
+        const_assert!(block_hash::FULL_SIZE <= (1usize << BITS_POSITION));
         // Length is large enough to compress MAX_SEQUENCE_SIZE + 1 bytes.
-        const_assert!(BlockHash::MAX_SEQUENCE_SIZE + 1 <= MAX_RUN_LENGTH);
+        const_assert!(block_hash::MAX_SEQUENCE_SIZE + 1 <= MAX_RUN_LENGTH);
     }
 
     /// Encode an RLE encoding from a (position, length) pair.
@@ -128,15 +127,15 @@ pub struct RleBlockSizeForBlockHash<const SZ_BH: usize, const SZ_RLE: usize> {}
 
 mod private {
     use super::*;
-    use crate::hash::block::BlockHash;
+    use crate::hash::block::block_hash;
 
     /// A trait to constrain RLE block size for given block hash size.
     ///
     /// This type is implemented for [`RleBlockSizeForBlockHash`]
     /// with following block hash sizes:
     ///
-    /// *   [`BlockHash::FULL_SIZE`]
-    /// *   [`BlockHash::HALF_SIZE`]
+    /// *   [`block_hash::FULL_SIZE`]
+    /// *   [`block_hash::HALF_SIZE`]
     ///
     /// This is a sealed trait.
     pub trait SealedRleBlockSizeForBlockHash {}
@@ -206,11 +205,11 @@ mod private {
                 $(
                     // This lower bound is exact.
                     const_assert!(
-                        div_ceil($block_hash_size, BlockHash::MAX_SEQUENCE_SIZE + 1) <= $rle_size
+                        div_ceil($block_hash_size, block_hash::MAX_SEQUENCE_SIZE + 1) <= $rle_size
                     );
                     // This lower bound might be too pessimistic.
                     const_assert!(
-                        div_ceil($block_hash_size, RleEncoding::MAX_RUN_LENGTH) <= $rle_size
+                        div_ceil($block_hash_size, rle_encoding::MAX_RUN_LENGTH) <= $rle_size
                     );
                 )*
             }
@@ -218,8 +217,8 @@ mod private {
     }
 
     rle_size_for_block_hash_template! {
-        sizes_def(BlockHash::FULL_SIZE, BlockHash::FULL_SIZE / 4);
-        sizes_def(BlockHash::HALF_SIZE, BlockHash::HALF_SIZE / 4);
+        sizes_def(block_hash::FULL_SIZE, block_hash::FULL_SIZE / 4);
+        sizes_def(block_hash::HALF_SIZE, block_hash::HALF_SIZE / 4);
     }
 }
 
@@ -228,8 +227,8 @@ mod private {
 /// This type is implemented for [`RleBlockSizeForBlockHash`] with
 /// following block hash sizes:
 ///
-/// *   [`BlockHash::FULL_SIZE`]
-/// *   [`BlockHash::HALF_SIZE`]
+/// *   [`block_hash::FULL_SIZE`]
+/// *   [`block_hash::HALF_SIZE`]
 ///
 /// Note that this trait is intentionally designed to be non-extensible
 /// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
@@ -273,26 +272,26 @@ mod algorithms {
                 let curr: u8 = blockhash_in[i]; // grcov-excl-br-line:ARRAY
                 if curr == prev {
                     seq += 1;
-                    if seq >= BlockHash::MAX_SEQUENCE_SIZE {
+                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
                         // Preserve sequence length for RLE encoding.
                         continue;
                     }
                 }
                 else {
-                    if seq >= BlockHash::MAX_SEQUENCE_SIZE {
+                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
                         // Use the last character offset in the identical character sequence.
                         let base_offset = len - 1;
-                        seq -= BlockHash::MAX_SEQUENCE_SIZE;
-                        let seq_fill_size = seq / RleEncoding::MAX_RUN_LENGTH;
+                        seq -= block_hash::MAX_SEQUENCE_SIZE;
+                        let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
                         invariant!(rle_offset < rle_block_out.len());
                         invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
                         invariant!(rle_offset <= rle_offset + seq_fill_size);
                         rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                            .fill(RleEncoding::encode(base_offset as u8, RleEncoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                            .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
                         rle_offset += seq_fill_size;
                         invariant!(rle_offset < rle_block_out.len());
                         rle_block_out[rle_offset] =
-                            RleEncoding::encode(base_offset as u8, (seq % RleEncoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                            rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
                         rle_offset += 1;
                         invariant!(rle_offset <= rle_block_out.len());
                     }
@@ -305,20 +304,20 @@ mod algorithms {
             }
             // If we processed all original block hash, there's a case where
             // we are in an identical character sequence.
-            if seq >= BlockHash::MAX_SEQUENCE_SIZE {
+            if seq >= block_hash::MAX_SEQUENCE_SIZE {
                 // Use the last character offset in the identical character sequence.
                 let base_offset = len - 1;
-                seq -= BlockHash::MAX_SEQUENCE_SIZE;
-                let seq_fill_size = seq / RleEncoding::MAX_RUN_LENGTH;
+                seq -= block_hash::MAX_SEQUENCE_SIZE;
+                let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
                 invariant!(rle_offset < rle_block_out.len());
                 invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
                 invariant!(rle_offset <= rle_offset + seq_fill_size);
                 rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                    .fill(RleEncoding::encode(base_offset as u8, RleEncoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                    .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
                 rle_offset += seq_fill_size;
                 invariant!(rle_offset < rle_block_out.len());
                 rle_block_out[rle_offset] =
-                    RleEncoding::encode(base_offset as u8, (seq % RleEncoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                    rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
                 rle_offset += 1;
                 invariant!(rle_offset <= rle_block_out.len());
             }
@@ -347,7 +346,7 @@ mod algorithms {
             let mut len_out = blockhash_len_in;
             for rle in rle_block_in {
                 // Decode position and length
-                let (pos, len) = RleEncoding::decode(*rle);
+                let (pos, len) = rle_encoding::decode(*rle);
                 if pos == 0 {
                     break;
                 }
@@ -418,16 +417,16 @@ mod algorithms {
                 continue;
             }
             // Decode position and length
-            let (pos, len) = RleEncoding::decode(*rle);
+            let (pos, len) = rle_encoding::decode(*rle);
             // Check position
             if unlikely(
-                pos < BlockHash::MAX_SEQUENCE_SIZE as u8 - 1 || pos >= blockhash_len || pos < prev_pos
+                pos < block_hash::MAX_SEQUENCE_SIZE as u8 - 1 || pos >= blockhash_len || pos < prev_pos
             ) {
                 return false;
             }
             if prev_pos == pos {
                 // For extension with the same position, check canonicality.
-                if unlikely(prev_len != RleEncoding::MAX_RUN_LENGTH as u8) {
+                if unlikely(prev_len != rle_encoding::MAX_RUN_LENGTH as u8) {
                     return false;
                 }
             }
@@ -435,7 +434,7 @@ mod algorithms {
                 // For new sequence, check if corresponding block hash makes
                 // identical character sequence.
                 let end = pos as usize;
-                let start = end - (BlockHash::MAX_SEQUENCE_SIZE - 1);
+                let start = end - (block_hash::MAX_SEQUENCE_SIZE - 1);
                 optionally_unsafe! {
                     invariant!(start < blockhash.len());
                     invariant!(end < blockhash.len());
@@ -559,13 +558,13 @@ where
     /// RLE block 1 for reverse normalization of
     /// [block hash 1](crate::hash::FuzzyHashData::blockhash1).
     ///
-    /// See [`RleEncoding`] for encoding details.
+    /// See [`rle_encoding`] for encoding details.
     rle_block1: [u8; C1],
 
     /// RLE block 2 for reverse normalization of
     /// [block hash 2](crate::hash::FuzzyHashData::blockhash2).
     ///
-    /// See [`RleEncoding`] for encoding details.
+    /// See [`rle_encoding`] for encoding details.
     rle_block2: [u8; C2],
 
     /// A normalized fuzzy hash object for comparison and the base storage
@@ -657,11 +656,11 @@ where
         block_hash_1_len: u8,
         block_hash_2_len: u8
     ) {
-        debug_assert!(BlockSize::is_log_valid(log_block_size));
+        debug_assert!(block_size::is_log_valid(log_block_size));
         debug_assert!(block_hash_1_len as usize <= S1);
         debug_assert!(block_hash_2_len as usize <= S2);
-        debug_assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < BlockHash::ALPHABET_SIZE as u8));
-        debug_assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < BlockHash::ALPHABET_SIZE as u8));
+        debug_assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        debug_assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         debug_assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
         debug_assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
         self.norm_hash.log_blocksize = log_block_size;
@@ -729,11 +728,11 @@ where
         block_hash_1_len: u8,
         block_hash_2_len: u8
     ) {
-        assert!(BlockSize::is_log_valid(log_block_size));
+        assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1_len as usize <= S1);
         assert!(block_hash_2_len as usize <= S2);
-        assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < BlockHash::ALPHABET_SIZE as u8));
-        assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < BlockHash::ALPHABET_SIZE as u8));
+        assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
         assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
         self.init_from_raw_form_internals_raw_internal(
@@ -822,7 +821,7 @@ where
     /// The block size of the fuzzy hash.
     #[inline]
     pub fn block_size(&self) -> u32 {
-        BlockSize::from_log_internal(self.norm_hash.log_blocksize)
+        block_size::from_log_internal(self.norm_hash.log_blocksize)
     }
 
     /// A reference to the normalized fuzzy hash.
@@ -1089,7 +1088,7 @@ where
         impl core::fmt::Debug for DebugBuilderForRLEBlockEntry {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 if self.0 != 0 {
-                    let (pos, len) = RleEncoding::decode(self.0);
+                    let (pos, len) = rle_encoding::decode(self.0);
                     f.debug_tuple("RLE")
                         .field(&pos).field(&len)
                         .finish()
@@ -1127,8 +1126,8 @@ where
             let buffer1 = self.norm_hash.blockhash1.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
             let buffer2 = self.norm_hash.blockhash2.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
             f.debug_struct("FuzzyHashDualData")
-                .field("LONG", &(S2 == BlockHash::FULL_SIZE))
-                .field("block_size", &BlockSize::from_log_internal(self.norm_hash.log_blocksize))
+                .field("LONG", &(S2 == block_hash::FULL_SIZE))
+                .field("block_size", &block_size::from_log_internal(self.norm_hash.log_blocksize))
                 .field("blockhash1", &core::str::from_utf8(&buffer1[..self.norm_hash.len_blockhash1 as usize]).unwrap())
                 .field("blockhash2", &core::str::from_utf8(&buffer2[..self.norm_hash.len_blockhash2 as usize]).unwrap())
                 .field("rle_block1", &(DebugBuilderForValidRLEBlock::new(&self.rle_block1)))
@@ -1138,7 +1137,7 @@ where
         else {
             f.debug_struct("FuzzyHashDualData")
                 .field("ILL_FORMED", &true)
-                .field("LONG", &(S2 == BlockHash::FULL_SIZE))
+                .field("LONG", &(S2 == block_hash::FULL_SIZE))
                 .field("log_blocksize", &self.norm_hash.log_blocksize)
                 .field("len_blockhash1", &self.norm_hash.len_blockhash1)
                 .field("len_blockhash2", &self.norm_hash.len_blockhash2)
@@ -1223,10 +1222,10 @@ where
 ///
 /// See also: [`FuzzyHashDualData`]
 pub type DualFuzzyHash = FuzzyHashDualData<
-    {BlockHash::FULL_SIZE},
-    {BlockHash::HALF_SIZE},
-    {BlockHash::FULL_SIZE / 4},
-    {BlockHash::HALF_SIZE / 4}
+    {block_hash::FULL_SIZE},
+    {block_hash::HALF_SIZE},
+    {block_hash::FULL_SIZE / 4},
+    {block_hash::HALF_SIZE / 4}
 >;
 
 /// Long (non-truncated) dual fuzzy hash type which contains both normalized
@@ -1239,8 +1238,8 @@ pub type DualFuzzyHash = FuzzyHashDualData<
 ///
 /// See also: [`FuzzyHashDualData`]
 pub type LongDualFuzzyHash = FuzzyHashDualData<
-    {BlockHash::FULL_SIZE},
-    {BlockHash::FULL_SIZE},
-    {BlockHash::FULL_SIZE / 4},
-    {BlockHash::FULL_SIZE / 4}
+    {block_hash::FULL_SIZE},
+    {block_hash::FULL_SIZE},
+    {block_hash::FULL_SIZE / 4},
+    {block_hash::FULL_SIZE / 4}
 >;

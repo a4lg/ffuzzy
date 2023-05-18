@@ -19,9 +19,9 @@ use crate::hash::algorithms::{
 };
 #[cfg(feature = "alloc")]
 use crate::hash::algorithms::insert_block_hash_into_str;
-use crate::hash::block::BlockHash;
+use crate::hash::block::block_hash;
 #[cfg(feature = "alloc")]
-use crate::hash::block::BlockSize;
+use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::test_utils::test_blockhash_content_all;
 
@@ -34,8 +34,8 @@ macro_rules! test_for_each_norm {
 
 macro_rules! test_for_each_block_size {
     ($test: ident) => {
-        loop { const N: usize = BlockHash::FULL_SIZE; $test!(); break; }
-        loop { const N: usize = BlockHash::HALF_SIZE; $test!(); break; }
+        loop { const N: usize = block_hash::FULL_SIZE; $test!(); break; }
+        loop { const N: usize = block_hash::HALF_SIZE; $test!(); break; }
     };
 }
 
@@ -133,7 +133,7 @@ fn insert_block_hash_into_str_contents() {
 #[test]
 fn insert_block_hash_into_str_examples_and_append() {
     use alloc::string::String;
-    let mut buffer: [u8; BlockHash::FULL_SIZE] = [0u8; BlockHash::FULL_SIZE];
+    let mut buffer: [u8; block_hash::FULL_SIZE] = [0u8; block_hash::FULL_SIZE];
     for (i, ch) in buffer.iter_mut().enumerate().take(7) {
         *ch = i as u8;
     } // "ABCDEFG"
@@ -195,7 +195,7 @@ fn parse_block_size_from_bytes_patterns() {
 #[test]
 fn parse_block_size_from_bytes_overflow_on_block_size() {
     // Block size with u32::MAX
-    assert!(!BlockSize::is_valid(u32::MAX)); // ssdeep-specific
+    assert!(!block_size::is_valid(u32::MAX)); // ssdeep-specific
     let mut offset = usize::MAX;
     let invalid_str = format!("{}:", u32::MAX);
     assert_eq!(

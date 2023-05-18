@@ -17,11 +17,11 @@ use crate::compare::position_array::{
     BlockHashPositionArrayImplMut,
     BlockHashPositionArrayImplInternal,
     BlockHashPositionArrayImplMutInternal,
-    BlockHashPositionArrayElement,
+    block_hash_position_array_element,
 };
 #[cfg(feature = "unsafe")]
 use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
-use crate::hash::block::BlockHash;
+use crate::hash::block::block_hash;
 use crate::hash::test_utils::test_blockhash_content_all;
 use crate::test_utils::test_recommended_default;
 use crate::utils::u64_lsb_ones;
@@ -30,18 +30,18 @@ use crate::utils::u64_lsb_ones;
 #[test]
 fn test_has_sequences() {
     // All zero
-    assert!(BlockHashPositionArrayElement::has_sequences(0, 0));
+    assert!(block_hash_position_array_element::has_sequences(0, 0));
     for len in 1u32..=100 {
-        assert!(!BlockHashPositionArrayElement::has_sequences(0, len),
+        assert!(!block_hash_position_array_element::has_sequences(0, len),
             "failed on len={:?}", len);
     }
     // All one
-    assert!(BlockHashPositionArrayElement::has_sequences(u64::MAX, 0));
+    assert!(block_hash_position_array_element::has_sequences(u64::MAX, 0));
     for len in 1u32..=64 {
-        assert!(BlockHashPositionArrayElement::has_sequences(u64::MAX, len),
+        assert!(block_hash_position_array_element::has_sequences(u64::MAX, len),
             "failed on len={:?}", len);
     }
-    assert!(!BlockHashPositionArrayElement::has_sequences(u64::MAX, 65));
+    assert!(!block_hash_position_array_element::has_sequences(u64::MAX, 65));
     // Test pattern: stripes
     const STRIPE_1: u64 = 0b_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010_1010;
     const STRIPE_2: u64 = 0b_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101_0101;
@@ -54,15 +54,15 @@ fn test_has_sequences() {
             "failed on stripe=0b{:064b}", stripe);
     }
     for len in 0u32..=1 {
-        assert!(BlockHashPositionArrayElement::has_sequences(STRIPE_1, len),
+        assert!(block_hash_position_array_element::has_sequences(STRIPE_1, len),
             "failed on len={:?}", len);
-        assert!(BlockHashPositionArrayElement::has_sequences(STRIPE_2, len),
+        assert!(block_hash_position_array_element::has_sequences(STRIPE_2, len),
             "failed on len={:?}", len);
     }
     for len in 2u32..=100 {
-        assert!(!BlockHashPositionArrayElement::has_sequences(STRIPE_1, len),
+        assert!(!block_hash_position_array_element::has_sequences(STRIPE_1, len),
             "failed on len={:?}", len);
-        assert!(!BlockHashPositionArrayElement::has_sequences(STRIPE_2, len),
+        assert!(!block_hash_position_array_element::has_sequences(STRIPE_2, len),
             "failed on len={:?}", len);
     }
     // Test pattern: specific length (≧ 2) sequences
@@ -78,7 +78,7 @@ fn test_has_sequences() {
                 // Subpattern 1: pure bits
                 let target = seq;
                 assert_eq!(
-                    BlockHashPositionArrayElement::has_sequences(target, test_len),
+                    block_hash_position_array_element::has_sequences(target, test_len),
                     test_len <= len,
                     "failed on len={:?}, shift={:?}", len, shift
                 );
@@ -90,13 +90,13 @@ fn test_has_sequences() {
                     target |= seq;
                     if test_len < 2 {
                         // Matches to stripe itself
-                        assert!(BlockHashPositionArrayElement::has_sequences(target, test_len),
+                        assert!(block_hash_position_array_element::has_sequences(target, test_len),
                             "failed on len={:?}, shift={:?}, stripe=0b{:064b}", len, shift, stripe);
                     }
                     else {
                         // Possibly matches to the sequence
                         assert_eq!(
-                            BlockHashPositionArrayElement::has_sequences(target, test_len),
+                            block_hash_position_array_element::has_sequences(target, test_len),
                             test_len <= len,
                             "failed on len={:?}, shift={:?}, stripe=0b{:064b}", len, shift, stripe
                         );
@@ -123,11 +123,11 @@ fn test_has_sequences() {
             if offset + len + 1 == 64 {
                 has_seq = true;
             }
-            assert_eq!(has_seq, BlockHashPositionArrayElement::has_sequences(target, len),
+            assert_eq!(has_seq, block_hash_position_array_element::has_sequences(target, len),
                 "failed on len={:?}, offset={:?}", len, offset);
             if has_seq {
                 for test_len in 0..len {
-                    assert!(BlockHashPositionArrayElement::has_sequences(target, test_len),
+                    assert!(block_hash_position_array_element::has_sequences(target, test_len),
                         "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
                 }
             }
@@ -143,12 +143,12 @@ fn test_has_sequences() {
                 */
                 let max_seq_len = u32::max(u64::BITS - 1 - offset, offset);
                 for test_len in 0..len {
-                    assert_eq!(test_len <= max_seq_len, BlockHashPositionArrayElement::has_sequences(target, test_len),
+                    assert_eq!(test_len <= max_seq_len, block_hash_position_array_element::has_sequences(target, test_len),
                         "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
                 }
             }
             for test_len in (len + 1)..=100 {
-                assert!(!BlockHashPositionArrayElement::has_sequences(target, test_len),
+                assert!(!block_hash_position_array_element::has_sequences(target, test_len),
                     "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
             }
         }
@@ -396,7 +396,7 @@ fn data_model_basic_bhpa_mut_ref() {
 
 fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
     // Prerequisite for inequality test:
-    assert_eq!(BlockHash::ALPHABET_SIZE % 2, 0);
+    assert_eq!(block_hash::ALPHABET_SIZE % 2, 0);
     // Test inequality
     test_blockhash_content_all(&|bh, bh_norm| {
         /*
@@ -408,7 +408,7 @@ fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeIm
         let test = |bh: &[u8]| {
             wrapper(bh, &|value: &dyn CompositeImpl| {
                 if bh.is_empty() { return; }
-                let mut bh_mod = [0u8; BlockHash::FULL_SIZE];
+                let mut bh_mod = [0u8; block_hash::FULL_SIZE];
                 let bh_mod = bh_mod[0..bh.len()].as_mut();
                 bh_mod.copy_from_slice(bh);
                 for i in 0..bh.len() {
@@ -456,7 +456,7 @@ fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
         let test = |bh: &[u8]| {
             wrapper(bh, &|value: &dyn CompositeImpl| {
                 // False if another string is too short.
-                for len in 1..BlockHash::MIN_LCS_FOR_COMPARISON {
+                for len in 1..block_hash::MIN_LCS_FOR_COMPARISON {
                     for window in bh.windows(len) {
                         assert!(!value.has_common_substring(window),
                             "failed on bh={:?}, window={:?}", bh, window);
@@ -470,7 +470,7 @@ fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
                     }
                 }
                 // True if another string is a subset with enough length.
-                for len in BlockHash::MIN_LCS_FOR_COMPARISON..=bh.len() {
+                for len in block_hash::MIN_LCS_FOR_COMPARISON..=bh.len() {
                     for window in bh.windows(len) {
                         assert!(value.has_common_substring(window),
                             "failed on bh={:?}, window={:?}", bh, window);
@@ -515,14 +515,14 @@ fn check_substring_fail_example(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeI
     const STR2: &[u8] = &[6, 5, 4, 3, 2, 1, 0];
     /*
         Prerequisites:
-        1.  They must have the size of BlockHash::MIN_LCS_FOR_COMPARISON
+        1.  They must have the size of block_hash::MIN_LCS_FOR_COMPARISON
             (for minimum example required for branch coverage)
         2.  They must be different (has_common_substring must return false)
         3.  They must share the alphabets
             (for better branch coverage)
     */
-    assert!(STR1.len() == BlockHash::MIN_LCS_FOR_COMPARISON);
-    assert!(STR2.len() == BlockHash::MIN_LCS_FOR_COMPARISON);
+    assert!(STR1.len() == block_hash::MIN_LCS_FOR_COMPARISON);
+    assert!(STR2.len() == block_hash::MIN_LCS_FOR_COMPARISON);
     assert_ne!(STR1, STR2);
     #[cfg(feature = "std")]
     {
@@ -606,7 +606,7 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
         */
         wrapper(bh_norm, &|value| {
             let len_norm = u8::try_from(bh_norm.len()).unwrap();
-            let expected_score = if bh_norm.len() >= BlockHash::MIN_LCS_FOR_COMPARISON { 100 } else { 0 };
+            let expected_score = if bh_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON { 100 } else { 0 };
             assert_eq!(value.score_strings_raw(bh_norm), expected_score,
                 "failed on bh_norm={:?}", bh_norm);
             assert_eq!(value.score_strings_raw_internal(bh_norm), expected_score,
@@ -662,8 +662,8 @@ where
     T: BlockHashPositionArrayImplMut + BlockHashPositionArrayImplMutInternal
 {
     // Prerequisites
-    assert_eq!(BlockHash::FULL_SIZE, 64);
-    assert_eq!(BlockHash::ALPHABET_SIZE, 64);
+    assert_eq!(block_hash::FULL_SIZE, 64);
+    assert_eq!(block_hash::ALPHABET_SIZE, 64);
     // Not Corrupted
     {
         value.clear();
@@ -692,7 +692,7 @@ where
                 (*value.representation_mut())[i] = target_value;
                 assert!(value.is_valid(),
                     "failed on len={:?}, i={:?}", len, i);
-                assert_eq!(value.is_valid_and_normalized(), (len as usize) <= BlockHash::MAX_SEQUENCE_SIZE,
+                assert_eq!(value.is_valid_and_normalized(), (len as usize) <= block_hash::MAX_SEQUENCE_SIZE,
                     "failed on len={:?}, i={:?}", len, i);
                 (*value.representation_mut())[i] = 0;
                 assert!(!value.is_valid(),
@@ -715,7 +715,7 @@ where
     }
     // Block hash contents (outside the valid hash)
     {
-        for len in 0..=BlockHash::FULL_SIZE {
+        for len in 0..=block_hash::FULL_SIZE {
             value.clear();
             assert!(value.is_valid(),
                 "failed on len={:?}", len);
@@ -748,7 +748,7 @@ where
     }
     // Block hash contents (inside the valid hash)
     {
-        for len in 0..=BlockHash::FULL_SIZE {
+        for len in 0..=block_hash::FULL_SIZE {
             value.clear();
             assert!(value.is_valid(),
                 "failed on len={:?}", len);
@@ -794,7 +794,7 @@ fn data_model_corruption_bhpa() {
 
 #[test]
 fn data_model_corruption_bhpa_mut_ref() {
-    let mut representation = [0; BlockHash::ALPHABET_SIZE];
+    let mut representation = [0; block_hash::ALPHABET_SIZE];
     let mut len = 0;
     let mut pa = BlockHashPositionArrayMutRef(&mut representation, &mut len);
     assert!(pa.is_valid());
@@ -809,7 +809,7 @@ fn has_common_substring_naive(
 ) -> bool
 {
     use std::collections::HashSet;
-    const TARGET_LEN: usize = BlockHash::MIN_LCS_FOR_COMPARISON;
+    const TARGET_LEN: usize = block_hash::MIN_LCS_FOR_COMPARISON;
     let mut set1: HashSet<&[u8]> = HashSet::new();
     let mut set2: HashSet<&[u8]> = HashSet::new();
     for window in str1.windows(TARGET_LEN) {
@@ -825,7 +825,7 @@ fn has_common_substring_naive(
 #[test]
 fn test_has_common_substring_naive() {
     // Prerequisites
-    assert_eq!(BlockHash::MIN_LCS_FOR_COMPARISON, 7);
+    assert_eq!(block_hash::MIN_LCS_FOR_COMPARISON, 7);
     // Basic tests
     assert!(!has_common_substring_naive(b"", b""));
     assert!(!has_common_substring_naive(b"ABCDEF", b"ABCDEF"));
@@ -833,7 +833,7 @@ fn test_has_common_substring_naive() {
     assert!(has_common_substring_naive(b"ABCDEFG", b"ABCDEFG"));
     // Common substring: "ABCDEFG"
     assert!(has_common_substring_naive(b"00000ABCDEFG", b"ABCDEFG11111"));
-    // From an example of BlockHash::MIN_LCS_FOR_COMPARISON.
+    // From an example of block_hash::MIN_LCS_FOR_COMPARISON.
     assert!(has_common_substring_naive(b"+r/kcOpEYXB+0ZJ", b"7ocOpEYXB+0ZF29"));
     // Corrupt an example above (NOT to match).
     assert!(!has_common_substring_naive(b"+r/kcOpEYXX+0ZJ", b"7ocOpEYXB+0ZF29"));

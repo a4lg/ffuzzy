@@ -15,7 +15,7 @@ use crate::generate::{
     Generator, GeneratorError
 };
 use crate::hash::{FuzzyHashData, RawFuzzyHash};
-use crate::hash::block::{BlockSize, BlockHash};
+use crate::hash::block::{block_size, block_hash};
 use crate::test_utils::{cover_auto_clone, cover_default, test_auto_clone, test_recommended_default};
 #[cfg(feature = "alloc")]
 use crate::test_utils::test_auto_debug_for_enum;
@@ -559,10 +559,10 @@ fn block_hash_context_impl_debug() {
 
 macro_rules! test_for_each_generator_finalization {
     ($test: ident) => {
-        { $test!(false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}); }
-        { $test!(false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}); }
-        { $test!(true,  {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}); }
-        { $test!(true,  {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}); }
+        { $test!(false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}); }
+        { $test!(false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}); }
+        { $test!(true,  {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}); }
+        { $test!(true,  {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}); }
     };
 }
 
@@ -615,7 +615,7 @@ fn impl_debug() {
     // block_hash_context_impl_debug above.
     let str_bh_contexts =
         core::iter::repeat(format!("{:?}", BlockHashContext::new()).as_str())
-            .take(BlockSize::NUM_VALID).collect::<alloc::vec::Vec<&str>>().join(", ");
+            .take(block_size::NUM_VALID).collect::<alloc::vec::Vec<&str>>().join(", ");
     // Test the generator
     assert_eq!(
         format!("{:?}", Generator::new()),
@@ -648,7 +648,7 @@ fn empty_data() {
     macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
         type FuzzyHashType = FuzzyHashData<$bh1sz, $bh2sz, false>;
         let hash = generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>().unwrap();
-        assert_eq!(hash.block_size(), BlockSize::MIN,
+        assert_eq!(hash.block_size(), block_size::MIN,
             "failed (1) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
         assert_eq!(hash.block_hash_1_len(), 0,
             "failed (2) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
@@ -715,9 +715,9 @@ fn verify_get_log_block_size_from_input_size() {
         }
         log_block_size
     }
-    for index in 0..BlockSize::NUM_VALID {
+    for index in 0..block_size::NUM_VALID {
         let size = Generator::guessed_preferred_max_input_size_at(index as u8);
-        for start in 0..BlockSize::NUM_VALID {
+        for start in 0..block_size::NUM_VALID {
             assert_eq!(
                 get_log_block_size_from_input_size_naive(size - 2, start),
                 Generator::get_log_block_size_from_input_size(size - 2, start),
@@ -900,13 +900,13 @@ fn large_data_triggers() {
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
         ).unwrap();
         let hash_expected_short_as_long = hash_expected_short.to_long_form();
-        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_long,
+        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_long,
             "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow),
+        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow),
             "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long,
+        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long,
             "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>().unwrap(), hash_expected_short,
+        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>().unwrap(), hash_expected_short,
             "failed on last_method={}", LAST_USED_METHODS[i]);
     }
     // Append 7 bytes pattern 64 times **and** one 0x01.
@@ -1074,10 +1074,10 @@ fn verify_with_small_precomputed_vectors() {
                     fuzzy_expected_trunc: &RawFuzzyHash
                 ) {
                     let mut fuzzy_generated: LongRawFuzzyHash = generator
-                        .finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>()
+                        .finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>()
                         .unwrap();
                     let mut fuzzy_generated_trunc: RawFuzzyHash = generator
-                        .finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>()
+                        .finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>()
                         .unwrap();
                     if (flags & TEST_ELIMSEQ) != 0 {
                         fuzzy_generated.normalize_in_place();
@@ -1109,7 +1109,7 @@ fn verify_with_small_precomputed_vectors() {
             /*
                 Test the generator without truncation.
             */
-            let is_long = fuzzy_expected.block_hash_2().len() > BlockHash::HALF_SIZE;
+            let is_long = fuzzy_expected.block_hash_2().len() > block_hash::HALF_SIZE;
             let mut fuzzy_expected_trunc: RawFuzzyHash = RawFuzzyHash::new();
             match fuzzy_expected.try_into_mut_short(&mut fuzzy_expected_trunc) {
                 Ok(_)  => assert!(!is_long,
@@ -1132,7 +1132,7 @@ fn verify_with_small_precomputed_vectors() {
                         .finalize_without_truncation() // <false, FULL_SIZE, FULL_SIZE>
                         .unwrap();
                     let mut fuzzy_generated_trunc: RawFuzzyHash = match generator
-                        .finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>() {
+                        .finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>() {
                             Ok(h) => {
                                 assert!(!is_long,
                                     "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);

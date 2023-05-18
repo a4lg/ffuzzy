@@ -63,8 +63,7 @@ impl BlockSizeRelation {
 /// Utility related to block size part of the fuzzy hash.
 ///
 /// See also: ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
-#[allow(non_snake_case)]
-pub mod BlockSize {
+pub mod block_size {
     use super::*;
 
     /// The minimum block size of a fuzzy hash.
@@ -179,8 +178,8 @@ pub mod BlockSize {
     /// This is a result of a manual search so that we can have unique index
     /// values for all `(3<<i) for i in 0..31`.  Note that:
     ///
-    /// *   `BlockSize::MIN == 3`
-    /// *   `BlockSize::NUM_VALID == 31`
+    /// *   `block_size::MIN == 3`
+    /// *   `block_size::NUM_VALID == 31`
     const LOG_DEBRUIJN_CONSTANT: u32 = 0x05773e35;
 
     /// The custom table for a variant of de Bruijn sequence to convert
@@ -315,8 +314,7 @@ pub mod BlockSize {
 /// Utility (constants) related to block hash part of the fuzzy hash.
 ///
 /// See also: ["Block Hashes" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-hashes)
-#[allow(non_snake_case)]
-pub mod BlockHash {
+pub mod block_hash {
     /// The number of alphabets used in the block hash part of a fuzzy hash.
     ///
     /// It is same as the number of Base64 alphabets and the block hash part is
@@ -388,39 +386,39 @@ pub struct BlockHashSize<const N: usize> {}
 pub struct BlockHashSizes<const S1: usize, const S2: usize> {}
 
 mod private {
-    use super::{BlockHash, BlockHashSize, BlockHashSizes};
+    use super::{block_hash, BlockHashSize, BlockHashSizes};
 
     /// A trait to constrain block hash size.
     ///
     /// This type is implemented for [`BlockHashSize`] with following sizes:
     ///
-    /// *   [`BlockHash::FULL_SIZE`]
-    /// *   [`BlockHash::HALF_SIZE`]
+    /// *   [`block_hash::FULL_SIZE`]
+    /// *   [`block_hash::HALF_SIZE`]
     ///
     /// This is a sealed trait.
     pub trait SealedBlockHashSize {}
-    impl SealedBlockHashSize for BlockHashSize<{BlockHash::FULL_SIZE}> {}
-    impl SealedBlockHashSize for BlockHashSize<{BlockHash::HALF_SIZE}> {}
+    impl SealedBlockHashSize for BlockHashSize<{block_hash::FULL_SIZE}> {}
+    impl SealedBlockHashSize for BlockHashSize<{block_hash::HALF_SIZE}> {}
 
     /// A trait to constrain block hash sizes.
     ///
     /// This type is implemented for [`BlockHashSizes`] with following sizes:
     ///
-    /// *   [`BlockHash::FULL_SIZE`] and [`BlockHash::FULL_SIZE`]
-    /// *   [`BlockHash::FULL_SIZE`] and [`BlockHash::HALF_SIZE`]
+    /// *   [`block_hash::FULL_SIZE`] and [`block_hash::FULL_SIZE`]
+    /// *   [`block_hash::FULL_SIZE`] and [`block_hash::HALF_SIZE`]
     ///
     /// This is a sealed trait.
     pub trait SealedBlockHashSizes {}
-    impl SealedBlockHashSizes for BlockHashSizes<{BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}> {}
-    impl SealedBlockHashSizes for BlockHashSizes<{BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}> {}
+    impl SealedBlockHashSizes for BlockHashSizes<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}> {}
+    impl SealedBlockHashSizes for BlockHashSizes<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}> {}
 }
 
 /// A trait to constrain block hash size.
 ///
 /// This type is implemented for [`BlockHashSize`] with following sizes:
 ///
-/// *   [`BlockHash::FULL_SIZE`]
-/// *   [`BlockHash::HALF_SIZE`]
+/// *   [`block_hash::FULL_SIZE`]
+/// *   [`block_hash::HALF_SIZE`]
 ///
 /// Note that this trait is intentionally designed to be non-extensible
 /// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
@@ -431,8 +429,8 @@ impl<T> ConstrainedBlockHashSize for T where T: private::SealedBlockHashSize {}
 ///
 /// This type is implemented for [`BlockHashSizes`] with following sizes:
 ///
-/// *   [`BlockHash::FULL_SIZE`] and [`BlockHash::FULL_SIZE`]
-/// *   [`BlockHash::FULL_SIZE`] and [`BlockHash::HALF_SIZE`]
+/// *   [`block_hash::FULL_SIZE`] and [`block_hash::FULL_SIZE`]
+/// *   [`block_hash::FULL_SIZE`] and [`block_hash::HALF_SIZE`]
 ///
 /// Note that this trait is intentionally designed to be non-extensible
 /// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
@@ -451,30 +449,30 @@ mod const_asserts {
 
     // We must restrict alphabet size to number of Base64 alphabets.
     // It minimizes memory usage of FuzzyHashCompareTarget.
-    const_assert_eq!(BlockHash::ALPHABET_SIZE, 64);
+    const_assert_eq!(block_hash::ALPHABET_SIZE, 64);
 
     // FULL_SIZE must be even.
-    const_assert!(BlockHash::FULL_SIZE % 2 == 0);
+    const_assert!(block_hash::FULL_SIZE % 2 == 0);
 
     // Compare with original ssdeep constants
     // fuzzy.h: SPAMSUM_LENGTH
-    const_assert_eq!(BlockHash::FULL_SIZE, 64);
+    const_assert_eq!(block_hash::FULL_SIZE, 64);
     // fuzzy.c: MIN_BLOCKSIZE
-    const_assert_eq!(BlockSize::MIN, 3);
+    const_assert_eq!(block_size::MIN, 3);
     // fuzzy.c: NUM_BLOCKHASHES
-    const_assert_eq!(BlockSize::NUM_VALID, 31);
+    const_assert_eq!(block_size::NUM_VALID, 31);
     // fuzzy.c: (implementation of memcpy_eliminate_sequences)
-    const_assert_eq!(BlockHash::MAX_SEQUENCE_SIZE, 3);
+    const_assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
 
     // NUM_VALID + 1 must be a valid u8 value.
-    const_assert_ne!(BlockSize::NUM_VALID as u8, u8::MAX);
+    const_assert_ne!(block_size::NUM_VALID as u8, u8::MAX);
 
     // MAX_SEQUENCE_SIZE: fits in u32 and safe to add 1 (in either u32 or usize)
-    const_assert!(BlockHash::MAX_SEQUENCE_SIZE < 0xffff_ffff);
-    const_assert_ne!(BlockHash::MAX_SEQUENCE_SIZE, usize::MAX);
+    const_assert!(block_hash::MAX_SEQUENCE_SIZE < 0xffff_ffff);
+    const_assert_ne!(block_hash::MAX_SEQUENCE_SIZE, usize::MAX);
 
-    // BlockSize::NUM_VALID - 1 indicates the largest n so that
-    // (BlockSize::MIN << n) fits in 32-bits.
-    const_assert!((BlockSize::MIN as u64) << (BlockSize::NUM_VALID - 1) <= u32::MAX as u64);
-    const_assert!((BlockSize::MIN as u64) << BlockSize::NUM_VALID > u32::MAX as u64);
+    // block_size::NUM_VALID - 1 indicates the largest n so that
+    // (block_size::MIN << n) fits in 32-bits.
+    const_assert!((block_size::MIN as u64) << (block_size::NUM_VALID - 1) <= u32::MAX as u64);
+    const_assert!((block_size::MIN as u64) << block_size::NUM_VALID > u32::MAX as u64);
 }

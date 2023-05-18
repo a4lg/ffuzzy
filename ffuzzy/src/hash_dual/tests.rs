@@ -8,11 +8,11 @@
 use alloc::format;
 
 use crate::hash::FuzzyHashData;
-use crate::hash::block::BlockSize;
+use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::tests::FuzzyHashStringBytes;
 use crate::hash::test_utils::test_blockhash_contents_all;
-use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, RleEncoding};
+use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, rle_encoding};
 use crate::test_utils::test_for_each_type;
 
 
@@ -87,9 +87,9 @@ fn data_model_init_and_basic() {
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
-            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let block_size = block_size::from_log(log_block_size_raw).unwrap();
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
@@ -175,9 +175,9 @@ fn data_model_init_from_normalized() {
         *   from (normalized)
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
-            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let block_size = block_size::from_log(log_block_size_raw).unwrap();
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
             let bytes_str = core::str::from_utf8(bobj_raw.as_bytes()).unwrap();
             macro_rules! test {
@@ -239,7 +239,7 @@ fn data_model_corresponding_fuzzy_hashes() {
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
@@ -313,7 +313,7 @@ fn data_model_corresponding_fuzzy_hash_strings() {
         *   to_raw_form_string
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
@@ -356,8 +356,8 @@ fn data_model_corruption() {
             *   fmt (Debug)
     */
     // Prerequisites (partial)
-    assert_eq!(RleEncoding::BITS_POSITION, 6);
-    assert_eq!(RleEncoding::MAX_RUN_LENGTH, 4);
+    assert_eq!(rle_encoding::BITS_POSITION, 6);
+    assert_eq!(rle_encoding::MAX_RUN_LENGTH, 4);
     /*
         Note:
         It assumes that is_valid() depends on norm_hash.is_valid().
@@ -407,9 +407,9 @@ fn data_model_corruption() {
         // RLE Block: Non-zero RLE block after termination (block hash 1)
         {
             for index in 1..<$ty>::RLE_BLOCK_SIZE_1 {
-                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
-                    hash.rle_block1[index] = 1 | (length << RleEncoding::BITS_POSITION);
+                    hash.rle_block1[index] = 1 | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (3-1-{}) on type={}, index={:?}, length={:?}", index, length);
                 }
             }
@@ -417,9 +417,9 @@ fn data_model_corruption() {
         // RLE Block: Non-zero RLE block after termination (block hash 2)
         {
             for index in 1..<$ty>::RLE_BLOCK_SIZE_2 {
-                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+                for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
-                    hash.rle_block2[index] = 1 | (length << RleEncoding::BITS_POSITION);
+                    hash.rle_block2[index] = 1 | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (3-2-{}) on type={}, index={:?}, length={:?}", index, length);
                 }
             }
@@ -427,13 +427,13 @@ fn data_model_corruption() {
         // RLE Block: Position exceeds the block hash size (block hash 1)
         {
             let mut hash = hash;
-            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                hash.rle_block1[0] = 6 | (length << RleEncoding::BITS_POSITION);
+            for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block1[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (4-1-1) on type={}, length={:?}", stringify!($ty), length);
             }
-            for index in hash.norm_hash.len_blockhash1..=RleEncoding::MASK_POSITION {
-                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block1[0] = index | (length << RleEncoding::BITS_POSITION);
+            for index in hash.norm_hash.len_blockhash1..=rle_encoding::MASK_POSITION {
+                for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block1[0] = index | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (4-1-2-{}) on type={}, index={:?}, length={:?}", index, length);
                 }
             }
@@ -441,13 +441,13 @@ fn data_model_corruption() {
         // RLE Block: Position exceeds the block hash size (block hash 2)
         {
             let mut hash = hash;
-            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                hash.rle_block2[0] = 6 | (length << RleEncoding::BITS_POSITION);
+            for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
+                hash.rle_block2[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (4-2-1) on type={}, length={:?}", stringify!($ty), length);
             }
-            for index in hash.norm_hash.len_blockhash2..=RleEncoding::MASK_POSITION {
-                for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
-                    hash.rle_block2[0] = index | (length << RleEncoding::BITS_POSITION);
+            for index in hash.norm_hash.len_blockhash2..=rle_encoding::MASK_POSITION {
+                for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
+                    hash.rle_block2[0] = index | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (4-2-2-{}) on type={}, index={:?}, length={:?}", index, length);
                 }
             }
@@ -455,44 +455,44 @@ fn data_model_corruption() {
         // RLE Block: Position is not the tail of identical character sequence (1)
         {
             let mut hash = hash;
-            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+            for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 if length != 0 {
-                    hash.rle_block1[0] = 0 | (length << RleEncoding::BITS_POSITION);
+                    hash.rle_block1[0] = 0 | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (5-1-1-{}) on type={}, length={:?}", length);   // "**B"
                 }
-                hash.rle_block1[0] = 1 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 1 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-1-2-{}) on type={}, length={:?}", length);   // "*BB"
-                hash.rle_block1[0] = 2 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 2 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-1-3) on type={}", stringify!($ty)); // "BBB" (valid)
-                hash.rle_block1[0] = 3 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 3 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-1-4-{}) on type={}, length={:?}", length);   // "BBC"
-                hash.rle_block1[0] = 4 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 4 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-1-5-{}) on type={}, length={:?}", length);   // "BCD"
-                hash.rle_block1[0] = 5 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 5 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-1-6-{}) on type={}, length={:?}", length);   // "CDD"
-                hash.rle_block1[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block1[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-1-7) on type={}", stringify!($ty)); // "DDD" (valid)
             }
         }
         // RLE Block: Position is not the tail of identical character sequence (2)
         {
             let mut hash = hash;
-            for length in 0..RleEncoding::MAX_RUN_LENGTH as u8 {
+            for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 if length != 0 {
-                    hash.rle_block2[0] = 0 | (length << RleEncoding::BITS_POSITION);
+                    hash.rle_block2[0] = 0 | (length << rle_encoding::BITS_POSITION);
                     hash_is_invalid!($ty, hash, "failed (5-2-1-{}) on type={}, length={:?}", length);   // "**E"
                 }
-                hash.rle_block2[0] = 1 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 1 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-2-2-{}) on type={}, length={:?}", length);   // "*EE"
-                hash.rle_block2[0] = 2 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 2 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-2-3) on type={}", stringify!($ty)); // "EEE" (valid)
-                hash.rle_block2[0] = 3 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 3 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-2-4-{}) on type={}, length={:?}", length);   // "EEF"
-                hash.rle_block2[0] = 4 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 4 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-2-5-{}) on type={}, length={:?}", length);   // "EFG"
-                hash.rle_block2[0] = 5 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 5 | (length << rle_encoding::BITS_POSITION);
                 hash_is_invalid!($ty, hash, "failed (5-2-6-{}) on type={}, length={:?}", length);   // "FGG"
-                hash.rle_block2[0] = 6 | (length << RleEncoding::BITS_POSITION);
+                hash.rle_block2[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-2-7) on type={}", stringify!($ty)); // "GGG" (valid)
             }
         }
@@ -625,8 +625,8 @@ fn data_model_corruption() {
 
 #[test]
 fn parse_overflow_examples_long_and_short() {
-    // Block hash 1: BlockHash::FULL_SIZE
-    // Block hash 2: BlockHash::HALF_SIZE + 1 (will overflow on DualFuzzyHash)
+    // Block hash 1: block_hash::FULL_SIZE
+    // Block hash 2: block_hash::HALF_SIZE + 1 (will overflow on DualFuzzyHash)
     const HASH_STR_1: &str = "3\
         :0123456789012345678901234567890123456789012345678901234567890123\
         :012345678901234567890123456789012";
@@ -635,8 +635,8 @@ fn parse_overflow_examples_long_and_short() {
         Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, 2 + 64 + 1 + 32))
     );
     assert!(str::parse::<LongDualFuzzyHash>(HASH_STR_1).is_ok());
-    // Block hash 1: BlockHash::FULL_SIZE
-    // Block hash 2: BlockHash::FULL_SIZE + 1 (will also overflow on LongDualFuzzyHash)
+    // Block hash 1: block_hash::FULL_SIZE
+    // Block hash 2: block_hash::FULL_SIZE + 1 (will also overflow on LongDualFuzzyHash)
     const HASH_STR_2: &str = "3\
         :0123456789012345678901234567890123456789012345678901234567890123\
         :01234567890123456789012345678901234567890123456789012345678901234";
@@ -769,7 +769,7 @@ fn ord_and_sorting() {
                 for bh2 in &sorted_dict {
                     for &bh1_entry in bh1 {
                         for &bh2_entry in bh2 {
-                            let mut s = BlockSize::from_log_internal(log_block_size_raw).to_string();
+                            let mut s = block_size::from_log_internal(log_block_size_raw).to_string();
                             s += ":";
                             s += bh1_entry;
                             s += ":";
@@ -962,7 +962,7 @@ fn impl_debug() {
     let mut hash: DualFuzzyHash = str::parse("3\
         :AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
         :BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").unwrap();
-    hash.rle_block1[15] = RleEncoding::encode(2, 4);
+    hash.rle_block1[15] = rle_encoding::encode(2, 4);
     assert_eq!(
         format!("{:?}", hash),
         "FuzzyHashDualData { \

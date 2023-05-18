@@ -11,7 +11,7 @@ use crate::generate::fnv_table::FNV_TABLE;
 use crate::generate::fnv_table::FNV_HASH_PRIME;
 use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{
-    BlockSize, BlockHash,
+    block_size, block_hash,
     BlockHashSize, ConstrainedBlockHashSize,
     BlockHashSizes, ConstrainedBlockHashSizes
 };
@@ -47,10 +47,10 @@ impl PartialFNVHash {
         cfg_if::cfg_if! {
             if #[cfg(not(feature = "opt-reduce-fnv-table"))] {
                 optionally_unsafe! {
-                    invariant!((self.value() as usize) < BlockHash::ALPHABET_SIZE);
+                    invariant!((self.value() as usize) < block_hash::ALPHABET_SIZE);
                     self.0 = FNV_TABLE
                         [self.value() as usize] // grcov-excl-br-line:ARRAY
-                        [(ch & (BlockHash::ALPHABET_SIZE as u8).wrapping_sub(1)) as usize]; // grcov-excl-br-line:ARRAY
+                        [(ch & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)) as usize]; // grcov-excl-br-line:ARRAY
                 }
             }
             else {
@@ -85,12 +85,12 @@ impl PartialFNVHash {
         cfg_if::cfg_if! {
             if #[cfg(not(feature = "opt-reduce-fnv-table"))] {
                 optionally_unsafe! {
-                    invariant!(self.0 < (BlockHash::ALPHABET_SIZE as u8));
+                    invariant!(self.0 < (block_hash::ALPHABET_SIZE as u8));
                 }
                 self.0
             }
             else {
-                self.0 & (BlockHash::ALPHABET_SIZE as u8).wrapping_sub(1)
+                self.0 & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)
             }
         }
     }
@@ -243,7 +243,7 @@ struct BlockHashContext {
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
     /// Block hash contents.
-    blockhash: [u8; BlockHash::FULL_SIZE],
+    blockhash: [u8; block_hash::FULL_SIZE],
     /// The last block hash character used when truncating.
     blockhash_ch_half: u8,
     /// Block hash updater (a FNV-1 hasher) for full block hash.
@@ -259,7 +259,7 @@ impl BlockHashContext {
     pub fn new() -> Self {
         BlockHashContext {
             blockhash_index: 0,
-            blockhash: [BLOCKHASH_CHAR_NIL; BlockHash::FULL_SIZE],
+            blockhash: [BLOCKHASH_CHAR_NIL; block_hash::FULL_SIZE],
             blockhash_ch_half: BLOCKHASH_CHAR_NIL,
             h_full: PartialFNVHash::new(),
             h_half: PartialFNVHash::new()
@@ -273,7 +273,7 @@ impl BlockHashContext {
     pub fn reset(&mut self) {
         self.blockhash_index = 0;
         // partial initialization of the block hash buffer
-        self.blockhash[BlockHash::FULL_SIZE - 1] = BLOCKHASH_CHAR_NIL;
+        self.blockhash[block_hash::FULL_SIZE - 1] = BLOCKHASH_CHAR_NIL;
         self.blockhash_ch_half = BLOCKHASH_CHAR_NIL;
         self.h_full = PartialFNVHash::new();
         self.h_half = PartialFNVHash::new();
@@ -410,7 +410,7 @@ pub struct Generator {
     roll_hash: RollingHash,
 
     /// Block hash contexts per block size.
-    bh_context: [BlockHashContext; BlockSize::NUM_VALID],
+    bh_context: [BlockHashContext; block_size::NUM_VALID],
 
     /// Effectively a [`BlockHashContext::h_full`] but for the block size
     /// larger than the biggest valid block size.
@@ -444,7 +444,7 @@ pub enum GeneratorError {
     ///     (because of those conditions, it only occurs on a raw
     ///     [`Generator::finalize_raw()`] call) and
     /// 3.  The resulting block hash 2 is longer than that of the
-    ///     short form limit ([`BlockHash::HALF_SIZE`]).
+    ///     short form limit ([`block_hash::HALF_SIZE`]).
     OutputOverflow,
 }
 
@@ -478,9 +478,9 @@ impl Generator {
     /// If the total input size exceeds this border, the double block size
     /// (*base-2 logarithm* form: `log_block_size + 1`) is preferred for
     /// the final block size (if the block hash for double block size has
-    /// enough length: `BlockHash::HALF_SIZE`).
+    /// enough length: `block_hash::HALF_SIZE`).
     const fn guessed_preferred_max_input_size_at(log_block_size: u8) -> u64 {
-        BlockSize::from_log_internal(log_block_size) as u64 * BlockHash::FULL_SIZE as u64
+        block_size::from_log_internal(log_block_size) as u64 * block_hash::FULL_SIZE as u64
     }
 
     /// The maximum input size (inclusive).
@@ -490,7 +490,7 @@ impl Generator {
     /// This is a *hard* limit.  Feeding data larger than this constant size is
     /// an invalid operation.
     pub const MAX_INPUT_SIZE: u64 =
-        Self::guessed_preferred_max_input_size_at(BlockSize::NUM_VALID as u8 - 1);
+        Self::guessed_preferred_max_input_size_at(block_size::NUM_VALID as u8 - 1);
 
     /// The recommended minimum input size (inclusive).
     ///
@@ -507,10 +507,10 @@ impl Generator {
             elim_border: Self::guessed_preferred_max_input_size_at(0),
             bhidx_start: 0,
             bhidx_end:   1,
-            bhidx_end_limit: BlockSize::NUM_VALID - 1,
+            bhidx_end_limit: block_size::NUM_VALID - 1,
             roll_mask: 0,
             roll_hash: RollingHash::new(),
-            bh_context: [BlockHashContext::new(); BlockSize::NUM_VALID],
+            bh_context: [BlockHashContext::new(); block_size::NUM_VALID],
             h_last:  PartialFNVHash::new(),
             is_last: false
         }
@@ -526,11 +526,11 @@ impl Generator {
         self.elim_border = Self::guessed_preferred_max_input_size_at(0);
         self.bhidx_start = 0;
         self.bhidx_end   = 1;
-        self.bhidx_end_limit = BlockSize::NUM_VALID - 1;
+        self.bhidx_end_limit = block_size::NUM_VALID - 1;
         self.roll_mask = 0;
         self.roll_hash = RollingHash::new();
         self.bh_context[0].reset();
-        // skip bh_context[1..BlockSize::NUM_VALID] initialization
+        // skip bh_context[1..block_size::NUM_VALID] initialization
         // skip h_last initialization
         self.is_last = false;
     }
@@ -599,7 +599,7 @@ impl Generator {
         }
         self.fixed_size = Some(size);
         self.bhidx_end_limit = usize::min(
-            BlockSize::NUM_VALID - 1,
+            block_size::NUM_VALID - 1,
             Self::get_log_block_size_from_input_size(size, 0) + 1
         );
         Ok(())
@@ -713,14 +713,14 @@ macro_rules! generator_update_template {
                 });
 
                 let h_org = $self.roll_hash.value().wrapping_add(1);
-                let mut h = h_org / BlockSize::MIN;
+                let mut h = h_org / block_size::MIN;
                 if unlikely(h_org == 0) {
                     continue;
                 }
                 if likely(h & $self.roll_mask != 0) {
                     continue;
                 }
-                if h_org % BlockSize::MIN != 0 {
+                if h_org % block_size::MIN != 0 {
                     continue;
                 }
                 h >>= $self.bhidx_start;
@@ -792,7 +792,7 @@ macro_rules! generator_update_template {
                             // to the largest index, enable "last" FNV hash updates.
                             // It will be used for block hash 2 if the final block size
                             // is the maximum valid one.
-                            if $self.bhidx_end_limit == BlockSize::NUM_VALID - 1 && !$self.is_last {
+                            if $self.bhidx_end_limit == block_size::NUM_VALID - 1 && !$self.is_last {
                                 $self.h_last = bh_curr!().h_full; // grcov-excl-br-line:ARRAY
                                 $self.is_last = true;
                             }
@@ -822,20 +822,20 @@ macro_rules! generator_update_template {
                     macro_rules! bh_curr_reused {() => { *_bh }}
 
                     bh_curr_reuse_init!(); // grcov-excl-br-line:ARRAY
-                    invariant!(bh_curr_reused!().blockhash_index < BlockHash::FULL_SIZE);
+                    invariant!(bh_curr_reused!().blockhash_index < block_hash::FULL_SIZE);
                     bh_curr_reused!().blockhash[bh_curr_reused!().blockhash_index] = bh_curr_reused!().h_full.value(); // grcov-excl-br-line:ARRAY
                     bh_curr_reused!().blockhash_ch_half = bh_curr_reused!().h_half.value();
-                    if bh_curr_reused!().blockhash_index < BlockHash::FULL_SIZE - 1 {
+                    if bh_curr_reused!().blockhash_index < block_hash::FULL_SIZE - 1 {
                         bh_curr_reused!().blockhash_index += 1;
                         bh_curr_reused!().h_full = PartialFNVHash::new();
-                        if bh_curr_reused!().blockhash_index < BlockHash::HALF_SIZE {
+                        if bh_curr_reused!().blockhash_index < block_hash::HALF_SIZE {
                             bh_curr_reused!().blockhash_ch_half = BLOCKHASH_CHAR_NIL;
                             bh_curr_reused!().h_half = PartialFNVHash::new();
                         }
                     }
                     else if $self.bhidx_end - $self.bhidx_start >= 2
                         && $self.elim_border < $self.fixed_size.unwrap_or($self.input_size)
-                        && bh_next!().blockhash_index >= BlockHash::HALF_SIZE // grcov-excl-br-line:ARRAY
+                        && bh_next!().blockhash_index >= block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
                     {
                         // (Block hash elimination)
                         // Current block hash context will be never used on the final fuzzy hash.
@@ -903,7 +903,7 @@ impl Generator {
     /// In other words, it tries to find a block hash until:
     ///
     /// 1.  It find a block size so that corresponding block hash is already
-    ///     at least [`BlockHash::HALF_SIZE`] chars in length
+    ///     at least [`block_hash::HALF_SIZE`] chars in length
     ///     (one character may be appended on the finalization process) or
     /// 2.  It reaches the lower bound ([`bhidx_start`](Self::bhidx_start)).
     ///
@@ -921,7 +921,7 @@ impl Generator {
             invariant!(log_block_size < self.bh_context.len());
         }
         while log_block_size > self.bhidx_start
-            && self.bh_context[log_block_size].blockhash_index < BlockHash::HALF_SIZE // grcov-excl-br-line:ARRAY
+            && self.bh_context[log_block_size].blockhash_index < block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
         {
             log_block_size -= 1;
             optionally_unsafe! {
@@ -968,7 +968,7 @@ impl Generator {
         let bh_0 = &self.bh_context[log_block_size]; // grcov-excl-br-line:ARRAY
         {
             let mut sz = bh_0.blockhash_index;
-            if bh_0.blockhash[BlockHash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
+            if bh_0.blockhash[block_hash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
                 sz += 1;
             }
             optionally_unsafe! {
@@ -978,12 +978,12 @@ impl Generator {
             fuzzy.blockhash1[0..sz].clone_from_slice(&bh_0.blockhash[0..sz]); // grcov-excl-br-line:ARRAY
             fuzzy.len_blockhash1 = sz as u8;
             if roll_value != 0 {
-                if sz == BlockHash::FULL_SIZE {
-                    fuzzy.blockhash1[BlockHash::FULL_SIZE - 1] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
+                if sz == block_hash::FULL_SIZE {
+                    fuzzy.blockhash1[block_hash::FULL_SIZE - 1] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
                 }
                 else {
                     optionally_unsafe! {
-                        invariant!(sz < BlockHash::FULL_SIZE);
+                        invariant!(sz < block_hash::FULL_SIZE);
                     }
                     fuzzy.blockhash1[sz] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
                     fuzzy.len_blockhash1 += 1;
@@ -1000,8 +1000,8 @@ impl Generator {
             if TRUNC {
                 let mut sz = bh_1.blockhash_index;
                 if bh_1.blockhash_ch_half != BLOCKHASH_CHAR_NIL {
-                    debug_assert!(sz >= BlockHash::HALF_SIZE); // invariant
-                    sz = BlockHash::HALF_SIZE;
+                    debug_assert!(sz >= block_hash::HALF_SIZE); // invariant
+                    sz = block_hash::HALF_SIZE;
                     fuzzy.blockhash2[0..(sz - 1)].clone_from_slice(&bh_1.blockhash[0..(sz - 1)]); // grcov-excl-br-line:ARRAY
                     fuzzy.blockhash2[sz - 1] = if roll_value != 0 { bh_1.h_half.value() } else { bh_1.blockhash_ch_half }; // grcov-excl-br-line:ARRAY
                 }
@@ -1023,7 +1023,7 @@ impl Generator {
             }
             else {
                 let mut sz = bh_1.blockhash_index;
-                if bh_1.blockhash[BlockHash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
+                if bh_1.blockhash[block_hash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
                     sz += 1;
                 }
                 #[allow(clippy::collapsible_if)]
@@ -1059,12 +1059,12 @@ impl Generator {
                         fuzzy.len_blockhash2 += 1;
                     }
                     else {
-                        if sz == BlockHash::FULL_SIZE {
-                            fuzzy.blockhash2[BlockHash::FULL_SIZE - 1] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
+                        if sz == block_hash::FULL_SIZE {
+                            fuzzy.blockhash2[block_hash::FULL_SIZE - 1] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                         }
                         else {
                             optionally_unsafe! {
-                                invariant!(sz < BlockHash::FULL_SIZE);
+                                invariant!(sz < block_hash::FULL_SIZE);
                             }
                             fuzzy.blockhash2[sz] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                             fuzzy.len_blockhash2 += 1;
@@ -1074,7 +1074,7 @@ impl Generator {
             }
         }
         else if roll_value != 0 {
-            debug_assert!(log_block_size == 0 || log_block_size == BlockSize::NUM_VALID - 1);
+            debug_assert!(log_block_size == 0 || log_block_size == block_size::NUM_VALID - 1);
             if log_block_size == 0 {
                 // No pieces are matched but at least one byte is processed.
                 fuzzy.blockhash2[0] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
@@ -1106,7 +1106,7 @@ impl Generator {
     /// without non-default flags.
     #[inline]
     pub fn finalize(&self) -> Result<RawFuzzyHash, GeneratorError> {
-        self.finalize_raw::<true, {BlockHash::FULL_SIZE}, {BlockHash::HALF_SIZE}>()
+        self.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>()
     }
 
     /// Retrieves the resulting fuzzy hash, *not* truncating the second block hash.
@@ -1117,7 +1117,7 @@ impl Generator {
     /// `fuzzy_digest` function.
     #[inline]
     pub fn finalize_without_truncation(&self) -> Result<LongRawFuzzyHash, GeneratorError> {
-        self.finalize_raw::<false, {BlockHash::FULL_SIZE}, {BlockHash::FULL_SIZE}>()
+        self.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>()
     }
 }
 
@@ -1146,12 +1146,12 @@ mod const_asserts {
     const_assert_eq!(Generator::MIN_RECOMMENDED_INPUT_SIZE - 1, 4096);
 
     // Compare with generated table
-    const_assert_eq!(BlockHash::ALPHABET_SIZE, crate::generate::fnv_table::_ALPHABET_SIZE);
+    const_assert_eq!(block_hash::ALPHABET_SIZE, crate::generate::fnv_table::_ALPHABET_SIZE);
 
     // ALPHABET_SIZE and FNV_HASH_INIT properties (for PartialFNVHash)
-    const_assert!(0 < BlockHash::ALPHABET_SIZE && BlockHash::ALPHABET_SIZE <= 256);
-    const_assert!(BlockHash::ALPHABET_SIZE.is_power_of_two());
-    const_assert!((FNV_HASH_INIT as u16) < (BlockHash::ALPHABET_SIZE as u16));
+    const_assert!(0 < block_hash::ALPHABET_SIZE && block_hash::ALPHABET_SIZE <= 256);
+    const_assert!(block_hash::ALPHABET_SIZE.is_power_of_two());
+    const_assert!((FNV_HASH_INIT as u16) < (block_hash::ALPHABET_SIZE as u16));
 
     // Consistency between module-local and struct-global one.
     const_assert_eq!(ROLLING_WINDOW, RollingHash::WINDOW_SIZE);
@@ -1171,7 +1171,7 @@ mod const_asserts {
     // grcov-excl-br-end
 
     // BLOCKHASH_CHAR_NIL must be outside any valid characters.
-    const_assert!(BlockHash::ALPHABET_SIZE <= BLOCKHASH_CHAR_NIL as usize);
+    const_assert!(block_hash::ALPHABET_SIZE <= BLOCKHASH_CHAR_NIL as usize);
 
     // Compare with a precomputed value.
     const_assert_eq!(Generator::MAX_INPUT_SIZE, 192u64 * 1024 * 1024 * 1024);
@@ -1182,5 +1182,5 @@ mod const_asserts {
     // Because we use rolling hash value + 1 to determine piece splitting
     // (unlike the original implementation) for faster processing, we have to
     // (additionally) take care of an arithmetic overflow.
-    const_assert_ne!(u32::MAX % BlockSize::MIN, BlockSize::MIN - 1);
+    const_assert_ne!(u32::MAX % block_size::MIN, block_size::MIN - 1);
 }

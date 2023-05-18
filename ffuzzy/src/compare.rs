@@ -4,7 +4,8 @@
 
 use crate::hash::FuzzyHashData;
 use crate::hash::block::{
-    BlockSize, BlockSizeRelation, BlockHash,
+    block_size, block_hash,
+    BlockSizeRelation,
     BlockHashSize, ConstrainedBlockHashSize,
     BlockHashSizes, ConstrainedBlockHashSizes
 };
@@ -78,7 +79,7 @@ pub struct FuzzyHashCompareTarget {
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
     /// 3.  [`block_hash_1()`](Self::block_hash_1())
-    blockhash1: [u64; BlockHash::ALPHABET_SIZE],
+    blockhash1: [u64; block_hash::ALPHABET_SIZE],
 
     /// The position array representation of block hash 2.
     ///
@@ -86,14 +87,14 @@ pub struct FuzzyHashCompareTarget {
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
     /// 3.  [`block_hash_2()`](Self::block_hash_2())
-    blockhash2: [u64; BlockHash::ALPHABET_SIZE],
+    blockhash2: [u64; block_hash::ALPHABET_SIZE],
 
-    /// Length of the block hash 1 (up to [`BlockHash::FULL_SIZE`]).
+    /// Length of the block hash 1 (up to [`block_hash::FULL_SIZE`]).
     ///
     /// See also: [`block_hash_1()`](Self::block_hash_1())
     len_blockhash1: u8,
 
-    /// Length of the block hash 2 (up to [`BlockHash::FULL_SIZE`]).
+    /// Length of the block hash 2 (up to [`block_hash::FULL_SIZE`]).
     ///
     /// See also: [`block_hash_2()`](Self::block_hash_2())
     len_blockhash2: u8,
@@ -143,19 +144,19 @@ impl FuzzyHashCompareTarget {
     /// The minimum length of the common substring to compute edit distance
     /// between two block hashes.
     ///
-    /// Use [`BlockHash::MIN_LCS_FOR_COMPARISON`] instead.
+    /// Use [`block_hash::MIN_LCS_FOR_COMPARISON`] instead.
     ///
     /// # Incompatibility Notice
     ///
     /// This constant will be removed on the version 0.3.0.
     #[deprecated]
-    pub const MIN_LCS_FOR_BLOCKHASH: usize = BlockHash::MIN_LCS_FOR_COMPARISON;
+    pub const MIN_LCS_FOR_BLOCKHASH: usize = block_hash::MIN_LCS_FOR_COMPARISON;
 
     /// The lower bound (inclusive) of the *base-2 logarithm* form of
     /// the block size in which the score capping is no longer required.
     ///
     /// If `log_block_size` is equal to or larger than this value and `len1` and
-    /// `len2` are at least [`BlockHash::MIN_LCS_FOR_COMPARISON`] in size,
+    /// `len2` are at least [`block_hash::MIN_LCS_FOR_COMPARISON`] in size,
     /// [`Self::score_cap_on_block_hash_comparison`]`(log_block_size, len1, len2)`
     /// is guaranteed to be `100` or greater.
     ///
@@ -181,7 +182,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// This is expressed as `(1 << log_block_size) * MIN_LCS_FOR_COMPARISON`
     /// because both block hashes must at least as long as
-    /// [`BlockHash::MIN_LCS_FOR_COMPARISON`] to perform edit distance-based
+    /// [`block_hash::MIN_LCS_FOR_COMPARISON`] to perform edit distance-based
     /// scoring.
     ///
     /// ## Computing the Constant
@@ -193,7 +194,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// This leads to the expression to define this constant.
     pub const LOG_BLOCK_SIZE_CAPPING_BORDER: u8 =
-        ((100 + BlockHash::MIN_LCS_FOR_COMPARISON as u64 - 1) / BlockHash::MIN_LCS_FOR_COMPARISON as u64)
+        ((100 + block_hash::MIN_LCS_FOR_COMPARISON as u64 - 1) / block_hash::MIN_LCS_FOR_COMPARISON as u64)
         .next_power_of_two().trailing_zeros() as u8;
 
     /// Creates a new [`FuzzyHashCompareTarget`] object with empty contents.
@@ -202,8 +203,8 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn new() -> Self {
         FuzzyHashCompareTarget {
-            blockhash1: [0u64; BlockHash::ALPHABET_SIZE],
-            blockhash2: [0u64; BlockHash::ALPHABET_SIZE],
+            blockhash1: [0u64; block_hash::ALPHABET_SIZE],
+            blockhash2: [0u64; block_hash::ALPHABET_SIZE],
             len_blockhash1: 0,
             len_blockhash2: 0,
             log_blocksize: 0,
@@ -219,7 +220,7 @@ impl FuzzyHashCompareTarget {
     /// The block size of the comparison target.
     #[inline]
     pub fn block_size(&self) -> u32 {
-        BlockSize::from_log_internal(self.log_blocksize)
+        block_size::from_log_internal(self.log_blocksize)
     }
 
     /// Position array-based representation of the block hash 1.
@@ -474,7 +475,7 @@ impl FuzzyHashCompareTarget {
         let hash = hash.as_ref();
         debug_assert!((hash.len_blockhash1 as usize) <= S1);
         debug_assert!((hash.len_blockhash2 as usize) <= S2);
-        debug_assert!(BlockSize::is_log_valid(hash.log_blocksize));
+        debug_assert!(block_size::is_log_valid(hash.log_blocksize));
         self.len_blockhash1 = hash.len_blockhash1;
         self.len_blockhash2 = hash.len_blockhash2;
         self.log_blocksize = hash.log_blocksize;
@@ -618,7 +619,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// Because of its purpose, this method is not designed to be fast.
     pub fn is_valid(&self) -> bool {
-        BlockSize::is_log_valid(self.log_blocksize)
+        block_size::is_log_valid(self.log_blocksize)
             && self.block_hash_1_internal().is_valid_and_normalized()
             && self.block_hash_2_internal().is_valid_and_normalized()
     }
@@ -636,7 +637,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(!self.is_equiv(other));
-        debug_assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         u32::max(
             self.block_hash_1_internal().score_strings_internal(
                 other.block_hash_1(),
@@ -703,7 +704,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         assert!(!self.is_equiv(other));
-        assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         self.compare_unequal_near_eq_internal(other)
     }
 
@@ -719,7 +720,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         if self.is_equiv_except_block_size(other) { return 100; }
         self.compare_unequal_near_eq_internal(other)
     }
@@ -766,7 +767,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         self.compare_near_eq_internal(other)
     }
 
@@ -782,7 +783,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_lt(self.log_blocksize, other.log_blocksize));
         self.block_hash_2_internal().score_strings_internal(
             other.block_hash_1(),
             other.log_blocksize
@@ -830,7 +831,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_lt(self.log_blocksize, other.log_blocksize));
         self.compare_unequal_near_lt_internal(other)
     }
 
@@ -846,7 +847,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_gt(self.log_blocksize, other.log_blocksize));
         self.block_hash_1_internal().score_strings_internal(
             other.block_hash_2(),
             self.log_blocksize
@@ -894,7 +895,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_gt(self.log_blocksize, other.log_blocksize));
         self.compare_unequal_near_gt_internal(other)
     }
 
@@ -911,7 +912,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(!self.is_equiv(other));
-        match BlockSize::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
             BlockSizeRelation::Far => 0,
             BlockSizeRelation::NearEq => self.compare_unequal_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.compare_unequal_near_lt_internal(other),
@@ -984,7 +985,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        match BlockSize::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
             BlockSizeRelation::Far => 0,
             BlockSizeRelation::NearEq => self.compare_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.compare_unequal_near_lt_internal(other),
@@ -1004,7 +1005,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         self.block_hash_1_internal().has_common_substring_internal(other.block_hash_1()) ||
         self.block_hash_2_internal().has_common_substring_internal(other.block_hash_2())
     }
@@ -1057,7 +1058,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_eq(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
         self.is_comparison_candidate_near_eq_internal(other)
     }
 
@@ -1073,7 +1074,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_lt(self.log_blocksize, other.log_blocksize));
         self.block_hash_2_internal().has_common_substring_internal(other.block_hash_1())
     }
 
@@ -1125,7 +1126,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_lt(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_lt(self.log_blocksize, other.log_blocksize));
         self.is_comparison_candidate_near_lt_internal(other)
     }
 
@@ -1141,7 +1142,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        debug_assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        debug_assert!(block_size::is_near_gt(self.log_blocksize, other.log_blocksize));
         self.block_hash_1_internal().has_common_substring_internal(other.block_hash_2())
     }
 
@@ -1193,7 +1194,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        assert!(BlockSize::is_near_gt(self.log_blocksize, other.log_blocksize));
+        assert!(block_size::is_near_gt(self.log_blocksize, other.log_blocksize));
         self.is_comparison_candidate_near_gt_internal(other)
     }
 
@@ -1227,7 +1228,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        match BlockSize::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
             BlockSizeRelation::Far => false,
             BlockSizeRelation::NearEq => self.is_comparison_candidate_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.is_comparison_candidate_near_lt_internal(other),
@@ -1344,17 +1345,17 @@ mod const_asserts {
     const fn is_log_block_size_needs_no_capping(log_block_size: u8) -> bool {
         // Test whether score_cap in score_strings method is equal to
         // or greater than 100 (meaning, no capping is required).
-        (100 + BlockHash::MIN_LCS_FOR_COMPARISON as u64 - 1) /
-            BlockHash::MIN_LCS_FOR_COMPARISON as u64
-                <= BlockSize::from_log_internal(log_block_size) as u64 / BlockSize::MIN as u64
+        (100 + block_hash::MIN_LCS_FOR_COMPARISON as u64 - 1) /
+            block_hash::MIN_LCS_FOR_COMPARISON as u64
+                <= block_size::from_log_internal(log_block_size) as u64 / block_size::MIN as u64
     }
 
     // Compare with the precomputed value
-    // (block_size / BlockSize::MIN >= 15, log_block_size >= 4 [2^log_block_size >= 16])
+    // (block_size / block_size::MIN >= 15, log_block_size >= 4 [2^log_block_size >= 16])
     const_assert_eq!(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER, 4);
 
     // Regular tests.
-    const_assert!(BlockSize::is_log_valid(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
+    const_assert!(block_size::is_log_valid(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     const_assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
     const_assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
 

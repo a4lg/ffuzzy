@@ -35,14 +35,14 @@
                 (*_bh).h_half.update_by_byte(ch);
             }
             let h_org = self.roll_hash.value().wrapping_add(1);
-            let mut h = h_org / BlockSize::MIN;
+            let mut h = h_org / block_size::MIN;
             if unlikely(h_org == 0) {
                 continue;
             }
             if likely(h & self.roll_mask != 0) {
                 continue;
             }
-            if h_org % BlockSize::MIN != 0 {
+            if h_org % block_size::MIN != 0 {
                 continue;
             }
             h >>= self.bhidx_start;
@@ -57,7 +57,7 @@
                         // to the largest index, enable "last" FNV hash updates.
                         // It will be used for block hash 2 if the final block size
                         // is the maximum valid one.
-                        if self.bhidx_end_limit == BlockSize::NUM_VALID - 1 && !self.is_last {
+                        if self.bhidx_end_limit == block_size::NUM_VALID - 1 && !self.is_last {
                             self.h_last = self.bh_context[_i].h_full; // grcov-excl-br-line:ARRAY
                             self.is_last = true;
                         }
@@ -73,10 +73,10 @@
                 _bh = &mut self.bh_context[_i]; // grcov-excl-br-line:ARRAY
                 _bh.blockhash[_bh.blockhash_index] = _bh.h_full.value(); // grcov-excl-br-line:ARRAY
                 _bh.blockhash_ch_half = _bh.h_half.value();
-                if _bh.blockhash_index < BlockHash::FULL_SIZE - 1 {
+                if _bh.blockhash_index < block_hash::FULL_SIZE - 1 {
                     _bh.blockhash_index += 1;
                     _bh.h_full = PartialFNVHash::new();
-                    if _bh.blockhash_index < BlockHash::HALF_SIZE {
+                    if _bh.blockhash_index < block_hash::HALF_SIZE {
                         _bh.blockhash_ch_half = BLOCKHASH_CHAR_NIL;
                         _bh.h_half = PartialFNVHash::new();
                     }
@@ -87,7 +87,7 @@
                     {
                         if self.elim_border < self.fixed_size.unwrap_or(self.input_size) {
                             let idx = self.bh_context[_i + 1].blockhash_index; // grcov-excl-br-line:ARRAY
-                            if idx >= BlockHash::HALF_SIZE {
+                            if idx >= block_hash::HALF_SIZE {
                                 // (Block hash elimination)
                                 // Current block hash context will be never used on the final fuzzy hash.
                                 // Advance bhidx_start and prepare for the next block hash elimination.

@@ -18,9 +18,7 @@ use crate::hash::{
     FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash,
     FuzzyHashOperationError
 };
-use crate::hash::block::{
-    BlockSize, BlockHash
-};
+use crate::hash::block::{block_size, block_hash};
 use crate::hash::parser_state::{
     ParseError, ParseErrorKind, ParseErrorOrigin
 };
@@ -56,8 +54,8 @@ fn fuzzy_hash_operation_error_impls() {
 
 macro_rules! test_for_each_block_hash_sizes {
     ($test: ident) => {
-        loop { $test!(BlockHash::FULL_SIZE, BlockHash::FULL_SIZE); break; }
-        loop { $test!(BlockHash::FULL_SIZE, BlockHash::HALF_SIZE); break; }
+        loop { $test!(block_hash::FULL_SIZE, block_hash::FULL_SIZE); break; }
+        loop { $test!(block_hash::FULL_SIZE, block_hash::HALF_SIZE); break; }
     };
 }
 
@@ -65,7 +63,7 @@ macro_rules! test_for_each_block_hash_sizes {
 #[test]
 fn data_model_new() {
     // Prerequisites
-    assert_eq!(BlockSize::MIN, 3);
+    assert_eq!(block_size::MIN, 3);
     // Test constructs
     macro_rules! test {
         ($ty: ty) => {
@@ -122,10 +120,10 @@ fn data_model_init_and_basic() {
             *   clone
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
             let log_block_size_raw = log_block_size as u8;
-            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let block_size = block_size::from_log(log_block_size_raw).unwrap();
             macro_rules! test {
                 ($bh1sz: expr, $bh2sz: expr) => {
                     type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
@@ -260,14 +258,14 @@ fn make_fuzzy_hash_bytes(
 ) -> usize
 {
     use crate::hash::algorithms::insert_block_hash_into_bytes;
-    let mut bh1_raw = [0u8; BlockHash::FULL_SIZE];
-    let mut bh2_raw = [0u8; BlockHash::FULL_SIZE];
+    let mut bh1_raw = [0u8; block_hash::FULL_SIZE];
+    let mut bh2_raw = [0u8; block_hash::FULL_SIZE];
     bh1_raw[..block_hash_1.len()].copy_from_slice(block_hash_1);
     bh2_raw[..block_hash_2.len()].copy_from_slice(block_hash_2);
     let bh1_len = u8::try_from(block_hash_1.len()).unwrap();
     let bh2_len = u8::try_from(block_hash_2.len()).unwrap();
     let mut p = 0;
-    let bs_str = BlockSize::BLOCK_SIZES_STR[log_block_size as usize].as_bytes();
+    let bs_str = block_size::BLOCK_SIZES_STR[log_block_size as usize].as_bytes();
     out.fill(0);
     out[p..p+bs_str.len()].copy_from_slice(bs_str);
     p += bs_str.len();
@@ -302,9 +300,9 @@ impl FuzzyHashStringBytes {
 #[test]
 fn make_fuzzy_hash_bytes_examples() {
     // Prerequisites
-    assert_eq!(BlockSize::MIN, 3);
-    assert!(BlockSize::NUM_VALID >= 12);
-    assert!(BlockHash::MAX_SEQUENCE_SIZE < 8);
+    assert_eq!(block_size::MIN, 3);
+    assert!(block_size::NUM_VALID >= 12);
+    assert!(block_hash::MAX_SEQUENCE_SIZE < 8);
     // Simple examples.
     assert_eq!(
         FuzzyHashStringBytes::new(0, &[], &[]).as_bytes(),
@@ -360,9 +358,9 @@ fn data_model_block_hash_contents_basic() {
     // Test block hash contents.
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
-            let block_size = BlockSize::from_log(log_block_size_raw).unwrap();
+            let block_size = block_size::from_log(log_block_size_raw).unwrap();
             // Make input bytes
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
@@ -470,7 +468,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
             *   try_into_mut_short
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             // Make input bytes
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
@@ -624,7 +622,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 // `try_from`
                 let result_hash_s_r = RawFuzzyHash::try_from(hash_l_r);
                 if result_hash_s_r == Err(FuzzyHashOperationError::BlockHashOverflow) {
-                    assert!(bh2.len() > BlockHash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
+                    assert!(bh2.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
                 }
                 else {
                     let hash_s_r = result_hash_s_r.unwrap();
@@ -634,7 +632,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let mut hash_s_r: RawFuzzyHash = RawFuzzyHash::new();
                 let result = hash_l_r.try_into_mut_short(&mut hash_s_r);
                 if result == Err(FuzzyHashOperationError::BlockHashOverflow) {
-                    assert!(bh2.len() > BlockHash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
+                    assert!(bh2.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
                 }
                 else {
                     assert!(result.is_ok(), "failed on bytes_str={:?}", bytes_str);
@@ -648,7 +646,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 // `try_from`
                 let result_hash_s_n = FuzzyHash::try_from(hash_l_n);
                 if result_hash_s_n == Err(FuzzyHashOperationError::BlockHashOverflow) {
-                    assert!(bh2_norm.len() > BlockHash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
+                    assert!(bh2_norm.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
                 }
                 else {
                     let hash_s_n = result_hash_s_n.unwrap();
@@ -658,7 +656,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let mut hash_s_n: FuzzyHash = FuzzyHash::new();
                 let result = hash_l_n.try_into_mut_short(&mut hash_s_n);
                 if result == Err(FuzzyHashOperationError::BlockHashOverflow) {
-                    assert!(bh2_norm.len() > BlockHash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
+                    assert!(bh2_norm.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
                 }
                 else {
                     assert!(result.is_ok(), "failed on bytes_str={:?}", bytes_str);
@@ -684,7 +682,7 @@ fn data_model_block_hash_contents_and_normalization() {
     */
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             // Make input bytes
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
@@ -823,7 +821,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
     // Test block hash contents.
     test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..BlockSize::NUM_VALID {
+        for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             // Make input bytes
             let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
@@ -852,7 +850,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 let bh2_expected = if hash_is_normalized { bh2_norm } else { bh2 };
                                 // Maximum length in the string representation
                                 assert!(hash.len_in_str() <= <$ty>::MAX_LEN_IN_STR, "failed ({}-1-1) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                if  hash.log_blocksize as usize == BlockSize::NUM_VALID - 1 &&
+                                if  hash.log_blocksize as usize == block_size::NUM_VALID - 1 &&
                                     bh1_expected.len() == <$ty>::MAX_BLOCK_HASH_SIZE_1 &&
                                     bh2_expected.len() == <$ty>::MAX_BLOCK_HASH_SIZE_2
                                 {
@@ -938,15 +936,15 @@ fn data_model_block_size() {
     */
     use crate::hash::block::BlockSizeRelation;
     macro_rules! test {($ty: ty) => {
-        for bs1 in 0..BlockSize::NUM_VALID as u8 {
+        for bs1 in 0..block_size::NUM_VALID as u8 {
             // [BS1]:A:
             let lhs = <$ty>::new_from_internals(
-                BlockSize::from_log(bs1).unwrap(), &[0], &[]);
+                block_size::from_log(bs1).unwrap(), &[0], &[]);
             assert!(lhs.is_valid(), "failed (1-1) on type={}, bs1={:?}", stringify!($ty), bs1);
-            for bs2 in 0..BlockSize::NUM_VALID as u8 {
+            for bs2 in 0..block_size::NUM_VALID as u8 {
                 // [BS2]::A
                 let rhs = <$ty>::new_from_internals(
-                    BlockSize::from_log(bs2).unwrap(), &[], &[0]);
+                    block_size::from_log(bs2).unwrap(), &[], &[0]);
                 assert!(rhs.is_valid(), "failed (1-2) on type={}, bs2={:?}", stringify!($ty), bs2);
                 assert_ne!(lhs, rhs, "failed (1-3) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
                 // Use cmp_by_block_size (call with two different conventions).
@@ -975,7 +973,7 @@ fn data_model_block_size() {
                 assert_eq!(ord, lhs.cmp_by_block_size(&rhs), "failed (3) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
                 // Use compare_block_sizes.
                 let rel = <$ty>::compare_block_sizes(&lhs, &rhs);
-                assert_eq!(rel, BlockSize::compare_sizes(lhs.log_blocksize, rhs.log_blocksize), "failed (4) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
+                assert_eq!(rel, block_size::compare_sizes(lhs.log_blocksize, rhs.log_blocksize), "failed (4) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
                 // Test consistency between logical expressions and the BlockSizeRelation value.
                 assert_eq!(bs1 == bs2, rel == BlockSizeRelation::NearEq, "failed (5-1) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
                 assert_eq!(bs1 == bs2 + 1, rel == BlockSizeRelation::NearGt, "failed (5-2) on type={}, bs1={:?}, bs2={:?}", stringify!($ty), bs1, bs2);
@@ -1023,11 +1021,11 @@ fn data_model_block_size() {
 #[test]
 fn data_model_corruption() {
     // Prerequisites
-    assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE, u8);
-    assert_fits_in!(BlockHash::MAX_SEQUENCE_SIZE + 1, u8);
+    assert_fits_in!(block_hash::MAX_SEQUENCE_SIZE, u8);
+    assert_fits_in!(block_hash::MAX_SEQUENCE_SIZE + 1, u8);
     macro_rules! test_prereq {($ty: ty) => {
-        assert!(BlockHash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_1, "failed (1) on type={}", stringify!($ty));
-        assert!(BlockHash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_2, "failed (2) on type={}", stringify!($ty));
+        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_1, "failed (1) on type={}", stringify!($ty));
+        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_2, "failed (2) on type={}", stringify!($ty));
         assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_1 + 1, u8, "failed (3) on type={}", stringify!($ty));
         assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_2 + 1, u8, "failed (4) on type={}", stringify!($ty));
     }}
@@ -1048,10 +1046,10 @@ fn data_model_corruption() {
             let mut hash = hash;
             for log_block_size in u8::MIN..=u8::MAX {
                 hash.log_blocksize = log_block_size;
-                assert_eq!(hash.is_valid(), BlockSize::is_log_valid(log_block_size),
+                assert_eq!(hash.is_valid(), block_size::is_log_valid(log_block_size),
                     "failed (2-1) on type={}, log_block_size={:?}", stringify!($ty), log_block_size);
                 #[cfg(feature = "alloc")]
-                if !BlockSize::is_log_valid(log_block_size) {
+                if !block_size::is_log_valid(log_block_size) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
                         "failed (2-2) on type={}, log_block_size={:?}", stringify!($ty), log_block_size);
                 }
@@ -1196,10 +1194,10 @@ fn data_model_corruption() {
         // Break block hash 1 normalization
         if <$ty>::IS_NORMALIZED_FORM {
             let mut hash = hash;
-            hash.len_blockhash1 = BlockHash::MAX_SEQUENCE_SIZE as u8;
+            hash.len_blockhash1 = block_hash::MAX_SEQUENCE_SIZE as u8;
             // block hash "AAA" (max sequence size): valid
             assert!(hash.is_valid(), "failed (6-1-1) on type={}", stringify!($ty));
-            hash.len_blockhash1 = BlockHash::MAX_SEQUENCE_SIZE as u8 + 1;
+            hash.len_blockhash1 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
             assert!(!hash.is_valid(), "failed (6-1-2) on type={}", stringify!($ty));
             #[cfg(feature = "alloc")]
@@ -1210,10 +1208,10 @@ fn data_model_corruption() {
         // Break block hash 2 normalization
         if <$ty>::IS_NORMALIZED_FORM {
             let mut hash = hash;
-            hash.len_blockhash2 = BlockHash::MAX_SEQUENCE_SIZE as u8;
+            hash.len_blockhash2 = block_hash::MAX_SEQUENCE_SIZE as u8;
             // block hash "AAA" (max sequence size): valid
             assert!(hash.is_valid(), "failed (6-2-1) on type={}", stringify!($ty));
-            hash.len_blockhash2 = BlockHash::MAX_SEQUENCE_SIZE as u8 + 1;
+            hash.len_blockhash2 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
             assert!(!hash.is_valid(), "failed (6-2-2) on type={}", stringify!($ty));
             #[cfg(feature = "alloc")]
@@ -1267,24 +1265,24 @@ fn data_model_normalized_windows() {
             ($bh1sz: expr, $bh2sz: expr) => {
                 type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                 if bh2.len() > $bh2sz { break; }
-                let hash: FuzzyHashType = FuzzyHashType::new_from_internals(BlockSize::MIN, bh1, bh2);
+                let hash: FuzzyHashType = FuzzyHashType::new_from_internals(block_size::MIN, bh1, bh2);
                 // For each block hash, windows will return nothing as long as
-                // the block hash is shorter than BlockHash::MIN_LCS_FOR_COMPARISON.
+                // the block hash is shorter than block_hash::MIN_LCS_FOR_COMPARISON.
                 assert_eq!(
                     hash.block_hash_1_windows().next().is_none(),
-                    hash.block_hash_1_len() < BlockHash::MIN_LCS_FOR_COMPARISON,
+                    hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON,
                     "failed (1-1) on bh1sz={:?}, bh2sz={:?}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
                 );
                 assert_eq!(
                     hash.block_hash_2_windows().next().is_none(),
-                    hash.block_hash_2_len() < BlockHash::MIN_LCS_FOR_COMPARISON,
+                    hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON,
                     "failed (1-1) on bh1sz={:?}, bh2sz={:?}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
                 );
                 // Check window contents (block hash 1)
-                if hash.block_hash_1_len() >= BlockHash::MIN_LCS_FOR_COMPARISON {
+                if hash.block_hash_1_len() >= block_hash::MIN_LCS_FOR_COMPARISON {
                     let mut windows = hash.block_hash_1_windows();
-                    let mut expected_window = [0u8; BlockHash::MIN_LCS_FOR_COMPARISON];
-                    for offset in 0..=(hash.block_hash_1_len() - BlockHash::MIN_LCS_FOR_COMPARISON) {
+                    let mut expected_window = [0u8; block_hash::MIN_LCS_FOR_COMPARISON];
+                    for offset in 0..=(hash.block_hash_1_len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                         for (i, ch) in expected_window.iter_mut().enumerate() {
                             *ch = (offset + i) as u8;
                         }
@@ -1297,12 +1295,12 @@ fn data_model_normalized_windows() {
                         "failed (3-1) on bh1sz={:?}, bh2sz={:?}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2);
                 }
                 // Check window contents (block hash 2)
-                if hash.block_hash_2_len() >= BlockHash::MIN_LCS_FOR_COMPARISON {
+                if hash.block_hash_2_len() >= block_hash::MIN_LCS_FOR_COMPARISON {
                     let mut windows = hash.block_hash_2_windows();
-                    let mut expected_window = [0u8; BlockHash::MIN_LCS_FOR_COMPARISON];
-                    for offset in 0..=(hash.block_hash_2_len() - BlockHash::MIN_LCS_FOR_COMPARISON) {
+                    let mut expected_window = [0u8; block_hash::MIN_LCS_FOR_COMPARISON];
+                    for offset in 0..=(hash.block_hash_2_len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                         for (i, ch) in expected_window.iter_mut().enumerate() {
-                            *ch = (BlockHash::FULL_SIZE - 1 - offset - i) as u8;
+                            *ch = (block_hash::FULL_SIZE - 1 - offset - i) as u8;
                         }
                         assert_eq!(
                             windows.next().unwrap(), &expected_window[..],
@@ -1321,17 +1319,17 @@ fn data_model_normalized_windows() {
 #[test]
 fn data_model_normalized_windows_example() {
     // Prerequisites
-    assert_eq!(BlockHash::MIN_LCS_FOR_COMPARISON, 7);
-    assert!(BlockHash::MAX_SEQUENCE_SIZE <= 3);
+    assert_eq!(block_hash::MIN_LCS_FOR_COMPARISON, 7);
+    assert!(block_hash::MAX_SEQUENCE_SIZE <= 3);
     // Test some example "3:mG+XtIWRQX:7mYCCCWdq"
     macro_rules! test {($ty: ty) => {
         let bh1 = &[38,  6, 62, 23, 45,  8, 22, 17, 16, 23]; // length 10
         let bh2 = &[59, 38, 24,  2,  2,  2, 22, 29, 42];     // length  9
-        let hash = <$ty>::new_from_internals(BlockSize::MIN, bh1, bh2);
+        let hash = <$ty>::new_from_internals(block_size::MIN, bh1, bh2);
         // Block Hash 1
         {
             let mut windows_1 = hash.block_hash_1_windows();
-            for index in 0..=(bh1.len() - BlockHash::MIN_LCS_FOR_COMPARISON) {
+            for index in 0..=(bh1.len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                 assert_eq!(windows_1.next().unwrap(), &bh1[index..index+7],
                     "failed (1-1) on type={}, index={:?}", stringify!($ty), index);
             }
@@ -1340,7 +1338,7 @@ fn data_model_normalized_windows_example() {
         // Block Hash 2
         {
             let mut windows_2 = hash.block_hash_2_windows();
-            for index in 0..=(bh2.len() - BlockHash::MIN_LCS_FOR_COMPARISON) {
+            for index in 0..=(bh2.len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                 assert_eq!(windows_2.next().unwrap(), &bh2[index..index+7],
                     "failed (2-1) on type={}, index={:?}", stringify!($ty), index);
             }
@@ -1457,7 +1455,7 @@ const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>);
 #[test]
 fn parser_err_cases_prerequisites() {
     assert!(crate::MAX_LEN_IN_STR < 160);
-    assert_eq!(BlockSize::MIN, 3);
+    assert_eq!(block_size::MIN, 3);
     assert_eq!(FuzzyHash::MAX_BLOCK_HASH_SIZE_2, 32);
     assert_eq!(LongFuzzyHash::MAX_BLOCK_HASH_SIZE_2, 64);
 }
@@ -1504,7 +1502,7 @@ macro_rules! assert_parse_okay {
 #[test]
 fn parse_block_hash_1_patterns() {
     // Prerequisites
-    assert_eq!(BlockHash::MAX_SEQUENCE_SIZE, 3);
+    assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     assert_eq!(RawFuzzyHash::MAX_BLOCK_HASH_SIZE_1, 64);
 
     const HASH_NOOVF: &str        = "6:0123456701234567012345670123456701234567012345670123456701234567:";
@@ -1553,7 +1551,7 @@ fn parse_block_hash_1_patterns() {
 #[test]
 fn parse_block_hash_2_patterns() {
     // Prerequisites
-    assert_eq!(BlockHash::MAX_SEQUENCE_SIZE, 3);
+    assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     assert_eq!(RawFuzzyHash::MAX_BLOCK_HASH_SIZE_2, 32);
     assert_eq!(LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2, 64);
     // Short variants
@@ -1660,11 +1658,11 @@ fn parsed_block_size() {
     */
     macro_rules! test {($ty: ty) => {
         for (log_block_size, &str_block_size) in
-            BlockSize::BLOCK_SIZES_STR.iter().enumerate()
+            block_size::BLOCK_SIZES_STR.iter().enumerate()
         {
             let block_size: u32 = str::parse(str_block_size).unwrap();
             let str_block_size = str_block_size.as_bytes();
-            // For each BlockSize::BLOCK_SIZES_STR entry "[BS]", make "[BS]::"
+            // For each block_size::BLOCK_SIZES_STR entry "[BS]", make "[BS]::"
             // and parse as a fuzzy hash.
             let mut buf = [0u8; <$ty>::MAX_LEN_IN_STR];
             buf[..str_block_size.len()].clone_from_slice(str_block_size);
@@ -1710,7 +1708,7 @@ fn parsed_data_example() {
 #[test]
 fn normalization_examples() {
     // Prerequisites (partial)
-    assert_eq!(BlockHash::MAX_SEQUENCE_SIZE, 3);
+    assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     // Target strings
     const NORM0: &str = "3:ABBCCCDDDDEEEEE:555554444333221";
     const NORM1: &str = "3:ABBCCCDDDEEE:555444333221";
@@ -1761,10 +1759,10 @@ fn ord_and_sorting() {
     ];
     // Construct sorted hashes list
     let mut hashes: Vec<FuzzyHash> = Vec::new();
-    for log_block_size in 0..BlockSize::NUM_VALID as u8 {
+    for log_block_size in 0..block_size::NUM_VALID as u8 {
         for bs1 in SORTED_DICT {
             for bs2 in SORTED_DICT {
-                let mut s = BlockSize::from_log(log_block_size).unwrap().to_string();
+                let mut s = block_size::from_log(log_block_size).unwrap().to_string();
                 s += ":";
                 s += bs1;
                 s += ":";
@@ -1907,7 +1905,7 @@ fn compare_fuzzy_hash_data_examples_eq() {
         const S_B: &str = "6144:SAsMYod+X3oI+YEWnnsMYod+X3oI+Y5sMYod+X3oI+YLsMYod+X3oI+YQ:H5d+X36WnL5d+X3v5d+X315d+X3+";
         let h_a: FuzzyHash = str::parse(S_A).unwrap();
         let h_b: FuzzyHash = str::parse(S_B).unwrap();
-        assert!(BlockSize::is_near_eq(h_a.log_block_size(), h_b.log_block_size()));
+        assert!(block_size::is_near_eq(h_a.log_block_size(), h_b.log_block_size()));
         assert_eq!(h_a.compare(h_b), 94);
         assert_eq!(h_b.compare(h_a), 94);
     }
@@ -1941,8 +1939,8 @@ fn compare_fuzzy_hash_data_examples_eq_near_but_not_eq() {
         let h_a: FuzzyHash = str::parse(S_A).unwrap();
         let h_b: FuzzyHash = str::parse(S_B).unwrap();
         let h_c: FuzzyHash = str::parse(S_C).unwrap();
-        assert!(BlockSize::is_near_lt(h_a.log_block_size(), h_b.log_block_size()));
-        assert!(BlockSize::is_near_lt(h_b.log_block_size(), h_c.log_block_size()));
+        assert!(block_size::is_near_lt(h_a.log_block_size(), h_b.log_block_size()));
+        assert!(block_size::is_near_lt(h_b.log_block_size(), h_c.log_block_size()));
         assert_eq!(h_a.compare(h_b), 72);
         assert_eq!(h_b.compare(h_c), 88);
         assert_eq!(h_a.compare(h_c),  0);

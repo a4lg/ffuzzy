@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 use crate::compare::FuzzyHashCompareTarget;
-use crate::hash::block::{BlockSize, BlockHash};
+use crate::hash::block::{block_size, block_hash};
 use crate::macros::{optionally_unsafe, invariant};
 use crate::utils::u64_lsb_ones;
 
@@ -12,8 +12,7 @@ pub(crate) mod tests;
 
 
 /// A module containing utilities for an element of block hash position array.
-#[allow(non_snake_case)]
-pub mod BlockHashPositionArrayElement {
+pub mod block_hash_position_array_element {
     /// Checks whether a given position array entry has a sequence of the given
     /// length (or longer).
     ///
@@ -105,7 +104,7 @@ pub mod BlockHashPositionArrayElement {
 /// represented as logical expressions (with some arithmetic ones
 /// to enable, for instance, horizontal propagation).  This is particularly
 /// effective on ssdeep because each block hash has a maximum size of
-/// [`BlockHash::FULL_SIZE`] (64; many 64-bit machines would handle that
+/// [`block_hash::FULL_SIZE`] (64; many 64-bit machines would handle that
 /// efficiently and even 32-bit machines can benefit from).
 ///
 /// This is *so* fast that the bit-parallel approach is still faster
@@ -119,13 +118,13 @@ pub mod BlockHashPositionArrayElement {
 /// Despite that the algorithm itself is independent from the number of
 /// alphabets in the string, this trait is defined for ssdeep and requires
 /// that the all elements inside the string is less than
-/// [`BlockHash::ALPHABET_SIZE`] (64).
+/// [`block_hash::ALPHABET_SIZE`] (64).
 ///
 /// In other words, a string must be an array of Base64 indices
 /// (not a Base64 string itself).
 pub trait BlockHashPositionArrayData {
     /// Returns the raw representation of the block hash position array.
-    fn representation(&self) -> &[u64; BlockHash::ALPHABET_SIZE];
+    fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE];
     /// Returns the length of the block hash.
     fn len(&self) -> u8;
     /// Returns whether the block hash is empty.
@@ -167,14 +166,14 @@ pub trait BlockHashPositionArrayData {
     ///
     /// To pass this validity test, the string cannot contain a sequence
     /// consisting of the same character longer than
-    /// [`BlockHash::MAX_SEQUENCE_SIZE`].
+    /// [`block_hash::MAX_SEQUENCE_SIZE`].
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](crate::hash::FuzzyHashData#normalization)
     fn is_valid_and_normalized(&self) -> bool {
         if !self.is_valid() { return false; }
         for &pos in self.representation() {
-            if BlockHashPositionArrayElement::has_sequences_const::<
-                { BlockHash::MAX_SEQUENCE_SIZE as u32 + 1 }
+            if block_hash_position_array_element::has_sequences_const::<
+                { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 }
             >(pos)
             {
                 // A long repeating character sequence is found.
@@ -193,7 +192,7 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
     ///
     /// This method must return the same reference to the
     /// [`BlockHashPositionArrayData::representation`].
-    fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE];
+    fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE];
 
     /// Returne the raw mutable representation of the block hash position array.
     fn len_mut(&mut self) -> &mut u8;
@@ -223,7 +222,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         if (len as usize) != other.len() { return false; }
         optionally_unsafe! {
             for (i, &ch) in other.iter().enumerate() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
+                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
                 let value = representation[ch as usize]; // grcov-excl-br-line:ARRAY
                 if value & (1u64 << i) == 0 {
                     return false;
@@ -239,33 +238,33 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(self.is_valid());
         let len = self.len();
         let representation = self.representation();
-        if (len as usize)  < BlockHash::MIN_LCS_FOR_COMPARISON
-            || other.len() < BlockHash::MIN_LCS_FOR_COMPARISON
+        if (len as usize)  < block_hash::MIN_LCS_FOR_COMPARISON
+            || other.len() < block_hash::MIN_LCS_FOR_COMPARISON
         {
             return false;
         }
         optionally_unsafe! {
             let mut d: u64;
-            let mut r: usize = BlockHash::MIN_LCS_FOR_COMPARISON - 1;
+            let mut r: usize = block_hash::MIN_LCS_FOR_COMPARISON - 1;
             let mut l: usize;
             while r < other.len() {
-                l = r - (BlockHash::MIN_LCS_FOR_COMPARISON - 1);
+                l = r - (block_hash::MIN_LCS_FOR_COMPARISON - 1);
                 let mut i: usize = other.len() - 1 - r;
                 invariant!(i < other.len());
-                invariant!((other[i] as usize) < BlockHash::ALPHABET_SIZE);
+                invariant!((other[i] as usize) < block_hash::ALPHABET_SIZE);
                 d = representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
                 while d != 0 {
                     r -= 1;
                     i += 1;
                     invariant!(i < other.len());
-                    invariant!((other[i] as usize) < BlockHash::ALPHABET_SIZE);
+                    invariant!((other[i] as usize) < block_hash::ALPHABET_SIZE);
                     d = (d << 1) & representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
                     if r == l && d != 0 {
                         return true;
                     }
                 }
                 // Boyer–Moore-like skipping
-                r += BlockHash::MIN_LCS_FOR_COMPARISON;
+                r += block_hash::MIN_LCS_FOR_COMPARISON;
             }
         }
         false
@@ -277,8 +276,8 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         let len = self.len();
         let representation = self.representation();
         debug_assert!(self.is_valid());
-        debug_assert!((len as usize) <= BlockHash::FULL_SIZE);
-        debug_assert!(other.len() <= BlockHash::FULL_SIZE);
+        debug_assert!((len as usize) <= block_hash::FULL_SIZE);
+        debug_assert!(other.len() <= block_hash::FULL_SIZE);
         if len == 0 { return other.len() as u32; }
         let mut cur = len as u32;
         optionally_unsafe! {
@@ -286,7 +285,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
             let mut pv: u64 = 0xffff_ffff_ffff_ffff_u64;
             let mut nv: u64 = 0;
             for &ch in other.iter() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
+                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
                 let mt: u64 = representation[ch as usize]; // grcov-excl-br-line:ARRAY
                 let zd: u64 = ((mt & pv).wrapping_add(pv) ^ pv) | mt | nv;
                 let nh: u64 = pv & zd;
@@ -313,8 +312,8 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
     fn score_strings_raw_internal(&self, other: &[u8]) -> u32 {
         let len = self.len();
         debug_assert!(self.is_valid_and_normalized());
-        debug_assert!((len as usize) <= BlockHash::FULL_SIZE);
-        debug_assert!(other.len() <= BlockHash::FULL_SIZE);
+        debug_assert!((len as usize) <= block_hash::FULL_SIZE);
+        debug_assert!(other.len() <= block_hash::FULL_SIZE);
         if !self.has_common_substring_internal(other) {
             return 0;
         }
@@ -323,18 +322,18 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         optionally_unsafe! {
             // rustc/LLVM cannot prove that
             // (len as u32 + other.len() as u32)
-            //     <= BlockHash::MIN_LCS_FOR_COMPARISON * 2 .
+            //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2 .
             // Place this invariant to avoid division-by-zero checking.
             invariant!((len as u32 + other.len() as u32) > 0);
         }
         /*
             Possible arithmetic operations to check overflow:
-            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
-            2.  100 * BlockHash::FULL_SIZE
+            1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
+            2.  100 * block_hash::FULL_SIZE
         */
         100 - (100 * (
-            (dist * BlockHash::FULL_SIZE as u32) / (len as u32 + other.len() as u32) // grcov-excl-br-line:DIVZERO
-        )) / BlockHash::FULL_SIZE as u32
+            (dist * block_hash::FULL_SIZE as u32) / (len as u32 + other.len() as u32) // grcov-excl-br-line:DIVZERO
+        )) / block_hash::FULL_SIZE as u32
     }
 
     /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_unchecked()`].
@@ -343,13 +342,13 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         /*
             WARNING: Don't be confused!
             This is one of the very few functions so that log_block_size can be
-            equal to BlockSize::NUM_VALID (which is normally invalid).
+            equal to block_size::NUM_VALID (which is normally invalid).
         */
         let len = self.len();
         debug_assert!(self.is_valid_and_normalized());
-        debug_assert!((len as usize) <= BlockHash::FULL_SIZE);
-        debug_assert!(other.len() <= BlockHash::FULL_SIZE);
-        debug_assert!((log_block_size as usize) <= BlockSize::NUM_VALID);
+        debug_assert!((len as usize) <= block_hash::FULL_SIZE);
+        debug_assert!(other.len() <= block_hash::FULL_SIZE);
+        debug_assert!((log_block_size as usize) <= block_size::NUM_VALID);
         let score = self.score_strings_raw_internal(other);
         // Cap the score to prevent exaggregating the match size if block size is small enough.
         if log_block_size >= FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
@@ -379,13 +378,13 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     ///
     /// *   The length of `other` must not exceed 64.
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     ///
     /// If they are not satisfied, it will return a meaningless value.
     unsafe fn is_equiv_unchecked(&self, other: &[u8]) -> bool;
 
     /// Checks whether two given strings have common substrings with a length
-    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
+    /// of [`block_hash::MIN_LCS_FOR_COMPARISON`].
     ///
     /// # Algorithm Implemented (By Default)
     ///
@@ -406,7 +405,7 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     /// # Safety
     ///
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless value.
@@ -431,9 +430,9 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     /// # Safety
     ///
     /// *   The length of `other` must be short enough
-    ///     (up to [`BlockHash::FULL_SIZE`] is guaranteed to be safe).
+    ///     (up to [`block_hash::FULL_SIZE`] is guaranteed to be safe).
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     ///
     /// If they are not satisfied, it will return a meaningless distance.
     unsafe fn edit_distance_unchecked(&self, other: &[u8]) -> u32;
@@ -448,9 +447,9 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     /// # Safety
     ///
     /// *   The lengths of both `self` and `other` must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
+    ///     [`block_hash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     ///
     /// If they are not satisfied, it will return a meaningless score.
     unsafe fn score_strings_raw_unchecked(&self, other: &[u8]) -> u32;
@@ -464,11 +463,11 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     /// # Safety
     ///
     /// *   The lengths of both `self` and `other` must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
+    ///     [`block_hash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    /// *   `log_block_size` [must be valid](BlockSize::is_log_valid)
-    ///     or must be equal to [`BlockSize::NUM_VALID`] (this value itself is
+    ///     [`block_hash::ALPHABET_SIZE`].
+    /// *   `log_block_size` [must be valid](block_size::is_log_valid)
+    ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
     ///     not valid as a block size for a fuzzy hash object but valid for this
     ///     method).
     ///
@@ -516,11 +515,11 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///
     /// *   The length of `other` must not exceed 64.
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn is_equiv(&self, other: &[u8]) -> bool;
 
     /// Checks whether two given strings have common substrings with a length
-    /// of [`BlockHash::MIN_LCS_FOR_COMPARISON`].
+    /// of [`block_hash::MIN_LCS_FOR_COMPARISON`].
     ///
     /// # Algorithm Implemented (By Default)
     ///
@@ -541,7 +540,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// # Usage Constraints
     ///
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn has_common_substring(&self, other: &[u8]) -> bool;
 
     /// Computes the edit distance between two given strings.
@@ -563,9 +562,9 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// # Usage Constraints
     ///
     /// *   The length of `other` must be short enough
-    ///     (up to [`BlockHash::FULL_SIZE`] is guaranteed to be safe).
+    ///     (up to [`block_hash::FULL_SIZE`] is guaranteed to be safe).
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn edit_distance(&self, other: &[u8]) -> u32;
 
     /// Compare two block hashes and computes the similarity score
@@ -578,9 +577,9 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// # Usage Constraints
     ///
     /// *   The lengths of both `self` and `other` must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
+    ///     [`block_hash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn score_strings_raw(&self, other: &[u8]) -> u32;
 
     /// Compare two block hashes and computes the similarity score.
@@ -592,11 +591,11 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// # Usage Constraints
     ///
     /// *   The lengths of both `self` and `other` must not exceed
-    ///     [`BlockHash::FULL_SIZE`].
+    ///     [`block_hash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
-    /// *   `log_block_size` [must be valid](BlockSize::is_log_valid)
-    ///     or must be equal to [`BlockSize::NUM_VALID`] (this value itself is
+    ///     [`block_hash::ALPHABET_SIZE`].
+    /// *   `log_block_size` [must be valid](block_size::is_log_valid)
+    ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
     ///     not valid as a block size for a fuzzy hash object but valid for this
     ///     method).
     fn score_strings(&self, other: &[u8], log_block_size: u8) -> u32;
@@ -609,38 +608,38 @@ where
     fn is_equiv(&self, other: &[u8]) -> bool {
         assert!(self.is_valid());
         assert!(other.len() <= 64);
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
+        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.is_equiv_internal(other)
     }
 
     fn has_common_substring(&self, other: &[u8]) -> bool {
         assert!(self.is_valid());
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
+        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.has_common_substring_internal(other)
     }
 
     fn edit_distance(&self, other: &[u8]) -> u32 {
         assert!(self.is_valid());
-        assert!((self.len() as usize) <= BlockHash::FULL_SIZE);
-        assert!(other.len() <= BlockHash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
+        assert!((self.len() as usize) <= block_hash::FULL_SIZE);
+        assert!(other.len() <= block_hash::FULL_SIZE);
+        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.edit_distance_internal(other)
     }
 
     fn score_strings_raw(&self, other: &[u8]) -> u32 {
         assert!(self.is_valid_and_normalized());
-        assert!((self.len() as usize) <= BlockHash::FULL_SIZE);
-        assert!(other.len() <= BlockHash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
+        assert!((self.len() as usize) <= block_hash::FULL_SIZE);
+        assert!(other.len() <= block_hash::FULL_SIZE);
+        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.score_strings_raw_internal(other)
     }
 
     fn score_strings(&self, other: &[u8], log_block_size: u8) -> u32 {
         assert!(self.is_valid_and_normalized());
-        assert!((self.len() as usize) <= BlockHash::FULL_SIZE);
-        assert!(other.len() <= BlockHash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
-        assert!((log_block_size as usize) <= BlockSize::NUM_VALID);
+        assert!((self.len() as usize) <= block_hash::FULL_SIZE);
+        assert!(other.len() <= block_hash::FULL_SIZE);
+        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!((log_block_size as usize) <= block_size::NUM_VALID);
         self.score_strings_internal(other, log_block_size)
     }
 }
@@ -675,13 +674,13 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDa
     ///
     /// *   The length of `blockhash` must not exceed 64.
     /// *   All elements in `blockhash` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn init_from_partial(&mut self, blockhash: &[u8]) {
         debug_assert!(blockhash.len() <= 64);
         let representation = self.representation_mut();
         optionally_unsafe! {
             for (i, &ch) in blockhash.iter().enumerate() {
-                invariant!((ch as usize) < BlockHash::ALPHABET_SIZE);
+                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
                 representation[ch as usize] |= 1u64 << i; // grcov-excl-br-line:ARRAY
             }
         }
@@ -698,7 +697,7 @@ pub(crate) trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
     ///
     /// *   The length of `blockhash` must not exceed 64.
     /// *   All elements in `blockhash` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     fn init_from(&mut self, blockhash: &[u8]);
 }
 
@@ -708,7 +707,7 @@ where
 {
     fn init_from(&mut self, blockhash: &[u8]) {
         assert!(blockhash.len() <= 64);
-        assert!(blockhash.iter().all(|&x| (x as usize) < BlockHash::ALPHABET_SIZE));
+        assert!(blockhash.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.clear_representation_only();
         self.init_from_partial(blockhash);
     }
@@ -716,13 +715,13 @@ where
 
 
 /// A position array based on existing immutable references.
-pub struct BlockHashPositionArrayRef<'a>(pub &'a [u64; BlockHash::ALPHABET_SIZE], pub &'a u8);
+pub struct BlockHashPositionArrayRef<'a>(pub &'a [u64; block_hash::ALPHABET_SIZE], pub &'a u8);
 /// A position array based on existing mutable references.
-pub(crate) struct BlockHashPositionArrayMutRef<'a>(pub(crate) &'a mut [u64; BlockHash::ALPHABET_SIZE], pub(crate) &'a mut u8);
+pub(crate) struct BlockHashPositionArrayMutRef<'a>(pub(crate) &'a mut [u64; block_hash::ALPHABET_SIZE], pub(crate) &'a mut u8);
 
 impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayRef<'a> {
     #[inline(always)]
-    fn representation(&self) -> &[u64; BlockHash::ALPHABET_SIZE] {
+    fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
 
@@ -734,7 +733,7 @@ impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayRef<'a> {
 
 impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'a> {
     #[inline(always)]
-    fn representation(&self) -> &[u64; BlockHash::ALPHABET_SIZE] {
+    fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
 
@@ -746,7 +745,7 @@ impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'a> {
 
 impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
     #[inline(always)]
-    fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE] {
+    fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
 
@@ -781,7 +780,7 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     /// The block hash position array representation.
-    representation: [u64; BlockHash::ALPHABET_SIZE],
+    representation: [u64; block_hash::ALPHABET_SIZE],
     /// The length of this block hash.
     len: u8,
 }
@@ -790,7 +789,7 @@ impl BlockHashPositionArray {
     /// Creates a new position array object with empty contents.
     pub fn new() -> Self {
         BlockHashPositionArray {
-            representation: [0u64; BlockHash::ALPHABET_SIZE],
+            representation: [0u64; block_hash::ALPHABET_SIZE],
             len: 0
         }
     }
@@ -809,7 +808,7 @@ impl BlockHashPositionArray {
     ///
     /// *   The length of `blockhash` must not exceed 64.
     /// *   All elements in `blockhash` must be less than
-    ///     [`BlockHash::ALPHABET_SIZE`].
+    ///     [`block_hash::ALPHABET_SIZE`].
     pub fn init_from(&mut self, blockhash: &[u8]) {
         BlockHashPositionArrayImplMut::init_from(self, blockhash);
     }
@@ -818,7 +817,7 @@ impl BlockHashPositionArray {
 impl BlockHashPositionArrayData
     for BlockHashPositionArray
 {
-    fn representation(&self) -> &[u64; BlockHash::ALPHABET_SIZE] {
+    fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         &self.representation
     }
 
@@ -830,7 +829,7 @@ impl BlockHashPositionArrayData
 impl BlockHashPositionArrayDataMut
     for BlockHashPositionArray
 {
-    fn representation_mut(&mut self) -> &mut [u64; BlockHash::ALPHABET_SIZE] {
+    fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         &mut self.representation
     }
 
@@ -869,7 +868,7 @@ mod const_asserts {
     #[test]
     fn position_array_fits_in_64_bits() {
         assert!(
-            u32::try_from(BlockHash::FULL_SIZE)
+            u32::try_from(block_hash::FULL_SIZE)
                 .map(|x| x <= u64::BITS)
                 .unwrap_or(false)
         );
@@ -877,7 +876,7 @@ mod const_asserts {
     // grcov-excl-br-end
 
     // Prerequisite for 64-bit position array
-    const_assert!(BlockHash::FULL_SIZE <= 64);
+    const_assert!(block_hash::FULL_SIZE <= 64);
 
     // Test whether no arithmetic overflow occurs on
     // the similarity score computation.
@@ -887,17 +886,17 @@ mod const_asserts {
     fn score_arithmetic_causes_no_overflow() {
         /*
             Possible arithmetic operations to check overflow:
-            1.  (BlockHash::FULL_SIZE * 2) * BlockHash::FULL_SIZE
-            2.  100 * BlockHash::FULL_SIZE
+            1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
+            2.  100 * block_hash::FULL_SIZE
         */
         assert!(
-            u32::try_from(BlockHash::FULL_SIZE).ok()
+            u32::try_from(block_hash::FULL_SIZE).ok()
                 .and_then(|x| x.checked_mul(2))
-                .and_then(|x| x.checked_mul(u32::try_from(BlockHash::FULL_SIZE).unwrap()))
+                .and_then(|x| x.checked_mul(u32::try_from(block_hash::FULL_SIZE).unwrap()))
                 .is_some()
         );
         assert!(
-            u32::try_from(BlockHash::FULL_SIZE).ok()
+            u32::try_from(block_hash::FULL_SIZE).ok()
                 .and_then(|x| x.checked_mul(100))
                 .is_some()
         );

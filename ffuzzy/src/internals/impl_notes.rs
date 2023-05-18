@@ -71,11 +71,11 @@
 //! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::edit_distance()`]
 //! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings_raw()`]
 //! *   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings()`]
-//! *   [`crate::hash::block::BlockSize::from_log()`] ([`Option`] is used instead of assertions)
 //! *   [`crate::hash::FuzzyHashData::compare_unequal()`]
 //! *   [`crate::hash::FuzzyHashData::init_from_internals_raw()`]
 //! *   [`crate::hash::FuzzyHashData::new_from_internals()`]
 //! *   [`crate::hash::FuzzyHashData::new_from_internals_raw()`]
-//! *   [`crate::hash::block::BlockSize::log_from_valid()`]
+//! *   [`crate::hash::block::block_size::from_log()`] ([`Option`] is used instead of assertions)
+//! *   [`crate::hash::block::block_size::log_from_valid()`]
 //! *   [`crate::hash_dual::FuzzyHashDualData::init_from_raw_form_internals_raw()`]
 //! *   [`crate::hash_dual::FuzzyHashDualData::new_from_raw_form_internals_raw()`]
