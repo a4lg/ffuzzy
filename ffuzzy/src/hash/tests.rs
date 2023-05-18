@@ -863,7 +863,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 assert_eq!(str_buffer, [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1],
                                     "failed ({}-2-2) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 hash.store_into_bytes(&mut str_buffer).unwrap();
-                                assert_eq!(str_buffer[str_buffer.len() - 1], NULL_CH, "failed ({}-2-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert!(str_buffer[hash.len_in_str()..].iter().all(|&x| x == NULL_CH), "failed ({}-2-3) on bh1sz={:?}, bh2sz={:?}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
                                 // Check store_into_bytes and len_in_str:
                                 // len_in_str is the exact length of the output.
                                 let len_in_str = str_buffer.iter().position(|&x| x == NULL_CH).unwrap();
