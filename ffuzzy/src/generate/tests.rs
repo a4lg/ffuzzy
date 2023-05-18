@@ -887,8 +887,7 @@ fn large_data_triggers() {
     // Check all generators (for comparison; without last byte)
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024),
-            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024), "failed on last_method={}", LAST_USED_METHODS[i]);
         let hash_expected_long: LongRawFuzzyHash = str::parse(
             "1610612736\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
@@ -900,14 +899,10 @@ fn large_data_triggers() {
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
         ).unwrap();
         let hash_expected_short_as_long = hash_expected_short.to_long_form();
-        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_long,
-            "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow),
-            "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long,
-            "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>().unwrap(), hash_expected_short,
-            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_long, "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow), "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long, "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>().unwrap(), hash_expected_short, "failed on last_method={}", LAST_USED_METHODS[i]);
     }
     // Append 7 bytes pattern 64 times **and** one 0x01.
     // Use update
@@ -928,10 +923,8 @@ fn large_data_triggers() {
     }
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1,
-            "failed on last_method={}", LAST_USED_METHODS[i]);
-        assert!(!generator.may_warn_about_small_input_size(),
-            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1, "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert!(!generator.may_warn_about_small_input_size(), "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
             type FuzzyHashType = FuzzyHashData<$bh1sz, $bh2sz, false>;
             let hash_expected: FuzzyHashType = str::parse(
@@ -997,8 +990,7 @@ fn large_data_triggers() {
     }
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
-        assert!(generator.input_size > Generator::MAX_INPUT_SIZE,
-            "failed on last_method={}", LAST_USED_METHODS[i]);
+        assert!(generator.input_size > Generator::MAX_INPUT_SIZE, "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
             assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::InputSizeTooLarge),
                 "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}, last_method={}",
