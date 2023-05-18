@@ -63,6 +63,11 @@ impl BlockSizeRelation {
 /// Utility related to block size part of the fuzzy hash.
 ///
 /// See also: ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
+///
+/// # Incompatibility Notice
+///
+/// This module is renamed from `BlockSize` to `block_size` in the version 0.2.2.
+/// The old name `BlockSize` will be removed on the version 0.3.0.
 pub mod block_size {
     use super::*;
 
@@ -314,6 +319,11 @@ pub mod block_size {
 /// Utility (constants) related to block hash part of the fuzzy hash.
 ///
 /// See also: ["Block Hashes" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-hashes)
+///
+/// # Incompatibility Notice
+///
+/// This module is renamed from `BlockHash` to `block_hash` in the version 0.2.2.
+/// The old name `BlockHash` will be removed on the version 0.3.0.
 pub mod block_hash {
     /// The number of alphabets used in the block hash part of a fuzzy hash.
     ///

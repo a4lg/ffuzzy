@@ -12,6 +12,12 @@ pub(crate) mod tests;
 
 
 /// A module containing utilities for an element of block hash position array.
+///
+/// # Incompatibility Notice
+///
+/// This module is renamed from `BlockHashPositionArrayElement` to
+/// `block_hash_position_array_element` in the version 0.2.2.  The old name
+/// `BlockHashPositionArrayElement` will be removed on the version 0.3.0.
 pub mod block_hash_position_array_element {
     /// Checks whether a given position array entry has a sequence of the given
     /// length (or longer).
