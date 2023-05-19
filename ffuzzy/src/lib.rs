@@ -303,15 +303,18 @@ pub use hash::{
     FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash,
     FuzzyHashOperationError
 };
-pub use hash::parser_state::{
-    ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin
+pub use hash::block::{
+    block_size,
+    block_hash,
+    BlockSizeRelation
 };
-pub use hash::block::BlockSizeRelation;
-pub use hash::block::{block_size, block_hash};
 #[deprecated]
 pub use hash::block::block_size as BlockSize;
 #[deprecated]
 pub use hash::block::block_hash as BlockHash;
+pub use hash::parser_state::{
+    ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin
+};
 pub use hash_dual::{
     FuzzyHashDualData,
     DualFuzzyHash, LongDualFuzzyHash
