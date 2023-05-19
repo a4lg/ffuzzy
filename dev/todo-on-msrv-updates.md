@@ -7,6 +7,7 @@ version (MSRV), which we only expect stable features.
 ## 1.57.0
 
 *   `&array[..]` to `array.as_slice()`.
+*   Make faulting functions to be `const` (e.g. functions with `debug_assert!`).
 
 ## 1.58.0
 

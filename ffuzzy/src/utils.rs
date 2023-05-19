@@ -12,6 +12,8 @@ mod tests;
 ///
 /// # Development Notes (TODO)
 ///
+/// It will be `const` once MSRV of 1.57 is acceptable.
+///
 /// Consider removing it once MSRV of 1.67 is acceptable.
 #[inline(always)]
 pub(crate) fn u64_ilog2(value: u64) -> u32 {
@@ -37,6 +39,10 @@ pub(crate) fn u64_ilog2(value: u64) -> u32 {
 ///
 /// Note that this function will only check the validity of `n`
 /// on the debug build.
+///
+/// # Development Notes (TODO)
+///
+/// It will be `const` once MSRV of 1.57 is acceptable.
 #[inline(always)]
 pub(crate) fn u64_lsb_ones(n: u32) -> u64 {
     debug_assert!(n <= u64::BITS);
