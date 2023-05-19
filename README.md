@@ -192,8 +192,8 @@ This is intended for relatively small, in-memory pre-filtering.
     fuzzy hash comparison is about 1KiB in size (so that reducing 4KiB does not
     benefit well).
 *   `tests-slow` and `tests-very-slow`  
-    They will enable "slow" (may take seconds) and "very slow" (may take
-    minutes) tests, respectively.
+    They will enable "slow" (may take seconds or even a couple of minutes) and
+    "very slow" (may take more than that) tests, respectively.
 
 
 ## History and Main Contributors of ssdeep
