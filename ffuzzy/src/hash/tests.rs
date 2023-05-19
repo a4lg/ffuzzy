@@ -1276,7 +1276,7 @@ fn data_model_normalized_windows() {
                 assert_eq!(
                     hash.block_hash_2_windows().next().is_none(),
                     hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON,
-                    "failed (1-1) on bh1sz={:?}, bh2sz={:?}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
+                    "failed (1-2) on bh1sz={:?}, bh2sz={:?}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
                 );
                 // Check window contents (block hash 1)
                 if hash.block_hash_1_len() >= block_hash::MIN_LCS_FOR_COMPARISON {
