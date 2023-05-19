@@ -8,13 +8,14 @@ use core::cmp::Ordering;
 #[cfg(feature = "alloc")]
 use alloc::string::ToString;
 
-use crate::hash::block::{block_size, BlockSizeRelation};
+use crate::hash::block::{block_size, block_hash, BlockSizeRelation};
+use crate::test_utils::assert_fits_in;
 
 
 #[test]
 fn prerequisites() {
     // NUM_VALID must be a valid u8 value.
-    crate::test_utils::assert_fits_in!(block_size::NUM_VALID, u8);
+    assert_fits_in!(block_size::NUM_VALID, u8);
 }
 
 #[test]
@@ -244,4 +245,18 @@ fn block_size_relation_consistency() {
             }
         }
     }
+}
+
+
+#[test]
+fn block_hash_numeric_window_prerequisites() {
+    // Note:
+    // Some depends on the current MSRV.  If we update the MSRV,
+    // we may need to change here (and/or remove some of the tests).
+    assert!(block_hash::ALPHABET_SIZE.is_power_of_two());
+    assert_eq!(1usize.checked_shl(block_hash::NumericWindows::ILOG2_OF_ALPHABETS).unwrap(), block_hash::ALPHABET_SIZE);
+    assert_fits_in!(block_hash::MIN_LCS_FOR_COMPARISON, u32);
+    let bits = (block_hash::MIN_LCS_FOR_COMPARISON as u32).checked_mul(block_hash::NumericWindows::ILOG2_OF_ALPHABETS).unwrap();
+    assert_eq!(block_hash::NumericWindows::BITS, bits);
+    assert_eq!(block_hash::NumericWindows::MASK, crate::utils::u64_lsb_ones(bits));
 }

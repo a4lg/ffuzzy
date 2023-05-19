@@ -316,7 +316,7 @@ pub mod block_size {
 }
 
 
-/// Utility (constants) related to block hash part of the fuzzy hash.
+/// Utilities related to block hash part of the fuzzy hash.
 ///
 /// See also: ["Block Hashes" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-hashes)
 ///
@@ -387,6 +387,92 @@ pub mod block_hash {
     /// compute a similarity score.  Otherwise, the block hash comparison
     /// method returns zero (meaning, not similar).
     pub const MIN_LCS_FOR_COMPARISON: usize = 7;
+
+
+    /// Numeric windows of a block hash, each value representing unique value
+    /// corresponding a substring of length [`MIN_LCS_FOR_COMPARISON`].
+    ///
+    /// An object with this type is created by either of those methods
+    /// (*normalized forms only*):
+    ///
+    /// 1.  [`FuzzyHashData::block_hash_1_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_1_numeric_windows())
+    /// 2.  [`FuzzyHashData::block_hash_2_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_2_numeric_windows())
+    ///
+    /// Unlike [`block_hash_1_windows()`](crate::hash::FuzzyHashData::block_hash_1_windows()) and
+    /// [`block_hash_2_windows()`](crate::hash::FuzzyHashData::block_hash_2_windows()),
+    /// each element of this iterator is a numeric value.
+    ///
+    /// This numeric form has an one-to-one correspondence with the original
+    /// substring (and is compressed).  In the current ssdeep-compatible
+    /// configuration, each value is a 42-bit unsigned integer, generated from
+    /// seven (7) hash characters (consuming 6 bits each).
+    ///
+    /// *Note*:
+    /// 7 equals [`MIN_LCS_FOR_COMPARISON`] and
+    /// 6 equals the base-2 logarithm of [`ALPHABET_SIZE`].
+    pub struct NumericWindows<'a> {
+        v: &'a [u8],
+        hash: u64,
+    }
+
+    impl<'a> NumericWindows<'a> {
+        /*
+            TODO:
+            Once MSRV of 1.57 is acceptable, ILOG2_OF_ALPHABETS and MASK
+            can be calculated dynamically.
+            If MSRV of 1.67 is acceptable, its definition will be more natural.
+        */
+
+        /// A Base-2 logarithm of [`ALPHABET_SIZE`].
+        pub(crate) const ILOG2_OF_ALPHABETS: u32 = 6;
+
+        /// The width of a substring (in a numeric form) in bits.
+        pub const BITS: u32 =
+            (MIN_LCS_FOR_COMPARISON as u32) * Self::ILOG2_OF_ALPHABETS;
+
+        /// The mask value corresponding [`BITS`](Self::BITS).
+        pub const MASK: u64 = (1u64 << Self::BITS).wrapping_sub(1);
+
+        /// Creates a new object from an existing block hash.
+        pub(crate) fn new(block_hash: &'a [u8]) -> Self {
+            if block_hash.len() < MIN_LCS_FOR_COMPARISON {
+                Self { v: &[], hash: 0 }
+            }
+            else {
+                // grcov-excl-br-start
+                Self {
+                    v: &block_hash[MIN_LCS_FOR_COMPARISON - 1..],
+                    hash: block_hash[..MIN_LCS_FOR_COMPARISON - 1].iter()
+                        .fold(0, |x, &ch| (x << Self::ILOG2_OF_ALPHABETS) + ch as u64)
+                }
+                // grcov-excl-br-end
+            }
+        }
+    }
+
+    impl <'a> Iterator for NumericWindows<'a> {
+        type Item = u64;
+
+        #[inline]
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.v.len() == 0 {
+                None
+            }
+            else {
+                self.hash <<= Self::ILOG2_OF_ALPHABETS;
+                self.hash += self.v[0] as u64; // grcov-excl-br-line:ARRAY
+                self.hash &= Self::MASK;
+                // Pop the first element and continue
+                self.v = &self.v[1..]; // grcov-excl-br-line:ARRAY
+                Some(self.hash)
+            }
+        }
+
+        #[inline]
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            (self.v.len(), Some(self.v.len()))
+        }
+    }
 }
 
 
@@ -485,4 +571,7 @@ mod const_asserts {
     // (block_size::MIN << n) fits in 32-bits.
     const_assert!((block_size::MIN as u64) << (block_size::NUM_VALID - 1) <= u32::MAX as u64);
     const_assert!((block_size::MIN as u64) << block_size::NUM_VALID > u32::MAX as u64);
+
+    // For block_hash::NumericWindow
+    const_assert!(block_hash::MIN_LCS_FOR_COMPARISON > 0);
 }

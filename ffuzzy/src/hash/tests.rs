@@ -1317,6 +1317,44 @@ fn data_model_normalized_windows() {
 }
 
 #[test]
+fn data_model_normalized_numeric_windows() {
+    test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
+        macro_rules! test {
+            ($bh1sz: expr, $bh2sz: expr) => {
+                type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
+                if bh2_norm.len() > $bh2sz { break; }
+                let hash: FuzzyHashType = FuzzyHashType::new_from_internals(block_size::MIN, bh1_norm, bh2_norm);
+                // For each block hash, windows will return nothing as long as
+                // the block hash is shorter than block_hash::MIN_LCS_FOR_COMPARISON.
+                assert_eq!(
+                    hash.block_hash_1_numeric_windows().next().is_none(),
+                    hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON,
+                    "failed (1-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm
+                );
+                assert_eq!(
+                    hash.block_hash_2_numeric_windows().next().is_none(),
+                    hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON,
+                    "failed (1-2) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm
+                );
+                // Block hash 1
+                for (window, window_hash) in itertools::zip_eq(hash.block_hash_1_windows(), hash.block_hash_1_numeric_windows()) {
+                    let calculated_hash = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+                    assert_eq!(calculated_hash, window_hash,
+                        "failed (2-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                }
+                // Block hash 2
+                for (window, window_hash) in itertools::zip_eq(hash.block_hash_2_windows(), hash.block_hash_2_numeric_windows()) {
+                    let calculated_hash = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+                    assert_eq!(calculated_hash, window_hash,
+                        "failed (2-2) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                }
+            };
+        }
+        test_for_each_block_hash_sizes!(test);
+    });
+}
+
+#[test]
 fn data_model_normalized_windows_example() {
     // Prerequisites
     assert_eq!(block_hash::MIN_LCS_FOR_COMPARISON, 7);

@@ -1332,6 +1332,19 @@ where
         self.block_hash_1().windows(block_hash::MIN_LCS_FOR_COMPARISON)
     }
 
+    /// Windows representing normalized substrings,
+    /// converted to unique numeric value (block hash 1).
+    ///
+    /// This is very similar to
+    /// [`block_hash_1_windows()`](Self::block_hash_1_windows())
+    /// but each window is a numeric value corresponding each substring.
+    ///
+    /// See also: [`block_hash::NumericWindows`].
+    #[inline]
+    pub fn block_hash_1_numeric_windows(&self) -> block::block_hash::NumericWindows {
+        block::block_hash::NumericWindows::new(self.block_hash_1())
+    }
+
     /// Windows representing substrings
     /// suitable for filtering block hashes to match (block hash 2).
     ///
@@ -1339,6 +1352,19 @@ where
     #[inline]
     pub fn block_hash_2_windows(&self) -> core::slice::Windows<'_, u8> {
         self.block_hash_2().windows(block_hash::MIN_LCS_FOR_COMPARISON)
+    }
+
+    /// Windows representing normalized substrings,
+    /// converted to unique numeric value (block hash 2).
+    ///
+    /// This is very similar to
+    /// [`block_hash_2_windows()`](Self::block_hash_2_windows())
+    /// but each window is a numeric value corresponding each substring.
+    ///
+    /// See also: [`block_hash::NumericWindows`].
+    #[inline]
+    pub fn block_hash_2_numeric_windows(&self) -> block::block_hash::NumericWindows {
+        block::block_hash::NumericWindows::new(self.block_hash_2())
     }
 
     /// Converts the fuzzy hash from a raw form, normalizing it.
