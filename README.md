@@ -127,6 +127,34 @@ target.init_from(&hash1);
 assert_eq!(target.compare(&hash2), 88);
 ```
 
+### Introduction to Dual Fuzzy Hash
+
+It only shows a property of the dual fuzzy hash.  Dual fuzzy hash objects will
+be really useful on much, much complex cases.
+
+```rust
+// Requires the "alloc" feature to use the `to_string`-like methods (default enabled).
+use ssdeep::{FuzzyHash, DualFuzzyHash};
+
+// "Normalization" would change the contents.
+let str1      = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
+let str2      = "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK";
+let str2_norm = "12288:+yUwldx+C5IxJ845HYV5sxOH/cccex:+glvav84a5sxK";
+let hash1: FuzzyHash = str::parse(str1).unwrap();
+let hash2: DualFuzzyHash = str::parse(str2).unwrap();
+
+// Note that a dual fuzzy hash object efficiently preserves both raw and
+// normalized contents of the fuzzy hash.
+// *   raw:        "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK"
+// *   normalized: "12288:+yUwldx+C5IxJ845HYV5sxOH/cccex:+glvav84a5sxK"
+assert_eq!(hash2.to_raw_form_string(),   str2);
+assert_eq!(hash2.to_normalized_string(), str2_norm);
+
+// You can use the dual fuzzy hash object
+// just like regular fuzzy hashes on some methods.
+assert_eq!(hash1.compare(&hash2), 88);
+```
+
 
 ## Features New in this Crate
 
