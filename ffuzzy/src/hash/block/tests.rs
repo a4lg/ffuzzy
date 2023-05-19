@@ -8,7 +8,7 @@ use core::cmp::Ordering;
 #[cfg(feature = "alloc")]
 use alloc::string::ToString;
 
-use crate::hash::{block_size, BlockSizeRelation};
+use crate::hash::block::{block_size, BlockSizeRelation};
 
 
 #[test]
