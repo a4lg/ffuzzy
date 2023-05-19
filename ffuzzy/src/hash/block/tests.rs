@@ -210,36 +210,36 @@ fn block_size_relation_consistency() {
             #[allow(clippy::bool_assert_comparison)]
             match rel {
                 BlockSizeRelation::Far => {
-                    assert_eq!(rel.is_near(), false,                   "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), false,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near(bs1, bs2), false,    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_ne!(ord, Ordering::Equal,                   "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_ne!(ord, Ordering::Equal,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                 }
                 BlockSizeRelation::NearLt => {
-                    assert_eq!(rel.is_near(), true,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_lt(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Less,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Less,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                 }
                 BlockSizeRelation::NearEq => {
-                    assert_eq!(rel.is_near(), true,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_eq(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Equal,                   "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Equal,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                 }
                 BlockSizeRelation::NearGt => {
-                    assert_eq!(rel.is_near(), true,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(block_size::is_near_gt(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Greater,                 "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Greater,                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                 }
             }
         }
