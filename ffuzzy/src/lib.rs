@@ -383,7 +383,7 @@ pub mod constraints {
 ///
 /// This is the maximum length of the longest valid fuzzy hash
 /// when represented in a string.
-pub const MAX_LEN_IN_STR: usize = hash::LongRawFuzzyHash::MAX_LEN_IN_STR;
+pub const MAX_LEN_IN_STR: usize = LongRawFuzzyHash::MAX_LEN_IN_STR;
 
 
 
