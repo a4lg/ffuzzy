@@ -195,7 +195,7 @@
 //! database).
 //!
 //! Those methods above return actual substrings.  Instead, you may use
-//! [`block_hash_1_numeric_windows()`](FuzzyHashData::block_hash_1_numeric_windows) and [`block_hash_2_windows()`](FuzzyHashData::block_hash_2_numeric_windows) methods
+//! [`block_hash_1_numeric_windows()`](FuzzyHashData::block_hash_1_numeric_windows) and [`block_hash_2_numeric_windows()`](FuzzyHashData::block_hash_2_numeric_windows) methods
 //! to retrieve substrings as a numeric form.
 //!
 //! #### Convenient methods for pre-filtering
