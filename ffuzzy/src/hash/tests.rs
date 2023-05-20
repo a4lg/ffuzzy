@@ -1337,10 +1337,13 @@ fn data_model_normalized_numeric_windows() {
                     "failed (1-2) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm
                 );
                 // Block hash 1
-                for (window, window_hash) in itertools::zip_eq(hash.block_hash_1_windows(), hash.block_hash_1_numeric_windows()) {
-                    let calculated_hash = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
-                    assert_eq!(calculated_hash, window_hash,
-                        "failed (2-1-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                for (index, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_1_windows(), hash.block_hash_1_numeric_windows()).enumerate() {
+                    // Because NumericWindows reuses the previous numeric window to generate
+                    // the next one, we need to compare the result (window_as_num) with
+                    // the value created from scratch (calculated_window_as_num).
+                    let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+                    assert_eq!(calculated_window_as_num, window_as_num,
+                        "failed (2-1-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}, index={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm, index);
                 }
                 let len_windows =
                     if hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON { 0 }
@@ -1348,10 +1351,10 @@ fn data_model_normalized_numeric_windows() {
                 assert_eq!(hash.block_hash_1_numeric_windows().size_hint(), (len_windows, Some(len_windows)),
                     "failed (2-1-2) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
                 // Block hash 2
-                for (window, window_hash) in itertools::zip_eq(hash.block_hash_2_windows(), hash.block_hash_2_numeric_windows()) {
-                    let calculated_hash = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
-                    assert_eq!(calculated_hash, window_hash,
-                        "failed (2-2-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                for (index, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_2_windows(), hash.block_hash_2_numeric_windows()).enumerate() {
+                    let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+                    assert_eq!(calculated_window_as_num, window_as_num,
+                        "failed (2-2-1) on bh1sz={:?}, bh2sz={:?}, bh1_norm={:?}, bh2_norm={:?}, index={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm, index);
                 }
                 let len_windows =
                     if hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON { 0 }
