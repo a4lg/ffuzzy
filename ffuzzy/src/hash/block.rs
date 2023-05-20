@@ -434,6 +434,7 @@ pub mod block_hash {
         pub const MASK: u64 = (1u64 << Self::BITS).wrapping_sub(1);
 
         /// Creates a new object from an existing block hash.
+        #[inline]
         pub(crate) fn new(block_hash: &'a [u8]) -> Self {
             if block_hash.len() < MIN_LCS_FOR_COMPARISON {
                 Self { v: &[], hash: 0 }
