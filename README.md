@@ -173,7 +173,7 @@ efficiently, achieving the compression ratio of about 5 / 8.
 
 ### Advanced pre-filtering
 
-To narrow fuzzy hash pairs to compare, ffuzzy v0.2 provides two ways for
+To narrow fuzzy hash pairs to compare, ffuzzy version 0.2 provides two ways for
 pre-filtering (*Note:* you have to make sure that each value in the set of
 normalized fuzzy hashes is unique):
 
