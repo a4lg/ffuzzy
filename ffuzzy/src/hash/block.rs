@@ -441,10 +441,24 @@ pub mod block_hash {
             }
             else {
                 // grcov-excl-br-start
+                // // Safer implementation (independent to MIN_LCS_FOR_COMPARISON)
+                // Self {
+                //     v: &block_hash[MIN_LCS_FOR_COMPARISON - 1..],
+                //     hash: block_hash[..MIN_LCS_FOR_COMPARISON - 1].iter()
+                //         .fold(0, |x, &ch| (x << Self::ILOG2_OF_ALPHABETS) + ch as u64)
+                // }
+                // MIN_LCS_FOR_COMPARISON-dependent implementation (faster)
+                debug_assert_eq!(MIN_LCS_FOR_COMPARISON, 7);
+                let pre_window_as_num =
+                    ((block_hash[0] as u64) << (Self::ILOG2_OF_ALPHABETS * 5))
+                        | ((block_hash[1] as u64) << (Self::ILOG2_OF_ALPHABETS * 4))
+                        | ((block_hash[2] as u64) << (Self::ILOG2_OF_ALPHABETS * 3))
+                        | ((block_hash[3] as u64) << (Self::ILOG2_OF_ALPHABETS * 2))
+                        | ((block_hash[4] as u64) <<  Self::ILOG2_OF_ALPHABETS)
+                        | (block_hash[5] as u64);
                 Self {
                     v: &block_hash[MIN_LCS_FOR_COMPARISON - 1..],
-                    hash: block_hash[..MIN_LCS_FOR_COMPARISON - 1].iter()
-                        .fold(0, |x, &ch| (x << Self::ILOG2_OF_ALPHABETS) + ch as u64)
+                    hash: pre_window_as_num
                 }
                 // grcov-excl-br-end
             }
@@ -461,7 +475,7 @@ pub mod block_hash {
             }
             else {
                 self.hash <<= Self::ILOG2_OF_ALPHABETS;
-                self.hash += self.v[0] as u64; // grcov-excl-br-line:ARRAY
+                self.hash |= self.v[0] as u64; // grcov-excl-br-line:ARRAY
                 self.hash &= Self::MASK;
                 // Pop the first element and continue
                 self.v = &self.v[1..]; // grcov-excl-br-line:ARRAY
