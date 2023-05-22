@@ -24,10 +24,6 @@
 /// // Bound checking may be optimized out.
 /// let result = array[index];
 /// ```
-///
-/// An advanced usage can be found on
-/// the [`crate::generate::Generator::update()`] implementation
-/// (the `generator_update_template!()` macro).
 #[doc(alias = "optionally_unsafe")]
 macro_rules! optionally_unsafe_impl {
     {$($tokens: tt)*} => {
