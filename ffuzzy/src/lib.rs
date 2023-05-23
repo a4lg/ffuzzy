@@ -146,6 +146,8 @@
 //! be really useful on much, much complex cases.
 //!
 //! ```rust
+//! # #[cfg(feature = "alloc")]
+//! # {
 //! // Requires the "alloc" feature to use the `to_string`-like methods (default enabled).
 //! use ssdeep::{FuzzyHash, DualFuzzyHash};
 //!
@@ -166,6 +168,7 @@
 //! // You can use the dual fuzzy hash object
 //! // just like regular fuzzy hashes on some methods.
 //! assert_eq!(hash1.compare(&hash2), 88);
+//! # }
 //! ```
 //!
 //!
