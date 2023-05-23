@@ -88,7 +88,7 @@ pub mod block_size {
 
     /// Checks whether a given block size is valid.
     #[inline]
-    pub fn is_valid(block_size: u32) -> bool {
+    pub const fn is_valid(block_size: u32) -> bool {
         (block_size % MIN == 0) && (block_size / MIN).is_power_of_two()
     }
 
