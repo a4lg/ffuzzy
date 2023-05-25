@@ -289,8 +289,11 @@
 #![cfg_attr(feature = "nightly", feature(no_coverage))]
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
-// unsafe code is *only* allowed on either "unsafe" feature or tests
+// unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
+// feature or on the tests.  When only the "unchecked" feature is enabled,
+// unsafe code requires explicit allow.
 #![cfg_attr(not(any(feature = "unsafe", feature = "unchecked", test)), forbid(unsafe_code))]
+#![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
 // Unless in the maintainance mode, allow unknown lints.

@@ -383,6 +383,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
 /// `BlockHashPositionArrayImplUnchecked` in the version 0.2.3.  The old name
 /// `BlockHashPositionArrayImplUnsafe` will be removed on the version 0.3.0.
 #[cfg(feature = "unchecked")]
+#[allow(unsafe_code)]
 pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
@@ -488,6 +489,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
 }
 
 #[cfg(feature = "unchecked")]
+#[allow(unsafe_code)]
 unsafe impl<T> BlockHashPositionArrayImplUnchecked for T
 where
     T: BlockHashPositionArrayImplInternal

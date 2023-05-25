@@ -695,6 +695,7 @@ where
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
     #[cfg(feature = "unchecked")]
+    #[allow(unsafe_code)]
     #[inline(always)]
     pub unsafe fn init_from_raw_form_internals_raw_unchecked(
         &mut self,
@@ -774,6 +775,7 @@ where
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
     #[cfg(feature = "unchecked")]
+    #[allow(unsafe_code)]
     #[inline(always)]
     pub unsafe fn new_from_raw_form_internals_raw_unchecked(
         log_block_size: u8,
