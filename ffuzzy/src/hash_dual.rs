@@ -694,7 +694,7 @@ where
     ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn init_from_raw_form_internals_raw_unchecked(
         &mut self,
@@ -773,7 +773,7 @@ where
     ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn new_from_raw_form_internals_raw_unchecked(
         log_block_size: u8,

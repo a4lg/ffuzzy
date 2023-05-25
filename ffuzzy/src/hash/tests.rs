@@ -169,7 +169,7 @@ fn data_model_init_and_basic() {
                             assert!(hash1.full_eq(&hash5), "failed ({}-2-4) on bh1sz={:?}, bh2sz={:?}, log_block_size={:?}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
                             assert!(hash1.full_eq(&hash6), "failed ({}-2-5) on bh1sz={:?}, bh2sz={:?}, log_block_size={:?}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
                             assert!(hash1.full_eq(&hash7), "failed ({}-2-6) on bh1sz={:?}, bh2sz={:?}, log_block_size={:?}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            #[cfg(feature = "unsafe")]
+                            #[cfg(feature = "unchecked")]
                             unsafe {
                                 let mut hash_u1: $ty = <$ty>::new();
                                 hash_u1.init_from_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);

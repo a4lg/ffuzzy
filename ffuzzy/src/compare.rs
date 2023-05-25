@@ -28,7 +28,7 @@ use position_array::{
     BlockHashPositionArrayRef,
     BlockHashPositionArrayMutRef,
 };
-#[cfg(feature = "unsafe")]
+#[cfg(feature = "unchecked")]
 use position_array::BlockHashPositionArrayImplUnsafe;
 
 
@@ -106,7 +106,7 @@ pub struct FuzzyHashCompareTarget {
 }
 
 cfg_if::cfg_if! {
-    if #[cfg(not(feature = "unsafe"))] {
+    if #[cfg(not(feature = "unchecked"))] {
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
         /// [`FuzzyHashCompareTarget::block_hash_2()`].
         macro_rules! compare_target_block_hash_pub_impl {
@@ -257,7 +257,7 @@ impl FuzzyHashCompareTarget {
     /// assert_eq!(bh1.score_strings_raw(base_bh1), 100); // compare with itself
     /// assert_eq!(bh1.score_strings(base_bh1, 0),   16); // compare with itself, capped (block size 3)
     ///
-    /// #[cfg(feature = "unsafe")]
+    /// #[cfg(feature = "unchecked")]
     /// unsafe {
     ///     use ssdeep::internal_comparison::BlockHashPositionArrayImplUnsafe;
     ///     // Test unchecked counterparts
@@ -557,7 +557,7 @@ impl FuzzyHashCompareTarget {
     /// [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER)
     /// and/or both lengths are too large, it may cause an
     /// arithmetic overflow and return an useless value.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn score_cap_on_block_hash_comparison_unchecked(
         log_block_size: u8,
@@ -660,7 +660,7 @@ impl FuzzyHashCompareTarget {
     ///     block size relation of [`BlockSizeRelation::NearEq`].
     ///
     /// If they are not satisfied, it will return a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_unequal_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -735,7 +735,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -799,7 +799,7 @@ impl FuzzyHashCompareTarget {
     ///     block size relation of [`BlockSizeRelation::NearLt`].
     ///
     /// If they are not satisfied, it will return a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_unequal_near_lt_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -863,7 +863,7 @@ impl FuzzyHashCompareTarget {
     ///     block size relation of [`BlockSizeRelation::NearGt`].
     ///
     /// If they are not satisfied, it will return a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_unequal_near_gt_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -928,7 +928,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_unequal_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -1023,7 +1023,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless value.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -1091,7 +1091,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless value.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_lt_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -1159,7 +1159,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless value.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_gt_unchecked<const S1: usize, const S2: usize>(
         &self,
@@ -1301,7 +1301,7 @@ where
     ///
     /// If the condition above is not satisfied, it will return
     /// a meaningless score.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn compare_unequal_unchecked(&self, other: impl AsRef<Self>) -> u32 {
         self.compare_unequal_internal(other)

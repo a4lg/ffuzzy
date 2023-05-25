@@ -213,6 +213,10 @@ This is intended for relatively small, in-memory pre-filtering.
     safe Rust (*this default might change before version 1.0* but safe Rust code
     will be preserved).  Enabling this feature enables unsafe Rust code
     (although unsafe/safe code share the most using macros).
+*   `unchecked`  
+    This feature exposes `unsafe` functions and methods that doesn't check the
+    validity of the input.  This is a subset of `unsafe` that exposes `unsafe`
+    functionalities but does not switch the program to use the unsafe Rust.
 *   `nightly`  
     This feature enables some features specific to the Nightly Rust.  Note that
     this feature heavily depends on the version of `rustc` and should not be

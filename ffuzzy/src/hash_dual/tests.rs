@@ -141,7 +141,7 @@ fn data_model_init_and_basic() {
                     assert_eq!(hash, hash7, "failed (1-7) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
                     assert_eq!(hash, hash8, "failed (1-8) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
                     assert_eq!(hash, hash9, "failed (1-9) on type={}, bytes_str={:?}", stringify!($ty), bytes_str);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         let mut hash_u4: $ty = <$ty>::new();
                         hash_u4.init_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);

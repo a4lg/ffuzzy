@@ -100,7 +100,7 @@ fn block_size_log_validness() {
             let block_size_2 = block_size::from_log_internal(log_block_size);
             assert_eq!(block_size_1, block_size_2,
                 "failed on log_block_size={:?}", log_block_size);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 let block_size_3 = block_size::from_log_unchecked(log_block_size);
                 assert_eq!(block_size_1, block_size_3,
@@ -121,7 +121,7 @@ fn block_size_log_validness() {
             block_size::log_from_valid_internal(block_size),
             "failed on log_block_size={:?}", log_block_size
         );
-        #[cfg(feature = "unsafe")]
+        #[cfg(feature = "unchecked")]
         unsafe {
             assert_eq!(
                 log_block_size,

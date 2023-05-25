@@ -634,7 +634,7 @@ fn score_caps_on_block_hash_comparison() {
         for len in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
             let new_score_cap =
                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 assert_eq!(
                     new_score_cap,
@@ -684,7 +684,7 @@ fn compare_self() {
                         "failed (2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.compare_near_eq_internal(&$hash), 100,
                         "failed (3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(target.compare_near_eq_unchecked(&$hash), 100,
                         "failed (4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
@@ -770,7 +770,7 @@ fn compare_slightly_different() {
                             assert_eq!($score, hash.compare_unequal_internal(&$diff_hash),
                                 "failed ({}-1-9) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
-                            #[cfg(feature = "unsafe")]
+                            #[cfg(feature = "unchecked")]
                             unsafe {
                                 assert_eq!($score, target.compare_near_eq_unchecked(&$diff_hash),
                                     "failed ({}-1-10) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
@@ -964,7 +964,7 @@ fn comparison_with_block_size_pairs() {
             assert_eq!(score, hash1_l.compare_unequal(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
             assert_eq!(score, hash1_s.compare_unequal_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
             assert_eq!(score, hash1_l.compare_unequal_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 assert_eq!(score, target.compare_unequal_unchecked(&hash2_s),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                 assert_eq!(score, target.compare_unequal_unchecked(&hash2_l),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -984,7 +984,7 @@ fn comparison_with_block_size_pairs() {
                     assert!(target.is_comparison_candidate_near_eq(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1018,7 +1018,7 @@ fn comparison_with_block_size_pairs() {
                     assert_eq!(score, target.compare_unequal_near_eq(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(score, target.compare_near_eq_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert_eq!(score, target.compare_near_eq_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1033,7 +1033,7 @@ fn comparison_with_block_size_pairs() {
                     assert!(target.is_comparison_candidate_near_gt(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1054,7 +1054,7 @@ fn comparison_with_block_size_pairs() {
                     assert_eq!(score, target.compare_unequal_near_gt(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1067,7 +1067,7 @@ fn comparison_with_block_size_pairs() {
                     assert!(target.is_comparison_candidate_near_lt(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert!(target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1088,7 +1088,7 @@ fn comparison_with_block_size_pairs() {
                     assert_eq!(score, target.compare_unequal_near_lt(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                     assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
                         assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
@@ -1125,7 +1125,7 @@ fn compare_candidate_self() {
                         "failed (2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(expected_value, target.is_comparison_candidate_near_eq_internal(&$hash),
                         "failed (3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(expected_value, target.is_comparison_candidate_near_eq_unchecked(&$hash),
                             "failed (4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
@@ -1261,7 +1261,7 @@ fn compare_candidate_with_block_size_pairs() {
                         assert_eq!(cand_eq, target.is_comparison_candidate_near_eq(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        #[cfg(feature = "unsafe")]
+                        #[cfg(feature = "unchecked")]
                         unsafe {
                             assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                             assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
@@ -1274,7 +1274,7 @@ fn compare_candidate_with_block_size_pairs() {
                         assert_eq!(cand_gt, target.is_comparison_candidate_near_gt(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        #[cfg(feature = "unsafe")]
+                        #[cfg(feature = "unchecked")]
                         unsafe {
                             assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                             assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
@@ -1287,7 +1287,7 @@ fn compare_candidate_with_block_size_pairs() {
                         assert_eq!(cand_lt, target.is_comparison_candidate_near_lt(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                         assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        #[cfg(feature = "unsafe")]
+                        #[cfg(feature = "unchecked")]
                         unsafe {
                             assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
                             assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);

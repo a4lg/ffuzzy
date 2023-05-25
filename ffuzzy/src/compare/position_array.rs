@@ -376,7 +376,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
 ///
 /// This trait contains `unsafe` methods and need to comply with constraints
 /// described in each method.
-#[cfg(feature = "unsafe")]
+#[cfg(feature = "unchecked")]
 pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
@@ -481,7 +481,7 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
     unsafe fn score_strings_unchecked(&self, other: &[u8], log_block_size: u8) -> u32;
 }
 
-#[cfg(feature = "unsafe")]
+#[cfg(feature = "unchecked")]
 unsafe impl<T> BlockHashPositionArrayImplUnsafe for T
 where
     T: BlockHashPositionArrayImplInternal

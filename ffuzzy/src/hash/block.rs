@@ -113,7 +113,7 @@ pub mod block_size {
     ///
     /// See also:
     /// ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn from_log_unchecked(log_block_size: u8) -> u32 {
         debug_assert!(is_log_valid(log_block_size));
@@ -220,7 +220,7 @@ pub mod block_size {
     /// # Safety
     ///
     /// If `block_size` is not valid, the result will be unpredictable.
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     #[inline(always)]
     pub unsafe fn log_from_valid_unchecked(block_size: u32) -> u8 {
         log_from_valid_internal(block_size)

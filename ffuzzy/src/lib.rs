@@ -226,6 +226,10 @@
 //!     safe Rust (*this default might change before version 1.0* but safe Rust code
 //!     will be preserved).  Enabling this feature enables unsafe Rust code
 //!     (although unsafe/safe code share the most using macros).
+//! *   `unchecked`  
+//!     This feature exposes `unsafe` functions and methods that doesn't check the
+//!     validity of the input.  This is a subset of `unsafe` that exposes `unsafe`
+//!     functionalities but does not switch the program to the unsafe Rust.
 //! *   `nightly`  
 //!     This feature enables some features specific to the Nightly Rust.  Note that
 //!     this feature heavily depends on the version of `rustc` and should not be
@@ -286,7 +290,7 @@
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
 // unsafe code is *only* allowed on either "unsafe" feature or tests
-#![cfg_attr(not(any(feature = "unsafe", test)), forbid(unsafe_code))]
+#![cfg_attr(not(any(feature = "unsafe", feature = "unchecked", test)), forbid(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
 // Unless in the maintainance mode, allow unknown lints.
@@ -373,7 +377,7 @@ pub mod internal_comparison {
     };
     #[deprecated]
     pub use super::compare::position_array::block_hash_position_array_element as BlockHashPositionArrayElement;
-    #[cfg(feature = "unsafe")]
+    #[cfg(feature = "unchecked")]
     pub use super::compare::position_array::BlockHashPositionArrayImplUnsafe;
 }
 

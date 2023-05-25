@@ -19,7 +19,7 @@ use crate::compare::position_array::{
     BlockHashPositionArrayImplMutInternal,
     block_hash_position_array_element,
 };
-#[cfg(feature = "unsafe")]
+#[cfg(feature = "unchecked")]
 use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
 use crate::hash::block::block_hash;
 use crate::hash::test_utils::test_blockhash_content_all;
@@ -292,7 +292,7 @@ fn position_array_impl_debug() {
 
 
 cfg_if::cfg_if! {
-    if #[cfg(not(feature = "unsafe"))] {
+    if #[cfg(not(feature = "unchecked"))] {
         /// Composit trait for dynamic dispatching-based tests.
         trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal {}
         /// Auto implementation of [`CompositeImpl`].
@@ -357,7 +357,7 @@ fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
             assert!(value.is_equiv(bh), "failed on bh={:?}", bh);
             assert!(value.is_equiv_internal(bh), "failed on bh={:?}", bh);
             assert_eq!(value.is_valid_and_normalized(), is_already_normalized, "failed on bh={:?}", bh);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 assert!(value.is_equiv_unchecked(bh), "failed on bh={:?}", bh);
             }
@@ -371,7 +371,7 @@ fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
             assert!(value.is_valid_and_normalized(), "failed on bh={:?}", bh);
             assert_eq!(value.is_equiv(bh), is_already_normalized, "failed on bh={:?}", bh);
             assert_eq!(value.is_equiv_internal(bh), is_already_normalized, "failed on bh={:?}", bh);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 assert!(value.is_equiv_unchecked(bh_norm), "failed on bh={:?}", bh);
                 assert_eq!(value.is_equiv_unchecked(bh), is_already_normalized, "failed on bh={:?}", bh);
@@ -416,7 +416,7 @@ fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeIm
                     bh_mod[i] ^= 1; // requires that ALPHABET_SIZE is an even number.
                     assert!(!value.is_equiv(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
                     assert!(!value.is_equiv_internal(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
-                    #[cfg(feature = "unsafe")]
+                    #[cfg(feature = "unchecked")]
                     unsafe {
                         assert!(!value.is_equiv_unchecked(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
                     }
@@ -462,7 +462,7 @@ fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
                             "failed on bh={:?}, window={:?}", bh, window);
                         assert!(!value.has_common_substring_internal(window),
                             "failed on bh={:?}, window={:?}", bh, window);
-                        #[cfg(feature = "unsafe")]
+                        #[cfg(feature = "unchecked")]
                         unsafe {
                             assert!(!value.has_common_substring_unchecked(window),
                                 "failed on bh={:?}, window={:?}", bh, window);
@@ -476,7 +476,7 @@ fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
                             "failed on bh={:?}, window={:?}", bh, window);
                         assert!(value.has_common_substring_internal(window),
                             "failed on bh={:?}, window={:?}", bh, window);
-                        #[cfg(feature = "unsafe")]
+                        #[cfg(feature = "unchecked")]
                         unsafe {
                             assert!(value.has_common_substring_unchecked(window),
                                 "failed on bh={:?}, window={:?}", bh, window);
@@ -534,7 +534,7 @@ fn check_substring_fail_example(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeI
     wrapper(STR1, &|value: &dyn CompositeImpl| {
         assert!(!value.has_common_substring(STR2));
         assert!(!value.has_common_substring_internal(STR2));
-        #[cfg(feature = "unsafe")]
+        #[cfg(feature = "unchecked")]
         unsafe {
             assert!(!value.has_common_substring_unchecked(STR2));
         }
@@ -568,7 +568,7 @@ fn check_edit_distance_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImp
                 // Compare with itself.
                 assert_eq!(value.edit_distance(bh), 0, "failed on bh={:?}", bh);
                 assert_eq!(value.edit_distance_internal(bh), 0, "failed on bh={:?}", bh);
-                #[cfg(feature = "unsafe")]
+                #[cfg(feature = "unchecked")]
                 unsafe {
                     assert_eq!(value.edit_distance_unchecked(bh), 0, "failed on bh={:?}", bh);
                 }
@@ -611,7 +611,7 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
                 "failed on bh_norm={:?}", bh_norm);
             assert_eq!(value.score_strings_raw_internal(bh_norm), expected_score,
                 "failed on bh_norm={:?}", bh_norm);
-            #[cfg(feature = "unsafe")]
+            #[cfg(feature = "unchecked")]
             unsafe {
                 assert_eq!(value.score_strings_raw_unchecked(bh_norm), expected_score,
                     "failed on bh_norm={:?}", bh_norm);
@@ -633,7 +633,7 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
                     "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
                 assert_eq!(value.score_strings_internal(bh_norm, log_block_size), capped_score,
                     "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
-                #[cfg(feature = "unsafe")]
+                #[cfg(feature = "unchecked")]
                 unsafe {
                     assert_eq!(value.score_strings_unchecked(bh_norm, log_block_size), capped_score,
                         "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
