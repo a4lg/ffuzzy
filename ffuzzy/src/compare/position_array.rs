@@ -205,7 +205,7 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
 }
 
 
-/// The implementation of the block hash position array (unsafe; immutable).
+/// The implementation of the block hash position array (unchecked; immutable).
 ///
 /// # Examples
 ///
@@ -370,7 +370,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
 }
 
 
-/// The implementation of the block hash position array (unsafe; immutable).
+/// The implementation of the block hash position array (unchecked; immutable).
 ///
 /// # Safety
 ///
@@ -659,7 +659,7 @@ where
 }
 
 
-/// The implementation of the block hash position array (unsafe; mutable).
+/// The implementation of the block hash position array (unchecked; mutable).
 pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDataMut {
     /// Clears the current representation of the block hash
     /// without resetting the length.
