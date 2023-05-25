@@ -378,7 +378,10 @@ pub mod internal_comparison {
     #[deprecated]
     pub use super::compare::position_array::block_hash_position_array_element as BlockHashPositionArrayElement;
     #[cfg(feature = "unchecked")]
-    pub use super::compare::position_array::BlockHashPositionArrayImplUnsafe;
+    pub use super::compare::position_array::BlockHashPositionArrayImplUnchecked;
+    #[cfg(feature = "unchecked")]
+    #[deprecated]
+    pub use super::compare::position_array::BlockHashPositionArrayImplUnchecked as BlockHashPositionArrayImplUnsafe;
 }
 
 /// Module containing certain constraints about fuzzy hash data.

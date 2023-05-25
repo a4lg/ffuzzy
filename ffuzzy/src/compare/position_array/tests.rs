@@ -20,7 +20,7 @@ use crate::compare::position_array::{
     block_hash_position_array_element,
 };
 #[cfg(feature = "unchecked")]
-use crate::compare::position_array::BlockHashPositionArrayImplUnsafe;
+use crate::compare::position_array::BlockHashPositionArrayImplUnchecked;
 use crate::hash::block::block_hash;
 use crate::hash::test_utils::test_blockhash_content_all;
 use crate::test_utils::test_recommended_default;
@@ -303,11 +303,11 @@ cfg_if::cfg_if! {
     }
     else {
         /// Composit trait for dynamic dispatching-based tests.
-        trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnsafe {}
+        trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnchecked {}
         /// Auto implementation of [`CompositeImpl`].
         impl<T> CompositeImpl for T
         where
-            T : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnsafe
+            T : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnchecked
         {}
     }
 }

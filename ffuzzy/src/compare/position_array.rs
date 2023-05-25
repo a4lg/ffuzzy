@@ -218,7 +218,7 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
 /// use ssdeep::compare::position_array::BlockHashPositionArrayImplInternal;
 /// ```
 pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::is_equiv_unchecked()`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::is_equiv_unchecked()`].
     #[inline]
     fn is_equiv_internal(&self, other: &[u8]) -> bool {
         debug_assert!(self.is_valid());
@@ -238,7 +238,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         true
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::has_common_substring_unchecked()`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::has_common_substring_unchecked()`].
     #[inline(always)]
     fn has_common_substring_internal(&self, other: &[u8]) -> bool {
         debug_assert!(self.is_valid());
@@ -276,7 +276,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         false
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::edit_distance_unchecked()`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::edit_distance_unchecked()`].
     #[inline(always)]
     fn edit_distance_internal(&self, other: &[u8]) -> u32 {
         let len = self.len();
@@ -313,7 +313,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         cur
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_raw_unchecked()`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::score_strings_raw_unchecked()`].
     #[inline(always)]
     fn score_strings_raw_internal(&self, other: &[u8]) -> u32 {
         let len = self.len();
@@ -342,7 +342,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         )) / block_hash::FULL_SIZE as u32
     }
 
-    /// The internal implementation of [`BlockHashPositionArrayImplUnsafe::score_strings_unchecked()`].
+    /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::score_strings_unchecked()`].
     #[inline(never)]
     fn score_strings_internal(&self, other: &[u8], log_block_size: u8) -> u32 {
         /*
@@ -376,8 +376,14 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
 ///
 /// This trait contains `unsafe` methods and need to comply with constraints
 /// described in each method.
+///
+/// # Incompatibility Notice
+///
+/// This trait is renamed from `BlockHashPositionArrayImplUnsafe` to
+/// `BlockHashPositionArrayImplUnchecked` in the version 0.2.3.  The old name
+/// `BlockHashPositionArrayImplUnsafe` will be removed on the version 0.3.0.
 #[cfg(feature = "unchecked")]
-pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
+pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
     /// # Safety
@@ -482,7 +488,7 @@ pub unsafe trait BlockHashPositionArrayImplUnsafe: BlockHashPositionArrayData {
 }
 
 #[cfg(feature = "unchecked")]
-unsafe impl<T> BlockHashPositionArrayImplUnsafe for T
+unsafe impl<T> BlockHashPositionArrayImplUnchecked for T
 where
     T: BlockHashPositionArrayImplInternal
 {

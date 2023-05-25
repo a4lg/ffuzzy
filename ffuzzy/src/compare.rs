@@ -29,7 +29,7 @@ use position_array::{
     BlockHashPositionArrayMutRef,
 };
 #[cfg(feature = "unchecked")]
-use position_array::BlockHashPositionArrayImplUnsafe;
+use position_array::BlockHashPositionArrayImplUnchecked;
 
 
 /// An efficient position array-based fuzzy hash comparison target.
@@ -127,14 +127,14 @@ cfg_if::cfg_if! {
         /// [`FuzzyHashCompareTarget::block_hash_2()`].
         macro_rules! compare_target_block_hash_pub_impl {
             ($a:lifetime) => {
-                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe
+                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnchecked
             };
         }
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1_internal()`]
         /// and [`FuzzyHashCompareTarget::block_hash_2_internal()`].
         macro_rules! compare_target_block_hash_priv_impl {
             ($a:lifetime) => {
-                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnsafe + BlockHashPositionArrayImplInternal
+                impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnchecked + BlockHashPositionArrayImplInternal
             };
         }
     }
@@ -259,7 +259,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// #[cfg(feature = "unchecked")]
     /// unsafe {
-    ///     use ssdeep::internal_comparison::BlockHashPositionArrayImplUnsafe;
+    ///     use ssdeep::internal_comparison::BlockHashPositionArrayImplUnchecked;
     ///     // Test unchecked counterparts
     ///     assert!( bh1.is_equiv_unchecked(base_bh1));
     ///     assert!(!bh1.is_equiv_unchecked(base_bh1_mod));
@@ -339,7 +339,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// 1.  [`BlockHashPositionArrayData`]
     /// 2.  [`BlockHashPositionArrayImpl`]
-    /// 3.  [`BlockHashPositionArrayImplUnsafe`]
+    /// 3.  [`BlockHashPositionArrayImplUnchecked`]
     ///     (only if the `unsafe` feature is enabled)
     #[inline(always)]
     pub fn block_hash_1(&self) -> compare_target_block_hash_pub_impl!('_) {
