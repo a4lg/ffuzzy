@@ -219,7 +219,7 @@ pub(crate) mod test_utils;
 ///     So, this case must be handled separately.
 ///
 /// 2.  For each block hash pair (in which the effective block size match),
-///     compute the sub-similarity score as follows:
+///     compute the sub-similarity score (between `bhA` and `bhB`) as follows:
 ///
 ///     1.  Search for a common substring of the length of
 ///         [`block_hash::MIN_LCS_FOR_COMPARISON`] or longer.
@@ -228,8 +228,12 @@ pub(crate) mod test_utils;
 ///         edit distance-based scoring is performed.
 ///
 ///     2.  Compute the edit distance between two block hashes and scale it
-///         *   from `0..=(A.len()+B.len())` (`0` is the perfect match)
+///         *   from `0..=(bhA.len()+bhB.len())` (`0` is the perfect match)
 ///         *   to `0..=100` (`100` is the perfect match).
+///
+///         *Note*: this scaling takes multiple steps (for a historical
+///         reason) and see the source code for the exact behavior (including
+///         rounding-related one).
 ///
 ///     3.  For small block sizes,
 ///         [cap the score to prevent exaggregating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
