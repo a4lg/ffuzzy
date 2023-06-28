@@ -212,7 +212,7 @@ pub(crate) mod test_utils;
 /// 1.  If two normalized hashes `A` and `B` are completely the same,
 ///     the similarity score is `100` (a perfect match) no matter what.
 ///
-///     This case is not subject to the edit distance-based scoring
+///     This case is not subject to the edit distance-based scoring.
 ///     For instance, [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
 ///     may return `false` on such cases.
 ///
