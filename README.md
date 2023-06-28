@@ -125,6 +125,11 @@ assert_eq!(hash1.compare(&hash2), 88);
 // But there's another way of comparison.
 // If you compare "a fuzzy hash" with "other many fuzzy hashes", this method
 // (using FuzzyHashCompareTarget as "a fuzzy hash") is much, much faster.
+let target: FuzzyHashCompareTarget = FuzzyHashCompareTarget::from(&hash1);
+assert_eq!(target.compare(&hash2), 88);
+
+// If you reuse the same `target` object repeatedly for multiple fuzzy hashes,
+// `new` and `init_from` will be helpful.
 let mut target: FuzzyHashCompareTarget = FuzzyHashCompareTarget::new();
 target.init_from(&hash1);
 assert_eq!(target.compare(&hash2), 88);
