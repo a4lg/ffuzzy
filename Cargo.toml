@@ -1,6 +1,7 @@
 [workspace]
 members = ["ffuzzy"]
 exclude = ["dev/generator/hash-blocksize-debruijn"]
+resolver = "2"
 
 [profile.test]
 opt-level = 1
