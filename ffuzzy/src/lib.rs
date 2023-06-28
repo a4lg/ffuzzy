@@ -44,10 +44,10 @@
 //! performance to libfuzzy even if only "easy" functions are used and no
 //! *unsafe* features are enabled.
 //!
-//! If we unlock the performance by the `unsafe` feature, it's generally faster than
-//! libfuzzy and even comparable to ffuzzy++ (depends on various conditions, though).
-//! `*_unchecked` functions will be useful when you use this crate as a part of
-//! specialized large scale clustering applications.
+//! If we unlock the performance by `unsafe` / `unchecked` features, it's generally
+//! faster than libfuzzy and even comparable to ffuzzy++ (depends on various
+//! conditions, though).  `*_unchecked` functions will be useful when you use this
+//! crate as a part of specialized large scale clustering applications.
 //!
 //!
 //! ## Usage: Basic
@@ -228,8 +228,9 @@
 //!     (although unsafe/safe code share the most using macros).
 //! *   `unchecked`  
 //!     This feature exposes `unsafe` functions and methods that don't check the
-//!     validity of the input.  This is a subset of `unsafe` that exposes `unsafe`
-//!     functionalities but does not switch the program to use the unsafe Rust.
+//!     validity of the input.  This is a subset of the `unsafe` feature that
+//!     exposes `unsafe` functionalities but does not switch the program to use the
+//!     unsafe Rust.
 //! *   `nightly`  
 //!     This feature enables some features specific to the Nightly Rust.  Note that
 //!     this feature heavily depends on the version of `rustc` and should not be

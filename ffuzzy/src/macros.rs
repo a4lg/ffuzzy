@@ -41,7 +41,7 @@ macro_rules! optionally_unsafe_impl {
 
 /// Declare an invariant for optimization.
 ///
-/// When feature `unsafe` is disabled, it only places [`debug_assert!()`].
+/// When the feature `unsafe` is disabled, it only places [`debug_assert!()`].
 /// If both `unsafe` and `nightly` are enabled, [`core::intrinsics::assume()`]
 /// is used (which requires the `core_intrinsics` Rust unstable feature).
 /// If only the `unsafe` feautre is enabled,

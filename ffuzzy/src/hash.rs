@@ -921,9 +921,9 @@ where
     ///
     /// Because of its purpose, this method is not designed to be fast.
     ///
-    /// Note that, despite that it is only relevant to users when the `unsafe`
-    /// feature is enabled but made public without any features because this
-    /// method is not *unsafe*.
+    /// Note that, despite that it is only relevant to users when the
+    /// `unchecked` feature is enabled but made public without any features
+    /// because this method is not *unsafe*.
     pub fn is_valid(&self) -> bool {
         block_size::is_log_valid(self.log_blocksize)
             && (self.len_blockhash1 as usize) <= S1
@@ -962,9 +962,9 @@ where
     ///
     /// Because of its purpose, this method is not designed to be fast.
     ///
-    /// Note that, despite that it is only relevant to users when the `unsafe`
-    /// feature is enabled but made public without any features because this
-    /// method is not *unsafe*.
+    /// Note that, despite that it is only relevant to users when the
+    /// `unchecked` feature is enabled but made public without any features
+    /// because this method is not *unsafe*.
     pub fn full_eq(&self, other: &Self) -> bool {
         // This is the auto-generated code by rust-analyzer as the default
         // PartialEq implementation of FuzzyHashData struct.

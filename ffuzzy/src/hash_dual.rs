@@ -954,9 +954,9 @@ where
     ///
     /// Because of its purpose, this method is not designed to be fast.
     ///
-    /// Note that, despite that it is only relevant to users when the `unsafe`
-    /// feature is enabled but made public without any features because this
-    /// method is not *unsafe*.
+    /// Note that, despite that it is only relevant to users when the
+    /// `unchecked` feature is enabled but made public without any features
+    /// because this method is not *unsafe*.
     pub fn is_valid(&self) -> bool {
         self.norm_hash.is_valid() &&
             algorithms::is_valid_rle_block_for_block_hash(
