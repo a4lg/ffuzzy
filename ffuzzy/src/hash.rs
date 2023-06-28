@@ -300,6 +300,8 @@ impl core::fmt::Display for FuzzyHashOperationError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for FuzzyHashOperationError {}
+#[cfg(all(not(feature = "std"), feature = "nightly"))]
+impl core::error::Error for FuzzyHashOperationError {}
 
 
 /// Implementation for all variants of fuzzy hashes.

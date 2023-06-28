@@ -108,6 +108,8 @@ impl core::fmt::Display for ParseError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
+#[cfg(all(not(feature = "std"), feature = "nightly"))]
+impl core::error::Error for ParseError {}
 
 
 /// A type which represents a state after parsing a block hash.

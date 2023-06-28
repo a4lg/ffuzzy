@@ -55,6 +55,8 @@ impl core::fmt::Display for ParseErrorEither {
 
 #[cfg(feature = "std")]
 impl std::error::Error for ParseErrorEither {}
+#[cfg(all(not(feature = "std"), feature = "nightly"))]
+impl core::error::Error for ParseErrorEither {}
 
 /// Compare two fuzzy hashes.
 ///

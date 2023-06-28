@@ -286,6 +286,7 @@
 #![cfg_attr(feature = "nightly", feature(doc_cfg))]
 #![cfg_attr(feature = "nightly", feature(doc_auto_cfg))]
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
+#![cfg_attr(feature = "nightly", feature(error_in_core))]
 #![cfg_attr(feature = "nightly", feature(no_coverage))]
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]

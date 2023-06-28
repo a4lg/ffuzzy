@@ -471,6 +471,8 @@ impl core::fmt::Display for GeneratorError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for GeneratorError {}
+#[cfg(all(not(feature = "std"), feature = "nightly"))]
+impl core::error::Error for GeneratorError {}
 
 impl Generator {
     /// Returns the preferred maximum input size at the specified block size.
