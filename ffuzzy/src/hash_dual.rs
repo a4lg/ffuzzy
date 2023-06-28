@@ -1162,7 +1162,7 @@ where
     RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_fmt(format_args!("{{{}|{}}}", self.norm_hash, self.to_raw_form()))
+        write!(f, "{{{}|{}}}", self.norm_hash, self.to_raw_form())
     }
 }
 
