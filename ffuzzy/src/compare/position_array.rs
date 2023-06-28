@@ -409,10 +409,11 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     /// up to *k* errors under the Hamming distance).
     ///
     /// This algorithm is modified:
-    /// *   to search only perfect matches (up to 0 errors),
+    /// *   to search only perfect matches (up to 0 errors; *k* = 0),
     /// *   to return as soon as possible if it finds a common substring and
     /// *   to share the position array representation with
-    ///     [`BlockHashPositionArrayImpl::edit_distance()`]
+    ///     [`BlockHashPositionArrayImpl::edit_distance()`] by reversing
+    ///     a pattern from the original paper
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Safety
@@ -481,7 +482,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     ///     [`block_hash::ALPHABET_SIZE`].
     /// *   `log_block_size` [must be valid](block_size::is_log_valid)
     ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
-    ///     not valid as a block size for a fuzzy hash object but valid for this
+    ///     not valid as a block size for a fuzzy hash object but valid on this
     ///     method).
     ///
     /// If they are not satisfied, it will return a meaningless score.
@@ -545,10 +546,11 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// up to *k* errors under the Hamming distance).
     ///
     /// This algorithm is modified:
-    /// *   to search only perfect matches (up to 0 errors),
+    /// *   to search only perfect matches (up to 0 errors; *k* = 0),
     /// *   to return as soon as possible if it finds a common substring and
     /// *   to share the position array representation with
-    ///     [`edit_distance()`](Self::edit_distance())
+    ///     [`edit_distance()`](Self::edit_distance()) by reversing
+    ///     a pattern from the original paper
     ///     (the original algorithm used reverse "incidence matrix").
     ///
     /// # Usage Constraints
@@ -610,7 +612,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///     [`block_hash::ALPHABET_SIZE`].
     /// *   `log_block_size` [must be valid](block_size::is_log_valid)
     ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
-    ///     not valid as a block size for a fuzzy hash object but valid for this
+    ///     not valid as a block size for a fuzzy hash object but valid on this
     ///     method).
     fn score_strings(&self, other: &[u8], log_block_size: u8) -> u32;
 }

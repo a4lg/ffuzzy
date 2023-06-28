@@ -12,7 +12,7 @@ use crate::hash::RawFuzzyHash;
 /// # Example
 ///
 /// ```
-/// // Requires the "alloc" feature to use `to_string` method (default enabled).
+/// // Requires the "alloc" feature to use `to_string()` method (default enabled).
 /// # #[cfg(feature = "alloc")]
 /// assert_eq!(
 ///     ssdeep::hash_buf(b"Hello, World!\n").unwrap().to_string(),

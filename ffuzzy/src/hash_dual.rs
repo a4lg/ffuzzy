@@ -32,16 +32,16 @@ mod tests;
 ///
 /// 6 bits is enough to store any block hash offset.
 ///
+/// This `offset` is the one of a normalized block hash (and must be the last
+/// character offset of the sequence).
+///
 /// Because [`block_hash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
 /// offset zero as the terminator (if the offset is zero, the length must be
 /// encoded as zero, making the RLE block zero-terminated).
 ///
-/// This `offset` is the one of a normalized block hash (and must be the last
-/// character offset of the sequence).
-///
 /// 2 bits of length is enough to compress
-/// [`block_hash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one byte, making the
-/// long sequence able to be compressed in a fixed-size RLE block.
+/// [`block_hash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one RLE encoding, making
+/// the long sequence able to be compressed in a fixed-size RLE block.
 ///
 /// The encoded length is one less than the actual length for efficiency.
 /// For instance, encoded `length` of `0` actually means repeating a character
@@ -515,7 +515,7 @@ mod algorithms {
 /// ```
 /// # #[cfg(feature = "alloc")]
 /// # {
-/// // Requires the "alloc" feature to use `to_string` method (default enabled).
+/// // Requires the "alloc" feature to use `to_string()` method (default enabled).
 /// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
 ///
 /// let hash_str_raw  = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";

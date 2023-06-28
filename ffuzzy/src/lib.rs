@@ -86,7 +86,7 @@
 //! ### Hashing a Buffer
 //!
 //! ```rust
-//! // Requires the "alloc" feature to use the `to_string` method (default enabled).
+//! // Requires the "alloc" feature to use the `to_string()` method (default enabled).
 //! use ssdeep::{Generator, RawFuzzyHash};
 //!
 //! let mut generator = Generator::new();
@@ -111,7 +111,7 @@
 //! ### Comparing Fuzzy Hashes
 //!
 //! ```rust
-//! // Requires the "alloc" feature to use the `to_string` method (default enabled).
+//! // Requires the "alloc" feature to use the `to_string()` method (default enabled).
 //! use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
 //!
 //! // Those fuzzy hash strings are "normalized" so that easier to compare.
@@ -153,7 +153,7 @@
 //! ```rust
 //! # #[cfg(feature = "alloc")]
 //! # {
-//! // Requires the "alloc" feature to use the `to_string`-like methods (default enabled).
+//! // Requires the "alloc" feature to use the `to_string()`-like methods (default enabled).
 //! use ssdeep::{FuzzyHash, DualFuzzyHash};
 //!
 //! // "Normalization" would change the contents.
