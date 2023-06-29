@@ -472,7 +472,7 @@ pub mod block_hash {
 
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {
-            if self.v.len() == 0 {
+            if self.v.is_empty() {
                 None
             }
             else {
