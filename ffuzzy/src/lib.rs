@@ -284,7 +284,7 @@
 //!
 //! ## For Developers
 //!
-//! *   [Implementation Notes](crate::internals::impl_notes)
+//! *   [Implementation Notes](crate::docs::internals::impl_notes)
 
 // no_std
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -340,7 +340,7 @@ mod utils;
 
 #[cfg(doc)]
 #[allow(missing_docs)]
-pub mod internals;
+pub mod docs;
 
 pub use compare::FuzzyHashCompareTarget;
 #[cfg(feature = "easy-functions")]
