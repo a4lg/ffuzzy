@@ -12,42 +12,10 @@
 //! You can generate / parse / compare (ssdeep-compatible) fuzzy hashes
 //! with this crate.
 //!
-//! This crate is the port of ssdeep (libfuzzy) to the Rust language, created
-//! by a ssdeep maintainer, Tsukasa OI.
-//!
-//! This crate is designed to be a replacement to the original ssdeep library,
-//! libfuzzy.  So, it implements some "easy" functions for daily use cases.
-//!
-//! Some interface originates from [ffuzzy++](https://github.com/a4lg/ffuzzypp),
-//! a C++ port of libfuzzy written by Tsukasa OI with additional features.  They
-//! enable more efficient handling of fuzzy hashes on large scale clustering.
-//!
-//! If you understand both [the property of fuzzy hashes](FuzzyHashData) and
-//! this crate well, you can cluster the fuzzy hashes over 5 times faster than
-//! libfuzzy.
-//!
-//!
-//! ## License (GNU GPL v2 or later)
-//!
-//! This crate (as a whole library) is licensed under the terms of the GNU General
-//! Public License as published by the Free Software Foundation; either version 2
-//! of the License, or (at your option) any later version.
-//!
-//! However, some portions are licensed under more permissive licenses (see the
-//! source code for details).
-//!
-//!
-//! ## Performance
-//!
-//! While ffuzzy++ performed well in the large scale clustering, some use cases were
-//! slower than libfuzzy.  In contrast, this crate expects (at least) comparable
-//! performance to libfuzzy even if only "easy" functions are used and no
-//! *unsafe* features are enabled.
-//!
-//! If we unlock the performance by `unsafe` / `unchecked` features, it's generally
-//! faster than libfuzzy and even comparable to ffuzzy++ (depends on various
-//! conditions, though).  `*_unchecked` functions will be useful when you use this
-//! crate as a part of specialized large scale clustering applications.
+//! Along with "easy" functions, it provides fuzzy hashing-related structs for
+//! high performance / advanced use cases.  If you understand both the property of
+//! fuzzy hashes and this crate well, you can cluster the fuzzy hashes over 5 times
+//! faster than libfuzzy.
 //!
 //!
 //! ## Usage: Basic
@@ -117,6 +85,8 @@
 //! // Those fuzzy hash strings are "normalized" so that easier to compare.
 //! let str1 = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
 //! let str2 = "12288:+yUwldx+C5IxJ845HYV5sxOH/cccccccex:+glvav84a5sxK";
+//! // FuzzyHash object can be used to avoid parser / normalization overhead
+//! // and helps improving the performance.
 //! let hash1: FuzzyHash = str::parse(str1).unwrap();
 //! let hash2: FuzzyHash = str::parse(str2).unwrap();
 //!
@@ -177,46 +147,6 @@
 //! ```
 //!
 //!
-//! ## Features New in this Crate
-//!
-//! ### Dual fuzzy hash object
-//!
-//! While the fuzzy hash generator normally produces fuzzy hashes without
-//! normalization but comparing two fuzzy hashes requires two normalized ones.
-//! It enforced users to preserve both normalized and raw fuzzy hashes to collerate
-//! the original (raw) fuzzy hash and the comparison-friendly (normalized) one.
-//!
-//! In this crate, [`DualFuzzyHash`] and [`LongDualFuzzyHash`] allows storing both forms
-//! efficiently, achieving the compression ratio of about 5 / 8.
-//!
-//! ### Advanced pre-filtering
-//!
-//! To narrow fuzzy hash pairs to compare, ffuzzy version 0.2 provides two ways for
-//! pre-filtering (*Note:* you have to make sure that each value in the set of
-//! normalized fuzzy hashes is unique):
-//!
-//! #### Raw access to block hash substring windows
-//!
-//! The [`block_hash_1_windows()`](FuzzyHashData::block_hash_1_windows) and [`block_hash_2_windows()`](FuzzyHashData::block_hash_2_windows) methods provide raw
-//! access to block hash substring windows.  To edit distance-based comparison to
-//! occur on two block hashes with the same effective block size, at least one
-//! common substring must be exist.
-//!
-//! This is intended for relatively large scale clustering (involving separate
-//! database).
-//!
-//! Those methods above return actual substrings.  Instead, you may use
-//! [`block_hash_1_numeric_windows()`](FuzzyHashData::block_hash_1_numeric_windows) and [`block_hash_2_numeric_windows()`](FuzzyHashData::block_hash_2_numeric_windows) methods
-//! to retrieve substrings as a numeric form.
-//!
-//! #### Convenient methods for pre-filtering
-//!
-//! The [`is_comparison_candidate()`](FuzzyHashCompareTarget::is_comparison_candidate) method and its variants test whether the two
-//! fuzzy hashes are a candidate of edit distance-based comparison.
-//!
-//! This is intended for relatively small, in-memory pre-filtering.
-//!
-//!
 //! ## Crate Features
 //!
 //! *   `alloc` and `std` (default)  
@@ -273,6 +203,16 @@
 //! (which was not open source), further optimized the engine and introduced
 //! bit-parallel string processing functions.  He wrote ssdeep compatible engines
 //! multiple times, including [ffuzzy++](https://github.com/a4lg/ffuzzypp).
+//!
+//!
+//! ## License (GNU GPL v2 or later)
+//!
+//! This crate (as a whole library) is licensed under the terms of the GNU General
+//! Public License as published by the Free Software Foundation; either version 2
+//! of the License, or (at your option) any later version.
+//!
+//! However, some portions are licensed under more permissive licenses (see the
+//! source code for details).
 //!
 //!
 //! ## References
