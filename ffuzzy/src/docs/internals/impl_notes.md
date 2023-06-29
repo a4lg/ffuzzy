@@ -1,9 +1,9 @@
-Implementation Notes
+# Implementation Notes
 
 This page lists some implementation notes for developers.
 
 
-# `unsafe` Rust which looks like safe Rust
+## `unsafe` Rust which looks like safe Rust
 
 In this crate, the main motivation to use `unsafe` is to suppress array
 bounds checks (that are known to be safe according to the code review or
@@ -31,7 +31,7 @@ significantly between both implementations.
 But still, most of the code is shared.
 
 
-# Methods: Non-suffixed, `unchecked` and `internal`
+## Methods: Non-suffixed, `unchecked` and `internal`
 
 Non-suffixed version is the safest version for regular users and is safe (or
 to be more precise, optionally unsafe).  It checks validity of
@@ -58,7 +58,7 @@ caused by something outside this crate or a misuse of `unchecked` functions,
 it's not obligated to check such corruption
 (the crate developers can assume that `struct` is not "very" broken).
 
-## Links (to non-suffixed methods)
+### Links (to non-suffixed methods)
 
 *   [`crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()`]
 *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_eq()`]
