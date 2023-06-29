@@ -9,6 +9,10 @@ use crate::hash::block::{
     BlockHashSize, ConstrainedBlockHashSize,
     BlockHashSizes, ConstrainedBlockHashSizes
 };
+use crate::hash_dual::{
+    FuzzyHashDualData,
+    RleBlockSizeForBlockHash, ConstrainedRleBlockSizeForBlockHash
+};
 use crate::macros::{optionally_unsafe, invariant};
 
 
@@ -1272,6 +1276,38 @@ where
         let mut dest: Self = Self::new();
         dest.init_from_partial(value);
         dest
+    }
+}
+
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
+    core::convert::From<FuzzyHashDualData<S1, S2, C1, C2>> for FuzzyHashCompareTarget
+where
+    BlockHashSize<S1>: ConstrainedBlockHashSize,
+    BlockHashSize<S2>: ConstrainedBlockHashSize,
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
+    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+{
+    #[allow(clippy::needless_borrow)]
+    #[inline]
+    fn from(value: FuzzyHashDualData<S1, S2, C1, C2>) -> Self {
+        Self::from(value.as_ref())
+    }
+}
+
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
+    core::convert::From<&FuzzyHashDualData<S1, S2, C1, C2>> for FuzzyHashCompareTarget
+where
+    BlockHashSize<S1>: ConstrainedBlockHashSize,
+    BlockHashSize<S2>: ConstrainedBlockHashSize,
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
+    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+{
+    #[allow(clippy::needless_borrow)]
+    #[inline]
+    fn from(value: &FuzzyHashDualData<S1, S2, C1, C2>) -> Self {
+        Self::from(value.as_ref())
     }
 }
 

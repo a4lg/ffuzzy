@@ -21,12 +21,13 @@ use crate::compare::position_array::{
     BlockHashPositionArrayDataMut,
     BlockHashPositionArrayRef,
 };
-use crate::hash::{FuzzyHash, LongFuzzyHash, LongRawFuzzyHash};
+use crate::hash::{FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{block_size, block_hash, BlockSizeRelation};
 use crate::hash::test_utils::{
     test_blockhash_contents_all,
     test_blockhash_contents_no_sequences
 };
+use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash};
 use crate::test_utils::assert_fits_in;
 use crate::utils::u64_lsb_ones;
 
@@ -181,21 +182,34 @@ fn data_model_basic() {
             let block_size = block_size::from_log_internal(log_block_size_raw);
             // Template
             macro_rules! test_all {
-                ($hash: ident) => {
+                ($hash: ident, $dual_hash: ident) => {
                     let mut target = {
                         // Initialization: from (with value)
-                        let target1 = FuzzyHashCompareTarget::from($hash);
+                        let target1_1 = FuzzyHashCompareTarget::from($hash);
                         // Initialization: from (with ref)
-                        let target2 = FuzzyHashCompareTarget::from(&$hash);
+                        let target1_2 = FuzzyHashCompareTarget::from(&$hash);
                         // Initialization: init_from
-                        let mut target3 = FuzzyHashCompareTarget::new();
-                        target3.init_from(&$hash);
+                        let mut target1_3 = FuzzyHashCompareTarget::new();
+                        target1_3.init_from(&$hash);
+                        // Initialization (from dual): from (with value)
+                        let target2_1 = FuzzyHashCompareTarget::from($dual_hash);
+                        // Initialization (from dual): from (with ref)
+                        let target2_2 = FuzzyHashCompareTarget::from(&$dual_hash);
+                        // Initialization (from dual): init_from
+                        let mut target2_3 = FuzzyHashCompareTarget::new();
+                        target2_3.init_from($dual_hash);
                         // Compare equality
-                        assert!(target1.full_eq(&target2),
-                            "failed (1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
-                        assert!(target1.full_eq(&target3),
-                            "failed (1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
-                        target1
+                        assert!(target1_1.full_eq(&target1_2),
+                            "failed (1-1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        assert!(target1_1.full_eq(&target1_3),
+                            "failed (1-1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        assert!(target1_1.full_eq(&target2_1),
+                            "failed (1-2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        assert!(target1_1.full_eq(&target2_2),
+                            "failed (1-2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        assert!(target1_1.full_eq(&target2_3),
+                            "failed (1-2-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        target1_1
                     };
                     // Test validity and equivalence to the original
                     assert!(target.is_valid(),
@@ -252,14 +266,22 @@ fn data_model_basic() {
                 let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
                 assert_eq!(hash, FuzzyHash::try_from(LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize()).unwrap(),
                     "failed on log_block_size={:?} bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
-                test_all!(hash);
+                if bh2.len() <= block_hash::HALF_SIZE {
+                    let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                    test_all!(hash, dual_hash);
+                }
+                else {
+                    let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                    test_all!(hash, dual_hash);
+                }
             }
             // Long fuzzy hash
             {
                 let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
                 assert_eq!(hash, LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize(),
                     "failed on log_block_size={:?}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
-                test_all!(hash);
+                let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                test_all!(hash, dual_hash);
             }
         }
     });
