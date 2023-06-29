@@ -52,7 +52,14 @@ impl From<std::io::Error> for GeneratorOrIOError {
     }
 }
 
-impl std::error::Error for GeneratorOrIOError {}
+impl std::error::Error for GeneratorOrIOError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            GeneratorOrIOError::GeneratorError(err) => Some(err),
+            GeneratorOrIOError::IOError(err) => Some(err),
+        }
+    }
+}
 
 
 /// Constant temporary buffer size for "easy" functions.

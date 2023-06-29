@@ -4,6 +4,7 @@
 
 #![cfg(test)]
 
+use std::error::Error;
 use std::io::Read;
 use std::fs::File;
 
@@ -42,6 +43,15 @@ fn hash_file_not_exist() {
         assert_eq!(
             format!("{:?}", orig_error),
             format!("IOError({})", str_debug_bare)
+        );
+        // Display+Debug: GeneratorOrIoError::source() returns the underlying std::io::Error object.
+        assert_eq!(
+            format!("{}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            str_display_bare
+        );
+        assert_eq!(
+            format!("{:?}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            str_debug_bare
         );
     }
     else {
@@ -84,6 +94,15 @@ fn hash_stream_common_size_inconsistency() {
             format!("{:?}", orig_error),
             format!("GeneratorError({})", str_debug_bare)
         );
+        // Display+Debug: GeneratorOrIoError::source() returns the underlying GeneratorError object.
+        assert_eq!(
+            format!("{}", orig_error.source().unwrap().downcast_ref::<GeneratorError>().unwrap()),
+            str_display_bare
+        );
+        assert_eq!(
+            format!("{:?}", orig_error.source().unwrap().downcast_ref::<GeneratorError>().unwrap()),
+            str_debug_bare
+        );
     }
     else {
         // grcov-excl-start
@@ -120,6 +139,15 @@ fn hash_stream_common_io_fail() {
         assert_eq!(
             format!("{:?}", orig_error),
             format!("IOError({})", str_debug_bare)
+        );
+        // Display+Debug: GeneratorOrIoError::source() returns the underlying std::io::Error object.
+        assert_eq!(
+            format!("{}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            str_display_bare
+        );
+        assert_eq!(
+            format!("{:?}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            str_debug_bare
         );
     }
     else {
