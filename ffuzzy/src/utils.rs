@@ -19,11 +19,9 @@ mod tests;
 pub(crate) fn u64_ilog2(value: u64) -> u32 {
     cfg_if::cfg_if! {
         if #[cfg(ffuzzy_ilog2 = "fallback")] {
-            {
-                // Equiv: library/core/src/num/nonzero.rs (Rust 1.67)
-                debug_assert!(value != 0u64);
-                u64::BITS - 1 - value.leading_zeros()
-            }
+            // Equiv: library/core/src/num/nonzero.rs (Rust 1.67)
+            debug_assert!(value != 0u64);
+            u64::BITS - 1 - value.leading_zeros()
         }
         else if #[cfg(ffuzzy_ilog2 = "unstable_v1")] {
             u64::log2(value)

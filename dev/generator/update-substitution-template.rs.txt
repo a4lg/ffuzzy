@@ -81,10 +81,8 @@
                         _bh.h_half = PartialFNVHash::new();
                     }
                 }
-                else
-                {
-                    if self.bhidx_end - self.bhidx_start >= 2
-                    {
+                else {
+                    if self.bhidx_end - self.bhidx_start >= 2 {
                         if self.elim_border < self.fixed_size.unwrap_or(self.input_size) {
                             let idx = self.bh_context[_i + 1].blockhash_index; // grcov-excl-br-line:ARRAY
                             if idx >= block_hash::HALF_SIZE {

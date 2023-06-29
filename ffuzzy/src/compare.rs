@@ -321,8 +321,7 @@ impl FuzzyHashCompareTarget {
     /// assert_eq!(bh1.score_strings_internal(base_bh1, 0), 16);
     /// ```
     #[inline(always)]
-    fn block_hash_1_internal(&self) -> compare_target_block_hash_priv_impl!('_)
-    {
+    fn block_hash_1_internal(&self) -> compare_target_block_hash_priv_impl!('_) {
         BlockHashPositionArrayRef(&self.blockhash1, &self.len_blockhash1)
     }
 
@@ -408,8 +407,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// See also: [`block_hash_1_internal()`](Self::block_hash_1_internal())
     #[inline(always)]
-    fn block_hash_2_internal(&self) -> compare_target_block_hash_priv_impl!('_)
-    {
+    fn block_hash_2_internal(&self) -> compare_target_block_hash_priv_impl!('_) {
         BlockHashPositionArrayRef(&self.blockhash2, &self.len_blockhash2)
     }
 

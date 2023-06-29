@@ -828,9 +828,7 @@ impl BlockHashPositionArray {
     }
 }
 
-impl BlockHashPositionArrayData
-    for BlockHashPositionArray
-{
+impl BlockHashPositionArrayData for BlockHashPositionArray {
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         &self.representation
     }
@@ -840,9 +838,7 @@ impl BlockHashPositionArrayData
     }
 }
 
-impl BlockHashPositionArrayDataMut
-    for BlockHashPositionArray
-{
+impl BlockHashPositionArrayDataMut for BlockHashPositionArray {
     fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         &mut self.representation
     }
