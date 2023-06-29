@@ -5,6 +5,9 @@
 Everything ssdeep / libfuzzy can generate (as an output) *and* can be accepted
 back by ssdeep / libfuzzy is what we need to support on this project.
 
+In specific, the main version to keep compatibility is ssdeep / libfuzzy,
+version 2.14.1.
+
 ## Input
 
 The input data which *must* be supported by this project must qualify:

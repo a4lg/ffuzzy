@@ -224,6 +224,7 @@
 //!
 //! ## For Developers
 //!
+//! *   [Compatibility Policy](crate::docs::compat_policy)
 //! *   [Implementation Notes](crate::docs::internals::impl_notes)
 
 // no_std
