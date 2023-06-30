@@ -413,6 +413,40 @@ fn data_model_equiv_inequality_block_hash() {
     });
 }
 
+#[test]
+fn data_model_inequality_slightly_different() {
+    /*
+        Inequality
+        *   full_eq
+    */
+    let hash1 = FuzzyHashCompareTarget::new();
+    // Block hash 1
+    let mut hash2 = FuzzyHashCompareTarget::new();
+    hash2.blockhash1[0] = 1; // hash1: 0
+    assert!(!hash1.full_eq(&hash2));
+    assert!(!hash2.full_eq(&hash1));
+    // Block hash 2
+    let mut hash2 = FuzzyHashCompareTarget::new();
+    hash2.blockhash2[0] = 1; // hash1: 0
+    assert!(!hash1.full_eq(&hash2));
+    assert!(!hash2.full_eq(&hash1));
+    // Block hash 1 length
+    let mut hash2 = FuzzyHashCompareTarget::new();
+    hash2.len_blockhash1 = 1; // hash1: 0
+    assert!(!hash1.full_eq(&hash2));
+    assert!(!hash2.full_eq(&hash1));
+    // Block hash 2 length
+    let mut hash2 = FuzzyHashCompareTarget::new();
+    hash2.len_blockhash2 = 1; // hash1: 0
+    assert!(!hash1.full_eq(&hash2));
+    assert!(!hash2.full_eq(&hash1));
+    // Block size
+    let mut hash2 = FuzzyHashCompareTarget::new();
+    hash2.log_blocksize = 1; // hash1: 0
+    assert!(!hash1.full_eq(&hash2));
+    assert!(!hash2.full_eq(&hash1));
+}
+
 
 #[test]
 fn data_model_corruption() {
