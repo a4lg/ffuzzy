@@ -234,7 +234,7 @@ pub(crate) mod tests {
         assert_eq!(err.offset(), OFFSET);
     }
 
-    #[cfg(feature = "alloc")]
+    #[cfg(any(feature = "alloc", all(feature = "nightly", feature = "easy-functions")))]
     pub(crate) const PARSE_ERROR_CASES: [(ParseError, &str, &str); 3] = [
         (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected",   "ParseError(UnexpectedEndOfString, BlockSize, 0)"),
         (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected", "ParseError(UnexpectedEndOfString, BlockHash1, 2)"),

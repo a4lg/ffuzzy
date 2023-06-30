@@ -4,8 +4,12 @@
 
 #![cfg(test)]
 
+#[cfg(all(not(feature = "std"), feature = "nightly"))]
+use core::error::Error;
 #[cfg(feature = "alloc")]
 use alloc::format;
+#[cfg(feature = "std")]
+use std::error::Error;
 use crate::compare_easy::{compare, ParseErrorSide, ParseErrorEither};
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin, ParseErrorInfo};
 use crate::test_utils::test_auto_clone;
@@ -85,6 +89,24 @@ fn parse_error_either_impls_display_and_debug_with_side() {
         assert_eq!(
             format!("{:?}", ParseErrorEither(ParseErrorSide::Right, err)),
             format!("ParseErrorEither(Right, {})", err_str_debug),
+            "failed on err={:?}", err
+        );
+    }
+}
+
+#[cfg(any(feature = "std", feature = "nightly"))]
+#[test]
+fn parse_error_either_source_with_side() {
+    for (err, _err_str_display, _err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
+        // Test source error
+        assert_eq!(
+            *ParseErrorEither(ParseErrorSide::Left, err).source().unwrap().downcast_ref::<ParseError>().unwrap(),
+            err,
+            "failed on err={:?}", err
+        );
+        assert_eq!(
+            *ParseErrorEither(ParseErrorSide::Right, err).source().unwrap().downcast_ref::<ParseError>().unwrap(),
+            err,
             "failed on err={:?}", err
         );
     }
