@@ -399,8 +399,16 @@ fn data_model_corruption() {
         hash.norm_hash.blockhash2[..7].clone_from_slice(&[4, 4, 4, 5, 6, 6, 6]);
         hash.norm_hash.len_blockhash1 = 7;
         hash.norm_hash.len_blockhash2 = 7;
+        hash.norm_hash.log_blocksize = 0;
         assert!(hash.is_valid(), "failed (1-1) on type={}", stringify!($ty));
         assert!(hash.norm_hash.is_valid(), "failed (1-2) on type={}", stringify!($ty));
+        for log_block_size in u8::MIN..=u8::MAX {
+            hash.norm_hash.log_blocksize = log_block_size;
+            let is_valid = block_size::is_log_valid(log_block_size);
+            assert_eq!(hash.is_valid(), is_valid, "failed (1-3) on type={}", stringify!($ty));
+            assert_eq!(hash.norm_hash.is_valid(), is_valid, "failed (1-4) on type={}", stringify!($ty));
+        }
+        hash.norm_hash.log_blocksize = 0; // set to the valid value (again)
         // RLE block is currently filled with zeroes.
         assert!(hash.rle_block1.iter().all(|&x| x == 0), "failed (2-1) on type={}", stringify!($ty));
         assert!(hash.rle_block2.iter().all(|&x| x == 0), "failed (2-2) on type={}", stringify!($ty));
