@@ -106,7 +106,7 @@ target.init_from(&hash1);
 assert_eq!(target.compare(&hash2), 88);
 ```
 
-### Introduction to Dual Fuzzy Hash
+### Introduction to Dual Fuzzy Hashes
 
 It only shows a property of the dual fuzzy hash.  Dual fuzzy hash objects will
 be really useful on much, much complex cases.
@@ -144,7 +144,7 @@ assert_eq!(hash1.compare(&hash2), 88);
     respectively.
 *   `easy-functions` (default)  
     It provides easy-to-use high-level functions.
-*   `unsafe`  
+*   `unsafe` (**fast but unsafe**)  
     This crate is optionally unsafe.  By default, this crate is built with 100%
     safe Rust (*this default might change before version 1.0* but safe Rust code
     will be preserved).  Enabling this feature enables unsafe Rust code
