@@ -123,7 +123,7 @@ mod rle_encoding {
 /// current constant generics.
 ///
 /// This type should not be considered stable.
-pub struct RleBlockSizeForBlockHash<const SZ_BH: usize, const SZ_RLE: usize> {}
+pub struct ReconstructionBlockSize<const SZ_BH: usize, const SZ_RLE: usize> {}
 
 mod private {
     use super::*;
@@ -131,20 +131,20 @@ mod private {
 
     /// A trait to constrain RLE block size for given block hash size.
     ///
-    /// This type is implemented for [`RleBlockSizeForBlockHash`]
+    /// This type is implemented for [`ReconstructionBlockSize`]
     /// with following block hash sizes:
     ///
     /// *   [`block_hash::FULL_SIZE`]
     /// *   [`block_hash::HALF_SIZE`]
     ///
     /// This is a sealed trait.
-    pub trait SealedRleBlockSizeForBlockHash {}
+    pub trait SealedReconstructionBlockSize {}
 
     /// Template to generate RLE block size constraints
     /// including constant assertions.
     macro_rules! rle_size_for_block_hash_template {
         { $(sizes_def($block_hash_size: expr, $rle_size: expr);)* } => {
-            $(impl SealedRleBlockSizeForBlockHash for RleBlockSizeForBlockHash<{$block_hash_size}, {$rle_size}> {})*
+            $(impl SealedReconstructionBlockSize for ReconstructionBlockSize<{$block_hash_size}, {$rle_size}> {})*
 
             /// Constant assertions related to RLE block size requirements.
             #[doc(hidden)]
@@ -224,7 +224,7 @@ mod private {
 
 /// A trait to constrain RLE block size for given block hash size.
 ///
-/// This type is implemented for [`RleBlockSizeForBlockHash`] with
+/// This type is implemented for [`ReconstructionBlockSize`] with
 /// following block hash sizes:
 ///
 /// *   [`block_hash::FULL_SIZE`]
@@ -241,8 +241,8 @@ mod private {
 /// current constant generics.
 ///
 /// This trait should not be considered stable.
-pub trait ConstrainedRleBlockSizeForBlockHash: private::SealedRleBlockSizeForBlockHash {}
-impl<T> ConstrainedRleBlockSizeForBlockHash for T where T: private::SealedRleBlockSizeForBlockHash {}
+pub trait ConstrainedReconstructionBlockSize: private::SealedReconstructionBlockSize {}
+impl<T> ConstrainedReconstructionBlockSize for T where T: private::SealedReconstructionBlockSize {}
 
 
 mod algorithms {
@@ -259,7 +259,7 @@ mod algorithms {
     )
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        RleBlockSizeForBlockHash<SZ_BH, SZ_RLE>: ConstrainedRleBlockSizeForBlockHash
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
         optionally_unsafe! {
             let mut rle_offset = 0usize;
@@ -338,7 +338,7 @@ mod algorithms {
     )
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        RleBlockSizeForBlockHash<SZ_BH, SZ_RLE>: ConstrainedRleBlockSizeForBlockHash
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
         optionally_unsafe! {
             let mut offset_src = 0usize;
@@ -400,7 +400,7 @@ mod algorithms {
     ) -> bool
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        RleBlockSizeForBlockHash<SZ_BH, SZ_RLE>: ConstrainedRleBlockSizeForBlockHash
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
         let mut expanded_len = blockhash_len as u32;
         let mut zero_expected = false;
@@ -552,8 +552,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     /// RLE block 1 for reverse normalization of
     /// [block hash 1](crate::hash::FuzzyHashData::blockhash1).
@@ -577,8 +577,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     /// The maximum size of the block hash 1.
     ///
@@ -978,8 +978,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline(always)]
     fn as_ref(&self) -> &FuzzyHashData<S1, S2, true> {
@@ -993,8 +993,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     fn default() -> Self {
         Self::new()
@@ -1008,8 +1008,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
@@ -1025,8 +1025,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
@@ -1048,8 +1048,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
@@ -1063,8 +1063,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         /// The type to print an RLE encoded byte.
@@ -1158,8 +1158,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{{{}|{}}}", self.norm_hash, self.to_raw_form())
@@ -1172,8 +1172,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     type Err = ParseError;
     #[inline(always)]
@@ -1189,8 +1189,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
     fn from(value: FuzzyHashData<S1, S2, true>) -> Self {
@@ -1204,8 +1204,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
     fn from(value: FuzzyHashData<S1, S2, false>) -> Self {

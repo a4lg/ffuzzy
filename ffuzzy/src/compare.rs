@@ -11,7 +11,7 @@ use crate::hash::block::{
 };
 use crate::hash_dual::{
     FuzzyHashDualData,
-    RleBlockSizeForBlockHash, ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize, ConstrainedReconstructionBlockSize
 };
 use crate::macros::{optionally_unsafe, invariant};
 
@@ -1285,8 +1285,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[allow(clippy::needless_borrow)]
     #[inline]
@@ -1301,8 +1301,8 @@ where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
-    RleBlockSizeForBlockHash<S1, C1>: ConstrainedRleBlockSizeForBlockHash,
-    RleBlockSizeForBlockHash<S2, C2>: ConstrainedRleBlockSizeForBlockHash
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[allow(clippy::needless_borrow)]
     #[inline]
