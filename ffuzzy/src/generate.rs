@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
+use core::ops::AddAssign;
+
 use crate::generate::fnv_table::FNV_HASH_INIT;
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
 use crate::generate::fnv_table::FNV_TABLE;
@@ -99,6 +101,30 @@ impl PartialFNVHash {
 impl Default for PartialFNVHash {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl AddAssign<&[u8]> for PartialFNVHash {
+    /// Updates the hash value by processing a slice of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8]) {
+        self.update(buffer);
+    }
+}
+
+impl<const N: usize> AddAssign<&[u8; N]> for PartialFNVHash {
+    /// Updates the hash value by processing an array of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8; N]) {
+        self.update(&buffer[..]);
+    }
+}
+
+impl AddAssign<u8> for PartialFNVHash {
+    /// Updates the hash value by processing a byte.
+    #[inline(always)]
+    fn add_assign(&mut self, byte: u8) {
+        self.update_by_byte(byte);
     }
 }
 
@@ -231,6 +257,30 @@ impl Default for RollingHash {
     }
 }
 
+impl AddAssign<&[u8]> for RollingHash {
+    /// Updates the hash value by processing a slice of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8]) {
+        self.update(buffer);
+    }
+}
+
+impl<const N: usize> AddAssign<&[u8; N]> for RollingHash {
+    /// Updates the hash value by processing an array of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8; N]) {
+        self.update(&buffer[..]);
+    }
+}
+
+impl AddAssign<u8> for RollingHash {
+    /// Updates the hash value by processing a byte.
+    #[inline(always)]
+    fn add_assign(&mut self, byte: u8) {
+        self.update_by_byte(byte);
+    }
+}
+
 
 /// The invalid character for a "not filled" marker.
 const BLOCKHASH_CHAR_NIL: u8 = 0xff;
@@ -345,18 +395,28 @@ impl BlockHashContext {
 /// use ssdeep::{Generator, RawFuzzyHash};
 ///
 /// let mut generator = Generator::new();
-/// let buf1: &[u8] = b"Hello, ";
-/// let buf2: &[u8] = b"World!";
+/// let buf1: &[u8]    = b"Hello, ";
+/// let buf2: &[u8; 6] = b"World!";
 ///
 /// // Optional but supplying the *total* input size first improves the performance.
 /// // This is the total size of three update calls below.
 /// generator.set_fixed_input_size_in_usize(buf1.len() + buf2.len() + 1).unwrap();
 ///
 /// // Update the internal state of the generator.
-/// // Of course, you can call `update()`-family functions multiple times.
-/// generator.update(buf1);
-/// generator.update_by_iter(buf2.iter().cloned());
-/// generator.update_by_byte(b'\n');
+/// // Of course, you can update multiple times.
+/// if true {
+///     // Option 1: `+=` operator overload
+///     generator += buf1;
+///     generator += buf2;
+///     generator += b'\n';
+/// }
+/// else {
+///     // Option 2: `update()`-family functions
+///     //           (unlike `+=`, iterators are supported)
+///     generator.update(buf1);
+///     generator.update_by_iter((*buf2).into_iter());
+///     generator.update_by_byte(b'\n');
+/// }
 ///
 /// // Retrieve the fuzzy hash and convert to the string.
 /// let hash: RawFuzzyHash = generator.finalize().unwrap();
@@ -1126,6 +1186,30 @@ impl Generator {
 impl Default for Generator {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl AddAssign<&[u8]> for Generator {
+    /// Updates the hash value by processing a slice of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8]) {
+        self.update(buffer);
+    }
+}
+
+impl<const N: usize> AddAssign<&[u8; N]> for Generator {
+    /// Updates the hash value by processing an array of [`u8`].
+    #[inline(always)]
+    fn add_assign(&mut self, buffer: &[u8; N]) {
+        self.update(&buffer[..]);
+    }
+}
+
+impl AddAssign<u8> for Generator {
+    /// Updates the hash value by processing a byte.
+    #[inline(always)]
+    fn add_assign(&mut self, byte: u8) {
+        self.update_by_byte(byte);
     }
 }
 

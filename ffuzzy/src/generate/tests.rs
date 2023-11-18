@@ -74,6 +74,15 @@ fn partial_fnv_hash_usage() {
     assert_eq!(p1, p2); // check if we are operating with the same object.
     assert_eq!(h.value(), EXPECTED_HASH);
     assert_eq!(hash.value(), EXPECTED_HASH);
+
+    // Usage: Add-assign operator
+    const STR_1: &[u8]    = b"Hello, "; // slice
+    const STR_2: &[u8; 6] = b"World!";  // array
+    let mut hash = PartialFNVHash::new();
+    hash += STR_1;
+    hash += STR_2;
+    hash += b'\n';
+    assert_eq!(hash.value(), EXPECTED_HASH);
 }
 
 #[cfg(feature = "alloc")]
@@ -418,6 +427,15 @@ fn rolling_hash_usage() {
     assert_eq!(p1, p2); // check if we are operating with the same object.
     assert_eq!(h.value(), EXPECTED_HASH);
     assert_eq!(hash.value(), EXPECTED_HASH);
+
+    // Usage: Add-assign operator
+    const STR_1: &[u8]    = b"Hello, "; // slice
+    const STR_2: &[u8; 6] = b"World!";  // array
+    let mut hash = RollingHash::new();
+    hash += STR_1;
+    hash += STR_2;
+    hash += b'\n';
+    assert_eq!(hash.value(), EXPECTED_HASH);
 }
 
 #[cfg(feature = "alloc")]
@@ -700,6 +718,15 @@ fn usage() {
         .update_by_byte(b'\n');
     let p2 = generator_out as *const Generator;
     assert_eq!(p1, p2); // check if we are operating with the same object.
+    assert_eq!(generator.finalize().unwrap(), expected_hash);
+
+    // Usage: Add-assign operator
+    const STR_1: &[u8]    = b"Hello, "; // slice
+    const STR_2: &[u8; 6] = b"World!";  // array
+    let mut generator = Generator::new();
+    generator += STR_1;
+    generator += STR_2;
+    generator += b'\n';
     assert_eq!(generator.finalize().unwrap(), expected_hash);
 }
 
