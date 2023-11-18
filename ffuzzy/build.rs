@@ -46,12 +46,6 @@ fn main() {
         .unwrap_or_else(|err| die(
             format!("${{OUT_DIR}}/fnv_table_contents.rs: {}", err).as_str()
         ));
-
-    // Special handling for docs.rs
-    if std::env::var("DOCS_RS").is_ok() {
-        println!("cargo:rustc-cfg=feature=\"nightly\"");
-        println!("cargo:rustc-cfg=feature=\"unsafe\"");
-    }
 }
 
 fn die(msg: &str) -> ! {

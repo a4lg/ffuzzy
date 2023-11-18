@@ -40,3 +40,6 @@ tests-slow = []
 tests-very-slow = ["tests-slow"]
 nightly = []
 maint-lints = []
+
+[package.metadata.docs.rs]
+features = ["nightly", "unsafe", "unchecked"]
