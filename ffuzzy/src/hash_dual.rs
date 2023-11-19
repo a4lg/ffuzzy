@@ -123,7 +123,7 @@ mod rle_encoding {
 /// current constant generics.
 ///
 /// This type should not be considered stable.
-pub struct ReconstructionBlockSize<const SZ_BH: usize, const SZ_RLE: usize> {}
+pub struct ReconstructionBlockSize<const SZ_BH: usize, const SZ_R: usize> {}
 
 mod private {
     use super::*;
