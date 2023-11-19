@@ -535,8 +535,16 @@ mod private {
 ///
 /// Note that this trait is intentionally designed to be non-extensible
 /// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
-pub trait ConstrainedBlockHashSize: private::SealedBlockHashSize {}
-impl<T> ConstrainedBlockHashSize for T where T: private::SealedBlockHashSize {}
+pub trait ConstrainedBlockHashSize: private::SealedBlockHashSize {
+    /// The maximum size of a block hash.
+    const SIZE: usize;
+}
+impl<const SZ_BH: usize> ConstrainedBlockHashSize for BlockHashSize<SZ_BH>
+where
+    BlockHashSize<SZ_BH>: private::SealedBlockHashSize
+{
+    const SIZE: usize = SZ_BH;
+}
 
 /// A trait to constrain block hash sizes.
 ///
@@ -547,8 +555,20 @@ impl<T> ConstrainedBlockHashSize for T where T: private::SealedBlockHashSize {}
 ///
 /// Note that this trait is intentionally designed to be non-extensible
 /// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
-pub trait ConstrainedBlockHashSizes: private::SealedBlockHashSizes {}
-impl<T> ConstrainedBlockHashSizes for T where T: private::SealedBlockHashSizes {}
+pub trait ConstrainedBlockHashSizes: private::SealedBlockHashSizes {
+    /// The maximum size of the block hash 1.
+    const MAX_BLOCK_HASH_SIZE_1: usize;
+    /// The maximum size of the block hash 2.
+    const MAX_BLOCK_HASH_SIZE_2: usize;
+}
+impl<const S1: usize, const S2: usize> ConstrainedBlockHashSizes
+    for BlockHashSizes<S1, S2>
+where
+    BlockHashSizes<S1, S2>: private::SealedBlockHashSizes
+{
+    const MAX_BLOCK_HASH_SIZE_1: usize = S1;
+    const MAX_BLOCK_HASH_SIZE_2: usize = S2;
+}
 
 
 
