@@ -23,6 +23,11 @@ version (MSRV), which we only expect stable features.
 
 *   `bool::then(|| x)` to `bool::then_some(x)`.
 
+## 1.63.0
+
+*   Remove unconditional `#[allow(unknown_lints)]`
+    (that is a workaround for lint handling bug on Rust -1.62).
+
 ## 1.67.0
 
 *   Remove `crate::utils::u64_ilog2` and replace to `u64::ilog2`.

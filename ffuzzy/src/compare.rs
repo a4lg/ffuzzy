@@ -1255,7 +1255,11 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
+    // This "allow(unknown_lints)" is a workaround for Rust -1.62.
+    // Remove this once MSRV 1.63 is acceptable.
+    #[allow(unknown_lints)]
     #[allow(clippy::needless_borrow)]
+    #[allow(clippy::needless_borrows_for_generic_args)]
     #[inline]
     fn from(value: FuzzyHashData<S1, S2, true>) -> Self {
         let mut dest: Self = Self::new();
