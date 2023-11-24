@@ -5,7 +5,7 @@
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;
-use crate::hash::FuzzyHashData;
+use crate::hash::{FuzzyHashData, fuzzy_norm_type, fuzzy_raw_type};
 use crate::hash::block::{
     block_size, block_hash,
     BlockHashSize, ConstrainedBlockHashSize,
@@ -569,7 +569,7 @@ where
 
     /// A normalized fuzzy hash object for comparison and the base storage
     /// before RLE-based decompression.
-    norm_hash: FuzzyHashData<S1, S2, true>
+    norm_hash: fuzzy_norm_type!(S1, S2)
 }
 
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> FuzzyHashDualData<S1, S2, C1, C2>
@@ -584,13 +584,13 @@ where
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_BLOCK_HASH_SIZE_1).
-    pub const MAX_BLOCK_HASH_SIZE_1: usize = FuzzyHashData::<S1, S2, true>::MAX_BLOCK_HASH_SIZE_1;
+    pub const MAX_BLOCK_HASH_SIZE_1: usize = <fuzzy_norm_type!(S1, S2)>::MAX_BLOCK_HASH_SIZE_1;
 
     /// The maximum size of the block hash 2.
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_BLOCK_HASH_SIZE_2).
-    pub const MAX_BLOCK_HASH_SIZE_2: usize = FuzzyHashData::<S1, S2, true>::MAX_BLOCK_HASH_SIZE_2;
+    pub const MAX_BLOCK_HASH_SIZE_2: usize = <fuzzy_norm_type!(S1, S2)>::MAX_BLOCK_HASH_SIZE_2;
 
     /// The number of RLE block entries in the block hash 1.
     #[allow(dead_code)]
@@ -609,13 +609,13 @@ where
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::IS_LONG_FORM).
-    pub const IS_LONG_FORM: bool = FuzzyHashData::<S1, S2, true>::IS_LONG_FORM;
+    pub const IS_LONG_FORM: bool = <fuzzy_norm_type!(S1, S2)>::IS_LONG_FORM;
 
     /// The maximum length in the string representation.
     ///
     /// This value is the same as the
     /// [underlying fuzzy hash type](FuzzyHashData::MAX_LEN_IN_STR).
-    pub const MAX_LEN_IN_STR: usize = FuzzyHashData::<S1, S2, true>::MAX_LEN_IN_STR;
+    pub const MAX_LEN_IN_STR: usize = <fuzzy_norm_type!(S1, S2)>::MAX_LEN_IN_STR;
 
     /// Creates a new fuzzy hash object with empty contents.
     ///
@@ -629,7 +629,7 @@ where
     }
 
     /// Initialize the object from a raw fuzzy hash.
-    pub fn init_from_raw_form(&mut self, hash: &FuzzyHashData<S1, S2, false>) {
+    pub fn init_from_raw_form(&mut self, hash: &fuzzy_raw_type!(S1, S2)) {
         self.norm_hash.log_blocksize = hash.log_blocksize;
         algorithms::compress_block_hash_with_rle(
             &mut self.norm_hash.blockhash1,
@@ -831,7 +831,7 @@ where
     /// To note, this operation should be fast enough because this type
     /// contains this object directly.
     #[inline(always)]
-    pub fn as_normalized(&self) -> &FuzzyHashData<S1, S2, true> {
+    pub fn as_normalized(&self) -> &fuzzy_norm_type!(S1, S2) {
         &self.norm_hash
     }
 
@@ -842,19 +842,19 @@ where
     /// This method will be removed on the next major release.
     #[deprecated]
     #[inline(always)]
-    pub fn as_ref_normalized(&self) -> &FuzzyHashData<S1, S2, true> {
+    pub fn as_ref_normalized(&self) -> &fuzzy_norm_type!(S1, S2) {
         self.as_normalized()
     }
 
     /// Constructs an object from a raw fuzzy hash.
-    pub fn from_raw_form(hash: &FuzzyHashData<S1, S2, false>) -> Self {
+    pub fn from_raw_form(hash: &fuzzy_raw_type!(S1, S2)) -> Self {
         let mut dual_hash = FuzzyHashDualData::new();
         dual_hash.init_from_raw_form(hash);
         dual_hash
     }
 
     /// Constructs an object from a normalized fuzzy hash.
-    pub fn from_normalized(hash: &FuzzyHashData<S1, S2, true>) -> Self {
+    pub fn from_normalized(hash: &fuzzy_norm_type!(S1, S2)) -> Self {
         Self {
             rle_block1: [0u8; C1],
             rle_block2: [0u8; C2],
@@ -864,7 +864,7 @@ where
 
     /// Decompresses a raw variant of the fuzzy hash and stores into
     /// an existing object.
-    pub fn into_mut_raw_form(&self, hash: &mut FuzzyHashData<S1, S2, false>) {
+    pub fn into_mut_raw_form(&self, hash: &mut fuzzy_raw_type!(S1, S2)) {
         hash.log_blocksize = self.norm_hash.log_blocksize;
         algorithms::expand_block_hash_using_rle(
             &mut hash.blockhash1,
@@ -887,7 +887,7 @@ where
     /// Based on the normalized fuzzy hash representation and the "reverse
     /// normalization" data, this method generates the original, a raw variant
     /// of the fuzzy hash.
-    pub fn to_raw_form(&self) -> FuzzyHashData<S1, S2, false> {
+    pub fn to_raw_form(&self) -> fuzzy_raw_type!(S1, S2) {
         let mut hash = FuzzyHashData::new();
         self.into_mut_raw_form(&mut hash);
         hash
@@ -898,7 +898,7 @@ where
     /// Where possible, [`as_normalized()`](Self::as_normalized()) or
     /// [`AsRef::as_ref()`] should be used instead.
     #[inline(always)]
-    pub fn to_normalized(&self) -> FuzzyHashData<S1, S2, true> {
+    pub fn to_normalized(&self) -> fuzzy_norm_type!(S1, S2) {
         self.norm_hash
     }
 
@@ -922,7 +922,7 @@ where
 
     /// Parse a fuzzy hash from given bytes (a slice of [`u8`]).
     pub fn from_bytes(str: &[u8]) -> Result<Self, ParseError> {
-        let raw_hash = FuzzyHashData::<S1, S2, false>::from_bytes(str)?;
+        let raw_hash = <fuzzy_raw_type!(S1, S2)>::from_bytes(str)?;
         Ok(Self::from_raw_form(&raw_hash))
     }
 
@@ -973,7 +973,7 @@ where
 }
 
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    AsRef<FuzzyHashData<S1, S2, true>> for FuzzyHashDualData<S1, S2, C1, C2>
+    AsRef<fuzzy_norm_type!(S1, S2)> for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
@@ -982,7 +982,7 @@ where
     ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline(always)]
-    fn as_ref(&self) -> &FuzzyHashData<S1, S2, true> {
+    fn as_ref(&self) -> &fuzzy_norm_type!(S1, S2) {
         &self.norm_hash
     }
 }
@@ -1178,13 +1178,13 @@ where
     type Err = ParseError;
     #[inline(always)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let raw_hash = FuzzyHashData::<S1, S2, false>::from_bytes(s.as_bytes())?;
+        let raw_hash = <fuzzy_raw_type!(S1, S2)>::from_bytes(s.as_bytes())?;
         Ok(Self::from_raw_form(&raw_hash))
     }
 }
 
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::convert::From<FuzzyHashData<S1, S2, true>> for FuzzyHashDualData<S1, S2, C1, C2>
+    core::convert::From<fuzzy_norm_type!(S1, S2)> for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
@@ -1193,13 +1193,13 @@ where
     ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
-    fn from(value: FuzzyHashData<S1, S2, true>) -> Self {
+    fn from(value: fuzzy_norm_type!(S1, S2)) -> Self {
         Self::from_normalized(&value)
     }
 }
 
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::convert::From<FuzzyHashData<S1, S2, false>> for FuzzyHashDualData<S1, S2, C1, C2>
+    core::convert::From<fuzzy_raw_type!(S1, S2)> for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
@@ -1208,7 +1208,7 @@ where
     ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
 {
     #[inline]
-    fn from(value: FuzzyHashData<S1, S2, false>) -> Self {
+    fn from(value: fuzzy_raw_type!(S1, S2)) -> Self {
         Self::from_raw_form(&value)
     }
 }

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
-use crate::hash::FuzzyHashData;
+use crate::hash::{FuzzyHashData, fuzzy_norm_type};
 use crate::hash::block::{
     block_size, block_hash,
     BlockSizeRelation,
@@ -467,7 +467,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn init_from_partial<const S1: usize, const S2: usize>(
         &mut self,
-        hash: impl AsRef<FuzzyHashData<S1, S2, true>>
+        hash: impl AsRef<fuzzy_norm_type!(S1, S2)>
     )
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -490,7 +490,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn init_from<const S1: usize, const S2: usize>(
         &mut self,
-        hash: impl AsRef<FuzzyHashData<S1, S2, true>>
+        hash: impl AsRef<fuzzy_norm_type!(S1, S2)>
     )
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -507,7 +507,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn is_equiv_except_block_size<const S1: usize, const S2: usize>(
         &self,
-        hash: impl AsRef<FuzzyHashData<S1, S2, true>>
+        hash: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -523,7 +523,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn is_equiv<const S1: usize, const S2: usize>(
         &self,
-        hash: impl AsRef<FuzzyHashData<S1, S2, true>>
+        hash: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -631,7 +631,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn compare_unequal_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -668,7 +668,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn compare_unequal_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -699,7 +699,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn compare_unequal_near_eq<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -716,7 +716,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn compare_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -744,7 +744,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn compare_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -764,7 +764,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn compare_near_eq<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -780,7 +780,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     fn compare_unequal_near_lt_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -809,7 +809,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn compare_unequal_near_lt_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -829,7 +829,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn compare_unequal_near_lt<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -845,7 +845,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     fn compare_unequal_near_gt_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -874,7 +874,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn compare_unequal_near_gt_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -894,7 +894,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn compare_unequal_near_gt<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -910,7 +910,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn compare_unequal_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -940,7 +940,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn compare_unequal_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -969,7 +969,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn compare_unequal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -985,7 +985,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn compare<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> u32
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1005,7 +1005,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn is_comparison_candidate_near_eq_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1036,7 +1036,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_eq_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1059,7 +1059,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn is_comparison_candidate_near_eq<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1075,7 +1075,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn is_comparison_candidate_near_lt_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1105,7 +1105,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_lt_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1128,7 +1128,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn is_comparison_candidate_near_lt<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1144,7 +1144,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     fn is_comparison_candidate_near_gt_internal<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1174,7 +1174,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub unsafe fn is_comparison_candidate_near_gt_unchecked<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1197,7 +1197,7 @@ impl FuzzyHashCompareTarget {
     #[inline(always)]
     pub fn is_comparison_candidate_near_gt<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1231,7 +1231,7 @@ impl FuzzyHashCompareTarget {
     #[inline]
     pub fn is_comparison_candidate<const S1: usize, const S2: usize>(
         &self,
-        other: impl AsRef<FuzzyHashData<S1, S2, true>>
+        other: impl AsRef<fuzzy_norm_type!(S1, S2)>
     ) -> bool
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1249,7 +1249,7 @@ impl FuzzyHashCompareTarget {
 }
 
 impl<const S1: usize, const S2: usize>
-    core::convert::From<FuzzyHashData<S1, S2, true>> for FuzzyHashCompareTarget
+    core::convert::From<fuzzy_norm_type!(S1, S2)> for FuzzyHashCompareTarget
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
@@ -1261,7 +1261,7 @@ where
     #[allow(clippy::needless_borrow)]
     #[allow(clippy::needless_borrows_for_generic_args)]
     #[inline]
-    fn from(value: FuzzyHashData<S1, S2, true>) -> Self {
+    fn from(value: fuzzy_norm_type!(S1, S2)) -> Self {
         let mut dest: Self = Self::new();
         dest.init_from_partial(&value);
         dest
@@ -1269,14 +1269,14 @@ where
 }
 
 impl<const S1: usize, const S2: usize>
-    core::convert::From<&FuzzyHashData<S1, S2, true>> for FuzzyHashCompareTarget
+    core::convert::From<&fuzzy_norm_type!(S1, S2)> for FuzzyHashCompareTarget
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
     #[inline]
-    fn from(value: &FuzzyHashData<S1, S2, true>) -> Self {
+    fn from(value: &fuzzy_norm_type!(S1, S2)) -> Self {
         let mut dest: Self = Self::new();
         dest.init_from_partial(value);
         dest
@@ -1318,7 +1318,7 @@ where
 
 /// Additional implementation for normalized fuzzy hashes,
 /// enabling comparison between two fuzzy hashes directly.
-impl<const S1: usize, const S2: usize> FuzzyHashData<S1, S2, true>
+impl<const S1: usize, const S2: usize> fuzzy_norm_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,

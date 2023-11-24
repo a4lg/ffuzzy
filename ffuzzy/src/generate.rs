@@ -11,7 +11,10 @@ use crate::generate::fnv_table::FNV_HASH_INIT;
 use crate::generate::fnv_table::FNV_TABLE;
 #[cfg(feature = "opt-reduce-fnv-table")]
 use crate::generate::fnv_table::FNV_HASH_PRIME;
-use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
+use crate::hash::{
+    FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash,
+    fuzzy_raw_type
+};
 use crate::hash::block::{
     block_size, block_hash,
     BlockHashSize, ConstrainedBlockHashSize,
@@ -1005,7 +1008,7 @@ impl Generator {
     /// [`Generator`] like this is useful.
     #[allow(clippy::branches_sharing_code)]
     pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(&self)
-        -> Result<FuzzyHashData<S1, S2, false>, GeneratorError>
+        -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
         BlockHashSize<S2>: ConstrainedBlockHashSize,
@@ -1020,7 +1023,7 @@ impl Generator {
             return Err(GeneratorError::InputSizeTooLarge);
         }
         let log_block_size = self.guess_output_log_block_size();
-        let mut fuzzy: FuzzyHashData<S1, S2, false> = FuzzyHashData::new();
+        let mut fuzzy: fuzzy_raw_type!(S1, S2) = FuzzyHashData::new();
         fuzzy.log_blocksize = log_block_size as u8;
         // Copy block hash 1
         let roll_value = self.roll_hash.value();
@@ -1089,7 +1092,7 @@ impl Generator {
                     sz += 1;
                 }
                 #[allow(clippy::collapsible_if)]
-                if !FuzzyHashData::<S1, S2, false>::IS_LONG_FORM {
+                if !<fuzzy_raw_type!(S1, S2)>::IS_LONG_FORM {
                     if sz > S2 {
                         // Overflow will occur if:
                         // 1.  truncation is disabled (!TRUNC),
@@ -1106,7 +1109,7 @@ impl Generator {
                 fuzzy.len_blockhash2 = sz as u8;
                 if roll_value != 0 {
                     #[allow(clippy::collapsible_else_if)]
-                    if !FuzzyHashData::<S1, S2, false>::IS_LONG_FORM {
+                    if !<fuzzy_raw_type!(S1, S2)>::IS_LONG_FORM {
                         if sz >= S2 {
                             // Overflow will occur if:
                             // 1.  truncation is disabled (!TRUNC),
