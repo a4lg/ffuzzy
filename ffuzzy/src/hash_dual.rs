@@ -546,7 +546,7 @@ mod algorithms {
 /// # }
 /// ```
 #[repr(align(8))]
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone)]
 pub struct FuzzyHashDualData<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1001,7 +1001,33 @@ where
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
+    PartialEq for FuzzyHashDualData<S1, S2, C1, C2>
+where
+    BlockHashSize<S1>: ConstrainedBlockHashSize,
+    BlockHashSize<S2>: ConstrainedBlockHashSize,
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.norm_hash == other.norm_hash &&
+        self.rle_block1 == other.rle_block1 &&
+        self.rle_block2 == other.rle_block2
+    }
+}
+
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
+    Eq for FuzzyHashDualData<S1, S2, C1, C2>
+where
+    BlockHashSize<S1>: ConstrainedBlockHashSize,
+    BlockHashSize<S2>: ConstrainedBlockHashSize,
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+{
+}
+
 impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
     core::hash::Hash for FuzzyHashDualData<S1, S2, C1, C2>
 where
