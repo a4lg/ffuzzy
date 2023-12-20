@@ -141,7 +141,7 @@ pub trait BlockHashPositionArrayData {
     ///
     /// # Compatibility Note
     ///
-    /// Note that, unlike version 0.1, this method does not check whether
+    /// Note that, since version 0.2, this method does not check whether
     /// the object contains a normalized string.  For this purpose, use
     /// [`is_valid_and_normalized()`](Self::is_valid_and_normalized()) instead.
     fn is_valid(&self) -> bool {

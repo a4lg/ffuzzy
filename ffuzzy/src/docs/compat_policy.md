@@ -31,7 +31,7 @@ The input data which is *not* obligated to support in this project includes:
              (which overflows the maximum block hash size in the raw form) but
              fits in after the normalization process  
              (this is currently supported by the `ffuzzy` crate as of
-              the version 0.2 but we can remove the support anytime)
+              the current version but we can remove the support anytime)
 *   Data which is an output of ssdeep *but* feeding the data
     back to ssdeep causes serious errors / problems
     *   e.g. a CSV file output from ssdeep but input file names contain special
