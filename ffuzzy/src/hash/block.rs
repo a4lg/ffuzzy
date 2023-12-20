@@ -360,7 +360,7 @@ pub mod block_hash {
     pub const HALF_SIZE: usize = FULL_SIZE / 2;
 
     /// The maximum size of the sequence so that the same character can be
-    /// repeated in a block hash.
+    /// repeated in a normalized block hash.
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](crate::hash::FuzzyHashData#normalization)
     pub const MAX_SEQUENCE_SIZE: usize = 3;
