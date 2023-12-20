@@ -35,9 +35,6 @@ mod tests;
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockSizeRelation {
-    /// Two block sizes are *far* and a block hash comparison
-    /// cannot be performed.
-    Far,
     /// Two block sizes are *near* and the block hash 2 (one with a larger block
     /// size) of the left side (of comparison) can be compared with the block
     /// hash 1 (one with a smaller block size) of the right side.
@@ -50,6 +47,9 @@ pub enum BlockSizeRelation {
     /// block size) of the left side (of comparison) can be compared with the
     /// block hash 2 (one with a larger block size) of the right side.
     NearGt,
+    /// Two block sizes are *far* and a block hash comparison
+    /// cannot be performed.
+    Far,
 }
 
 impl BlockSizeRelation {
