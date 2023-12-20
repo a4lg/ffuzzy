@@ -4,6 +4,11 @@
 
 /// An enumeration representing a cause of
 /// a [fuzzy hash](crate::hash::FuzzyHashData) parse error.
+///
+/// # Compatibility Note
+///
+/// Since the version 0.3, the representation of this enum will not be
+/// specified as specific representation of this enum is not important.
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -46,6 +51,11 @@ impl core::fmt::Display for ParseErrorKind {
 ///
 /// Since the parser ignores the file name part,
 /// this part is not in this enumeration.
+///
+/// # Compatibility Note
+///
+/// Since the version 0.3, the representation of this enum will not be
+/// specified as specific representation of this enum is not important.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorOrigin {

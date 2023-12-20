@@ -14,6 +14,11 @@ mod tests;
 
 
 /// The operand (side) which caused a parse error.
+///
+/// # Compatibility Note
+///
+/// Since the version 0.3, the representation of this enum will not be
+/// specified as specific representation of this enum is not important.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorSide {

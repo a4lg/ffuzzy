@@ -300,6 +300,11 @@ where
 
 
 /// An enumeration representing a cause of a generic fuzzy hash error.
+///
+/// # Compatibility Note
+///
+/// Since the version 0.3, the representation of this enum will not be
+/// specified as specific representation of this enum is not important.
 #[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -35,6 +35,11 @@ mod tests;
 /// Note: in this crate, it can efficiently handle such relations by using the
 /// [*base-2 logarithms* form of the block size](crate::hash::FuzzyHashData#block-size)
 /// (no multiplication required).
+///
+/// # Compatibility Note
+///
+/// Since the version 0.3, the representation of this enum will not be
+/// specified as specific representation of this enum is not important.
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockSizeRelation {
