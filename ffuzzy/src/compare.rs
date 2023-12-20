@@ -1230,6 +1230,9 @@ impl FuzzyHashCompareTarget {
     ///
     /// Because of this, we have to use a set of *unique* fuzzy hash values
     /// on the use case above to prevent false-negative matches.
+    ///
+    /// See ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+    /// for the reason why we need to care about those cases.
     #[inline]
     pub fn is_comparison_candidate<const S1: usize, const S2: usize>(
         &self,
