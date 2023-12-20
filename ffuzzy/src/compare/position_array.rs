@@ -113,7 +113,7 @@ pub mod block_hash_position_array_element {
 /// [`block_hash::FULL_SIZE`] (64; many 64-bit machines would handle that
 /// efficiently and even 32-bit machines can benefit from).
 ///
-/// This is *so* fast that the bit-parallel approach is still faster
+/// This is *so* fast so that the bit-parallel approach is still faster
 /// even if we don't use any batching.
 ///
 /// For an example of such algorithms, see

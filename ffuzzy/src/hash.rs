@@ -44,7 +44,7 @@ pub(crate) mod test_utils;
 ///     *   [`block_hash::HALF_SIZE`] (truncated / short / regular) or
 ///     *   [`block_hash::FULL_SIZE`] (non-truncated / long).
 ///
-///     The average piece-splitting probability is given as `1/block_size/2`).
+///     The average piece-splitting probability is given as `1/block_size/2`.
 ///
 /// 4.  (optional) The input file name, which is ignored by the parser
 ///     on this type.
