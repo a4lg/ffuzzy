@@ -693,9 +693,9 @@ impl FuzzyHashCompareTarget {
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare_near_eq()`](Self::compare_near_eq()) (safe Rust)
+    /// *   [`compare_near_eq()`](Self::compare_near_eq()) (checked)
     /// *   [`compare_unequal_near_eq_unchecked()`](Self::compare_unequal_near_eq_unchecked())
-    ///     (unsafe Rust)
+    ///     (unchecked)
     #[inline(always)]
     pub fn compare_unequal_near_eq<const S1: usize, const S2: usize>(
         &self,
@@ -963,9 +963,9 @@ impl FuzzyHashCompareTarget {
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare()`](Self::compare()) (safe Rust)
+    /// *   [`compare()`](Self::compare()) (checked)
     /// *   [`compare_unequal_unchecked()`](Self::compare_unequal_unchecked())
-    ///     (unsafe Rust)
+    ///     (unchecked)
     #[inline(always)]
     pub fn compare_unequal<const S1: usize, const S2: usize>(
         &self,
@@ -1367,9 +1367,9 @@ where
     /// checking).
     ///
     /// Use those instead:
-    /// *   [`compare()`](Self::compare()) (safe Rust)
+    /// *   [`compare()`](Self::compare()) (checked)
     /// *   [`compare_unequal_unchecked()`](Self::compare_unequal_unchecked())
-    ///     (unsafe Rust)
+    ///     (unchecked)
     #[inline(always)]
     pub fn compare_unequal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
