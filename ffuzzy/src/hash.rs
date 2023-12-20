@@ -34,7 +34,8 @@ pub(crate) mod test_utils;
 ///
 /// A fuzzy hash consists of four parts:
 ///
-/// 1.  Block size (reciprocal of average piece-splitting probability per byte)
+/// 1.  Block size (reciprocal of average piece-splitting probability per byte
+///     on the block hash 1)
 ///
 /// 2.  Block hash 1.  6-bit hash per "piece", variable-length up to
 ///     [`block_hash::FULL_SIZE`].
@@ -200,6 +201,23 @@ pub(crate) mod test_utils;
 /// typically useless.  So, most operations are performed in short, truncated
 /// fuzzy hashes by default.  Short variants of [`FuzzyHashData`] is smaller
 /// than longer variants so it can be used to reduce memory footprint.
+///
+/// ### Warning: Truncation is not just "Truncation"
+///
+/// Truncated (regular) fuzzy hashes are *not literally* "truncated" from the
+/// long, non-truncated fuzzy hashes (but individually generated).
+///
+/// For instance (`/usr/libexec/geoclue` on Ubuntu 23.10):
+///
+/// ```text
+/// Non-truncated (long):        6144:M5/qVhAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71C3O:M5/qzAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71ETfJ
+/// Truncated (short / regular): 6144:M5/qVhAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71C3O:M5/qzAWFfzlpxdJ/YQINNbZ2cQpn77+i
+///                                                                                                                                   ^
+/// ```
+///
+/// Beware that the 32nd character of the block hash 2 are different (`P` and
+/// `i`).  This is because the last character of an block hash may contain the
+/// information after all other individually stored pieces.
 ///
 /// # Fuzzy Hash Comparison
 ///
