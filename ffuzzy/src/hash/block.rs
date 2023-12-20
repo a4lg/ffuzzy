@@ -29,7 +29,10 @@ mod tests;
 /// two fuzzy hashes cannot perform a block hash comparison, the *far* case
 /// (the [`Far`](Self::Far) variant).
 ///
-/// In this crate, it can efficiently handle such relations by using the
+/// A value of this type can be retrieved by using
+/// [`block_size::compare_sizes()`](crate::block_size::compare_sizes()).
+///
+/// Note: in this crate, it can efficiently handle such relations by using the
 /// [*base-2 logarithms* form of the block size](crate::hash::FuzzyHashData#block-size)
 /// (no multiplication required).
 #[repr(u32)]
