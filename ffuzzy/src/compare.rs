@@ -585,6 +585,8 @@ impl FuzzyHashCompareTarget {
     ///
     /// The result is not always guaranteed to be in `0..=100` but `100` or
     /// higher means that we don't need any score capping.
+    ///
+    /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     #[inline(always)]
     pub fn score_cap_on_block_hash_comparison(
         log_block_size: u8,
