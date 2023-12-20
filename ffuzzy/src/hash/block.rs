@@ -298,6 +298,9 @@ pub mod block_size {
     /// Compare two *base-2 logarithm* forms of the block size values to
     /// determine the relation between two block sizes.
     ///
+    /// The result is the one of the [`BlockSizeRelation`] values, representing
+    /// the relation between two block sizes.
+    ///
     /// Both arguments must be valid.
     #[inline(always)]
     pub fn compare_sizes(lhs: u8, rhs: u8) -> BlockSizeRelation {
