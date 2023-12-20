@@ -214,7 +214,7 @@ pub(crate) mod test_utils;
 ///
 ///     This case is not subject to the edit distance-based scoring.
 ///     For instance, [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
-///     may return `false` on such cases.
+///     may return [`false`] on such cases.
 ///
 ///     So, this case must be handled separately.
 ///
