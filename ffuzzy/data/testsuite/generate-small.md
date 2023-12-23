@@ -81,7 +81,6 @@ appendation (when rolling hash value is non-zero) and the normalization.
 | `TT`          | Target (maximum) block hash index                                                                       |
 | `BB`          | Base block hash index for given file size                                                               |
 | `DD`          | File size diff relative to border size (`na` : `-2`, `nb` : `-1`, `nc` : `0`, `pa` : `+1`, `pb` : `+2`) |
-| `A`           | Added zero bytes at the tail (`0`, `1` or `7`)                                                          |
 
 It tests minimum file size for given block hash index.
 
