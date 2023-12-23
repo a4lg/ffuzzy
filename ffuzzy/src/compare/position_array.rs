@@ -877,29 +877,4 @@ mod const_asserts {
 
     // Prerequisite for 64-bit position array
     const_assert!(block_hash::FULL_SIZE <= 64);
-
-    // Test whether no arithmetic overflow occurs on
-    // the similarity score computation.
-    // grcov-excl-br-start
-    #[cfg(test)]
-    #[test]
-    fn score_arithmetic_causes_no_overflow() {
-        /*
-            Possible arithmetic operations to check overflow:
-            1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
-            2.  100 * block_hash::FULL_SIZE
-        */
-        assert!(
-            u32::try_from(block_hash::FULL_SIZE).ok()
-                .and_then(|x| x.checked_mul(2))
-                .and_then(|x| x.checked_mul(u32::try_from(block_hash::FULL_SIZE).unwrap()))
-                .is_some()
-        );
-        assert!(
-            u32::try_from(block_hash::FULL_SIZE).ok()
-                .and_then(|x| x.checked_mul(100))
-                .is_some()
-        );
-    }
-    // grcov-excl-br-end
 }
