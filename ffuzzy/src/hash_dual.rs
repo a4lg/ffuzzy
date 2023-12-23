@@ -956,7 +956,7 @@ where
     ///
     /// Note that, despite that it is only relevant to users when the
     /// `unchecked` feature is enabled but made public without any features
-    /// because this method is not *unsafe*.
+    /// because this method is not *unsafe* or *unchecked* in any way.
     pub fn is_valid(&self) -> bool {
         self.norm_hash.is_valid() &&
             algorithms::is_valid_rle_block_for_block_hash(
@@ -1271,3 +1271,44 @@ pub type LongDualFuzzyHash = FuzzyHashDualData<
     {block_hash::FULL_SIZE / 4},
     {block_hash::FULL_SIZE / 4}
 >;
+
+
+#[cfg(feature = "serde")]
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> serde::Serialize
+    for FuzzyHashDualData<S1, S2, C1, C2>
+where
+    BlockHashSize<S1>: ConstrainedBlockHashSize,
+    BlockHashSize<S2>: ConstrainedBlockHashSize,
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+    ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer
+    {
+        self.to_raw_form().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for DualFuzzyHash {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>
+    {
+        crate::hash::RawFuzzyHash::deserialize(deserializer)
+            .map(|h| Self::from_raw_form(&h))
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for LongDualFuzzyHash {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>
+    {
+        crate::hash::LongRawFuzzyHash::deserialize(deserializer)
+            .map(|h| Self::from_raw_form(&h))
+    }
+}
