@@ -250,27 +250,26 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
             return false;
         }
         optionally_unsafe! {
-            let mut d: u64;
-            let mut r: usize = block_hash::MIN_LCS_FOR_COMPARISON - 1;
-            let mut l: usize;
-            while r < other.len() {
-                l = r - (block_hash::MIN_LCS_FOR_COMPARISON - 1);
-                let mut i: usize = other.len() - 1 - r;
-                invariant!(i < other.len());
-                invariant!((other[i] as usize) < block_hash::ALPHABET_SIZE);
-                d = representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
+            let mut l: usize = other.len() - block_hash::MIN_LCS_FOR_COMPARISON;
+            loop {
+                invariant!(l < other.len());
+                invariant!((other[l] as usize) < block_hash::ALPHABET_SIZE);
+                let mut d: u64 = representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
+                let r: usize = l + (block_hash::MIN_LCS_FOR_COMPARISON - 1);
                 while d != 0 {
-                    r -= 1;
-                    i += 1;
-                    invariant!(i < other.len());
-                    invariant!((other[i] as usize) < block_hash::ALPHABET_SIZE);
-                    d = (d << 1) & representation[other[i] as usize]; // grcov-excl-br-line:ARRAY
-                    if r == l && d != 0 {
+                    l += 1;
+                    invariant!(l < other.len());
+                    invariant!((other[l] as usize) < block_hash::ALPHABET_SIZE);
+                    d = (d << 1) & representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
+                    if l == r && d != 0 {
                         return true;
                     }
                 }
                 // Boyer–Moore-like skipping
-                r += block_hash::MIN_LCS_FOR_COMPARISON;
+                if l < block_hash::MIN_LCS_FOR_COMPARISON {
+                    break;
+                }
+                l -= block_hash::MIN_LCS_FOR_COMPARISON;
             }
         }
         false
