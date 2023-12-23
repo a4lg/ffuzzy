@@ -428,6 +428,8 @@ pub mod block_hash {
     /// configuration, each value is a 42-bit unsigned integer, generated from
     /// seven (7) hash characters (consuming 6 bits each).
     ///
+    /// See also: [`FuzzyHashData::block_hash_1_windows()`](crate::hash::FuzzyHashData::block_hash_1_windows())
+    ///
     /// *Note*:
     /// 7 equals [`MIN_LCS_FOR_COMPARISON`] and
     /// 6 equals the base-2 logarithm of [`ALPHABET_SIZE`].
