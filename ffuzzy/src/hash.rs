@@ -222,8 +222,7 @@ pub(crate) mod test_utils;
 /// # Fuzzy Hash Comparison
 ///
 /// For the basic concept of the comparison, see the
-/// ["Relations with Block Size" section](FuzzyHashData#relations-with-block-size)
-/// section.
+/// ["Relations with Block Size" section](FuzzyHashData#relations-with-block-size).
 ///
 /// In this section, we describe the full comparison algorithm.
 ///
