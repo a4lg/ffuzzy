@@ -179,10 +179,10 @@ pub(crate) mod test_utils;
 /// consisting of the same character longer than
 /// [`block_hash::MAX_SEQUENCE_SIZE`] cannot exist.
 ///
-/// For instance, after processing a block hash `122333444455555`, it is
-/// converted to `122333444555` (four `4`s and five `5`s are shortened into
-/// three `4`s and three `5`s because [`block_hash::MAX_SEQUENCE_SIZE`] is
-/// defined to be three (`3`)).
+/// For instance, after processing a block hash `122333444455555` before
+/// comparison, it is converted to `122333444555` (four `4`s and five `5`s are
+/// shortened into three `4`s and three `5`s because [`block_hash::MAX_SEQUENCE_SIZE`]
+/// is defined to be three (`3`)).
 ///
 /// In this crate, this process is called *normalization*.
 ///
