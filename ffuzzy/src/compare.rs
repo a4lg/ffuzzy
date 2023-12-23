@@ -590,6 +590,27 @@ impl FuzzyHashCompareTarget {
     /// higher means that we don't need any score capping.
     ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+    ///
+    /// # Compatibility Note
+    ///
+    /// While this method is completely safe even if semantically-invalid
+    /// parameters are specified (due to arithmetic properties of internal
+    /// computation and a safety measure in this method), following semantic
+    /// constraints may be added on the future versions:
+    ///
+    /// *   `log_block_size` [must be valid](block_size::is_log_valid)
+    ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
+    ///     not valid as a block size for a fuzzy hash object but will be valid
+    ///     on this method).
+    /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must not exceed
+    ///     [`block_hash::FULL_SIZE`].
+    ///
+    /// On the other hand, the author decided *not* to cause a panic even if
+    /// `len_block_hash_lhs` and/or `len_block_hash_rhs` are/is less than
+    /// [`block_hash::MIN_LCS_FOR_COMPARISON`].  This case will not happen
+    /// if we are actually performing an edit distance-based comparison (making
+    /// the result of the call practically useless) but it is hard to call this
+    /// case "semantically invalid" and this operation is arithmetically valid.
     #[inline(always)]
     pub fn score_cap_on_block_hash_comparison(
         log_block_size: u8,
@@ -597,6 +618,9 @@ impl FuzzyHashCompareTarget {
         len_block_hash_rhs: u8
     ) -> u32
     {
+        // assert!((log_block_size as usize) <= block_size::NUM_VALID);
+        // assert!((len_block_hash_lhs as usize) <= block_hash::FULL_SIZE);
+        // assert!((len_block_hash_rhs as usize) <= block_hash::FULL_SIZE);
         if log_block_size >= FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
             100
         }
