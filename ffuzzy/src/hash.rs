@@ -82,7 +82,7 @@ pub(crate) mod test_utils;
 /// form of the block size) for higher efficiency.
 /// [`log_block_size()`](Self::log_block_size()) method returns this raw
 /// representation.  If you need an actual block size as used in the string
-/// representation, [`block_size()`](Self::block_size) can be used instead.
+/// representation, [`block_size()`](Self::block_size()) can be used instead.
 ///
 /// # Block Hashes
 ///

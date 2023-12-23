@@ -105,7 +105,7 @@ pub struct FuzzyHashCompareTarget {
 
     /// *Base-2 logarithm* form of the actual block size.
     ///
-    /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
+    /// See also: ["Block Size" section of `FuzzyHashData`](FuzzyHashData#block-size)
     log_blocksize: u8,
 }
 
@@ -1214,7 +1214,8 @@ impl FuzzyHashCompareTarget {
     /// Tests whether `other` is a candidate for edit distance-based comparison.
     ///
     /// If this function returns [`false`] **and** `self` and `other` are not
-    /// [equivalent](Self::is_equiv), their similarity will be calculated to 0.
+    /// [equivalent](Self::is_equiv()), their similarity will be
+    /// calculated to 0.
     ///
     /// # Use Case (Example)
     ///
