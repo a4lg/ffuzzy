@@ -1335,7 +1335,9 @@ where
     ///
     /// This method provides an access to substrings of that length, allowing
     /// the specialized clustering application to filter fuzzy hashes to compare
-    /// prior to actual comparison.
+    /// prior to actual comparison.  It makes possible to implement a function
+    /// equivalent to [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
+    /// with precomputation.
     ///
     /// For instance, you may store fuzzy hashes indexed by the elements of
     /// this window.
