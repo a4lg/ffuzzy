@@ -631,6 +631,14 @@ impl FuzzyHashCompareTarget {
     ///     [`MIN_LCS_FOR_COMPARISON`](crate::block_hash::MIN_LCS_FOR_COMPARISON)
     ///     to perform an edit distance-based comparison (reducing maximum
     ///     possible edit distance by `2 * MIN_LCS_FOR_COMPARISON`).
+    ///
+    /// # Useful Property
+    ///
+    /// If all arguments are valid, the return value (the raw score) is
+    /// guaranteed to be greater than zero.  Along with the property of the
+    /// [score capping](Self::score_cap_on_block_hash_comparison()), it means
+    /// that we should have a non-zero score if we can perform an edit
+    /// distance-based comparison.
     #[inline(always)]
     pub fn raw_score_by_edit_distance(
         len_block_hash_lhs: u32,
@@ -729,6 +737,15 @@ impl FuzzyHashCompareTarget {
     /// if we are actually performing an edit distance-based comparison (making
     /// the result of the call practically useless) but it is hard to call this
     /// case "semantically invalid" and this operation is arithmetically valid.
+    ///
+    /// # Useful Property
+    ///
+    /// If all arguments are valid and both `len_block_hash_lhs` and
+    /// `len_block_hash_rhs` are non-zero, the return value (the score cap) is
+    /// guaranteed to be greater than zero.  Along with the property of the
+    /// [raw scoring](Self::raw_score_by_edit_distance()), it means that we
+    /// should have a non-zero score if we can perform an edit distance-based
+    /// comparison.
     #[inline(always)]
     pub fn score_cap_on_block_hash_comparison(
         log_block_size: u8,
@@ -1379,6 +1396,17 @@ impl FuzzyHashCompareTarget {
     ///
     /// See ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     /// for the reason why we need to care about those cases.
+    ///
+    /// # Useful Property
+    ///
+    /// If two fuzzy hashes are correctly provided and this method (or its
+    /// family) returns [`true`], the similarity score is guaranteed to be
+    /// greater than zero.
+    ///
+    /// This property can be used to simplify clustering since we are able to
+    /// prove that the similarity score of two *different* fuzzy hashes is
+    /// non-zero if this method (or its family) returns [`true`] (i.e. no actual
+    /// comparison is required to split clusters on single-linkage clustering).
     ///
     /// # Advanced Topic: Implementing Equivalents
     ///

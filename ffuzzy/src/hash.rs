@@ -244,6 +244,14 @@ pub(crate) mod test_utils;
 ///         If we could not find one, the sub-similarity score is `0` and no
 ///         edit distance-based scoring is performed.
 ///
+///         *Note*: if we could find one (i.e. can perform edit distance-based
+///         comparison), the sub-similarity score (and the final score) is
+///         guaranteed to be greater than zero.  That means we won't need to
+///         split a cluster (on single-linkage clustering) if all unique
+///         elements in the cluster are directly or indirectly connected by
+///         ["candidate of edit distance-based comparison"](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
+///         relations.
+///
 ///     2.  Compute the edit distance between two block hashes and
 ///         [scale it](crate::compare::FuzzyHashCompareTarget::raw_score_by_edit_distance())
 ///         *   from `0..=(bhA.len()+bhB.len())` (`0` is the perfect match)
