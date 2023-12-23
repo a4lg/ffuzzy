@@ -1518,8 +1518,10 @@ where
     /// Compare two fuzzy hashes and retrieves the similarity score.
     #[inline]
     pub fn compare(&self, other: impl AsRef<Self>) -> u32 {
+        let other = other.as_ref();
+        if self == other { return 100; }
         let target = FuzzyHashCompareTarget::from(self);
-        target.compare(other.as_ref())
+        target.compare_unequal_internal(other)
     }
 
     /// The internal implementation of [`Self::compare_unequal_unchecked()`].
