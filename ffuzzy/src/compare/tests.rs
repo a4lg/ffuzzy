@@ -687,6 +687,14 @@ fn score_caps_on_block_hash_comparison() {
     // actually depends on min(len1, len2).
     for log_block_size in 0..FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
         let mut score_cap = 0;
+        for len in 1..block_hash::MIN_LCS_FOR_COMPARISON as u8 {
+            // If non-zero arguments are specified, the score cap must be non-zero
+            assert_ne!(
+                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len),
+                0,
+                "failed on log_block_size={:?}, len={:?}", log_block_size, len
+            );
+        }
         for len in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
             let new_score_cap =
                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len);
@@ -698,11 +706,19 @@ fn score_caps_on_block_hash_comparison() {
                     "failed on log_block_size={:?}, len={:?}", log_block_size, len
                 );
             }
+            // If valid arguments are specified, the score cap must be non-zero
+            assert_ne!(new_score_cap, 0,
+                "failed on log_block_size={:?}, len={:?}", log_block_size, len);
+            // Check the score cap in detail
             if len == block_hash::MIN_LCS_FOR_COMPARISON as u8 {
+                // Minimum score cap is less than 100 while log_block_size is
+                // smaller than LOG_BLOCK_SIZE_CAPPING_BORDER.
                 assert!(new_score_cap < 100,
                     "failed on log_block_size={:?}, len={:?}", log_block_size, len);
             }
             else {
+                // If the length increases by one, the score cap increases by
+                // 1 << log_block_size.
                 assert_eq!(new_score_cap - score_cap, 1u32 << log_block_size,
                     "failed on log_block_size={:?}, len={:?}", log_block_size, len);
             }
