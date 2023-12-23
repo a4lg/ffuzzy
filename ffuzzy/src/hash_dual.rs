@@ -485,17 +485,20 @@ mod algorithms {
 ///
 /// Sorting objects of this type will result in the following order.
 ///
-/// *   Two [`FuzzyHashDualData`] objects with different normalized
+/// *   Two equivalent [`FuzzyHashDualData`] objects are considered equal
+///     (and the underlying sorting algorithm decides ordering of equivalent
+///     objects).
+/// *   Two different [`FuzzyHashDualData`] objects with different normalized
 ///     [`FuzzyHashData`] objects (inside) will be ordered as the same order as
 ///     the underlying [`FuzzyHashData`].
-/// *   Two [`FuzzyHashDualData`] objects with the same normalized
+/// *   Two different [`FuzzyHashDualData`] objects with the same normalized
 ///     [`FuzzyHashData`] objects (inside) will be ordered
 ///     in an implementation-defined manner.
 ///
 /// The implementation-defined order is not currently guaranteed to be stable.
 /// For instance, different versions of this crate may order them differently.
 /// However, it is guaranteed deterministic so that you can expect the same
-/// order in the same program.
+/// order in the same version (and the same configuration) of this crate.
 ///
 /// # Safety
 ///
