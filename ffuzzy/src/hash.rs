@@ -1348,6 +1348,14 @@ where
     /// equivalent to [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
     /// with precomputation.
     ///
+    /// *Note*: This is particularly useful for large scale clustering because
+    /// if we have a common substring, there is a guarantee that the final
+    /// similarity score is greater than zero.  So, finding a common substring
+    /// is a fundamental operation to split a set of unique fuzzy hashes into
+    /// disjoint sets of single-linkage clusters (two elements in the same set
+    /// may (or may not) be a member of a cluster with a non-zero similarity but
+    /// elements in the different set cannot).
+    ///
     /// For instance, you may store fuzzy hashes indexed by the elements of
     /// this window.
     ///
