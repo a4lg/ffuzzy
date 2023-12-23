@@ -550,15 +550,18 @@ impl FuzzyHashCompareTarget {
     }
 
     /// Returns the "score cap" for a given block size and two block hash
-    /// lengths, assuming that block size is small enough so that an arithmetic
-    /// overflow will not occur.
+    /// lengths, assuming that block size and block hash lengths are small
+    /// enough so that no arithmetic overflow will occur.
     ///
     /// # Safety
     ///
-    /// If `log_block_size` is equal to or larger than
-    /// [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER)
-    /// and/or both lengths are too large, it may cause an
-    /// arithmetic overflow and return an useless value.
+    /// *   `log_block_size` must be less than
+    ///     [`FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER`](Self::LOG_BLOCK_SIZE_CAPPING_BORDER).
+    /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must not exceed
+    ///     [`block_hash::FULL_SIZE`].
+    ///
+    /// Otherwise, it may cause an arithmetic overflow and return an
+    /// useless value.
     #[cfg(feature = "unchecked")]
     #[allow(unsafe_code)]
     #[inline(always)]
