@@ -52,6 +52,9 @@ Those files will not trigger any piece splitting.  This is very similar to
 `h_org == 0` (the original rolling hash value of `0xffffffff`) after processing
 the 7-byte pattern.
 
+Note that trailing 7 zero bytes are always appended to make sure that no
+trailing piece information is generated (to see only `h_org == 0` condition).
+
 
 ### `repeating-bhB-T-RR-addA.bin`
 
