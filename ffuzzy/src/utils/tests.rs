@@ -24,9 +24,9 @@ fn u64_ilog2_examples() {
 fn u64_ilog2_near_borders() {
     for n in 1..=(u64::BITS - 1) {
         let border = 1u64 << n;
-        assert_eq!(u64_ilog2(border - 1), n - 1, "failed on n={:?}", n);
-        assert_eq!(u64_ilog2(border    ), n,     "failed on n={:?}", n);
-        assert_eq!(u64_ilog2(border + 1), n,     "failed on n={:?}", n);
+        assert_eq!(u64_ilog2(border - 1), n - 1, "failed on n={}", n);
+        assert_eq!(u64_ilog2(border    ), n,     "failed on n={}", n);
+        assert_eq!(u64_ilog2(border + 1), n,     "failed on n={}", n);
     }
 }
 
@@ -114,8 +114,8 @@ fn u64_lsb_ones_and_ilog2() {
     // and ilog2 (floor(log_2(n))).
     for n in 0..=(u64::BITS - 1) {
         let ones_plus_1 = u64_lsb_ones(n).wrapping_add(1);
-        assert!(ones_plus_1.is_power_of_two(), "failed on n={:?}", n);
-        assert_eq!(u64_ilog2(ones_plus_1), n, "failed on n={:?}", n);
+        assert!(ones_plus_1.is_power_of_two(), "failed on n={}", n);
+        assert_eq!(u64_ilog2(ones_plus_1), n, "failed on n={}", n);
     }
     assert_eq!(u64_lsb_ones(u64::BITS).wrapping_add(1), 0);
 }

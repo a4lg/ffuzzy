@@ -33,13 +33,13 @@ fn test_has_sequences() {
     assert!(block_hash_position_array_element::has_sequences(0, 0));
     for len in 1u32..=100 {
         assert!(!block_hash_position_array_element::has_sequences(0, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
     }
     // All one
     assert!(block_hash_position_array_element::has_sequences(u64::MAX, 0));
     for len in 1u32..=64 {
         assert!(block_hash_position_array_element::has_sequences(u64::MAX, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
     }
     assert!(!block_hash_position_array_element::has_sequences(u64::MAX, 65));
     // Test pattern: stripes
@@ -55,15 +55,15 @@ fn test_has_sequences() {
     }
     for len in 0u32..=1 {
         assert!(block_hash_position_array_element::has_sequences(STRIPE_1, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
         assert!(block_hash_position_array_element::has_sequences(STRIPE_2, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
     }
     for len in 2u32..=100 {
         assert!(!block_hash_position_array_element::has_sequences(STRIPE_1, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
         assert!(!block_hash_position_array_element::has_sequences(STRIPE_2, len),
-            "failed on len={:?}", len);
+            "failed on len={}", len);
     }
     // Test pattern: specific length (≧ 2) sequences
     for len in 2u32..=64 {
@@ -73,14 +73,14 @@ fn test_has_sequences() {
             let seq = base << shift;
             aggr_bits |= seq;
             assert_eq!(seq >> shift, base,
-                "failed on len={:?}, shift={:?}", len, shift);
+                "failed on len={}, shift={}", len, shift);
             for test_len in 1u32..=100 {
                 // Subpattern 1: pure bits
                 let target = seq;
                 assert_eq!(
                     block_hash_position_array_element::has_sequences(target, test_len),
                     test_len <= len,
-                    "failed on len={:?}, shift={:?}", len, shift
+                    "failed on len={}, shift={}", len, shift
                 );
                 // Subpattern 2 and 3: stripes
                 for stripe in [STRIPE_1, STRIPE_2] {
@@ -91,21 +91,21 @@ fn test_has_sequences() {
                     if test_len < 2 {
                         // Matches to stripe itself
                         assert!(block_hash_position_array_element::has_sequences(target, test_len),
-                            "failed on len={:?}, shift={:?}, stripe=0b{:064b}", len, shift, stripe);
+                            "failed on len={}, shift={}, stripe=0b{:064b}", len, shift, stripe);
                     }
                     else {
                         // Possibly matches to the sequence
                         assert_eq!(
                             block_hash_position_array_element::has_sequences(target, test_len),
                             test_len <= len,
-                            "failed on len={:?}, shift={:?}, stripe=0b{:064b}", len, shift, stripe
+                            "failed on len={}, shift={}, stripe=0b{:064b}", len, shift, stripe
                         );
                     }
                 }
             }
         }
         // check whether the loop above touched all bits.
-        assert_eq!(aggr_bits, u64::MAX, "failed on len={:?}", len);
+        assert_eq!(aggr_bits, u64::MAX, "failed on len={}", len);
         // Subpattern 4: repeated ones and one zero, repeated
         for offset in 0..=len {
             let mut has_seq = false;
@@ -124,11 +124,11 @@ fn test_has_sequences() {
                 has_seq = true;
             }
             assert_eq!(has_seq, block_hash_position_array_element::has_sequences(target, len),
-                "failed on len={:?}, offset={:?}", len, offset);
+                "failed on len={}, offset={}", len, offset);
             if has_seq {
                 for test_len in 0..len {
                     assert!(block_hash_position_array_element::has_sequences(target, test_len),
-                        "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
+                        "failed on len={}, offset={}, test_len={}", len, offset, test_len);
                 }
             }
             else {
@@ -144,12 +144,12 @@ fn test_has_sequences() {
                 let max_seq_len = u32::max(u64::BITS - 1 - offset, offset);
                 for test_len in 0..len {
                     assert_eq!(test_len <= max_seq_len, block_hash_position_array_element::has_sequences(target, test_len),
-                        "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
+                        "failed on len={}, offset={}, test_len={}", len, offset, test_len);
                 }
             }
             for test_len in (len + 1)..=100 {
                 assert!(!block_hash_position_array_element::has_sequences(target, test_len),
-                    "failed on len={:?}, offset={:?}, test_len={:?}", len, offset, test_len);
+                    "failed on len={}, offset={}, test_len={}", len, offset, test_len);
             }
         }
     }
@@ -414,15 +414,15 @@ fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeIm
                 for i in 0..bh.len() {
                     // Modify the original block hash.
                     bh_mod[i] ^= 1; // requires that ALPHABET_SIZE is an even number.
-                    assert!(!value.is_equiv(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
-                    assert!(!value.is_equiv_internal(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
+                    assert!(!value.is_equiv(bh_mod), "failed on bh={:?}, i={}", bh, i);
+                    assert!(!value.is_equiv_internal(bh_mod), "failed on bh={:?}, i={}", bh, i);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert!(!value.is_equiv_unchecked(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
+                        assert!(!value.is_equiv_unchecked(bh_mod), "failed on bh={:?}, i={}", bh, i);
                     }
                     // Change back to the original.
                     bh_mod[i] ^= 1;
-                    assert!(value.is_equiv_internal(bh_mod), "failed on bh={:?}, i={:?}", bh, i);
+                    assert!(value.is_equiv_internal(bh_mod), "failed on bh={:?}, i={}", bh, i);
                 }
             });
         };
@@ -630,13 +630,13 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
                 ).min(100);
                 let capped_score = expected_score.min(score_cap);
                 assert_eq!(value.score_strings(bh_norm, log_block_size), capped_score,
-                    "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
+                    "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
                 assert_eq!(value.score_strings_internal(bh_norm, log_block_size), capped_score,
-                    "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
+                    "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
                 #[cfg(feature = "unchecked")]
                 unsafe {
                     assert_eq!(value.score_strings_unchecked(bh_norm, log_block_size), capped_score,
-                        "failed on bh_norm={:?}, log_block_size={:?}", bh_norm, log_block_size);
+                        "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
                 }
             }
         });
@@ -680,9 +680,9 @@ where
         for len in 1..=u8::MAX {
             *value.len_mut() = len;
             assert!(!value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(!value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
         }
         // Setting same character sequence with matching length will make this valid.
         for len in 1u8..=64 {
@@ -691,14 +691,14 @@ where
             for i in 0..(*value.representation_mut()).len() {
                 (*value.representation_mut())[i] = target_value;
                 assert!(value.is_valid(),
-                    "failed on len={:?}, i={:?}", len, i);
+                    "failed on len={}, i={}", len, i);
                 assert_eq!(value.is_valid_and_normalized(), (len as usize) <= block_hash::MAX_SEQUENCE_SIZE,
-                    "failed on len={:?}, i={:?}", len, i);
+                    "failed on len={}, i={}", len, i);
                 (*value.representation_mut())[i] = 0;
                 assert!(!value.is_valid(),
-                    "failed on len={:?}, i={:?}", len, i);
+                    "failed on len={}, i={}", len, i);
                 assert!(!value.is_valid_and_normalized(),
-                    "failed on len={:?}, i={:?}", len, i);
+                    "failed on len={}, i={}", len, i);
             }
         }
         *value.len_mut() = 64;
@@ -708,9 +708,9 @@ where
         for len in (64 + 1)..=u8::MAX {
             *value.len_mut() = len;
             assert!(!value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(!value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
         }
     }
     // Block hash contents (outside the valid hash)
@@ -718,30 +718,30 @@ where
         for len in 0..=block_hash::FULL_SIZE {
             value.clear();
             assert!(value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             for i in 0..len {
                 (*value.representation_mut())[i] = 1 << i;
             }
             *value.len_mut() = len as u8;
             assert!(value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             for invalid_pos in (len as u32)..u64::BITS {
                 let bitpos = 1u64 << invalid_pos;
                 for ch in 0..(*value.representation_mut()).len() {
                     (*value.representation_mut())[ch] |= bitpos;
                     assert!(!value.is_valid(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     assert!(!value.is_valid_and_normalized(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     (*value.representation_mut())[ch] &= !bitpos;
                     assert!(value.is_valid(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     assert!(value.is_valid_and_normalized(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -751,17 +751,17 @@ where
         for len in 0..=block_hash::FULL_SIZE {
             value.clear();
             assert!(value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             for i in 0..len {
                 (*value.representation_mut())[i] = 1 << i;
             }
             *value.len_mut() = len as u8;
             assert!(value.is_valid(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             assert!(value.is_valid_and_normalized(),
-                "failed on len={:?}", len);
+                "failed on len={}", len);
             // If the position array either:
             // *   have "duplicate characters" in some position or
             // *   have "no characters" in some position,
@@ -771,14 +771,14 @@ where
                 for ch in 0..(*value.representation_mut()).len() {
                     (*value.representation_mut())[ch] ^= bitpos;
                     assert!(!value.is_valid(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     assert!(!value.is_valid_and_normalized(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     (*value.representation_mut())[ch] ^= bitpos;
                     assert!(value.is_valid(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                     assert!(value.is_valid_and_normalized(),
-                        "failed on len={:?}, invalid_pos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }

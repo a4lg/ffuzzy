@@ -418,7 +418,7 @@ fn data_model_corruption() {
                 for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
                     hash.rle_block1[index] = 1 | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (3-1-{}) on type={}, index={:?}, length={:?}", index, length);
+                    hash_is_invalid!($ty, hash, "failed (3-1-{}) on type={}, index={}, length={}", index, length);
                 }
             }
         }
@@ -428,7 +428,7 @@ fn data_model_corruption() {
                 for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     let mut hash = hash;
                     hash.rle_block2[index] = 1 | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (3-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                    hash_is_invalid!($ty, hash, "failed (3-2-{}) on type={}, index={}, length={}", index, length);
                 }
             }
         }
@@ -437,12 +437,12 @@ fn data_model_corruption() {
             let mut hash = hash;
             for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 hash.rle_block1[0] = 6 | (length << rle_encoding::BITS_POSITION);
-                assert!(hash.is_valid(), "failed (4-1-1) on type={}, length={:?}", stringify!($ty), length);
+                assert!(hash.is_valid(), "failed (4-1-1) on type={}, length={}", stringify!($ty), length);
             }
             for index in hash.norm_hash.len_blockhash1..=rle_encoding::MASK_POSITION {
                 for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     hash.rle_block1[0] = index | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (4-1-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                    hash_is_invalid!($ty, hash, "failed (4-1-2-{}) on type={}, index={}, length={}", index, length);
                 }
             }
         }
@@ -451,12 +451,12 @@ fn data_model_corruption() {
             let mut hash = hash;
             for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 hash.rle_block2[0] = 6 | (length << rle_encoding::BITS_POSITION);
-                assert!(hash.is_valid(), "failed (4-2-1) on type={}, length={:?}", stringify!($ty), length);
+                assert!(hash.is_valid(), "failed (4-2-1) on type={}, length={}", stringify!($ty), length);
             }
             for index in hash.norm_hash.len_blockhash2..=rle_encoding::MASK_POSITION {
                 for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                     hash.rle_block2[0] = index | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (4-2-2-{}) on type={}, index={:?}, length={:?}", index, length);
+                    hash_is_invalid!($ty, hash, "failed (4-2-2-{}) on type={}, index={}, length={}", index, length);
                 }
             }
         }
@@ -466,18 +466,18 @@ fn data_model_corruption() {
             for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 if length != 0 {
                     hash.rle_block1[0] = 0 | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (5-1-1-{}) on type={}, length={:?}", length);   // "**B"
+                    hash_is_invalid!($ty, hash, "failed (5-1-1-{}) on type={}, length={}", length);   // "**B"
                 }
                 hash.rle_block1[0] = 1 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-1-2-{}) on type={}, length={:?}", length);   // "*BB"
+                hash_is_invalid!($ty, hash, "failed (5-1-2-{}) on type={}, length={}", length);   // "*BB"
                 hash.rle_block1[0] = 2 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-1-3) on type={}", stringify!($ty)); // "BBB" (valid)
                 hash.rle_block1[0] = 3 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-1-4-{}) on type={}, length={:?}", length);   // "BBC"
+                hash_is_invalid!($ty, hash, "failed (5-1-4-{}) on type={}, length={}", length);   // "BBC"
                 hash.rle_block1[0] = 4 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-1-5-{}) on type={}, length={:?}", length);   // "BCD"
+                hash_is_invalid!($ty, hash, "failed (5-1-5-{}) on type={}, length={}", length);   // "BCD"
                 hash.rle_block1[0] = 5 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-1-6-{}) on type={}, length={:?}", length);   // "CDD"
+                hash_is_invalid!($ty, hash, "failed (5-1-6-{}) on type={}, length={}", length);   // "CDD"
                 hash.rle_block1[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-1-7) on type={}", stringify!($ty)); // "DDD" (valid)
             }
@@ -488,18 +488,18 @@ fn data_model_corruption() {
             for length in 0..rle_encoding::MAX_RUN_LENGTH as u8 {
                 if length != 0 {
                     hash.rle_block2[0] = 0 | (length << rle_encoding::BITS_POSITION);
-                    hash_is_invalid!($ty, hash, "failed (5-2-1-{}) on type={}, length={:?}", length);   // "**E"
+                    hash_is_invalid!($ty, hash, "failed (5-2-1-{}) on type={}, length={}", length);   // "**E"
                 }
                 hash.rle_block2[0] = 1 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-2-2-{}) on type={}, length={:?}", length);   // "*EE"
+                hash_is_invalid!($ty, hash, "failed (5-2-2-{}) on type={}, length={}", length);   // "*EE"
                 hash.rle_block2[0] = 2 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-2-3) on type={}", stringify!($ty)); // "EEE" (valid)
                 hash.rle_block2[0] = 3 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-2-4-{}) on type={}, length={:?}", length);   // "EEF"
+                hash_is_invalid!($ty, hash, "failed (5-2-4-{}) on type={}, length={}", length);   // "EEF"
                 hash.rle_block2[0] = 4 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-2-5-{}) on type={}, length={:?}", length);   // "EFG"
+                hash_is_invalid!($ty, hash, "failed (5-2-5-{}) on type={}, length={}", length);   // "EFG"
                 hash.rle_block2[0] = 5 | (length << rle_encoding::BITS_POSITION);
-                hash_is_invalid!($ty, hash, "failed (5-2-6-{}) on type={}, length={:?}", length);   // "FGG"
+                hash_is_invalid!($ty, hash, "failed (5-2-6-{}) on type={}, length={}", length);   // "FGG"
                 hash.rle_block2[0] = 6 | (length << rle_encoding::BITS_POSITION);
                 assert!(hash.is_valid(), "failed (5-2-7) on type={}", stringify!($ty)); // "GGG" (valid)
             }
@@ -799,23 +799,23 @@ fn ord_and_sorting() {
                         // Just check whether direct comparison between h1 and h2
                         // can be used to determine whether the hashes are the same.
                         assert_eq!(h1.cmp(&h2) == Ordering::Equal, i1 == i2,
-                            "failed (1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
+                            "failed (1) on type={}, i1={}, i2={}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                     Ordering::Greater => {
                         // Make sure that the result is the same as direct comparison between h1 and h2.
                         assert_eq!(h1.cmp(&h2), Ordering::Greater,
-                            "failed (2-1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
+                            "failed (2-1) on type={}, i1={}, i2={}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                         // Check sorted indexes
                         assert!(i1 > i2,
-                            "failed (2-2) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
+                            "failed (2-2) on type={}, i1={}, i2={}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                     Ordering::Less => {
                         // Make sure that the result is the same as direct comparison between h1 and h2.
                         assert_eq!(h1.cmp(&h2), Ordering::Less,
-                            "failed (3-1) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
+                            "failed (3-1) on type={}, i1={}, i2={}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                         // Check sorted indexes
                         assert!(i1 < i2,
-                            "failed (3-2) on type={}, i1={:?}, i2={:?}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
+                            "failed (3-2) on type={}, i1={}, i2={}, h1={:?}, h2={:?}", stringify!($ty), i1, i2, h1, h2);
                     },
                 }
             }

@@ -474,10 +474,10 @@ fn rolling_hash_rolling_basic() {
             }
             // h1: Plain sum
             assert_eq!(hash.h1, (ch as u32) * (RollingHash::WINDOW_SIZE as u32),
-                "failed on iteration={:?}, ch={:?}", iteration, ch);
+                "failed on iteration={}, ch={}", iteration, ch);
             // h2: Weighted sum
             assert_eq!(hash.h2, (ch as u32) * h2_multiplier,
-                "failed on iteration={:?}, ch={:?}", iteration, ch);
+                "failed on iteration={}, ch={}", iteration, ch);
             // h3: shift-xor
             let mut h3_expected = 0u32;
             for _ in 0..RollingHash::WINDOW_SIZE {
@@ -485,7 +485,7 @@ fn rolling_hash_rolling_basic() {
                 h3_expected ^= ch as u32;
             }
             assert_eq!(hash.h3, h3_expected,
-                "failed on iteration={:?}, ch={:?}", iteration, ch);
+                "failed on iteration={}, ch={}", iteration, ch);
         }
     }
 }
@@ -504,25 +504,25 @@ fn fuzz_rolling_hash_rolling_random_with_config(num_iterations: usize, random_se
         hash.update_by_byte(last_ch);
         // h1: Plain sum
         let h1_expected = last_bytes.iter().fold(0u32, |acc, &x| acc + (x as u32));
-        assert_eq!(hash.h1, h1_expected, "failed on iteration={:?}", iteration);
+        assert_eq!(hash.h1, h1_expected, "failed on iteration={}", iteration);
         // h2: Weighted sum
         let mut h2_expected = 0u32;
         for (i, &ch) in last_bytes.iter().enumerate() {
             h2_expected += ((i as u32) + 1) * (ch as u32);
         }
-        assert_eq!(hash.h2, h2_expected, "failed on iteration={:?}", iteration);
+        assert_eq!(hash.h2, h2_expected, "failed on iteration={}", iteration);
         // h3: shift-xor
         let mut h3_expected = 0u32;
         for &ch in last_bytes.iter() {
             h3_expected <<= RollingHash::H3_LSHIFT;
             h3_expected ^= ch as u32;
         }
-        assert_eq!(hash.h3, h3_expected, "failed on iteration={:?}", iteration);
+        assert_eq!(hash.h3, h3_expected, "failed on iteration={}", iteration);
         // value: h1+h2+h3
         assert_eq!(
             hash.value(),
             h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected),
-            "failed on iteration={:?}", iteration
+            "failed on iteration={}", iteration
         );
     }
 }
@@ -667,14 +667,14 @@ fn empty_data() {
         type FuzzyHashType = FuzzyHashData<$bh1sz, $bh2sz, false>;
         let hash = generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>().unwrap();
         assert_eq!(hash.block_size(), block_size::MIN,
-            "failed (1) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed (1) on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
         assert_eq!(hash.block_hash_1_len(), 0,
-            "failed (2) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed (2) on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
         assert_eq!(hash.block_hash_2_len(), 0,
-            "failed (3) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed (3) on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
         let hash_expected: FuzzyHashType = str::parse("3::").unwrap();
         assert_eq!(hash, hash_expected,
-            "failed (4) on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed (4) on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 }
@@ -748,30 +748,30 @@ fn verify_get_log_block_size_from_input_size() {
             assert_eq!(
                 get_log_block_size_from_input_size_naive(size - 2, start),
                 Generator::get_log_block_size_from_input_size(size - 2, start),
-                "failed on index={:?}, start={:?}", index, start
+                "failed on index={}, start={}", index, start
             );
             assert_eq!(
                 get_log_block_size_from_input_size_naive(size - 1, start),
                 Generator::get_log_block_size_from_input_size(size - 1, start),
-                "failed on index={:?}, start={:?}", index, start
+                "failed on index={}, start={}", index, start
             );
             assert_eq!(
                 get_log_block_size_from_input_size_naive(size, start),
                 Generator::get_log_block_size_from_input_size(size, start),
-                "failed on index={:?}, start={:?}", index, start
+                "failed on index={}, start={}", index, start
             );
             if size + 1 <= Generator::MAX_INPUT_SIZE {
                 assert_eq!(
                     get_log_block_size_from_input_size_naive(size + 1, start),
                     Generator::get_log_block_size_from_input_size(size + 1, start),
-                    "failed on index={:?}, start={:?}", index, start
+                    "failed on index={}, start={}", index, start
                 );
             }
             if size + 2 <= Generator::MAX_INPUT_SIZE {
                 assert_eq!(
                     get_log_block_size_from_input_size_naive(size + 2, start),
                     Generator::get_log_block_size_from_input_size(size + 2, start),
-                    "failed on index={:?}, start={:?}", index, start
+                    "failed on index={}, start={}", index, start
                 );
             }
         }
@@ -812,7 +812,7 @@ fn length_mismatches() {
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
         assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::FixedSizeMismatch),
-            "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -836,7 +836,7 @@ fn length_mismatches() {
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
     macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
         assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::FixedSizeMismatch),
-            "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}", $trunc, $bh1sz, $bh2sz);
+            "failed on trunc={}, bh1sz={}, bh2sz={}", $trunc, $bh1sz, $bh2sz);
     }}
     test_for_each_generator_finalization!(test);
 
@@ -959,7 +959,7 @@ fn large_data_triggers() {
             ).unwrap();
             assert_eq!(
                 hash_expected, generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>().unwrap(),
-                "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}, last_method={}",
+                "failed on trunc={}, bh1sz={}, bh2sz={}, last_method={}",
                 $trunc, $bh1sz, $bh2sz,
                 LAST_USED_METHODS[i]
             );
@@ -1020,7 +1020,7 @@ fn large_data_triggers() {
         assert!(generator.input_size > Generator::MAX_INPUT_SIZE, "failed on last_method={}", LAST_USED_METHODS[i]);
         macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
             assert_eq!(generator.finalize_raw::<$trunc, $bh1sz, $bh2sz>(), Err(GeneratorError::InputSizeTooLarge),
-                "failed on trunc={:?}, bh1sz={:?}, bh2sz={:?}, last_method={}",
+                "failed on trunc={}, bh1sz={}, bh2sz={}, last_method={}",
                 $trunc, $bh1sz, $bh2sz,
                 LAST_USED_METHODS[i]
             );
@@ -1103,13 +1103,13 @@ fn verify_with_small_precomputed_vectors() {
                         fuzzy_generated_trunc.normalize_in_place();
                     }
                     assert_eq!(*fuzzy_expected, fuzzy_generated,
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                 }
                 generator.reset();
                 generator.update(contents.as_slice());
@@ -1132,9 +1132,9 @@ fn verify_with_small_precomputed_vectors() {
             let mut fuzzy_expected_trunc: RawFuzzyHash = RawFuzzyHash::new();
             match fuzzy_expected.try_into_mut_short(&mut fuzzy_expected_trunc) {
                 Ok(_)  => assert!(!is_long,
-                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str),
+                    "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),
                 Err(_) => assert!(is_long,
-                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str),  // Consider truncation error.
+                    "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),  // Consider truncation error.
             }
             // Test three ways to generate fuzzy hashes
             {
@@ -1154,13 +1154,13 @@ fn verify_with_small_precomputed_vectors() {
                         .finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>() {
                             Ok(h) => {
                                 assert!(!is_long,
-                                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                                    "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 h
                             },
                             Err(_) => {
                                 // Consider truncation error.
                                 assert!(is_long || (flags & TEST_WASLONG) != 0,
-                                    "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                                    "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 if is_long {
                                     RawFuzzyHash::new()
                                 }
@@ -1174,14 +1174,14 @@ fn verify_with_small_precomputed_vectors() {
                         fuzzy_generated_trunc.normalize_in_place();
                     }
                     assert_eq!(*fuzzy_expected, fuzzy_generated,
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
-                        "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     if !is_long {
                         assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
-                            "failed on file={:?}, flags={:?}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                            "failed on file={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     }
                 }
                 generator.reset();

@@ -200,64 +200,64 @@ fn data_model_basic() {
                         target2_3.init_from($dual_hash);
                         // Compare equality
                         assert!(target1_1.full_eq(&target1_2),
-                            "failed (1-1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-1-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(target1_1.full_eq(&target1_3),
-                            "failed (1-1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-1-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(target1_1.full_eq(&target2_1),
-                            "failed (1-2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(target1_1.full_eq(&target2_2),
-                            "failed (1-2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-2-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(target1_1.full_eq(&target2_3),
-                            "failed (1-2-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-2-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         target1_1
                     };
                     // Test validity and equivalence to the original
                     assert!(target.is_valid(),
-                        "failed (1-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert!(target.is_equiv(&$hash),
-                        "failed (1-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check raw values (except position array)
                     assert_eq!(target.log_blocksize, log_block_size_raw,
-                        "failed (1-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.len_blockhash1, len_blockhash1_raw,
-                        "failed (1-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-6) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.len_blockhash2, len_blockhash2_raw,
-                        "failed (1-7) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-7) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check direct correspondence to raw values and basic functions
                     assert_eq!(target.log_block_size(), log_block_size_raw,
-                        "failed (1-8) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-8) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_size(), block_size,
-                        "failed (1-9) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-9) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check BlockHashPositionArrayRef
                     // (except `reference()`, which is checked by `data_model_internal_refs`)
                     assert_eq!(target.block_hash_1().is_empty(), target.block_hash_1().len() == 0,
-                        "failed (2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_2().is_empty(), target.block_hash_2().len() == 0,
-                        "failed (2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_1().len(), target.len_blockhash1,
-                        "failed (2-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_2().len(), target.len_blockhash2,
-                        "failed (2-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_1_internal().is_empty(), target.block_hash_1().len() == 0,
-                        "failed (2-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_2_internal().is_empty(), target.block_hash_2().len() == 0,
-                        "failed (2-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-6) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_1_internal().len(), target.len_blockhash1,
-                        "failed (2-7) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-7) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_2_internal().len(), target.len_blockhash2,
-                        "failed (2-8) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2-8) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check BlockHashPositionArrayMutRef
                     // (except `reference{,_mut}()`, that are checked by `data_model_internal_refs`)
                     let bh1_len = target.block_hash_1_mut().len();
                     let bh2_len = target.block_hash_2_mut().len();
                     assert_eq!(target.block_hash_1_mut().is_empty(), bh1_len == 0,
-                        "failed (3-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.block_hash_2_mut().is_empty(), bh2_len == 0,
-                        "failed (3-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(bh1_len, target.len_blockhash1,
-                        "failed (3-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(bh2_len, target.len_blockhash2,
-                        "failed (3-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                 };
             }
             // Test body
@@ -265,7 +265,7 @@ fn data_model_basic() {
                 // Short fuzzy hash
                 let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
                 assert_eq!(hash, FuzzyHash::try_from(LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize()).unwrap(),
-                    "failed on log_block_size={:?} bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
+                    "failed on log_block_size={} bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
                 if bh2.len() <= block_hash::HALF_SIZE {
                     let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(block_size, bh1, bh2));
                     test_all!(hash, dual_hash);
@@ -279,7 +279,7 @@ fn data_model_basic() {
             {
                 let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
                 assert_eq!(hash, LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize(),
-                    "failed on log_block_size={:?}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
+                    "failed on log_block_size={}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
                 let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2));
                 test_all!(hash, dual_hash);
             }
@@ -307,18 +307,18 @@ fn data_model_equiv() {
                     let is_empty = bh1_norm.is_empty() && bh2_norm.is_empty();
                     let is_equiv_with_empty = log_block_size == 0 && is_empty;
                     assert_eq!(is_equiv_with_empty, target.is_equiv(&empty_hash_s),
-                        "failed (1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(is_equiv_with_empty, target.is_equiv(&empty_hash_l),
-                        "failed (1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(is_empty, target.is_equiv_except_block_size(&empty_hash_s),
-                        "failed (1-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(is_empty, target.is_equiv_except_block_size(&empty_hash_l),
-                        "failed (1-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Equivalence with the original
                     assert!(target.is_equiv(&$hash),
-                        "failed (1-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert!(target.is_equiv_except_block_size(&$hash),
-                        "failed (1-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1-6) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Inequality when block size is changed from the original.
                     // Note: `is_equiv_except_block_size()` should still return true.
                     let mut hash2 = $hash;
@@ -326,8 +326,8 @@ fn data_model_equiv() {
                         hash2.log_blocksize = log_block_size_2 as u8;
                         assert_eq!(target.is_equiv(&hash2), log_block_size == log_block_size_2,
                             "failed (2-1) on \
-                                log_block_size={:?}, \
-                                log_block_size_2={:?}, \
+                                log_block_size={}, \
+                                log_block_size_2={}, \
                                 bh1_norm={:?}, \
                                 bh2_norm={:?}",
                             log_block_size,
@@ -337,8 +337,8 @@ fn data_model_equiv() {
                         );
                         assert!(target.is_equiv_except_block_size(&hash2),
                             "failed (2-2) on \
-                                log_block_size={:?}, \
-                                log_block_size_2={:?}, \
+                                log_block_size={}, \
+                                log_block_size_2={}, \
                                 bh1_norm={:?}, \
                                 bh2_norm={:?}",
                             log_block_size,
@@ -383,18 +383,18 @@ fn data_model_equiv_inequality_block_hash() {
                         let mut hash = $hash;
                         hash.blockhash1[i] = if i == 2 { 0 } else { 2 };
                         assert!(!target.is_equiv(&hash),
-                            "failed (1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(!target.is_equiv_except_block_size(&hash),
-                            "failed (1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     }
                     // Change block hash 2 contents and check inequality
                     for i in 0..bh2_norm.len() {
                         let mut hash = $hash;
                         hash.blockhash2[i] = if i == block_hash::FULL_SIZE - 1 - 2 { 0 } else { 2 };
                         assert!(!target.is_equiv(&hash),
-                            "failed (2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         assert!(!target.is_equiv_except_block_size(&hash),
-                            "failed (2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (2-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     }
                 };
             }
@@ -469,7 +469,7 @@ fn data_model_corruption() {
             target.log_blocksize = log_block_size;
             // Valid and invalid block sizes
             assert_eq!(target.is_valid(), block_size::is_log_valid(log_block_size),
-                "failed on log_block_size={:?}", log_block_size);
+                "failed on log_block_size={}", log_block_size);
         }
     }
     // Block hash 1 length (and some of its contents)
@@ -486,7 +486,7 @@ fn data_model_corruption() {
         for index in 0..target.blockhash1.len() {
             let mut target = target.clone();
             target.blockhash1[index] = 1;  // Position 0 is character index i.
-            assert!(target.is_valid(), "failed on index={:?}", index);
+            assert!(target.is_valid(), "failed on index={}", index);
         }
         let mut target = FuzzyHashCompareTarget::new();
         // Fill with valid pattern (maximum length)
@@ -498,7 +498,7 @@ fn data_model_corruption() {
         // Once it exceeds the valid length, it's invalid.
         for len in 65u8..=u8::MAX {
             target.len_blockhash1 = len;
-            assert!(!target.is_valid(), "failed on len={:?}", len);
+            assert!(!target.is_valid(), "failed on len={}", len);
         }
     }
     // Block hash 2 length (and some of its contents)
@@ -515,7 +515,7 @@ fn data_model_corruption() {
         for index in 0..target.blockhash2.len() {
             let mut target = target.clone();
             target.blockhash2[index] = 1;  // Position 0 is character index i.
-            assert!(target.is_valid(), "failed on index={:?}", index);
+            assert!(target.is_valid(), "failed on index={}", index);
         }
         let mut target = FuzzyHashCompareTarget::new();
         // Fill with valid pattern (maximum length)
@@ -527,7 +527,7 @@ fn data_model_corruption() {
         // Once it exceeds the valid length, it's invalid.
         for len in 65u8..=u8::MAX {
             target.len_blockhash2 = len;
-            assert!(!target.is_valid(), "failed on len={:?}", len);
+            assert!(!target.is_valid(), "failed on len={}", len);
         }
     }
     // Block hash 1 contents: outside the valid hash.
@@ -541,7 +541,7 @@ fn data_model_corruption() {
                     target.blockhash1[i] = 1 << i;
                 }
                 target.len_blockhash1 = len as u8;
-                assert!(target.is_valid(), "failed on len={:?}", len);
+                assert!(target.is_valid(), "failed on len={}", len);
                 target
             };
             // If we have a character past the block hash, it's invalid.
@@ -551,7 +551,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={:?}, invalid_bitpos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -566,7 +566,7 @@ fn data_model_corruption() {
                     target.blockhash2[i] = 1 << i;
                 }
                 target.len_blockhash2 = len as u8;
-                assert!(target.is_valid(), "failed on len={:?}", len);
+                assert!(target.is_valid(), "failed on len={}", len);
                 target
             };
             // If we have a character past the block hash, it's invalid.
@@ -576,7 +576,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash2[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={:?}, invalid_bitpos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -592,7 +592,7 @@ fn data_model_corruption() {
                     target.blockhash1[i] = 1 << i;
                 }
                 target.len_blockhash1 = len as u8;
-                assert!(target.is_valid(), "failed on len={:?}", len);
+                assert!(target.is_valid(), "failed on len={}", len);
                 target
             };
             // If the target either:
@@ -605,7 +605,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={:?}, invalid_bitpos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -621,7 +621,7 @@ fn data_model_corruption() {
                     target.blockhash2[i] = 1 << i;
                 }
                 target.len_blockhash2 = len as u8;
-                assert!(target.is_valid(), "failed on len={:?}", len);
+                assert!(target.is_valid(), "failed on len={}", len);
                 target
             };
             // If the target either:
@@ -634,7 +634,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={:?}, invalid_bitpos={:?}, ch={:?}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -645,14 +645,14 @@ fn data_model_corruption() {
             let target = {
                 let mut target = FuzzyHashCompareTarget::new();
                 target.len_blockhash1 = len as u8;
-                assert_eq!(target.is_valid(), len == 0, "failed on len={:?}", len);
+                assert_eq!(target.is_valid(), len == 0, "failed on len={}", len);
                 target
             };
             for index in 0..target.blockhash1.len() {
                 let mut target = target.clone();
                 target.blockhash1[index] = u64_lsb_ones(len as u32);
                 assert_eq!(target.is_valid(), len <= block_hash::MAX_SEQUENCE_SIZE,
-                    "failed on len={:?}, index={:?}", len, index);
+                    "failed on len={}, index={}", len, index);
             }
         }
     }
@@ -662,14 +662,14 @@ fn data_model_corruption() {
             let target = {
                 let mut target = FuzzyHashCompareTarget::new();
                 target.len_blockhash2 = len as u8;
-                assert_eq!(target.is_valid(), len == 0, "failed on len={:?}", len);
+                assert_eq!(target.is_valid(), len == 0, "failed on len={}", len);
                 target
             };
             for index in 0..target.blockhash2.len() {
                 let mut target = target.clone();
                 target.blockhash2[index] = u64_lsb_ones(len as u32);
                 assert_eq!(target.is_valid(), len <= block_hash::MAX_SEQUENCE_SIZE,
-                    "failed on len={:?}, index={:?}", len, index);
+                    "failed on len={}, index={}", len, index);
             }
         }
     }
@@ -694,30 +694,30 @@ fn raw_scores_on_block_hash_comparison() {
                     assert_eq!(
                         new_score,
                         FuzzyHashCompareTarget::raw_score_by_edit_distance_unchecked(len1, len2, edit_distance),
-                        "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance
+                        "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance
                     );
                 }
                 // The score is 100 if the edit distance is zero.
                 if edit_distance == 0 {
                     assert_eq!(new_score, 100,
-                        "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                        "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance);
                 }
                 // The score is always capped at 100.
                 assert!(new_score <= 100,
-                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                    "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance);
                 // The score is non-zero as long as we can perform an edit
                 // distance-based comparison.
                 assert_ne!(new_score, 0,
-                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                    "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance);
                 // The score is the same even if we swap len1 and len2.
                 assert_eq!(
                     new_score,
                     FuzzyHashCompareTarget::raw_score_by_edit_distance(len2, len1, edit_distance),
-                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance
+                    "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance
                 );
                 // The raw score decreases as the edit distance increases (per len1 and len2).
                 assert!(new_score <= score,
-                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                    "failed on len1={}, len2={}, edit_distance={}", len1, len2, edit_distance);
                 score = new_score;
             }
         }
@@ -740,7 +740,7 @@ fn score_caps_on_block_hash_comparison() {
             assert_ne!(
                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len),
                 0,
-                "failed on log_block_size={:?}, len={:?}", log_block_size, len
+                "failed on log_block_size={}, len={}", log_block_size, len
             );
         }
         for len in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
@@ -751,24 +751,24 @@ fn score_caps_on_block_hash_comparison() {
                 assert_eq!(
                     new_score_cap,
                     FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_unchecked(log_block_size, len, len),
-                    "failed on log_block_size={:?}, len={:?}", log_block_size, len
+                    "failed on log_block_size={}, len={}", log_block_size, len
                 );
             }
             // If valid arguments are specified, the score cap must be non-zero
             assert_ne!(new_score_cap, 0,
-                "failed on log_block_size={:?}, len={:?}", log_block_size, len);
+                "failed on log_block_size={}, len={}", log_block_size, len);
             // Check the score cap in detail
             if len == block_hash::MIN_LCS_FOR_COMPARISON as u8 {
                 // Minimum score cap is less than 100 while log_block_size is
                 // smaller than LOG_BLOCK_SIZE_CAPPING_BORDER.
                 assert!(new_score_cap < 100,
-                    "failed on log_block_size={:?}, len={:?}", log_block_size, len);
+                    "failed on log_block_size={}, len={}", log_block_size, len);
             }
             else {
                 // If the length increases by one, the score cap increases by
                 // 1 << log_block_size.
                 assert_eq!(new_score_cap - score_cap, 1u32 << log_block_size,
-                    "failed on log_block_size={:?}, len={:?}", log_block_size, len);
+                    "failed on log_block_size={}, len={}", log_block_size, len);
             }
             score_cap = new_score_cap;
         }
@@ -776,7 +776,7 @@ fn score_caps_on_block_hash_comparison() {
     for log_block_size in FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER..u8::MAX {
         for len in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as _ {
             assert!(FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len) >= 100,
-                "failed on log_block_size={:?}, len={:?}", log_block_size, len);
+                "failed on log_block_size={}, len={}", log_block_size, len);
         }
     }
 }
@@ -799,18 +799,18 @@ fn compare_self() {
                 ($hash: ident) => {
                     let target = FuzzyHashCompareTarget::from(&$hash);
                     assert_eq!(target.compare(&$hash), 100,
-                        "failed (1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.compare_near_eq(&$hash), 100,
-                        "failed (2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.compare_near_eq_internal(&$hash), 100,
-                        "failed (3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(target.compare_near_eq_unchecked(&$hash), 100,
-                        "failed (4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     }
                     assert_eq!($hash.compare(&$hash), 100,
-                        "failed (5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                 };
             }
             // Test body
@@ -864,45 +864,45 @@ fn compare_slightly_different() {
                     macro_rules! compare {
                         ($bhidx: literal, $score: ident, $diff_hash: ident) => {
                             assert_eq!($score, target.compare_near_eq(&$diff_hash),
-                                "failed ({}-1-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_near_eq_internal(&$diff_hash),
-                                "failed ({}-1-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare(&$diff_hash),
-                                "failed ({}-1-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal(&$diff_hash),
-                                "failed ({}-1-4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_internal(&$diff_hash),
-                                "failed ({}-1-5) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_near_eq(&$diff_hash),
-                                "failed ({}-1-6) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-6) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, target.compare_unequal_near_eq_internal(&$diff_hash),
-                                "failed ({}-1-7) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-7) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare_unequal(&$diff_hash),
-                                "failed ({}-1-8) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-8) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             assert_eq!($score, hash.compare_unequal_internal(&$diff_hash),
-                                "failed ({}-1-9) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                "failed ({}-1-9) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                 $bhidx, log_block_size, bh1_norm, bh2_norm);
                             #[cfg(feature = "unchecked")]
                             unsafe {
                                 assert_eq!($score, target.compare_near_eq_unchecked(&$diff_hash),
-                                    "failed ({}-1-10) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    "failed ({}-1-10) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                     $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, target.compare_unequal_unchecked(&$diff_hash),
-                                    "failed ({}-1-11) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    "failed ({}-1-11) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                     $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, target.compare_unequal_near_eq_unchecked(&$diff_hash),
-                                    "failed ({}-1-12) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    "failed ({}-1-12) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                     $bhidx, log_block_size, bh1_norm, bh2_norm);
                                 assert_eq!($score, hash.compare_unequal_unchecked(&$diff_hash),
-                                    "failed ({}-1-13) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}",
+                                    "failed ({}-1-13) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}",
                                     $bhidx, log_block_size, bh1_norm, bh2_norm);
                             }
                         };
@@ -919,14 +919,14 @@ fn compare_slightly_different() {
                             ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap,
-                            "failed (1-2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (1-2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         if len_blockhash1 < block_hash::MIN_LCS_FOR_COMPARISON &&
                            len_blockhash2 < block_hash::MIN_LCS_FOR_COMPARISON
                         {
                             // For short fuzzy hashes (when different),
                             // the score will be zero regardless of its similarity.
                             assert_eq!(score, 0,
-                                "failed (1-2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                                "failed (1-2-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         }
                         else if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON &&
                                 score_cap_2 >= 100
@@ -935,7 +935,7 @@ fn compare_slightly_different() {
                             // its raw comparison reports a perfect match.
                             // At least, make sure that it's perfect as long as not capped.
                             assert_eq!(score, 100,
-                                "failed (1-2-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                                "failed (1-2-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         }
                     }
                     // Modify block hash 2 (only slightly) and test comparison
@@ -950,14 +950,14 @@ fn compare_slightly_different() {
                             ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap,
-                            "failed (2-2-1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (2-2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         if len_blockhash1 < block_hash::MIN_LCS_FOR_COMPARISON &&
                            len_blockhash2 < block_hash::MIN_LCS_FOR_COMPARISON
                         {
                             // For short fuzzy hashes (when different),
                             // the score will be zero regardless of its similarity.
                             assert_eq!(score, 0,
-                                "failed (2-2-2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                                "failed (2-2-2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         }
                         else if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON &&
                                 score_cap_1 >= 100
@@ -966,7 +966,7 @@ fn compare_slightly_different() {
                             // its raw comparison reports a perfect match.
                             // At least, make sure that it's perfect as long as not capped.
                             assert_eq!(score, 100,
-                                "failed (2-2-3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                                "failed (2-2-3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                         }
                     }
                 };
@@ -1044,7 +1044,7 @@ fn comparison_with_block_size_pairs() {
     // Make sure that BLOCK_HASH_SAMPLE_DATA elements
     // can be stored in a truncated block hash.
     for (i, &sample_data) in BLOCK_HASH_SAMPLE_DATA.iter().enumerate() {
-        assert!(sample_data.len() <= block_hash::HALF_SIZE, "failed on i={:?}", i);
+        assert!(sample_data.len() <= block_hash::HALF_SIZE, "failed on i={}", i);
     }
     let mut target_s = FuzzyHashCompareTarget::new();
     let mut target_l = FuzzyHashCompareTarget::new();
@@ -1060,7 +1060,7 @@ fn comparison_with_block_size_pairs() {
         let hash1_l = hash1_s.to_long_form();
         target_s.init_from(&hash1_s);
         target_l.init_from(&hash1_l);
-        assert!(target_s.full_eq(&target_l), "failed on bs1={:?}", bs1);
+        assert!(target_s.full_eq(&target_l), "failed on bs1={}", bs1);
         let target: &FuzzyHashCompareTarget = &target_s;
         for bs2 in 0..block_size::NUM_VALID {
             // Hash 2: (BS2):[2]:[3]
@@ -1073,41 +1073,41 @@ fn comparison_with_block_size_pairs() {
             );
             let hash2_l = hash2_s.to_long_form();
             let score = target.compare(&hash2_s);
-            assert_eq!(score, target.compare(&hash2_l),                   "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, target.compare_unequal(&hash2_s),           "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, target.compare_unequal(&hash2_l),           "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, target.compare_unequal_internal(&hash2_s),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, target.compare_unequal_internal(&hash2_l),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_s.compare(&hash2_s),                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_l.compare(&hash2_l),                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_s.compare_unequal(&hash2_s),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_l.compare_unequal(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_s.compare_unequal_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(score, hash1_l.compare_unequal_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+            assert_eq!(score, target.compare(&hash2_l),                   "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, target.compare_unequal(&hash2_s),           "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, target.compare_unequal(&hash2_l),           "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, target.compare_unequal_internal(&hash2_s),  "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, target.compare_unequal_internal(&hash2_l),  "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_s.compare(&hash2_s),                  "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_l.compare(&hash2_l),                  "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_s.compare_unequal(&hash2_s),          "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_l.compare_unequal(&hash2_l),          "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_s.compare_unequal_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(score, hash1_l.compare_unequal_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
             #[cfg(feature = "unchecked")]
             unsafe {
-                assert_eq!(score, target.compare_unequal_unchecked(&hash2_s),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                assert_eq!(score, target.compare_unequal_unchecked(&hash2_l),  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                assert_eq!(score, hash1_s.compare_unequal_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                assert_eq!(score, hash1_l.compare_unequal_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                assert_eq!(score, target.compare_unequal_unchecked(&hash2_s),  "failed on bs1={}, bs2={}", bs1, bs2);
+                assert_eq!(score, target.compare_unequal_unchecked(&hash2_l),  "failed on bs1={}, bs2={}", bs1, bs2);
+                assert_eq!(score, hash1_s.compare_unequal_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                assert_eq!(score, hash1_l.compare_unequal_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
             }
             match block_size::compare_sizes(log_block_size_1, log_block_size_2) {
                 BlockSizeRelation::Far => {
-                    assert_eq!(score, 0, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(!target.is_comparison_candidate(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(!target.is_comparison_candidate(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, 0, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(!target.is_comparison_candidate(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(!target.is_comparison_candidate(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                 }
                 BlockSizeRelation::NearEq => {
-                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_eq(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_eq(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_eq(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_eq(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                     // Compare two block hashes (lower block size: [0] and [2], higher block size: [1] and [3])
                     // and take the maximum (considering the capping).
@@ -1128,35 +1128,35 @@ fn comparison_with_block_size_pairs() {
                     let expected_score_capped_1 = u32::min(expected_score_uncapped_1, score_cap_1);
                     let expected_score_capped_2 = u32::min(expected_score_uncapped_2, score_cap_2);
                     let expected_score = u32::max(expected_score_capped_1, expected_score_capped_2);
-                    assert_eq!(score, expected_score, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, expected_score, "failed on bs1={}, bs2={}", bs1, bs2);
                     // Test other specialized comparison functions (including internal ones)
-                    assert_eq!(score, target.compare_near_eq(&hash2_s),                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_near_eq(&hash2_l),                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_near_eq_internal(&hash2_s),         "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_near_eq_internal(&hash2_l),         "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_eq(&hash2_s),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_eq(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, target.compare_near_eq(&hash2_s),                  "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_near_eq(&hash2_l),                  "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_near_eq_internal(&hash2_s),         "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_near_eq_internal(&hash2_l),         "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_eq(&hash2_s),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_eq(&hash2_l),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_eq_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert_eq!(score, target.compare_near_eq_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert_eq!(score, target.compare_near_eq_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert_eq!(score, target.compare_unequal_near_eq_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert_eq!(score, target.compare_unequal_near_eq_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert_eq!(score, target.compare_near_eq_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert_eq!(score, target.compare_near_eq_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_eq_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_eq_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                 }
                 BlockSizeRelation::NearGt => {
-                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_gt(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_gt(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_gt(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_gt(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                     // BS1 > BS2 but not too far.
                     // Compare [0] and [3] and cap the raw score.
@@ -1168,29 +1168,29 @@ fn comparison_with_block_size_pairs() {
                         );
                     let expected_score_uncapped = BLOCK_HASH_SAMPLE_SCORES[0][3];
                     let expected_score = u32::min(expected_score_uncapped, score_cap);
-                    assert_eq!(score, expected_score, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, expected_score, "failed on bs1={}, bs2={}", bs1, bs2);
                     // Test other specialized comparison functions (including internal ones)
-                    assert_eq!(score, target.compare_unequal_near_gt(&hash2_s),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_gt(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_gt(&hash2_s),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_gt(&hash2_l),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_gt_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_gt_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                 }
                 BlockSizeRelation::NearLt => {
-                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_lt(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_lt(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert!(target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_lt(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_lt(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert!(target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert!(target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                     // BS1 < BS2 but not too far.
                     // Compare [1] and [2] and cap the raw score.
@@ -1202,16 +1202,16 @@ fn comparison_with_block_size_pairs() {
                         );
                     let expected_score_uncapped = BLOCK_HASH_SAMPLE_SCORES[1][2];
                     let expected_score = u32::min(expected_score_uncapped, score_cap);
-                    assert_eq!(score, expected_score, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, expected_score, "failed on bs1={}, bs2={}", bs1, bs2);
                     // Test other specialized comparison functions (including internal ones)
-                    assert_eq!(score, target.compare_unequal_near_lt(&hash2_s),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_lt(&hash2_l),          "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_lt(&hash2_s),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_lt(&hash2_l),          "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(score, target.compare_unequal_near_lt_internal(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_s), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                        assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_l), "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
+                        assert_eq!(score, target.compare_unequal_near_lt_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
                     }
                 }
             }
@@ -1240,15 +1240,15 @@ fn compare_candidate_self() {
                 ($hash: ident) => {
                     let target = FuzzyHashCompareTarget::from(&$hash);
                     assert_eq!(expected_value, target.is_comparison_candidate(&$hash),
-                        "failed (1) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(expected_value, target.is_comparison_candidate_near_eq(&$hash),
-                        "failed (2) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (2) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(expected_value, target.is_comparison_candidate_near_eq_internal(&$hash),
-                        "failed (3) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                        "failed (3) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     #[cfg(feature = "unchecked")]
                     unsafe {
                         assert_eq!(expected_value, target.is_comparison_candidate_near_eq_unchecked(&$hash),
-                            "failed (4) on log_block_size={:?}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
+                            "failed (4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     }
                 };
             }
@@ -1339,11 +1339,11 @@ fn compare_candidate_with_block_size_pairs() {
         let mut target = BlockHashPositionArray::new();
         target.init_from(bh_str_1);
         // Make sure that all block hashes are valid (and normalized).
-        assert!(target.is_valid_and_normalized(), "failed on idx_1={:?}", idx_1);
+        assert!(target.is_valid_and_normalized(), "failed on idx_1={}", idx_1);
         // Make sure that only comparing with itself finds a common substring.
         for (idx_2, &bh_str_2) in BH_STRS.iter().enumerate() {
             assert_eq!(idx_1 == idx_2, target.has_common_substring(bh_str_2),
-                "failed on idx_1={:?}, idx_2={:?}", idx_1, idx_2);
+                "failed on idx_1={}, idx_2={}", idx_1, idx_2);
         }
     }
     let mut target_s = FuzzyHashCompareTarget::new();
@@ -1360,7 +1360,7 @@ fn compare_candidate_with_block_size_pairs() {
             let hash1_l = hash1_s.to_long_form();
             target_s.init_from(&hash1_s);
             target_l.init_from(&hash1_l);
-            assert!(target_s.full_eq(&target_l), "failed on pair_idx={:?}, bs1={:?}", pair_idx, bs1);
+            assert!(target_s.full_eq(&target_l), "failed on pair_idx={}, bs1={}", pair_idx, bs1);
             let target: &FuzzyHashCompareTarget = &target_s;
             for bs2 in 0..block_size::NUM_VALID {
                 // Hash 2: (BS2):[bh_2_1]:[bh_2_2]
@@ -1371,46 +1371,46 @@ fn compare_candidate_with_block_size_pairs() {
                 let hash2_l = hash2_s.to_long_form();
                 match block_size::compare_sizes(log_block_size_1, log_block_size_2) {
                     BlockSizeRelation::Far => {
-                        assert!(!target.is_comparison_candidate(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert!(!target.is_comparison_candidate(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                        assert!(!target.is_comparison_candidate(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert!(!target.is_comparison_candidate(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                     }
                     BlockSizeRelation::NearEq => {
-                        assert_eq!(cand_eq, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_eq, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_internal(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         #[cfg(feature = "unchecked")]
                         unsafe {
-                            assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                            assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_eq, target.is_comparison_candidate_near_eq_unchecked(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         }
                     }
                     BlockSizeRelation::NearGt => {
-                        assert_eq!(cand_gt, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_gt, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_internal(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         #[cfg(feature = "unchecked")]
                         unsafe {
-                            assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                            assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_gt, target.is_comparison_candidate_near_gt_unchecked(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         }
                     }
                     BlockSizeRelation::NearLt => {
-                        assert_eq!(cand_lt, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_lt, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                        assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_internal(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         #[cfg(feature = "unchecked")]
                         unsafe {
-                            assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
-                            assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on pair_idx={:?}, bs1={:?}, bs2={:?}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
+                            assert_eq!(cand_lt, target.is_comparison_candidate_near_lt_unchecked(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         }
                     }
                 }

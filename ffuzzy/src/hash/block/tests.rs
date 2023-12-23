@@ -43,9 +43,9 @@ fn block_size_validness_near_the_border() {
                 block_size_prev_plus_1
             )..block_size
         {
-            assert!(!block_size::is_valid(bs), "failed on bs={:?}", bs);
+            assert!(!block_size::is_valid(bs), "failed on bs={}", bs);
         }
-        assert!(block_size::is_valid(block_size), "failed on block_size={:?}", block_size);
+        assert!(block_size::is_valid(block_size), "failed on block_size={}", block_size);
         if block_size == u32::MAX { continue; }
         for bs in
             (block_size + 1)..=u32::min(
@@ -53,7 +53,7 @@ fn block_size_validness_near_the_border() {
                 block_size_next_minus_1
             )
         {
-            assert!(!block_size::is_valid(bs), "failed on bs={:?}", bs);
+            assert!(!block_size::is_valid(bs), "failed on bs={}", bs);
         }
     }
 }
@@ -68,12 +68,12 @@ fn block_size_validness_all() {
     for block_size in u32::MIN..=u32::MAX {
         if test_next {
             assert!(block_size::is_valid(block_size),
-                "failed on block_size={:?}", block_size);
+                "failed on block_size={}", block_size);
             test_next = false;
         }
         else {
             assert!(!block_size::is_valid(block_size),
-                "failed on block_size={:?}", block_size);
+                "failed on block_size={}", block_size);
         }
         if block_size == next_block_size_minus_1 {
             test_next = true;
@@ -93,51 +93,51 @@ fn block_size_validness_all() {
 fn block_size_log_validness() {
     for log_block_size in 0..block_size::NUM_VALID as u8 {
         assert!(block_size::is_log_valid(log_block_size),
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         // exp(i)
         let block_size = {
             let block_size_1 = block_size::from_log(log_block_size).unwrap();
             let block_size_2 = block_size::from_log_internal(log_block_size);
             assert_eq!(block_size_1, block_size_2,
-                "failed on log_block_size={:?}", log_block_size);
+                "failed on log_block_size={}", log_block_size);
             #[cfg(feature = "unchecked")]
             unsafe {
                 let block_size_3 = block_size::from_log_unchecked(log_block_size);
                 assert_eq!(block_size_1, block_size_3,
-                    "failed on log_block_size={:?}", log_block_size);
+                    "failed on log_block_size={}", log_block_size);
             }
             block_size_1
         };
         assert!(block_size::is_valid(block_size),
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         // log(exp(i)) == i.
         assert_eq!(
             log_block_size,
             block_size::log_from_valid(block_size),
-            "failed on log_block_size={:?}", log_block_size
+            "failed on log_block_size={}", log_block_size
         );
         assert_eq!(
             log_block_size,
             block_size::log_from_valid_internal(block_size),
-            "failed on log_block_size={:?}", log_block_size
+            "failed on log_block_size={}", log_block_size
         );
         #[cfg(feature = "unchecked")]
         unsafe {
             assert_eq!(
                 log_block_size,
                 block_size::log_from_valid_unchecked(block_size),
-                "failed on log_block_size={:?}", log_block_size
+                "failed on log_block_size={}", log_block_size
             );
         }
         // Relations with block_size::MIN
         assert_eq!(block_size % block_size::MIN, 0,
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         assert!((block_size / block_size::MIN).is_power_of_two(),
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         assert_eq!(
             u8::try_from(crate::utils::u64_ilog2((block_size / block_size::MIN) as u64)).unwrap(),
             log_block_size,
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
     }
 }
 
@@ -145,9 +145,9 @@ fn block_size_log_validness() {
 fn block_size_log_invalid() {
     for log_block_size in block_size::NUM_VALID as u8..=u8::MAX {
         assert!(!block_size::is_log_valid(log_block_size),
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         assert_eq!(block_size::from_log(log_block_size), None,
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
     }
 }
 
@@ -161,14 +161,14 @@ fn block_size_strings() {
         let block_size = block_size::from_log(log_block_size as u8).unwrap();
         let block_size_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[log_block_size]).unwrap();
         assert_eq!(block_size, block_size_from_str,
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         // The length must be bounded by MAX_BLOCK_SIZE_LEN_IN_CHARS.
         assert!(block_size::BLOCK_SIZES_STR[log_block_size].len() <= block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS,
-            "failed on log_block_size={:?}", log_block_size);
+            "failed on log_block_size={}", log_block_size);
         #[cfg(feature = "alloc")]
         {
             assert_eq!(block_size::BLOCK_SIZES_STR[log_block_size], block_size.to_string(),
-                "failed on log_block_size={:?}", log_block_size);
+                "failed on log_block_size={}", log_block_size);
         }
     }
 }
@@ -194,53 +194,53 @@ fn block_size_relation_consistency() {
             // Use cmp.
             let ord = block_size::cmp(bs1, bs2);
             match ord {
-                Ordering::Equal   => assert!(bs1 == bs2, "failed on bs1={:?}, bs2={:?}", bs1, bs2),
-                Ordering::Less    => assert!(bs1 < bs2,  "failed on bs1={:?}, bs2={:?}", bs1, bs2),
-                Ordering::Greater => assert!(bs1 > bs2,  "failed on bs1={:?}, bs2={:?}", bs1, bs2),
+                Ordering::Equal   => assert!(bs1 == bs2, "failed on bs1={}, bs2={}", bs1, bs2),
+                Ordering::Less    => assert!(bs1 < bs2,  "failed on bs1={}, bs2={}", bs1, bs2),
+                Ordering::Greater => assert!(bs1 > bs2,  "failed on bs1={}, bs2={}", bs1, bs2),
             }
             // Use compare_sizes.
             let rel = block_size::compare_sizes(bs1, bs2);
             // Test consistency between logical expressions and the BlockSizeRelation value.
             // TODO: Replace plain subtraction with abs_diff when MSRV 1.60 is acceptable.
-            assert_eq!(bs1 == bs2, rel == BlockSizeRelation::NearEq,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(bs1 == bs2 + 1, rel == BlockSizeRelation::NearGt, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-            assert_eq!(bs1 + 1 == bs2, rel == BlockSizeRelation::NearLt, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+            assert_eq!(bs1 == bs2, rel == BlockSizeRelation::NearEq,     "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(bs1 == bs2 + 1, rel == BlockSizeRelation::NearGt, "failed on bs1={}, bs2={}", bs1, bs2);
+            assert_eq!(bs1 + 1 == bs2, rel == BlockSizeRelation::NearLt, "failed on bs1={}, bs2={}", bs1, bs2);
             assert_eq!(((bs1 as i32) - (bs2 as i32)).abs() > 1, rel == BlockSizeRelation::Far,
-                "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                "failed on bs1={}, bs2={}", bs1, bs2);
             // Test consistency between the result of other functions and the BlockSizeRelation value.
             #[allow(clippy::bool_assert_comparison)]
             match rel {
                 BlockSizeRelation::Far => {
-                    assert_eq!(rel.is_near(), false,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near(bs1, bs2), false,    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_ne!(ord, Ordering::Equal,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), false,                    "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near(bs1, bs2), false,    "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_ne!(ord, Ordering::Equal,                    "failed on bs1={}, bs2={}", bs1, bs2);
                 }
                 BlockSizeRelation::NearLt => {
-                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_lt(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Less,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_lt(bs1, bs2), true,  "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Less,                     "failed on bs1={}, bs2={}", bs1, bs2);
                 }
                 BlockSizeRelation::NearEq => {
-                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_eq(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Equal,                    "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_eq(bs1, bs2), true,  "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_gt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Equal,                    "failed on bs1={}, bs2={}", bs1, bs2);
                 }
                 BlockSizeRelation::NearGt => {
-                    assert_eq!(rel.is_near(), true,                     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(block_size::is_near_gt(bs1, bs2), true,  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
-                    assert_eq!(ord, Ordering::Greater,                  "failed on bs1={:?}, bs2={:?}", bs1, bs2);
+                    assert_eq!(rel.is_near(), true,                     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near(bs1, bs2), true,     "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_lt(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_eq(bs1, bs2), false, "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(block_size::is_near_gt(bs1, bs2), true,  "failed on bs1={}, bs2={}", bs1, bs2);
+                    assert_eq!(ord, Ordering::Greater,                  "failed on bs1={}, bs2={}", bs1, bs2);
                 }
             }
         }
