@@ -1519,9 +1519,16 @@ where
     #[inline]
     pub fn compare(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
-        if self == other { return 100; }
+        let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
+        if !rel.is_near() { return 0; }
+        if rel == BlockSizeRelation::NearEq && self == other { return 100; }
         let target = FuzzyHashCompareTarget::from(self);
-        target.compare_unequal_internal(other)
+        match rel {
+            BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
+            BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
+            BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
+            BlockSizeRelation::Far => unreachable!(),
+        }
     }
 
     /// The internal implementation of [`Self::compare_unequal_unchecked()`].
@@ -1529,8 +1536,15 @@ where
     fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
         debug_assert!(self != other);
+        let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
+        if !rel.is_near() { return 0; }
         let target = FuzzyHashCompareTarget::from(self);
-        target.compare_unequal_internal(other)
+        match rel {
+            BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
+            BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
+            BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
+            BlockSizeRelation::Far => unreachable!(),
+        }
     }
 
     /// Compare two fuzzy hashes assuming both are different.
