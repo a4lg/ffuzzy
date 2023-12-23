@@ -323,23 +323,11 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         if !self.has_common_substring_internal(other) {
             return 0;
         }
-        let dist = self.edit_distance_internal(other);
-        // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
-        optionally_unsafe! {
-            // rustc/LLVM cannot prove that
-            // (len as u32 + other.len() as u32)
-            //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2 .
-            // Place this invariant to avoid division-by-zero checking.
-            invariant!((len as u32 + other.len() as u32) > 0);
-        }
-        /*
-            Possible arithmetic operations to check overflow:
-            1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
-            2.  100 * block_hash::FULL_SIZE
-        */
-        100 - (100 * (
-            (dist * block_hash::FULL_SIZE as u32) / (len as u32 + other.len() as u32) // grcov-excl-br-line:DIVZERO
-        )) / block_hash::FULL_SIZE as u32
+        FuzzyHashCompareTarget::raw_score_by_edit_distance_internal(
+            len as u32,
+            other.len() as u32,
+            self.edit_distance_internal(other)
+        )
     }
 
     /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::score_strings_unchecked()`].

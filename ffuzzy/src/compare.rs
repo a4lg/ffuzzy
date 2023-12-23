@@ -535,6 +535,124 @@ impl FuzzyHashCompareTarget {
         self.is_equiv_except_block_size(hash)
     }
 
+    /// The internal implementation of [`Self::raw_score_by_edit_distance_unchecked()`].
+    #[inline(always)]
+    fn raw_score_by_edit_distance_internal(
+        len_block_hash_lhs: u32,
+        len_block_hash_rhs: u32,
+        edit_distance: u32
+    ) -> u32
+    {
+        // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
+        debug_assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        debug_assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        debug_assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u32);
+        debug_assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u32);
+        debug_assert!(edit_distance
+            <= len_block_hash_lhs + len_block_hash_rhs
+                - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        optionally_unsafe! {
+            // rustc/LLVM cannot prove that
+            // (len_block_hash_lhs + len_block_hash_rhs)
+            //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2.
+            // Place this invariant to avoid division-by-zero checking.
+            invariant!((len_block_hash_lhs + len_block_hash_rhs) > 0);
+        }
+        /*
+            Possible arithmetic operations to check overflow:
+            1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
+            2.  100 * block_hash::FULL_SIZE
+        */
+        100 - (100 * (
+            (edit_distance * block_hash::FULL_SIZE as u32)
+                / (len_block_hash_lhs + len_block_hash_rhs) // grcov-excl-br-line:DIVZERO
+        )) / block_hash::FULL_SIZE as u32
+    }
+
+    /// Returns the raw score (without capping) based on the lengths of block
+    /// hashes and the edit distance between them.
+    ///
+    /// This method assumes that following constraints are satisfied.
+    ///
+    /// # Safety
+    ///
+    /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must satisfy:
+    ///     *   Equal to or greater than [`MIN_LCS_FOR_COMPARISON`](crate::block_hash::MIN_LCS_FOR_COMPARISON),
+    ///     *   Equal to or less than [`FULL_SIZE`](crate::block_hash::FULL_SIZE).
+    ///
+    /// *   `edit_distance` must be equal to or less than
+    ///     `len_block_hash_lhs + len_block_hash_rhs - 2 * MIN_LCS_FOR_COMPARISON`.
+    ///
+    ///     This constraint comes from the constraints of the lengths and the
+    ///     fact that we shall have a common substring of the length
+    ///     [`MIN_LCS_FOR_COMPARISON`](crate::block_hash::MIN_LCS_FOR_COMPARISON)
+    ///     to perform an edit distance-based comparison (reducing maximum
+    ///     possible edit distance by `2 * MIN_LCS_FOR_COMPARISON`).
+    ///
+    /// If they are not satisfied, it will return a meaningless score.
+    #[cfg(feature = "unchecked")]
+    #[allow(unsafe_code)]
+    #[inline(always)]
+    pub unsafe fn raw_score_by_edit_distance_unchecked(
+        len_block_hash_lhs: u32,
+        len_block_hash_rhs: u32,
+        edit_distance: u32
+    ) -> u32
+    {
+        Self::raw_score_by_edit_distance_internal(
+            len_block_hash_lhs,
+            len_block_hash_rhs,
+            edit_distance
+        )
+    }
+
+    /// Returns the raw score (without capping) based on the lengths of block
+    /// hashes and the edit distance between them.
+    ///
+    /// This method scales the edit distance to the `0..=100` score familiar to
+    /// humans (`100` means a perfect match, smaller the score, further apart).
+    ///
+    /// Note that it doesn't perform any [score capping](Self::score_cap_on_block_hash_comparison())
+    /// (that should be performed on smaller block sizes).
+    ///
+    /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+    ///
+    /// # Usage Constraints
+    ///
+    /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must satisfy:
+    ///     *   Equal to or greater than [`MIN_LCS_FOR_COMPARISON`](crate::block_hash::MIN_LCS_FOR_COMPARISON),
+    ///     *   Equal to or less than [`FULL_SIZE`](crate::block_hash::FULL_SIZE).
+    ///
+    /// *   `edit_distance` must be equal to or less than
+    ///     `len_block_hash_lhs + len_block_hash_rhs - 2 * MIN_LCS_FOR_COMPARISON`.
+    ///
+    ///     This constraint comes from the constraints of the lengths and the
+    ///     fact that we shall have a common substring of the length
+    ///     [`MIN_LCS_FOR_COMPARISON`](crate::block_hash::MIN_LCS_FOR_COMPARISON)
+    ///     to perform an edit distance-based comparison (reducing maximum
+    ///     possible edit distance by `2 * MIN_LCS_FOR_COMPARISON`).
+    #[inline(always)]
+    pub fn raw_score_by_edit_distance(
+        len_block_hash_lhs: u32,
+        len_block_hash_rhs: u32,
+        edit_distance: u32
+    ) -> u32
+    {
+        // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
+        assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u32);
+        assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u32);
+        assert!(edit_distance
+            <= len_block_hash_lhs + len_block_hash_rhs
+                - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        Self::raw_score_by_edit_distance_internal(
+            len_block_hash_lhs,
+            len_block_hash_rhs,
+            edit_distance
+        )
+    }
+
     /// The internal implementation of [`Self::score_cap_on_block_hash_comparison_unchecked()`].
     #[inline(always)]
     fn score_cap_on_block_hash_comparison_internal(

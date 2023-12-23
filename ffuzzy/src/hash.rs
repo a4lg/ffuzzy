@@ -244,7 +244,8 @@ pub(crate) mod test_utils;
 ///         If we could not find one, the sub-similarity score is `0` and no
 ///         edit distance-based scoring is performed.
 ///
-///     2.  Compute the edit distance between two block hashes and scale it
+///     2.  Compute the edit distance between two block hashes and
+///         [scale it](crate::compare::FuzzyHashCompareTarget::raw_score_by_edit_distance())
 ///         *   from `0..=(bhA.len()+bhB.len())` (`0` is the perfect match)
 ///         *   to `0..=100` (`100` is the perfect match).
 ///

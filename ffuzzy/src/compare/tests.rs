@@ -677,6 +677,46 @@ fn data_model_corruption() {
 
 
 #[test]
+fn raw_scores_on_block_hash_comparison() {
+    /*
+        Edit distance-based scoring:
+        *   raw_score_by_edit_distance
+        *   raw_score_by_edit_distance_unchecked
+    */
+    for len1 in block_hash::MIN_LCS_FOR_COMPARISON as u32..=block_hash::FULL_SIZE as u32 {
+        for len2 in block_hash::MIN_LCS_FOR_COMPARISON as u32..=block_hash::FULL_SIZE as u32 {
+            let mut score = 100;
+            for edit_distance in 0..=(len1 + len2 - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32) {
+                let new_score =
+                    FuzzyHashCompareTarget::raw_score_by_edit_distance(len1, len2, edit_distance);
+                #[cfg(feature = "unchecked")]
+                unsafe {
+                    assert_eq!(
+                        new_score,
+                        FuzzyHashCompareTarget::raw_score_by_edit_distance_unchecked(len1, len2, edit_distance),
+                        "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance
+                    );
+                }
+                // The score is non-zero as long as we can perform an edit
+                // distance-based comparison.
+                assert_ne!(new_score, 0,
+                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                // The score is the same even if we swap len1 and len2.
+                assert_eq!(
+                    new_score,
+                    FuzzyHashCompareTarget::raw_score_by_edit_distance(len2, len1, edit_distance),
+                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance
+                );
+                // The raw score decreases as the edit distance increases (per len1 and len2).
+                assert!(new_score <= score,
+                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                score = new_score;
+            }
+        }
+    }
+}
+
+#[test]
 fn score_caps_on_block_hash_comparison() {
     /*
         Score capping:

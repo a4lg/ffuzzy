@@ -60,6 +60,7 @@ it's not obligated to check such corruption
 
 ### Links (to non-suffixed methods)
 
+*   [`crate::compare::FuzzyHashCompareTarget::raw_score_by_edit_distance()`]
 *   [`crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()`]
 *   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_eq()`]
 *   [`crate::compare::FuzzyHashCompareTarget::compare_near_eq()`]
