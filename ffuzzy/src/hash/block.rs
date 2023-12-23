@@ -30,7 +30,8 @@ mod tests;
 /// (the [`Far`](Self::Far) variant).
 ///
 /// A value of this type can be retrieved by using
-/// [`block_size::compare_sizes()`](crate::block_size::compare_sizes()).
+/// [`block_size::compare_sizes()`](crate::block_size::compare_sizes()) or
+/// [`FuzzyHashData::compare_block_sizes()`](crate::hash::FuzzyHashData::compare_block_sizes()).
 ///
 /// Note: in this crate, it can efficiently handle such relations by using the
 /// [*base-2 logarithms* form of the block size](crate::hash::FuzzyHashData#block-size)
