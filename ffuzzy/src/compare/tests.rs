@@ -697,6 +697,14 @@ fn raw_scores_on_block_hash_comparison() {
                         "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance
                     );
                 }
+                // The score is 100 if the edit distance is zero.
+                if edit_distance == 0 {
+                    assert_eq!(new_score, 100,
+                        "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
+                }
+                // The score is always capped at 100.
+                assert!(new_score <= 100,
+                    "failed on len1={:?}, len2={:?}, edit_distance={:?}", len1, len2, edit_distance);
                 // The score is non-zero as long as we can perform an edit
                 // distance-based comparison.
                 assert_ne!(new_score, 0,
