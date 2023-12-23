@@ -1234,6 +1234,18 @@ impl FuzzyHashCompareTarget {
     ///
     /// See ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     /// for the reason why we need to care about those cases.
+    ///
+    /// # Advanced Topic: Implementing Equivalents
+    ///
+    /// While this method family can be important to preprocessing on
+    /// single-linkage clustering, it can be inefficient as the number of fuzzy
+    /// hash increases.
+    /// On such cases, precomputing useful information to compute "comparison
+    /// candidate" relations will help.
+    ///
+    /// [`FuzzyHashData::block_hash_1_windows()`] and family methods provide
+    /// window access to block hash windows to enable implementing functionality
+    /// equivalent to this method family.
     #[inline]
     pub fn is_comparison_candidate<const S1: usize, const S2: usize>(
         &self,
