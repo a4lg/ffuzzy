@@ -1523,7 +1523,7 @@ where
             BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
             BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
             BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
-            BlockSizeRelation::Far => unreachable!(),
+            BlockSizeRelation::Far => unreachable!(), // grcov-excl-line:UNREACHABLE
         }
     }
 
@@ -1539,7 +1539,7 @@ where
             BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
             BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
             BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
-            BlockSizeRelation::Far => unreachable!(),
+            BlockSizeRelation::Far => unreachable!(), // grcov-excl-line:UNREACHABLE
         }
     }
 
