@@ -861,12 +861,17 @@ where
 
     /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
     /// of a string representation.
-    pub fn from_bytes(str: &[u8])
+    ///
+    /// If the parser succeeds, it also updates the `index` argument to the
+    /// first non-used index to construct the fuzzy hash, which is that of
+    /// either the end of the string or the character `','` to separate the rest
+    /// of the fuzzy hash and the file name field.
+    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {
         let mut fuzzy = Self::new();
         // Parse fuzzy hash
-        let mut i = 0; // ignored
+        let mut i = 0;
         match algorithms::parse_block_size_from_bytes(str, &mut i) {
             Ok(bs) => {
                 fuzzy.log_blocksize = block_size::log_from_valid_internal(bs);
@@ -911,7 +916,8 @@ where
             str, &mut i
         ) {
             // End of BH2: Optional comma or end-of-string is expected.
-            BlockHashParseState::MetComma | BlockHashParseState::MetEndOfString => { }
+            BlockHashParseState::MetComma       => { *index = i - 1; }
+            BlockHashParseState::MetEndOfString => { *index = i; }
             BlockHashParseState::MetColon => {
                 return Err(ParseError(
                     ParseErrorKind::UnexpectedCharacter,
@@ -932,6 +938,15 @@ where
             }
         }
         Ok(fuzzy)
+    }
+
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
+    /// of a string representation.
+    #[inline(always)]
+    pub fn from_bytes(str: &[u8])
+        -> Result<Self, ParseError>
+    {
+        Self::from_bytes_with_last_index(str, &mut 0usize)
     }
 
     /// Normalize the fuzzy hash in place.

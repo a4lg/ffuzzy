@@ -1452,7 +1452,7 @@ fn block_hash_const_substring_lengths() {
 }
 
 #[allow(clippy::type_complexity)]
-const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>); 37] = [
+const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>); 41] = [
     // Block Size
     parser_case_fail_both!("",     UnexpectedEndOfString, BlockSize, 0),
     parser_case_fail_both!("::",   BlockSizeIsEmpty,      BlockSize, 0),
@@ -1496,6 +1496,10 @@ const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>);
     parser_case_okay_both!("3::ab"),
     parser_case_okay_both!("3::a,"),
     parser_case_okay_both!("3::ab,"),
+    parser_case_okay_both!("3::a,\"sample_file\""),
+    parser_case_okay_both!("3::ab,\"sample_file\""),
+    parser_case_okay_both!("3::a,\"sample,file\""),
+    parser_case_okay_both!("3::ab,\"sample,file\""),
     parser_case_okay_both!(
         concat!("3:", bh_str_l_64!(), ":", bh_str_l_32!())),
     // Short/Long forms (different behavior)
@@ -1525,10 +1529,32 @@ fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
         for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
+            let mut index = 0;
             assert_eq!(
                 <$ty>::from_bytes(hash_str.as_bytes()).map(|_| ()), err,
-                "failed (1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                "failed (1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
             );
+            assert_eq!(
+                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index).map(|_| ()), err,
+                "failed (1-2-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+            );
+            match err {
+                Ok(_) => {
+                    // If the index is not that of the end of the string...
+                    if index != hash_str.len() {
+                        // It must point to the character ',' and...
+                        assert!(hash_str.as_bytes()[index] == b',',
+                            "failed (1-2-2-1) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                        // The index must be the leftmost ',' character.
+                        assert_eq!(hash_str.find(','), Some(index),
+                            "failed (1-2-2-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                    }
+                }
+                Err(_) => {
+                    assert_eq!(index, 0,
+                        "failed (1-2-2-3) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                }
+            }
             assert_eq!(
                 str::parse::<$ty>(hash_str).map(|_| ()), err,
                 "failed (2) on type={}, hash_str={:?}", stringify!($ty), hash_str
