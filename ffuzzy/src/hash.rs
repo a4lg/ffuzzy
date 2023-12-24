@@ -866,6 +866,8 @@ where
     /// first non-used index to construct the fuzzy hash, which is that of
     /// either the end of the string or the character `','` to separate the rest
     /// of the fuzzy hash and the file name field.
+    ///
+    /// If the parser fails, `index` is not updated.
     pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {

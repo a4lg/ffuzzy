@@ -1529,7 +1529,7 @@ fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
         for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
-            let mut index = 0;
+            let mut index = usize::MAX;
             assert_eq!(
                 <$ty>::from_bytes(hash_str.as_bytes()).map(|_| ()), err,
                 "failed (1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
@@ -1551,7 +1551,7 @@ fn parse_patterns() {
                     }
                 }
                 Err(_) => {
-                    assert_eq!(index, 0,
+                    assert_eq!(index, usize::MAX,
                         "failed (1-2-2-3) on type={}, hash_str={:?}", stringify!($ty), hash_str);
                 }
             }
