@@ -551,7 +551,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -576,7 +576,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash2[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -605,7 +605,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }
@@ -634,7 +634,7 @@ fn data_model_corruption() {
                     let mut target = target.clone();
                     target.blockhash1[ch] ^= bitpos;
                     assert!(!target.is_valid(),
-                        "failed on len={}, invalid_bitpos={}, ch={}", len, invalid_pos, ch);
+                        "failed on len={}, invalid_pos={}, ch={}", len, invalid_pos, ch);
                 }
             }
         }

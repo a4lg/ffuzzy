@@ -211,8 +211,8 @@ fn data_model_init_and_basic() {
                         (bh2.len() <= FuzzyHashType::MAX_BLOCK_HASH_SIZE_2)
                             .then(|| init_hash!(2, RawFuzzyHashType, bh1, bh2));
                     if let Some(hash_norm) = hash_norm {
-                        assert!(hash_norm.is_valid(), "failed (3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
-                        assert!(hash_norm.is_normalized(), "failed (3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
+                        assert!(hash_norm.is_valid(), "failed (3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
+                        assert!(hash_norm.is_normalized(), "failed (3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
                     }
                     if let Some(hash_raw) = hash_raw {
                         assert!(hash_raw.is_valid(), "failed (3-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1, bh2);
@@ -226,7 +226,7 @@ fn data_model_init_and_basic() {
                         assert_eq!(
                             is_normalized,
                             hash_norm.is_some(),
-                            "failed (3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm
+                            "failed (3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm
                         );
                         if let Some(hash_norm) = hash_norm {
                             // Transplant the data and compare (equals only if the input block hashes are already normalized)
