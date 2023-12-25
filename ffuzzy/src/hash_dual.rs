@@ -153,10 +153,18 @@ mod private {
                 use static_assertions::const_assert;
 
                 // grcov-excl-br-start
+                // Consider removing it once MSRV of 1.73 is acceptable.
                 #[cfg_attr(feature = "nightly", coverage(off))]
                 #[allow(dead_code)]
                 const fn div_ceil(a: usize, b: usize) -> usize {
-                    a / b + (if a % b == 0 { 0 } else { 1 })
+                    cfg_if::cfg_if! {
+                        if #[cfg(ffuzzy_div_ceil = "fallback")] {
+                            a / b + (if a % b == 0 { 0 } else { 1 })
+                        }
+                        else {
+                            usize::div_ceil(a, b)
+                        }
+                    }
                 }
 
                 #[cfg(test)]

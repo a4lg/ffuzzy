@@ -37,6 +37,25 @@ fn main() {
         println!("cargo:rustc-cfg=ffuzzy_ilog2=\"fallback\"");
     }
 
+    // Method: {Integer}::div_ceil
+    // unstable_div_ceil: 1.56-1.58 ("int_roundings" unstable feature; not to support)
+    //          div_ceil: 1.59-1.72 ("int_roundings" unstable feature)
+    //          div_ceil: 1.73-     (stable)
+    if rustc::is_min_version("1.73.0").unwrap_or(false) {
+        println!("cargo:rustc-cfg=ffuzzy_div_ceil=\"stable\"");
+    }
+    else if rustc::is_feature_flaggable().unwrap_or(false)
+        && rustc::is_min_version("1.59.0").unwrap_or(false)
+    {
+        println!("cargo:rustc-cfg=ffuzzy_div_ceil=\"unstable\"");
+        println!("cargo:rustc-cfg=ffuzzy_div_ceil=\"unstable_v2\"");
+        // Note:
+        // No plan to support unstable_v1 (with the name unstable_div_ceil).
+    }
+    else {
+        println!("cargo:rustc-cfg=ffuzzy_div_ceil=\"fallback\"");
+    }
+
     // OUT_DIR environment variable
     let out_dir = &env::var_os("OUT_DIR")
         .unwrap_or_else(|| die("error: environment variable `OUT_DIR' not found."));
