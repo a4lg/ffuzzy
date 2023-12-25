@@ -1529,30 +1529,39 @@ fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
         for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
-            let mut index = usize::MAX;
+            let mut index1 = 0;
+            let mut index2 = usize::MAX;
             assert_eq!(
                 <$ty>::from_bytes(hash_str.as_bytes()).map(|_| ()), err,
                 "failed (1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
             );
             assert_eq!(
-                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index).map(|_| ()), err,
-                "failed (1-2-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index1).map(|_| ()), err,
+                "failed (1-2-1-1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+            );
+            assert_eq!(
+                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index2).map(|_| ()), err,
+                "failed (1-2-1-1-2) on type={}, hash_str={:?}", stringify!($ty), hash_str
             );
             match err {
                 Ok(_) => {
+                    assert_eq!(index1, index2,
+                        "failed (1-2-1-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
                     // If the index is not that of the end of the string...
-                    if index != hash_str.len() {
+                    if index1 != hash_str.len() {
                         // It must point to the character ',' and...
-                        assert!(hash_str.as_bytes()[index] == b',',
+                        assert!(hash_str.as_bytes()[index1] == b',',
                             "failed (1-2-2-1) on type={}, hash_str={:?}", stringify!($ty), hash_str);
                         // The index must be the leftmost ',' character.
-                        assert_eq!(hash_str.find(','), Some(index),
+                        assert_eq!(hash_str.find(','), Some(index1),
                             "failed (1-2-2-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
                     }
                 }
                 Err(_) => {
-                    assert_eq!(index, usize::MAX,
-                        "failed (1-2-2-3) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                    assert_eq!(index1, 0,
+                        "failed (1-2-2-3-1) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                    assert_eq!(index2, usize::MAX,
+                        "failed (1-2-2-3-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
                 }
             }
             assert_eq!(
