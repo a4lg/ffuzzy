@@ -127,6 +127,8 @@ fn data_model_init_and_basic() {
             let block_size = block_size::from_log(log_block_size_raw).unwrap();
             macro_rules! test {
                 ($bh1sz: expr, $bh2sz: expr) => {
+                    let bh1sz = $bh1sz;
+                    let bh2sz = $bh2sz;
                     type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                     type RawFuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, false>;
                     macro_rules! init_hash {
@@ -135,15 +137,18 @@ fn data_model_init_and_basic() {
                             $ty: ty,
                             $bh1: expr, $bh2: expr
                         ) => {{
+                            let test_num = $test_num;
+                            let bh1 = $bh1;
+                            let bh2 = $bh2;
                             // Initialize raw block hash representations
                             // (remaining bytes are zero-filled)
                             let mut blockhash1 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_1];
                             let mut blockhash2 = [0u8; <$ty>::MAX_BLOCK_HASH_SIZE_2];
-                            blockhash1[..$bh1.len()].copy_from_slice($bh1);
-                            blockhash2[..$bh2.len()].copy_from_slice($bh2);
+                            blockhash1[..bh1.len()].copy_from_slice(bh1);
+                            blockhash2[..bh2.len()].copy_from_slice(bh2);
                             // Prepare raw lengths
-                            let len_bh1_raw = u8::try_from($bh1.len()).unwrap();
-                            let len_bh2_raw = u8::try_from($bh2.len()).unwrap();
+                            let len_bh1_raw = u8::try_from(bh1.len()).unwrap();
+                            let len_bh2_raw = u8::try_from(bh2.len()).unwrap();
                             // Create fuzzy hashes in various ways and make sure that they are all the same.
                             let mut hash1: $ty = <$ty>::new();
                             hash1.init_from_internals_raw_internal(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
@@ -154,52 +159,52 @@ fn data_model_init_and_basic() {
                             let hash4: $ty =
                                 <$ty>::new_from_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
                             let hash5: $ty =
-                                <$ty>::new_from_internals_internal(block_size, $bh1, $bh2);
+                                <$ty>::new_from_internals_internal(block_size, bh1, bh2);
                             let hash6: $ty =
-                                <$ty>::new_from_internals(block_size, $bh1, $bh2);
+                                <$ty>::new_from_internals(block_size, bh1, bh2);
                             let hash7: $ty = hash1.clone();
-                            assert_eq!(hash1, hash2, "failed ({}-1-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash1, hash3, "failed ({}-1-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash1, hash4, "failed ({}-1-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash1, hash5, "failed ({}-1-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash1, hash6, "failed ({}-1-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash1, hash7, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash2), "failed ({}-2-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash3), "failed ({}-2-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash4), "failed ({}-2-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash5), "failed ({}-2-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash6), "failed ({}-2-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert!(hash1.full_eq(&hash7), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
+                            assert_eq!(hash1, hash2, "failed ({}-1-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash3, "failed ({}-1-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash4, "failed ({}-1-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash5, "failed ({}-1-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash6, "failed ({}-1-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash7, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash2), "failed ({}-2-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash3), "failed ({}-2-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash4), "failed ({}-2-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash5), "failed ({}-2-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash6), "failed ({}-2-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash7), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             #[cfg(feature = "unchecked")]
                             unsafe {
                                 let mut hash_u1: $ty = <$ty>::new();
                                 hash_u1.init_from_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
                                 let hash_u2: $ty =
                                     <$ty>::new_from_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                                let hash_u5: $ty = <$ty>::new_from_internals_unchecked(block_size, $bh1, $bh2);
-                                assert_eq!(hash1, hash_u1, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                                assert_eq!(hash1, hash_u2, "failed ({}-1-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                                assert_eq!(hash1, hash_u5, "failed ({}-1-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                                assert!(hash1.full_eq(&hash_u1), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                                assert!(hash1.full_eq(&hash_u2), "failed ({}-2-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                                assert!(hash1.full_eq(&hash_u5), "failed ({}-2-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
+                                let hash_u5: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u1, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u2, "failed ({}-1-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u5, "failed ({}-1-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u1), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u2), "failed ({}-2-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u5), "failed ({}-2-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             }
                             let hash: $ty = hash1;
                             // Check raw values
-                            assert_eq!(hash.blockhash1, blockhash1, "failed ({}-3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.blockhash2, blockhash2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.len_blockhash1, len_bh1_raw, "failed ({}-3-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.len_blockhash2, len_bh2_raw, "failed ({}-3-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.log_blocksize, log_block_size_raw, "failed ({}-3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
+                            assert_eq!(hash.blockhash1, blockhash1, "failed ({}-3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.blockhash2, blockhash2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.len_blockhash1, len_bh1_raw, "failed ({}-3-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.len_blockhash2, len_bh2_raw, "failed ({}-3-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.log_blocksize, log_block_size_raw, "failed ({}-3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             // Check direct correspondence to raw values
-                            assert_eq!(hash.block_hash_1(), $bh1, "failed ({}-4-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_hash_2(), $bh2, "failed ({}-4-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_hash_1_as_array(), &blockhash1, "failed ({}-4-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_hash_2_as_array(), &blockhash2, "failed ({}-4-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_hash_1_len(), $bh1.len(), "failed ({}-4-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_hash_2_len(), $bh2.len(), "failed ({}-4-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.log_block_size(), log_block_size_raw, "failed ({}-4-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
-                            assert_eq!(hash.block_size(), block_size, "failed ({}-4-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $test_num, $bh1sz, $bh2sz, log_block_size, $bh1, $bh2);
+                            assert_eq!(hash.block_hash_1(), bh1, "failed ({}-4-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_hash_2(), bh2, "failed ({}-4-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_hash_1_as_array(), &blockhash1, "failed ({}-4-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_hash_2_as_array(), &blockhash2, "failed ({}-4-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_hash_1_len(), bh1.len(), "failed ({}-4-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_hash_2_len(), bh2.len(), "failed ({}-4-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.log_block_size(), log_block_size_raw, "failed ({}-4-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash.block_size(), block_size, "failed ({}-4-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             hash
                         }};
                     }
@@ -212,22 +217,22 @@ fn data_model_init_and_basic() {
                         (bh2.len() <= FuzzyHashType::MAX_BLOCK_HASH_SIZE_2)
                             .then(|| init_hash!(2, RawFuzzyHashType, bh1, bh2));
                     if let Some(hash_norm) = hash_norm {
-                        assert!(hash_norm.is_valid(), "failed (3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
-                        assert!(hash_norm.is_normalized(), "failed (3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm);
+                        assert!(hash_norm.is_valid(), "failed (3-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, log_block_size, bh1_norm, bh2_norm);
+                        assert!(hash_norm.is_normalized(), "failed (3-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, log_block_size, bh1_norm, bh2_norm);
                     }
                     if let Some(hash_raw) = hash_raw {
-                        assert!(hash_raw.is_valid(), "failed (3-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1, bh2);
+                        assert!(hash_raw.is_valid(), "failed (3-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, log_block_size, bh1, bh2);
                         assert_eq!(
                             is_normalized,
                             hash_raw.is_normalized(),
-                            "failed (3-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1, bh2
+                            "failed (3-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, log_block_size, bh1, bh2
                         );
                         // Because of length constraints, there must be a normalized fuzzy hash
                         // when the block hashes are already normalized (this is a requirement of the normalized form).
                         assert_eq!(
                             is_normalized,
                             hash_norm.is_some(),
-                            "failed (3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, log_block_size, bh1_norm, bh2_norm
+                            "failed (3-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, log_block_size, bh1_norm, bh2_norm
                         );
                         if let Some(hash_norm) = hash_norm {
                             // Transplant the data and compare (equals only if the input block hashes are already normalized)
@@ -240,7 +245,7 @@ fn data_model_init_and_basic() {
                             assert_eq!(
                                 is_normalized,
                                 hash_raw.full_eq(&hash_norm_transplanted),
-                                "failed (4-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, log_block_size, bh1, bh2
+                                "failed (4-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, log_block_size, bh1, bh2
                             );
                         }
                     }
@@ -370,9 +375,11 @@ fn data_model_block_hash_contents_basic() {
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
             macro_rules! test {
                 ($bh1sz: expr, $bh2sz: expr) => {
+                    let bh1sz = $bh1sz;
+                    let bh2sz = $bh2sz;
                     type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                     type RawFuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, false>;
-                    assert_eq!(is_normalized, bytes_norm == bytes_raw, "failed (1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                    assert_eq!(is_normalized, bytes_norm == bytes_raw, "failed (1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     // Initialize and Check fuzzy hashes
                     macro_rules! init_and_check_hash {
                         (
@@ -381,6 +388,7 @@ fn data_model_block_hash_contents_basic() {
                             $ty: ty,
                             $bytes: expr
                         ) => {{
+                            let test_num = $test_num;
                             let hash_opt: Option<$ty> = <$ty>::from_bytes($bytes).ok();
                             if let Some(hash) = hash_opt {
                                 let bytes_str = core::str::from_utf8($bytes).unwrap();
@@ -391,24 +399,24 @@ fn data_model_block_hash_contents_basic() {
                                 let mut bh2_expected_raw = [0u8; $bh2sz];
                                 bh1_expected_raw[..bh1_expected.len()].copy_from_slice(bh1_expected);
                                 bh2_expected_raw[..bh2_expected.len()].copy_from_slice(bh2_expected);
-                                assert!(hash.is_valid(), "failed ({}-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert!(hash.is_valid(), "failed ({}-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert_eq!(hash.is_normalized(), hash_is_normalized,
-                                    "failed ({}-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check raw values
-                                assert_eq!(hash.blockhash1, bh1_expected_raw, "failed ({}-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.blockhash2, bh2_expected_raw, "failed ({}-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.len_blockhash1, u8::try_from(bh1_expected.len()).unwrap(), "failed ({}-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.len_blockhash2, u8::try_from(bh2_expected.len()).unwrap(), "failed ({}-2-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.log_blocksize, log_block_size_raw, "failed ({}-2-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash.blockhash1, bh1_expected_raw, "failed ({}-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.blockhash2, bh2_expected_raw, "failed ({}-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.len_blockhash1, u8::try_from(bh1_expected.len()).unwrap(), "failed ({}-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.len_blockhash2, u8::try_from(bh2_expected.len()).unwrap(), "failed ({}-2-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.log_blocksize, log_block_size_raw, "failed ({}-2-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check direct correspondence to raw values
-                                assert_eq!(hash.block_hash_1(), bh1_expected, "failed ({}-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_hash_2(), bh2_expected, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_hash_1_as_array(), &bh1_expected_raw, "failed ({}-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_hash_2_as_array(), &bh2_expected_raw, "failed ({}-3-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_hash_1_len(), bh1_expected.len(), "failed ({}-3-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_hash_2_len(), bh2_expected.len(), "failed ({}-3-6) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.log_block_size(), log_block_size_raw, "failed ({}-3-7) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(hash.block_size(), block_size, "failed ({}-3-8) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_1(), bh1_expected, "failed ({}-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_2(), bh2_expected, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_1_as_array(), &bh1_expected_raw, "failed ({}-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_2_as_array(), &bh2_expected_raw, "failed ({}-3-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_1_len(), bh1_expected.len(), "failed ({}-3-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_hash_2_len(), bh2_expected.len(), "failed ({}-3-6) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.log_block_size(), log_block_size_raw, "failed ({}-3-7) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.block_size(), block_size, "failed ({}-3-8) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                             }
                             hash_opt
                         }};
@@ -427,10 +435,10 @@ fn data_model_block_hash_contents_basic() {
                             norm          -> norm_from_raw  (or norm <-> norm_from_raw)
                     */
                     assert_eq!(opt_hash_raw_from_norm.is_some(), opt_hash_norm.is_some(),
-                        "failed (6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        "failed (6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     if opt_hash_raw.is_some() {
-                        assert!(opt_hash_norm.is_some(), "failed (6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(opt_hash_norm_from_raw.is_some(), "failed (6-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(opt_hash_norm.is_some(), "failed (6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(opt_hash_norm_from_raw.is_some(), "failed (6-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // opt_hash_raw_from_norm.is_some() is checked by 6-1 and 6-2.
                     }
                     /*
@@ -440,7 +448,7 @@ fn data_model_block_hash_contents_basic() {
                         However, if opt_hash_norm_from_raw is Some, opt_hash_norm is also always Some.
                     */
                     if opt_hash_norm_from_raw.is_some() {
-                        assert!(opt_hash_norm.is_some(), "failed (6-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(opt_hash_norm.is_some(), "failed (6-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                 };
             }
@@ -693,6 +701,8 @@ fn data_model_block_hash_contents_and_normalization() {
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
             macro_rules! test {
                 ($bh1sz: expr, $bh2sz: expr) => {
+                    let bh1sz = $bh1sz;
+                    let bh2sz = $bh2sz;
                     type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                     type RawFuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, false>;
                     // Initialize fuzzy hashes (all valid if Some)
@@ -702,23 +712,23 @@ fn data_model_block_hash_contents_and_normalization() {
                     let opt_hash_raw_from_norm: Option<RawFuzzyHashType> = RawFuzzyHashType::from_bytes(bytes_norm).ok();
                     // Check normalization
                     if let Some(hash_norm) = opt_hash_norm {
-                        assert!(hash_norm.is_normalized(), "failed (1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm.is_normalized(), "failed (1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     if let Some(hash_norm_from_raw) = opt_hash_norm_from_raw {
-                        assert!(hash_norm_from_raw.is_normalized(), "failed (1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm_from_raw.is_normalized(), "failed (1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     if let Some(hash_raw) = opt_hash_raw {
-                        assert_eq!(hash_raw.is_normalized(), is_normalized, "failed (1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert_eq!(hash_raw.is_normalized(), is_normalized, "failed (1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     if let Some(hash_raw_from_norm) = opt_hash_raw_from_norm {
-                        assert!(hash_raw_from_norm.is_normalized(), "failed (1-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_raw_from_norm.is_normalized(), "failed (1-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     // Equivalence with other normalized hashes.
                     if let Some(hash_norm_from_raw) = opt_hash_norm_from_raw {
                         // norm_from_raw -> norm
                         let hash_norm = opt_hash_norm.unwrap();
-                        assert_eq!(hash_norm, hash_norm_from_raw, "failed (2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_norm.full_eq(&hash_norm_from_raw), "failed (2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert_eq!(hash_norm, hash_norm_from_raw, "failed (2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_norm.full_eq(&hash_norm_from_raw), "failed (2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     if let Some(hash_norm) = opt_hash_norm {
                         // norm -> raw_from_norm
@@ -730,8 +740,8 @@ fn data_model_block_hash_contents_and_normalization() {
                         hash_raw_transplanted.len_blockhash1 = hash_norm.len_blockhash1;
                         hash_raw_transplanted.len_blockhash2 = hash_norm.len_blockhash2;
                         hash_raw_transplanted.log_blocksize = hash_norm.log_blocksize;
-                        assert_eq!(hash_raw_from_norm, hash_raw_transplanted, "failed (2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_raw_from_norm.full_eq(&hash_raw_transplanted), "failed (2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert_eq!(hash_raw_from_norm, hash_raw_transplanted, "failed (2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_raw_from_norm.full_eq(&hash_raw_transplanted), "failed (2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                     // Explicit Normalization and Conversion between Normalized and Raw Forms
                     if let Some(hash_raw) = opt_hash_raw {
@@ -741,55 +751,55 @@ fn data_model_block_hash_contents_and_normalization() {
                         // normalize_in_place (raw)
                         let mut hash_raw_normalized_in_place: RawFuzzyHashType = hash_raw;
                         hash_raw_normalized_in_place.normalize_in_place();
-                        assert!(hash_raw_normalized_in_place.is_valid(), "failed (3-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_raw_normalized_in_place, hash_raw_from_norm, "failed (3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_raw_normalized_in_place.full_eq(&hash_raw_from_norm), "failed (3-1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_raw_normalized_in_place.is_valid(), "failed (3-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_raw_normalized_in_place, hash_raw_from_norm, "failed (3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_raw_normalized_in_place.full_eq(&hash_raw_from_norm), "failed (3-1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // normalize_in_place (normalized) - just no-op
                         let mut hash_norm_normalized_in_place: FuzzyHashType = hash_norm;
                         hash_norm_normalized_in_place.normalize_in_place();
-                        assert!(hash_norm_normalized_in_place.is_valid(), "failed (3-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_norm_normalized_in_place, hash_norm, "failed (3-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_norm_normalized_in_place.full_eq(&hash_norm), "failed (3-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm_normalized_in_place.is_valid(), "failed (3-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_norm_normalized_in_place, hash_norm, "failed (3-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_norm_normalized_in_place.full_eq(&hash_norm), "failed (3-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // normalize (raw)
                         let hash_normalized_from_raw: FuzzyHashType = hash_raw.normalize();
-                        assert!(hash_normalized_from_raw.is_valid(), "failed (3-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_normalized_from_raw, hash_norm, "failed (3-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_normalized_from_raw.full_eq(&hash_norm), "failed (3-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_normalized_from_raw.is_valid(), "failed (3-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_normalized_from_raw, hash_norm, "failed (3-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_normalized_from_raw.full_eq(&hash_norm), "failed (3-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // normalize (normalized) - just clone
                         let hash_normalized_from_norm: FuzzyHashType = hash_norm.normalize();
-                        assert!(hash_normalized_from_norm.is_valid(), "failed (3-4-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_normalized_from_norm, hash_norm, "failed (3-4-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_normalized_from_norm.full_eq(&hash_norm), "failed (3-4-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_normalized_from_norm.is_valid(), "failed (3-4-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_normalized_from_norm, hash_norm, "failed (3-4-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_normalized_from_norm.full_eq(&hash_norm), "failed (3-4-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // clone_normalized (raw)
                         let hash_raw_clone_normalized: RawFuzzyHashType = hash_raw.clone_normalized();
-                        assert!(hash_raw_clone_normalized.is_valid(), "failed (3-5-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_raw_clone_normalized, hash_raw_from_norm, "failed (3-5-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_raw_clone_normalized.full_eq(&hash_raw_from_norm), "failed (3-5-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_raw_clone_normalized.is_valid(), "failed (3-5-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_raw_clone_normalized, hash_raw_from_norm, "failed (3-5-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_raw_clone_normalized.full_eq(&hash_raw_from_norm), "failed (3-5-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // clone_normalized (normalized) - just clone
                         let hash_norm_clone_normalized: FuzzyHashType = hash_norm.clone_normalized();
-                        assert!(hash_norm_clone_normalized.is_valid(), "failed (3-6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_norm_clone_normalized, hash_norm, "failed (3-6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_norm_clone_normalized.full_eq(&hash_norm), "failed (3-6-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm_clone_normalized.is_valid(), "failed (3-6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_norm_clone_normalized, hash_norm, "failed (3-6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_norm_clone_normalized.full_eq(&hash_norm), "failed (3-6-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // from (normalized -> raw) - no change
                         let hash_raw_cvt_from: RawFuzzyHashType = RawFuzzyHashType::from(hash_norm);
-                        assert!(hash_raw_cvt_from.is_valid(), "failed (4-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_raw_cvt_from, hash_raw_from_norm, "failed (4-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_raw_cvt_from.full_eq(&hash_raw_from_norm), "failed (4-1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_raw_cvt_from.is_valid(), "failed (4-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_raw_cvt_from, hash_raw_from_norm, "failed (4-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_raw_cvt_from.full_eq(&hash_raw_from_norm), "failed (4-1-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // from (raw -> normalized) - with normalization
                         let hash_norm_cvt_from: FuzzyHashType = FuzzyHashType::from(hash_raw);
-                        assert!(hash_norm_cvt_from.is_valid(), "failed (4-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_norm_cvt_from, hash_norm, "failed (4-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_norm_cvt_from.full_eq(&hash_norm), "failed (4-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm_cvt_from.is_valid(), "failed (4-3-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_norm_cvt_from, hash_norm, "failed (4-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_norm_cvt_from.full_eq(&hash_norm), "failed (4-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // to_raw_form - no change
                         let hash_raw_cvt_to_raw_form: RawFuzzyHashType = hash_norm.to_raw_form();
-                        assert!(hash_raw_cvt_to_raw_form.is_valid(), "failed (4-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_raw_cvt_to_raw_form, hash_raw_from_norm, "failed (4-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_raw_cvt_to_raw_form.full_eq(&hash_raw_from_norm), "failed (4-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_raw_cvt_to_raw_form.is_valid(), "failed (4-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_raw_cvt_to_raw_form, hash_raw_from_norm, "failed (4-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_raw_cvt_to_raw_form.full_eq(&hash_raw_from_norm), "failed (4-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                         // from_raw_form - with normalization
                         let hash_norm_cvt_from_raw_form: FuzzyHashType = FuzzyHashType::from_raw_form(&hash_raw);
-                        assert!(hash_norm_cvt_from_raw_form.is_valid(), "failed (4-4-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert_eq!(hash_norm_cvt_from_raw_form, hash_norm, "failed (4-4-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
-                        assert!(hash_norm_cvt_from_raw_form.full_eq(&hash_norm), "failed (4-4-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                        assert!(hash_norm_cvt_from_raw_form.is_valid(), "failed (4-4-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert_eq!(hash_norm_cvt_from_raw_form, hash_norm, "failed (4-4-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
+                        assert!(hash_norm_cvt_from_raw_form.full_eq(&hash_norm), "failed (4-4-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     }
                 };
             }
@@ -832,9 +842,11 @@ fn data_model_block_hash_contents_and_string_conversion() {
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
             macro_rules! test {
                 ($bh1sz: expr, $bh2sz: expr) => {
+                    let bh1sz = $bh1sz;
+                    let bh2sz = $bh2sz;
                     type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                     type RawFuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, false>;
-                    assert_eq!(is_normalized, bytes_norm == bytes_raw, "failed (1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $bh1sz, $bh2sz, bytes_str);
+                    assert_eq!(is_normalized, bytes_norm == bytes_raw, "failed (1) on bh1sz={}, bh2sz={}, bytes_str={:?}", bh1sz, bh2sz, bytes_str);
                     // Initialize and Check fuzzy hashes
                     macro_rules! init_and_check_hash {
                         (
@@ -843,6 +855,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
                             $ty: ty,
                             $bytes: expr
                         ) => {{
+                            let test_num = $test_num;
                             let hash_opt: Option<$ty> = <$ty>::from_bytes($bytes).ok();
                             if let Some(hash) = hash_opt {
                                 let bytes_str = core::str::from_utf8($bytes).unwrap();
@@ -850,12 +863,12 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 let bh1_expected = if hash_is_normalized { bh1_norm } else { bh1 };
                                 let bh2_expected = if hash_is_normalized { bh2_norm } else { bh2 };
                                 // Maximum length in the string representation
-                                assert!(hash.len_in_str() <= <$ty>::MAX_LEN_IN_STR, "failed ({}-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert!(hash.len_in_str() <= <$ty>::MAX_LEN_IN_STR, "failed ({}-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 if  hash.log_blocksize as usize == block_size::NUM_VALID - 1 &&
                                     bh1_expected.len() == <$ty>::MAX_BLOCK_HASH_SIZE_1 &&
                                     bh2_expected.len() == <$ty>::MAX_BLOCK_HASH_SIZE_2
                                 {
-                                    assert!(hash.len_in_str() == <$ty>::MAX_LEN_IN_STR, "failed ({}-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert!(hash.len_in_str() == <$ty>::MAX_LEN_IN_STR, "failed ({}-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 }
                                 // Check store_into_bytes
                                 // 1.  Less than len_in_str (would cause StringizationOverflow)
@@ -864,55 +877,55 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                 let mut str_buffer = [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1];
                                 let mut str_buffer_2 = [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1];
                                 assert_eq!(hash.store_into_bytes(&mut str_buffer[..hash.len_in_str() - 1]), Err(FuzzyHashOperationError::StringizationOverflow),
-                                    "failed ({}-2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert_eq!(str_buffer, [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1],
-                                    "failed ({}-2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 hash.store_into_bytes(&mut str_buffer[..hash.len_in_str()]).unwrap();
                                 assert!(str_buffer[hash.len_in_str()..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 hash.store_into_bytes(&mut str_buffer_2).unwrap();
                                 assert!(str_buffer_2[hash.len_in_str()..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert_eq!(str_buffer, str_buffer_2, "failed ({}-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(str_buffer, str_buffer_2, "failed ({}-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check store_into_bytes and len_in_str:
                                 // len_in_str is the exact length of the output.
                                 let len_in_str = str_buffer.iter().position(|&x| x == NULL_CH).unwrap();
-                                assert_eq!(hash.len_in_str(), len_in_str, "failed ({}-2-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash.len_in_str(), len_in_str, "failed ({}-2-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 let stored_bytes = &str_buffer[..len_in_str];
                                 // Outside the output string: must be untouched.
                                 assert!(str_buffer[len_in_str..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-5) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check minimum string requirements
                                 assert!(stored_bytes.iter().all(|&x| is_ch_okay_for_output_byte(x)),
-                                    "failed ({}-2-6) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    "failed ({}-2-6) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Converting back to the original hash preserves the value.
                                 let hash_back: $ty = <$ty>::from_bytes(stored_bytes).unwrap();
-                                assert_eq!(hash, hash_back, "failed ({}-2-7-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                assert!(hash.full_eq(&hash_back), "failed ({}-2-7-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                assert_eq!(hash, hash_back, "failed ({}-2-7-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert!(hash.full_eq(&hash_back), "failed ({}-2-7-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check String
                                 #[cfg(feature = "alloc")]
                                 {
                                     let bytes_expected = if hash_is_normalized { bytes_norm } else { bytes_raw };
                                     // from_bytes and from_str are equivalent.
                                     let hash_alt: $ty = str::parse::<$ty>(bytes_str).unwrap();
-                                    assert_eq!(hash, hash_alt, "failed ({}-3-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                    assert!(hash.full_eq(&hash_alt), "failed ({}-3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert_eq!(hash, hash_alt, "failed ({}-3-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    assert!(hash.full_eq(&hash_alt), "failed ({}-3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     // to_string and String::from matches.
                                     let s1 = hash.to_string();
                                     let s2 = String::from(hash);
-                                    assert_eq!(s1, s2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert_eq!(s1, s2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     let s = s1;
                                     // String matches to the bytes expected.
-                                    assert_eq!(s.len(), hash.len_in_str(), "failed ({}-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                    assert_eq!(bytes_expected, s.as_bytes(), "failed ({}-3-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert_eq!(s.len(), hash.len_in_str(), "failed ({}-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    assert_eq!(bytes_expected, s.as_bytes(), "failed ({}-3-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     // Converting back to the original hash preserves the value (bytes).
                                     let hash_back: $ty = <$ty>::from_bytes(s.as_bytes()).unwrap();
-                                    assert_eq!(hash, hash_back, "failed ({}-3-5-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                    assert!(hash.full_eq(&hash_back), "failed ({}-3-5-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert_eq!(hash, hash_back, "failed ({}-3-5-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    assert!(hash.full_eq(&hash_back), "failed ({}-3-5-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     // Converting back to the original hash preserves the value (str).
                                     let hash_back: $ty = str::parse::<$ty>(s.as_str()).unwrap();
-                                    assert_eq!(hash, hash_back, "failed ({}-3-6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
-                                    assert!(hash.full_eq(&hash_back), "failed ({}-3-6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", $test_num, $bh1sz, $bh2sz, bytes_str);
+                                    assert_eq!(hash, hash_back, "failed ({}-3-6-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    assert!(hash.full_eq(&hash_back), "failed ({}-3-6-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 }
                             }
                             hash_opt
@@ -1277,6 +1290,8 @@ fn data_model_normalized_windows() {
     test_blockhash_contents_no_sequences(|bh1, bh2, _bh1_norm, _bh2_norm| {
         macro_rules! test {
             ($bh1sz: expr, $bh2sz: expr) => {
+                let bh1sz = $bh1sz;
+                let bh2sz = $bh2sz;
                 type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                 if bh2.len() > $bh2sz { break; }
                 let hash: FuzzyHashType = FuzzyHashType::new_from_internals(block_size::MIN, bh1, bh2);
@@ -1285,12 +1300,12 @@ fn data_model_normalized_windows() {
                 assert_eq!(
                     hash.block_hash_1_windows().next().is_none(),
                     hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON,
-                    "failed (1-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
+                    "failed (1-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, bh1, bh2
                 );
                 assert_eq!(
                     hash.block_hash_2_windows().next().is_none(),
                     hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON,
-                    "failed (1-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2
+                    "failed (1-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, bh1, bh2
                 );
                 // Check window contents (block hash 1)
                 if hash.block_hash_1_len() >= block_hash::MIN_LCS_FOR_COMPARISON {
@@ -1302,11 +1317,11 @@ fn data_model_normalized_windows() {
                         }
                         assert_eq!(
                             windows.next().unwrap(), &expected_window[..],
-                            "failed (2-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}, offset={}", $bh1sz, $bh2sz, bh1, bh2, offset
+                            "failed (2-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}, offset={}", bh1sz, bh2sz, bh1, bh2, offset
                         );
                     }
                     assert!(windows.next().is_none(),
-                        "failed (3-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2);
+                        "failed (3-1) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, bh1, bh2);
                 }
                 // Check window contents (block hash 2)
                 if hash.block_hash_2_len() >= block_hash::MIN_LCS_FOR_COMPARISON {
@@ -1318,11 +1333,11 @@ fn data_model_normalized_windows() {
                         }
                         assert_eq!(
                             windows.next().unwrap(), &expected_window[..],
-                            "failed (2-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}, offset={}", $bh1sz, $bh2sz, bh1, bh2, offset
+                            "failed (2-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}, offset={}", bh1sz, bh2sz, bh1, bh2, offset
                         );
                     }
                     assert!(windows.next().is_none(),
-                        "failed (3-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", $bh1sz, $bh2sz, bh1, bh2);
+                        "failed (3-2) on bh1sz={}, bh2sz={}, bh1={:?}, bh2={:?}", bh1sz, bh2sz, bh1, bh2);
                 }
             };
         }
@@ -1335,6 +1350,8 @@ fn data_model_normalized_numeric_windows() {
     test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
         macro_rules! test {
             ($bh1sz: expr, $bh2sz: expr) => {
+                let bh1sz = $bh1sz;
+                let bh2sz = $bh2sz;
                 type FuzzyHashType = FuzzyHashData<{$bh1sz}, {$bh2sz}, true>;
                 if bh2_norm.len() > $bh2sz { break; }
                 let hash: FuzzyHashType = FuzzyHashType::new_from_internals(block_size::MIN, bh1_norm, bh2_norm);
@@ -1343,12 +1360,12 @@ fn data_model_normalized_numeric_windows() {
                 assert_eq!(
                     hash.block_hash_1_numeric_windows().next().is_none(),
                     hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON,
-                    "failed (1-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm
+                    "failed (1-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, bh1_norm, bh2_norm
                 );
                 assert_eq!(
                     hash.block_hash_2_numeric_windows().next().is_none(),
                     hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON,
-                    "failed (1-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm
+                    "failed (1-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, bh1_norm, bh2_norm
                 );
                 // Block hash 1
                 for (index, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_1_windows(), hash.block_hash_1_numeric_windows()).enumerate() {
@@ -1357,24 +1374,24 @@ fn data_model_normalized_numeric_windows() {
                     // the value created from scratch (calculated_window_as_num).
                     let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
                     assert_eq!(calculated_window_as_num, window_as_num,
-                        "failed (2-1-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}, index={}", $bh1sz, $bh2sz, bh1_norm, bh2_norm, index);
+                        "failed (2-1-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}, index={}", bh1sz, bh2sz, bh1_norm, bh2_norm, index);
                 }
                 let len_windows =
                     if hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON { 0 }
                     else { hash.block_hash_1_len() - block_hash::MIN_LCS_FOR_COMPARISON + 1 };
                 assert_eq!(hash.block_hash_1_numeric_windows().size_hint(), (len_windows, Some(len_windows)),
-                    "failed (2-1-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                    "failed (2-1-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, bh1_norm, bh2_norm);
                 // Block hash 2
                 for (index, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_2_windows(), hash.block_hash_2_numeric_windows()).enumerate() {
                     let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
                     assert_eq!(calculated_window_as_num, window_as_num,
-                        "failed (2-2-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}, index={}", $bh1sz, $bh2sz, bh1_norm, bh2_norm, index);
+                        "failed (2-2-1) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}, index={}", bh1sz, bh2sz, bh1_norm, bh2_norm, index);
                 }
                 let len_windows =
                     if hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON { 0 }
                     else { hash.block_hash_2_len() - block_hash::MIN_LCS_FOR_COMPARISON + 1 };
                 assert_eq!(hash.block_hash_2_numeric_windows().size_hint(), (len_windows, Some(len_windows)),
-                    "failed (2-2-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", $bh1sz, $bh2sz, bh1_norm, bh2_norm);
+                    "failed (2-2-2) on bh1sz={}, bh2sz={}, bh1_norm={:?}, bh2_norm={:?}", bh1sz, bh2sz, bh1_norm, bh2_norm);
             };
         }
         test_for_each_block_hash_sizes!(test);

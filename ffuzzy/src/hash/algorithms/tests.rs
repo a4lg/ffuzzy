@@ -43,14 +43,15 @@ macro_rules! test_for_each_block_size {
 fn test_normalize_block_hash_in_place() {
     test_blockhash_content_all(&|bh, bh_norm| {
         macro_rules! test {() => {
+            let bhsz = N;
             if bh.len() > N { break; }
             let mut buffer: [u8; N] = [0u8; N];
             buffer[..bh.len()].copy_from_slice(bh);
             let mut len = bh.len() as u8;
             normalize_block_hash_in_place(&mut buffer, &mut len);
-            assert_eq!(bh_norm.len() as u8, len, "failed (1) on bhsz={}, bh={:?}", N, bh);
-            assert_eq!(&buffer[..bh_norm.len()], bh_norm, "failed (2) on bhsz={}, bh={:?}", N, bh);
-            assert!(buffer[bh_norm.len()..].iter().all(|&x| x == 0), "failed (3) on bhsz={}, bh={:?}", N, bh);
+            assert_eq!(bh_norm.len() as u8, len, "failed (1) on bhsz={}, bh={:?}", bhsz, bh);
+            assert_eq!(&buffer[..bh_norm.len()], bh_norm, "failed (2) on bhsz={}, bh={:?}", bhsz, bh);
+            assert!(buffer[bh_norm.len()..].iter().all(|&x| x == 0), "failed (3) on bhsz={}, bh={:?}", bhsz, bh);
         }}
         test_for_each_block_size!(test);
     });
@@ -60,11 +61,12 @@ fn test_normalize_block_hash_in_place() {
 fn test_is_normalized() {
     test_blockhash_content_all(&|bh, bh_norm| {
         macro_rules! test {() => {
+            let bhsz = N;
             if bh.len() > N { break; }
             let mut buffer: [u8; N] = [0u8; N];
             buffer[..bh.len()].copy_from_slice(bh);
             let len = bh.len() as u8;
-            assert_eq!(is_normalized(&buffer, len), bh == bh_norm, "failed on bhsz={}, bh={:?}", N, bh);
+            assert_eq!(is_normalized(&buffer, len), bh == bh_norm, "failed on bhsz={}, bh={:?}", bhsz, bh);
         }}
         test_for_each_block_size!(test);
     });
@@ -74,6 +76,7 @@ fn test_is_normalized() {
 fn insert_block_hash_into_bytes_contents() {
     test_blockhash_content_all(&|bh, bh_norm| {
         macro_rules! test {() => {
+            let bhsz = N;
             let verify_block_hash = |test_num: i32, bh: &[u8]| {
                 if bh.len() > N { return; }
                 let mut buffer: [u8; N] = [0u8; N];
@@ -84,10 +87,10 @@ fn insert_block_hash_into_bytes_contents() {
                 // Block hash is converted to Base64 alphabets.
                 for (index, (&idx_ch, &base64_ch)) in buffer[..bh.len()].iter().zip(&buffer_out[..bh.len()]).enumerate() {
                     assert_eq!(BASE64_TABLE_U8[idx_ch as usize], base64_ch,
-                        "failed ({}-1) on bhsz={}, bh={:?}, index={}", test_num, N, bh, index);
+                        "failed ({}-1) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
                 }
                 // Non block hash bytes are unchanged.
-                assert!(buffer_out[bh.len()..].iter().all(|&x| x == u8::MAX), "failed ({}-2) on bhsz={}, bh={:?}", test_num, N, bh);
+                assert!(buffer_out[bh.len()..].iter().all(|&x| x == u8::MAX), "failed ({}-2) on bhsz={}, bh={:?}", test_num, bhsz, bh);
             };
             verify_block_hash(1, bh);
             verify_block_hash(2, bh_norm);
@@ -102,6 +105,7 @@ fn insert_block_hash_into_str_contents() {
     use alloc::string::String;
     test_blockhash_content_all(&|bh, bh_norm| {
         macro_rules! test {() => {
+            let bhsz = N;
             let test = |test_num: i32, bh: &[u8]| {
                 if bh.len() > N { return; }
                 let mut buffer: [u8; N] = [0u8; N];
@@ -109,17 +113,17 @@ fn insert_block_hash_into_str_contents() {
                 let len = bh.len() as u8;
                 let mut s: String = String::new();
                 insert_block_hash_into_str(&mut s, &buffer, len);
-                assert_eq!(s.len(), bh.len(), "failed ({}-1) on bhsz={}, bh={:?}", test_num, N, bh);
-                assert_eq!(s.bytes().len(), bh.len(), "failed ({}-2) on bhsz={}, bh={:?}", test_num, N, bh);
+                assert_eq!(s.len(), bh.len(), "failed ({}-1) on bhsz={}, bh={:?}", test_num, bhsz, bh);
+                assert_eq!(s.bytes().len(), bh.len(), "failed ({}-2) on bhsz={}, bh={:?}", test_num, bhsz, bh);
                 // Block hash is converted to Base64 alphabets.
                 for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.bytes()).enumerate() {
                     assert_eq!(BASE64_TABLE_U8[idx_ch as usize], base64_ch,
-                        "failed ({}-3) on bhsz={}, bh={:?}, index={}", test_num, N, bh, index);
+                        "failed ({}-3) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
                 }
                 #[cfg(feature = "alloc")]
                 for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.chars()).enumerate() {
                     assert_eq!(BASE64_TABLE[idx_ch as usize], base64_ch,
-                        "failed ({}-4) on bhsz={}, bh={:?}, index={}", test_num, N, bh, index);
+                        "failed ({}-4) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
                 }
             };
             test(1, bh);
@@ -148,19 +152,21 @@ fn insert_block_hash_into_str_examples_and_append() {
 fn parse_block_size_from_bytes_patterns() {
     // Test macros
     macro_rules! test_okay {
-        ($str: expr, $block_size: expr) => {
+        ($input_str: expr, $block_size: expr) => {
+            let input_str = $input_str;
             let mut offset = usize::MAX;
-            assert_eq!(parse_block_size_from_bytes($str, &mut offset), Ok($block_size), "failed (1) on str={:?}", $str);
+            assert_eq!(parse_block_size_from_bytes($input_str, &mut offset), Ok($block_size), "failed (1) on input_str={:?}", input_str);
             // offset is updated to point the index just after ':'.
-            assert_eq!(offset, $str.iter().position(|&x| x == b':').unwrap() + 1, "failed (2) on str={:?}", $str);
+            assert_eq!(offset, $input_str.iter().position(|&x| x == b':').unwrap() + 1, "failed (2) on input_str={:?}", input_str);
         };
     }
     macro_rules! test_fail {
-        ($str: expr, $err: expr) => {
+        ($input_str: expr, $err: expr) => {
+            let input_str = $input_str;
             let mut offset = usize::MAX;
-            assert_eq!(parse_block_size_from_bytes($str, &mut offset), Err($err), "failed (1) on str={:?}", $str);
+            assert_eq!(parse_block_size_from_bytes($input_str, &mut offset), Err($err), "failed (1) on input_str={:?}", input_str);
             // offset is not touched on error.
-            assert_eq!(offset, usize::MAX, "failed (2) on str={:?}", $str);
+            assert_eq!(offset, usize::MAX, "failed (2) on input_str={:?}", input_str);
         };
     }
     // Valid block size part
@@ -217,6 +223,7 @@ fn parse_block_size_from_bytes_overflow_on_block_size() {
 fn parse_block_hash_from_bytes_states_and_normalization() {
     test_blockhash_content_all(&|bh, bh_norm| {
         macro_rules! test {() => {
+            let bhsz = N;
             if bh.len() > N { break; }
             for insert_offset in 0..=(N - bh.len()) {
                 let mut str_buffer: [u8; N+1] = [0u8; N+1];
@@ -241,16 +248,16 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                             &mut input_offset
                         ),
                         BlockHashParseState::MetEndOfString,
-                        "failed (1-{}-1) on bhsz={}, bh={:?}, insert_offset={}", test_num, N, bh, insert_offset
+                        "failed (1-{}-1) on bhsz={}, bh={:?}, insert_offset={}", test_num, bhsz, bh, insert_offset
                     );
                     assert_eq!(buffer, if $norm { expected_buffer_norm } else { expected_buffer },
-                        "failed (1-{}-2) on bhsz={}, bh={:?}, insert_offset={}", test_num, N, bh, insert_offset);
+                        "failed (1-{}-2) on bhsz={}, bh={:?}, insert_offset={}", test_num, bhsz, bh, insert_offset);
                     // len_out reflects normalization (if enabled), even on error.
                     assert_eq!(len_out, (if $norm { bh_norm } else { bh }).len() as u8,
-                        "failed (1-{}-3) on bhsz={}, bh={:?}, insert_offset={}", test_num, N, bh, insert_offset);
+                        "failed (1-{}-3) on bhsz={}, bh={:?}, insert_offset={}", test_num, bhsz, bh, insert_offset);
                     // input_offset is updated to the end of the string.
                     assert_eq!(input_offset, insert_offset + bh.len(),
-                        "failed (1-{}-4) on bhsz={}, bh={:?}, insert_offset={}", test_num, N, bh, insert_offset);
+                        "failed (1-{}-4) on bhsz={}, bh={:?}, insert_offset={}", test_num, bhsz, bh, insert_offset);
                 }}
                 test_for_each_norm!(test_case);
                 // MetColon, MetComma, Base64Error
@@ -276,17 +283,17 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                                 &mut input_offset
                             ),
                             status,
-                            "failed (2-{}-1) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, N, bh, insert_offset, ch
+                            "failed (2-{}-1) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, bhsz, bh, insert_offset, ch
                         );
                         assert_eq!(buffer, if $norm { expected_buffer_norm } else { expected_buffer },
-                            "failed (2-{}-2) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, N, bh, insert_offset, ch);
+                            "failed (2-{}-2) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, bhsz, bh, insert_offset, ch);
                         // len_out reflects normalization (if enabled), even on error.
                         assert_eq!(len_out, (if $norm { bh_norm } else { bh }).len() as u8,
-                            "failed (2-{}-3) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, N, bh, insert_offset, ch);
+                            "failed (2-{}-3) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, bhsz, bh, insert_offset, ch);
                         // input_offset is updated to the terminator (if error)
                         // or the next non-separating character (if not).
                         assert_eq!(input_offset, insert_offset + bh.len() + (if is_err { 0 } else { 1 }),
-                            "failed (2-{}-4) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, N, bh, insert_offset, ch);
+                            "failed (2-{}-4) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, bhsz, bh, insert_offset, ch);
                     }}
                     test_for_each_norm!(test_case);
                 }
@@ -299,6 +306,7 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
 #[test]
 fn parse_block_hash_from_bytes_overflow_noseq() {
     macro_rules! test {() => {
+        let bhsz = N;
         let mut str_buffer = [0u8; N + 20];
         for (i, ch) in str_buffer.iter_mut().enumerate() {
             // Make a sequence at the tail (overflowing part) but
@@ -311,6 +319,7 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
         }
         for overflow_size in 1usize..=20 {
             macro_rules! test_case {($norm: expr) => {
+                let norm = $norm;
                 let corrupt_size = N.checked_add(overflow_size).unwrap();
                 let mut len = 0;
                 let mut offset: usize = 0;
@@ -323,14 +332,14 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                         &mut offset
                     ),
                     BlockHashParseState::OverflowError,
-                    "failed (1) on bhsz={}, overflow_size={}, norm={}", N, overflow_size, $norm
+                    "failed (1) on bhsz={}, overflow_size={}, norm={}", bhsz, overflow_size, norm
                 );
                 // Corrupt offset is N.
-                assert_eq!(offset, N, "failed (2) on bhsz={}, overflow_size={}, norm={}", N, overflow_size, $norm);
+                assert_eq!(offset, N, "failed (2) on bhsz={}, overflow_size={}, norm={}", bhsz, overflow_size, norm);
                 // Candidate `len` is N.
-                assert_eq!(len as usize, N, "failed (3) on bhsz={}, overflow_size={}, norm={}", N, overflow_size, $norm);
+                assert_eq!(len as usize, N, "failed (3) on bhsz={}, overflow_size={}, norm={}", bhsz, overflow_size, norm);
                 // Buffer is filled with specific pattern.
-                assert_eq!(buffer, expected_buffer, "failed (4) on bhsz={}, overflow_size={}, norm={}", N, overflow_size, $norm);
+                assert_eq!(buffer, expected_buffer, "failed (4) on bhsz={}, overflow_size={}, norm={}", bhsz, overflow_size, norm);
             }}
             test_for_each_norm!(test_case);
         }
