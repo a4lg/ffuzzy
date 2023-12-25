@@ -265,7 +265,7 @@ fn data_model_basic() {
                 // Short fuzzy hash
                 let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
                 assert_eq!(hash, FuzzyHash::try_from(LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize()).unwrap(),
-                    "failed on log_block_size={} bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
+                    "failed on log_block_size={}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
                 if bh2.len() <= block_hash::HALF_SIZE {
                     let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(block_size, bh1, bh2));
                     test_all!(hash, dual_hash);
