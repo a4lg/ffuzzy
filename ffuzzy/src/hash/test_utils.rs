@@ -98,21 +98,19 @@ fn test_blockhash_content_multiple_sequences(test_func: impl Fn(&[u8], &[u8])) {
     // Generated sequences of block hash:
     // "BCDE", "BCDEE",... "BCDDE", "BCDDEE",... "BBB...BCDE"
     // ("B" * l1 :: "C" * l2 :: "D" * l3 :: "E" * l4 for l1..l4 > 0 and sum(l1..l4) <= FULL_SIZE)
-    for l1 in 1..=block_hash::FULL_SIZE { // '..=' is used instead of '..' unlike l[2-4].
+    const NUM_SEQUENCES: usize = 4;
+    for l1 in 1..=(block_hash::FULL_SIZE - (NUM_SEQUENCES - 1)) {
         let s1 = usize::min(l1, block_hash::MAX_SEQUENCE_SIZE);
         let total = l1;
-        for l2 in 1..block_hash::FULL_SIZE {
+        for l2 in 1..=(block_hash::FULL_SIZE - total - (NUM_SEQUENCES - 2)) {
             let s2 = usize::min(l2, block_hash::MAX_SEQUENCE_SIZE);
             let total = total + l2;
-            if total > block_hash::FULL_SIZE { continue; }
-            for l3 in 1..block_hash::FULL_SIZE {
+            for l3 in 1..=(block_hash::FULL_SIZE - total - (NUM_SEQUENCES - 3)) {
                 let s3 = usize::min(l3, block_hash::MAX_SEQUENCE_SIZE);
                 let total = total + l3;
-                if total > block_hash::FULL_SIZE { continue; }
-                for l4 in 1..block_hash::FULL_SIZE {
+                for l4 in 1..=(block_hash::FULL_SIZE - total - (NUM_SEQUENCES - 4)) {
                     let s4 = usize::min(l4, block_hash::MAX_SEQUENCE_SIZE);
                     let total = total + l4;
-                    if total > block_hash::FULL_SIZE { continue; }
                     // Make raw four sequences
                     let mut seq = [0u8; block_hash::FULL_SIZE];
                     seq[0..l1].fill(1);
