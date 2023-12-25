@@ -3,9 +3,6 @@ members = ["ffuzzy"]
 exclude = ["dev/generator/hash-blocksize-debruijn"]
 resolver = "2"
 
-[profile.test]
-opt-level = 1
-
 [profile.release]
 opt-level = 3
 codegen-units = 1
