@@ -67,27 +67,28 @@ fn data_model_new() {
     // Test constructs
     macro_rules! test {
         ($ty: ty) => {
+            let typename = stringify!($ty);
             let hash_new: $ty = <$ty>::new();
             let hash_default: $ty = <$ty>::default();
             let hash_cloned: $ty = hash_new.clone();
             let hash_from_str: $ty = str::parse::<$ty>("3::").unwrap();
             let hash_from_bytes: $ty = <$ty>::from_bytes(b"3::").unwrap();
             // Test validity of the empty value.
-            assert!(hash_new.is_valid(),     "failed (1-1) on type={}", stringify!($ty));
-            assert!(hash_default.is_valid(), "failed (1-2) on type={}", stringify!($ty));
-            assert!(hash_cloned.is_valid(),  "failed (1-3) on type={}", stringify!($ty));
+            assert!(hash_new.is_valid(),     "failed (1-1) on typename={}", typename);
+            assert!(hash_default.is_valid(), "failed (1-2) on typename={}", typename);
+            assert!(hash_cloned.is_valid(),  "failed (1-3) on typename={}", typename);
             // Test validity of fuzzy hashes converted from "empty" fuzzy hash string.
-            assert!(hash_from_str.is_valid(),   "failed (2-1) on type={}", stringify!($ty));
-            assert!(hash_from_bytes.is_valid(), "failed (2-2) on type={}", stringify!($ty));
+            assert!(hash_from_str.is_valid(),   "failed (2-1) on typename={}", typename);
+            assert!(hash_from_bytes.is_valid(), "failed (2-2) on typename={}", typename);
             // Compare two values.
-            assert_eq!(hash_new, hash_default,    "failed (3-1) on type={}", stringify!($ty));
-            assert_eq!(hash_new, hash_cloned,     "failed (3-2) on type={}", stringify!($ty));
-            assert_eq!(hash_new, hash_from_str,   "failed (3-3) on type={}", stringify!($ty));
-            assert_eq!(hash_new, hash_from_bytes, "failed (3-4) on type={}", stringify!($ty));
-            assert!(hash_new.full_eq(&hash_default),    "failed (4-1) on type={}", stringify!($ty));
-            assert!(hash_new.full_eq(&hash_cloned),     "failed (4-2) on type={}", stringify!($ty));
-            assert!(hash_new.full_eq(&hash_from_str),   "failed (4-3) on type={}", stringify!($ty));
-            assert!(hash_new.full_eq(&hash_from_bytes), "failed (4-4) on type={}", stringify!($ty));
+            assert_eq!(hash_new, hash_default,    "failed (3-1) on typename={}", typename);
+            assert_eq!(hash_new, hash_cloned,     "failed (3-2) on typename={}", typename);
+            assert_eq!(hash_new, hash_from_str,   "failed (3-3) on typename={}", typename);
+            assert_eq!(hash_new, hash_from_bytes, "failed (3-4) on typename={}", typename);
+            assert!(hash_new.full_eq(&hash_default),    "failed (4-1) on typename={}", typename);
+            assert!(hash_new.full_eq(&hash_cloned),     "failed (4-2) on typename={}", typename);
+            assert!(hash_new.full_eq(&hash_from_str),   "failed (4-3) on typename={}", typename);
+            assert!(hash_new.full_eq(&hash_from_bytes), "failed (4-4) on typename={}", typename);
         };
     }
     test_for_each_type!(test, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);
@@ -945,79 +946,80 @@ fn data_model_block_size() {
     */
     use crate::hash::block::BlockSizeRelation;
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         for bs1 in 0..block_size::NUM_VALID as u8 {
             // [BS1]:A:
             let lhs = <$ty>::new_from_internals(
                 block_size::from_log(bs1).unwrap(), &[0], &[]);
-            assert!(lhs.is_valid(), "failed (1-1) on type={}, bs1={}", stringify!($ty), bs1);
+            assert!(lhs.is_valid(), "failed (1-1) on typename={}, bs1={}", typename, bs1);
             for bs2 in 0..block_size::NUM_VALID as u8 {
                 // [BS2]::A
                 let rhs = <$ty>::new_from_internals(
                     block_size::from_log(bs2).unwrap(), &[], &[0]);
-                assert!(rhs.is_valid(), "failed (1-2) on type={}, bs2={}", stringify!($ty), bs2);
-                assert_ne!(lhs, rhs, "failed (1-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                assert!(rhs.is_valid(), "failed (1-2) on typename={}, bs2={}", typename, bs2);
+                assert_ne!(lhs, rhs, "failed (1-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                 // Use cmp_by_block_size (call with two different conventions).
                 let ord = <$ty>::cmp_by_block_size(&lhs, &rhs);
                 match ord {
                     Ordering::Equal => {
-                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Equal, "failed (2-1-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert!(bs1 == bs2, "failed (2-1-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Equal, "failed (2-1-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert!(bs1 == bs2, "failed (2-1-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                         // [BS]:A: > [BS]::A
-                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Greater, "failed (2-1-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Less,    "failed (2-1-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Greater, "failed (2-1-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Less,    "failed (2-1-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                     Ordering::Less => {
-                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Greater, "failed (2-2-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert!(bs1 < bs2, "failed (2-2-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Less,    "failed (2-2-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Greater, "failed (2-2-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Greater, "failed (2-2-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert!(bs1 < bs2, "failed (2-2-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Less,    "failed (2-2-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Greater, "failed (2-2-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                     Ordering::Greater => {
-                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Less, "failed (2-3-1) on type={}, bs1={}, stringify!($ty), bs2={}", stringify!($ty), bs1, bs2);
-                        assert!(bs1 > bs2, "failed (2-3-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Greater, "failed (2-3-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Less,    "failed (2-3-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::cmp_by_block_size(&rhs, &lhs), Ordering::Less, "failed (2-3-1) on typename={}, bs1={}, typename, bs2={}", typename, bs1, bs2);
+                        assert!(bs1 > bs2, "failed (2-3-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&lhs, &rhs), Ordering::Greater, "failed (2-3-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::cmp(&rhs, &lhs), Ordering::Less,    "failed (2-3-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                 }
-                assert_eq!(ord, lhs.cmp_by_block_size(&rhs), "failed (3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                assert_eq!(ord, lhs.cmp_by_block_size(&rhs), "failed (3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                 // Use compare_block_sizes.
                 let rel = <$ty>::compare_block_sizes(&lhs, &rhs);
-                assert_eq!(rel, block_size::compare_sizes(lhs.log_blocksize, rhs.log_blocksize), "failed (4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                assert_eq!(rel, block_size::compare_sizes(lhs.log_blocksize, rhs.log_blocksize), "failed (4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                 // Test consistency between logical expressions and the BlockSizeRelation value.
-                assert_eq!(bs1 == bs2, rel == BlockSizeRelation::NearEq, "failed (5-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                assert_eq!(bs1 == bs2 + 1, rel == BlockSizeRelation::NearGt, "failed (5-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                assert_eq!(bs1 + 1 == bs2, rel == BlockSizeRelation::NearLt, "failed (5-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                assert_eq!(((bs1 as i32) - (bs2 as i32)).abs() > 1, rel == BlockSizeRelation::Far, "failed (5-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                assert_eq!(bs1 == bs2, rel == BlockSizeRelation::NearEq, "failed (5-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                assert_eq!(bs1 == bs2 + 1, rel == BlockSizeRelation::NearGt, "failed (5-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                assert_eq!(bs1 + 1 == bs2, rel == BlockSizeRelation::NearLt, "failed (5-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                assert_eq!(((bs1 as i32) - (bs2 as i32)).abs() > 1, rel == BlockSizeRelation::Far, "failed (5-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                 // Test consistency between the result of other functions and the BlockSizeRelation value.
                 #[allow(clippy::bool_assert_comparison)]
                 match rel {
                     BlockSizeRelation::Far => {
-                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), false, "failed (6-1-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-1-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-1-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-1-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_ne!(ord, Ordering::Equal, "failed (6-1-5) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), false, "failed (6-1-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-1-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-1-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-1-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_ne!(ord, Ordering::Equal, "failed (6-1-5) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                     BlockSizeRelation::NearLt => {
-                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-2-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), true,  "failed (6-2-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-2-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-2-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(ord, Ordering::Less, "failed (6-2-5) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-2-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), true,  "failed (6-2-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-2-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-2-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(ord, Ordering::Less, "failed (6-2-5) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                     BlockSizeRelation::NearEq => {
-                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-3-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-3-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), true,  "failed (6-3-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-3-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(ord, Ordering::Equal, "failed (6-3-5) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-3-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-3-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), true,  "failed (6-3-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), false, "failed (6-3-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(ord, Ordering::Equal, "failed (6-3-5) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                     BlockSizeRelation::NearGt => {
-                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-4-1) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-4-2) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-4-3) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), true,  "failed (6-4-4) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
-                        assert_eq!(ord, Ordering::Greater, "failed (6-4-5) on type={}, bs1={}, bs2={}", stringify!($ty), bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near(&lhs, &rhs), true, "failed (6-4-1) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_lt(&lhs, &rhs), false, "failed (6-4-2) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_eq(&lhs, &rhs), false, "failed (6-4-3) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(<$ty>::is_block_sizes_near_gt(&lhs, &rhs), true,  "failed (6-4-4) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
+                        assert_eq!(ord, Ordering::Greater, "failed (6-4-5) on typename={}, bs1={}, bs2={}", typename, bs1, bs2);
                     }
                 }
             }
@@ -1033,10 +1035,11 @@ fn data_model_corruption() {
     assert_fits_in!(block_hash::MAX_SEQUENCE_SIZE, u8);
     assert_fits_in!(block_hash::MAX_SEQUENCE_SIZE + 1, u8);
     macro_rules! test_prereq {($ty: ty) => {
-        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_1, "failed (1) on type={}", stringify!($ty));
-        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_2, "failed (2) on type={}", stringify!($ty));
-        assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_1 + 1, u8, "failed (3) on type={}", stringify!($ty));
-        assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_2 + 1, u8, "failed (4) on type={}", stringify!($ty));
+        let typename = stringify!($ty);
+        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_1, "failed (1) on typename={}", typename);
+        assert!(block_hash::MAX_SEQUENCE_SIZE < <$ty>::MAX_BLOCK_HASH_SIZE_2, "failed (2) on typename={}", typename);
+        assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_1 + 1, u8, "failed (3) on typename={}", typename);
+        assert_fits_in!(<$ty>::MAX_BLOCK_HASH_SIZE_2 + 1, u8, "failed (4) on typename={}", typename);
     }}
     /*
         1. Validity
@@ -1048,19 +1051,20 @@ fn data_model_corruption() {
     #[cfg(feature = "alloc")]
     const EXPECTED_ILL_FORMED_PREFIX: &str = "FuzzyHashData { ILL_FORMED: true,";
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         let hash: $ty = <$ty>::new();
-        assert!(hash.is_valid(), "failed (1) on type={}", stringify!($ty));
+        assert!(hash.is_valid(), "failed (1) on typename={}", typename);
         // Invalid block size
         {
             let mut hash = hash;
             for log_block_size in u8::MIN..=u8::MAX {
                 hash.log_blocksize = log_block_size;
                 assert_eq!(hash.is_valid(), block_size::is_log_valid(log_block_size),
-                    "failed (2-1) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+                    "failed (2-1) on typename={}, log_block_size={}", typename, log_block_size);
                 #[cfg(feature = "alloc")]
                 if !block_size::is_log_valid(log_block_size) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                        "failed (2-2) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+                        "failed (2-2) on typename={}, log_block_size={}", typename, log_block_size);
                 }
             }
         }
@@ -1076,11 +1080,11 @@ fn data_model_corruption() {
                 }
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8,
-                    "failed (3-1-1) on type={}, len_blockhash={}", stringify!($ty), len_blockhash);
+                    "failed (3-1-1) on typename={}, len_blockhash={}", typename, len_blockhash);
                 #[cfg(feature = "alloc")]
                 if !(len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                        "failed (3-1-2) on type={}, len_blockhash={}", stringify!($ty), len_blockhash);
+                        "failed (3-1-2) on typename={}, len_blockhash={}", typename, len_blockhash);
                 }
             }
         }
@@ -1096,11 +1100,11 @@ fn data_model_corruption() {
                 }
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8,
-                    "failed (3-2-1) on type={}, len_blockhash={}", stringify!($ty), len_blockhash);
+                    "failed (3-2-1) on typename={}, len_blockhash={}", typename, len_blockhash);
                 #[cfg(feature = "alloc")]
                 if !(len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                        "failed (3-2-2) on type={}, len_blockhash={}", stringify!($ty), len_blockhash);
+                        "failed (3-2-2) on typename={}, len_blockhash={}", typename, len_blockhash);
                 }
             }
         }
@@ -1113,17 +1117,17 @@ fn data_model_corruption() {
                 for (i, ch) in hash.blockhash1[..block_hash_len].iter_mut().enumerate() {
                     *ch = i as u8;
                 }
-                assert!(hash.is_valid(), "failed (4-1-1) on type={}, block_hash_len={}", stringify!($ty), block_hash_len);
+                assert!(hash.is_valid(), "failed (4-1-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put an invalid character in the block hash.
                 for corrupted_index in 0..block_hash_len {
                     let mut hash = hash;
                     hash.blockhash1[corrupted_index] = BASE64_INVALID;
                     assert!(!hash.is_valid(),
-                        "failed (4-1-2) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                        "failed (4-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     #[cfg(feature = "alloc")]
                     {
                         assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (4-1-3) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                            "failed (4-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     }
                 }
             }
@@ -1137,17 +1141,17 @@ fn data_model_corruption() {
                 for (i, ch) in hash.blockhash2[..block_hash_len].iter_mut().enumerate() {
                     *ch = i as u8;
                 }
-                assert!(hash.is_valid(), "failed (4-2-1) on type={}, block_hash_len={}", stringify!($ty), block_hash_len);
+                assert!(hash.is_valid(), "failed (4-2-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put an invalid character in the block hash.
                 for corrupted_index in 0..block_hash_len {
                     let mut hash = hash;
                     hash.blockhash2[corrupted_index] = BASE64_INVALID;
                     assert!(!hash.is_valid(),
-                        "failed (4-2-2) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                        "failed (4-2-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     #[cfg(feature = "alloc")]
                     {
                         assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (4-2-3) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                            "failed (4-2-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     }
                 }
             }
@@ -1161,17 +1165,17 @@ fn data_model_corruption() {
                 for (i, ch) in hash.blockhash1[..block_hash_len].iter_mut().enumerate() {
                     *ch = i as u8;
                 }
-                assert!(hash.is_valid(), "failed (5-1-1) on type={}, block_hash_len={}", stringify!($ty), block_hash_len);
+                assert!(hash.is_valid(), "failed (5-1-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put a non-zero character outside the block hash.
                 for corrupted_index in block_hash_len..<$ty>::MAX_BLOCK_HASH_SIZE_1 {
                     let mut hash = hash;
                     hash.blockhash1[corrupted_index] = 1;
                     assert!(!hash.is_valid(),
-                        "failed (5-1-2) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                        "failed (5-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     #[cfg(feature = "alloc")]
                     {
                         assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (5-1-3) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                            "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     }
                 }
             }
@@ -1185,17 +1189,17 @@ fn data_model_corruption() {
                 for (i, ch) in hash.blockhash2[..block_hash_len].iter_mut().enumerate() {
                     *ch = i as u8;
                 }
-                assert!(hash.is_valid(), "failed (5-2-1) on type={}, block_hash_len={}", stringify!($ty), block_hash_len);
+                assert!(hash.is_valid(), "failed (5-2-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put a non-zero character outside the block hash.
                 for corrupted_index in block_hash_len..<$ty>::MAX_BLOCK_HASH_SIZE_2 {
                     let mut hash = hash;
                     hash.blockhash2[corrupted_index] = 1;
                     assert!(!hash.is_valid(),
-                        "failed (5-1-2) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                        "failed (5-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     #[cfg(feature = "alloc")]
                     {
                         assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (5-1-3) on type={}, block_hash_len={}, corrupted_index={}", stringify!($ty), block_hash_len, corrupted_index);
+                            "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                     }
                 }
             }
@@ -1205,13 +1209,13 @@ fn data_model_corruption() {
             let mut hash = hash;
             hash.len_blockhash1 = block_hash::MAX_SEQUENCE_SIZE as u8;
             // block hash "AAA" (max sequence size): valid
-            assert!(hash.is_valid(), "failed (6-1-1) on type={}", stringify!($ty));
+            assert!(hash.is_valid(), "failed (6-1-1) on typename={}", typename);
             hash.len_blockhash1 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
-            assert!(!hash.is_valid(), "failed (6-1-2) on type={}", stringify!($ty));
+            assert!(!hash.is_valid(), "failed (6-1-2) on typename={}", typename);
             #[cfg(feature = "alloc")]
             {
-                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-1-3) on type={}", stringify!($ty));
+                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-1-3) on typename={}", typename);
             }
         }
         // Break block hash 2 normalization
@@ -1219,13 +1223,13 @@ fn data_model_corruption() {
             let mut hash = hash;
             hash.len_blockhash2 = block_hash::MAX_SEQUENCE_SIZE as u8;
             // block hash "AAA" (max sequence size): valid
-            assert!(hash.is_valid(), "failed (6-2-1) on type={}", stringify!($ty));
+            assert!(hash.is_valid(), "failed (6-2-1) on typename={}", typename);
             hash.len_blockhash2 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
-            assert!(!hash.is_valid(), "failed (6-2-2) on type={}", stringify!($ty));
+            assert!(!hash.is_valid(), "failed (6-2-2) on typename={}", typename);
             #[cfg(feature = "alloc")]
             {
-                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-2-3) on type={}", stringify!($ty));
+                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-2-3) on typename={}", typename);
             }
         }
     }}
@@ -1241,27 +1245,28 @@ fn data_model_eq_and_full_eq() {
         *   full_eq
     */
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         let hash = <$ty>::new();
-        assert!(hash.is_valid(), "failed (1) on type={}", stringify!($ty));
+        assert!(hash.is_valid(), "failed (1) on typename={}", typename);
         // Write a non-zero value to "out of block hash" location.
         let mut hash_corrupted_1 = hash;
         hash_corrupted_1.blockhash1[0] = 1;
         let mut hash_corrupted_2 = hash;
         hash_corrupted_2.blockhash2[0] = 1;
         // Now those two hashes are corrupted.
-        assert!(!hash_corrupted_1.is_valid(), "failed (2-1) on type={}", stringify!($ty));
-        assert!(!hash_corrupted_2.is_valid(), "failed (2-2) on type={}", stringify!($ty));
+        assert!(!hash_corrupted_1.is_valid(), "failed (2-1) on typename={}", typename);
+        assert!(!hash_corrupted_2.is_valid(), "failed (2-2) on typename={}", typename);
         // But, default comparison results in "equal" because of ignoring
         // certain bytes.
-        assert_eq!(hash, hash_corrupted_1, "failed (3-1) on type={}", stringify!($ty));
-        assert_eq!(hash, hash_corrupted_2, "failed (3-2) on type={}", stringify!($ty));
+        assert_eq!(hash, hash_corrupted_1, "failed (3-1) on typename={}", typename);
+        assert_eq!(hash, hash_corrupted_2, "failed (3-2) on typename={}", typename);
         // Still, full_eq will return false.
-        assert!(!hash.full_eq(&hash_corrupted_1), "failed (4-1) on type={}", stringify!($ty));
-        assert!(!hash.full_eq(&hash_corrupted_2), "failed (4-2) on type={}", stringify!($ty));
-        assert!(!hash_corrupted_1.full_eq(&hash), "failed (5-1) on type={}", stringify!($ty));
-        assert!(!hash_corrupted_2.full_eq(&hash), "failed (5-2) on type={}", stringify!($ty));
-        assert!(!hash_corrupted_1.full_eq(&hash_corrupted_2), "failed (6-1) on type={}", stringify!($ty));
-        assert!(!hash_corrupted_2.full_eq(&hash_corrupted_1), "failed (6-2) on type={}", stringify!($ty));
+        assert!(!hash.full_eq(&hash_corrupted_1), "failed (4-1) on typename={}", typename);
+        assert!(!hash.full_eq(&hash_corrupted_2), "failed (4-2) on typename={}", typename);
+        assert!(!hash_corrupted_1.full_eq(&hash), "failed (5-1) on typename={}", typename);
+        assert!(!hash_corrupted_2.full_eq(&hash), "failed (5-2) on typename={}", typename);
+        assert!(!hash_corrupted_1.full_eq(&hash_corrupted_2), "failed (6-1) on typename={}", typename);
+        assert!(!hash_corrupted_2.full_eq(&hash_corrupted_1), "failed (6-2) on typename={}", typename);
     }}
     test_for_each_type!(test, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);
 }
@@ -1383,6 +1388,7 @@ fn data_model_normalized_windows_example() {
     assert!(block_hash::MAX_SEQUENCE_SIZE <= 3);
     // Test some example "3:mG+XtIWRQX:7mYCCCWdq"
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         let bh1 = &[38,  6, 62, 23, 45,  8, 22, 17, 16, 23]; // length 10
         let bh2 = &[59, 38, 24,  2,  2,  2, 22, 29, 42];     // length  9
         let hash = <$ty>::new_from_internals(block_size::MIN, bh1, bh2);
@@ -1391,18 +1397,18 @@ fn data_model_normalized_windows_example() {
             let mut windows_1 = hash.block_hash_1_windows();
             for index in 0..=(bh1.len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                 assert_eq!(windows_1.next().unwrap(), &bh1[index..index+7],
-                    "failed (1-1) on type={}, index={}", stringify!($ty), index);
+                    "failed (1-1) on typename={}, index={}", typename, index);
             }
-            assert!(windows_1.next().is_none(), "failed (1-2) on type={}", stringify!($ty));
+            assert!(windows_1.next().is_none(), "failed (1-2) on typename={}", typename);
         }
         // Block Hash 2
         {
             let mut windows_2 = hash.block_hash_2_windows();
             for index in 0..=(bh2.len() - block_hash::MIN_LCS_FOR_COMPARISON) {
                 assert_eq!(windows_2.next().unwrap(), &bh2[index..index+7],
-                    "failed (2-1) on type={}, index={}", stringify!($ty), index);
+                    "failed (2-1) on typename={}, index={}", typename, index);
             }
-            assert!(windows_2.next().is_none(), "failed (2-2) on type={}", stringify!($ty));
+            assert!(windows_2.next().is_none(), "failed (2-2) on typename={}", typename);
         }
     }}
     // Normalized variants only
@@ -1527,46 +1533,47 @@ fn parser_err_cases_prerequisites() {
 #[test]
 fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
             let mut index1 = 0;
             let mut index2 = usize::MAX;
             assert_eq!(
                 <$ty>::from_bytes(hash_str.as_bytes()).map(|_| ()), err,
-                "failed (1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                "failed (1-1) on typename={}, hash_str={:?}", typename, hash_str
             );
             assert_eq!(
                 <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index1).map(|_| ()), err,
-                "failed (1-2-1-1-1) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                "failed (1-2-1-1-1) on typename={}, hash_str={:?}", typename, hash_str
             );
             assert_eq!(
                 <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index2).map(|_| ()), err,
-                "failed (1-2-1-1-2) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                "failed (1-2-1-1-2) on typename={}, hash_str={:?}", typename, hash_str
             );
             match err {
                 Ok(_) => {
                     assert_eq!(index1, index2,
-                        "failed (1-2-1-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                        "failed (1-2-1-2) on typename={}, hash_str={:?}", typename, hash_str);
                     // If the index is not that of the end of the string...
                     if index1 != hash_str.len() {
                         // It must point to the character ',' and...
                         assert!(hash_str.as_bytes()[index1] == b',',
-                            "failed (1-2-2-1) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                            "failed (1-2-2-1) on typename={}, hash_str={:?}", typename, hash_str);
                         // The index must be the leftmost ',' character.
                         assert_eq!(hash_str.find(','), Some(index1),
-                            "failed (1-2-2-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                            "failed (1-2-2-2) on typename={}, hash_str={:?}", typename, hash_str);
                     }
                 }
                 Err(_) => {
                     assert_eq!(index1, 0,
-                        "failed (1-2-2-3-1) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                        "failed (1-2-2-3-1) on typename={}, hash_str={:?}", typename, hash_str);
                     assert_eq!(index2, usize::MAX,
-                        "failed (1-2-2-3-2) on type={}, hash_str={:?}", stringify!($ty), hash_str);
+                        "failed (1-2-2-3-2) on typename={}, hash_str={:?}", typename, hash_str);
                 }
             }
             assert_eq!(
                 str::parse::<$ty>(hash_str).map(|_| ()), err,
-                "failed (2) on type={}, hash_str={:?}", stringify!($ty), hash_str
+                "failed (2) on typename={}, hash_str={:?}", typename, hash_str
             );
         }
     }}
@@ -1752,6 +1759,7 @@ fn parsed_block_size() {
             *   block_size
     */
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         for (log_block_size, &str_block_size) in
             block_size::BLOCK_SIZES_STR.iter().enumerate()
         {
@@ -1765,18 +1773,18 @@ fn parsed_block_size() {
             buf[str_block_size.len() + 1] = b':';
             // Use from_bytes.
             let hash = <$ty>::from_bytes(&buf[..str_block_size.len() + 2]).unwrap();
-            assert!(hash.is_valid(), "failed (1) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+            assert!(hash.is_valid(), "failed (1) on typename={}, log_block_size={}", typename, log_block_size);
             // Check log_block_size() and block_size()
-            assert_eq!(hash.log_block_size(), log_block_size as u8, "failed (2-1) on type={}, log_block_size={}", stringify!($ty), log_block_size);
-            assert_eq!(hash.block_size(), block_size, "failed (2-2) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+            assert_eq!(hash.log_block_size(), log_block_size as u8, "failed (2-1) on typename={}, log_block_size={}", typename, log_block_size);
+            assert_eq!(hash.block_size(), block_size, "failed (2-2) on typename={}, log_block_size={}", typename, log_block_size);
             // Use from_str via str::parse.
             let hash = str::parse::<$ty>(
                 core::str::from_utf8(&buf[..str_block_size.len() + 2]).unwrap()
             ).unwrap();
-            assert!(hash.is_valid(), "failed (3) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+            assert!(hash.is_valid(), "failed (3) on typename={}, log_block_size={}", typename, log_block_size);
             // Check log_block_size() and block_size()
-            assert_eq!(hash.log_block_size(), log_block_size as u8, "failed (4-1) on type={}, log_block_size={}", stringify!($ty), log_block_size);
-            assert_eq!(hash.block_size(), block_size, "failed (4-2) on type={}, log_block_size={}", stringify!($ty), log_block_size);
+            assert_eq!(hash.log_block_size(), log_block_size as u8, "failed (4-1) on typename={}, log_block_size={}", typename, log_block_size);
+            assert_eq!(hash.block_size(), block_size, "failed (4-2) on typename={}, log_block_size={}", typename, log_block_size);
         }
     }}
     test_for_each_type!(test, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);
@@ -1824,9 +1832,10 @@ fn normalization_examples() {
 #[test]
 fn cover_hash() {
     macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
         let mut hashes = std::collections::HashSet::<$ty>::new();
-        assert!( hashes.insert(<$ty>::new()), "failed (1) on type={}", stringify!($ty));
-        assert!(!hashes.insert(<$ty>::new()), "failed (2) on type={}", stringify!($ty));
+        assert!( hashes.insert(<$ty>::new()), "failed (1) on typename={}", typename);
+        assert!(!hashes.insert(<$ty>::new()), "failed (2) on typename={}", typename);
     }}
     test_for_each_type!(test, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);
 }
