@@ -610,7 +610,8 @@ impl FuzzyHashCompareTarget {
     /// hashes and the edit distance between them.
     ///
     /// This method scales the edit distance to the `0..=100` score familiar to
-    /// humans (`100` means a perfect match, smaller the score, further apart).
+    /// humans (`100` means a perfect match, smaller the score, lower
+    /// the similarity).
     ///
     /// Note that it doesn't perform any [score capping](Self::score_cap_on_block_hash_comparison())
     /// (that should be performed on smaller block sizes).
