@@ -711,6 +711,11 @@ impl FuzzyHashCompareTarget {
     /// The result is not always guaranteed to be in `0..=100` but `100` or
     /// higher means that we don't need any score capping.
     ///
+    /// If at least one of the arguments `len_block_hash_lhs` and
+    /// `len_block_hash_rhs` are less than
+    /// [`block_hash::MIN_LCS_FOR_COMPARISON`], the result is
+    /// implementation-defined.
+    ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     ///
     /// # Compatibility Note
@@ -727,12 +732,11 @@ impl FuzzyHashCompareTarget {
     /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must not exceed
     ///     [`block_hash::FULL_SIZE`].
     ///
-    /// On the other hand, the author decided *not* to cause a panic even if
-    /// `len_block_hash_lhs` and/or `len_block_hash_rhs` are/is less than
-    /// [`block_hash::MIN_LCS_FOR_COMPARISON`].  This case will not happen
-    /// if we are actually performing an edit distance-based comparison (making
-    /// the result of the call practically useless) but it is hard to call this
-    /// case "semantically invalid" and this operation is arithmetically valid.
+    /// If at least one of the arguments `len_block_hash_lhs` and
+    /// `len_block_hash_rhs` are less than
+    /// [`block_hash::MIN_LCS_FOR_COMPARISON`], this is semantically-invalid.
+    /// We haven't determined whether we need to reject those cases but at
+    /// least implementation-defined.
     ///
     /// # Useful Property
     ///
