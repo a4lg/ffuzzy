@@ -169,6 +169,8 @@ impl FuzzyHashCompareTarget {
     /// If this always guaranteed to be `100` or greater,
     /// capping the score is not longer required.
     ///
+    /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+    ///
     /// # Backgrounds
     ///
     /// ## Theorem
