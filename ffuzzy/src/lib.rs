@@ -15,7 +15,7 @@
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
 // int_roundings feature depending on div_ceil availability
-#![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_roundings))]
+#![cfg_attr(ffuzzy_div_ceil = "unstable", feature(int_roundings))]
 // unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
 // feature or on the tests.  When only the "unchecked" feature is enabled,
 // unsafe code requires explicit allow.
