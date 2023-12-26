@@ -614,7 +614,7 @@ impl FuzzyHashCompareTarget {
     /// the similarity).
     ///
     /// Note that it doesn't perform any [score capping](Self::score_cap_on_block_hash_comparison())
-    /// (that should be performed on smaller block sizes).
+    /// (that should be performed on [smaller block sizes](Self::LOG_BLOCK_SIZE_CAPPING_BORDER)).
     ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     ///
