@@ -19,10 +19,6 @@ version (MSRV), which we only expect stable features.
 *   New cargo dependency format suitable for Serde integration
 *   `abs_diff` method on integer types
 
-## 1.62.0
-
-*   `bool::then(|| x)` to `bool::then_some(x)`.
-
 ## 1.63.0
 
 *   Remove unconditional `#[allow(unknown_lints)]`
