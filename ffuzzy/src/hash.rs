@@ -1329,8 +1329,10 @@ where
 
 
 /// Type macro for a normalized fuzzy hash type.
+#[doc(alias = "fuzzy_norm_type")]
 macro_rules!  norm_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, true> }}
 /// Type macro for a non-normalized (raw) fuzzy hash type.
+#[doc(alias = "fuzzy_raw_type")]
 macro_rules!   raw_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, false> }}
 
 pub(crate) use norm_type as fuzzy_norm_type;
