@@ -716,6 +716,11 @@ impl FuzzyHashCompareTarget {
     /// [`block_hash::MIN_LCS_FOR_COMPARISON`], the result is
     /// implementation-defined.
     ///
+    /// If all arguments are valid and `log_block_size` is
+    /// [large enough](Self::LOG_BLOCK_SIZE_CAPPING_BORDER),
+    /// `100` or greater will be returned, meaning that the score capping is
+    /// no longer required.
+    ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     ///
     /// # Compatibility Note
