@@ -1523,13 +1523,20 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
 {
-    /// Compare two fuzzy hashes and retrieves the similarity score.
-    #[inline]
-    pub fn compare(&self, other: impl AsRef<Self>) -> u32 {
-        let other = other.as_ref();
+    /// Internal function for [`compare()`](Self::compare()) and
+    /// [`compare_unequal_internal()`](Self::compare_unequal_internal()) methods.
+    ///
+    /// `check_equality` parameter determines whether to perform
+    /// an equality test (`100` if `self` and `other` are the same).
+    #[inline(always)]
+    fn compare_inlined_internal(&self, other: &Self, check_equality: bool) -> u32 {
         let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
-        if !rel.is_near() { return 0; }
-        if rel == BlockSizeRelation::NearEq && self == other { return 100; }
+        if !rel.is_near() {
+            return 0;
+        }
+        if check_equality && rel == BlockSizeRelation::NearEq && self == other {
+            return 100;
+        }
         let target = FuzzyHashCompareTarget::from(self);
         match rel {
             BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
@@ -1539,20 +1546,19 @@ where
         }
     }
 
+    /// Compare two fuzzy hashes and retrieves the similarity score.
+    #[inline]
+    pub fn compare(&self, other: impl AsRef<Self>) -> u32 {
+        let other = other.as_ref();
+        self.compare_inlined_internal(other, true)
+    }
+
     /// The internal implementation of [`Self::compare_unequal_unchecked()`].
     #[inline]
     fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
         debug_assert!(self != other);
-        let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
-        if !rel.is_near() { return 0; }
-        let target = FuzzyHashCompareTarget::from(self);
-        match rel {
-            BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
-            BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
-            BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
-            BlockSizeRelation::Far => unreachable!(), // grcov-excl-line:UNREACHABLE
-        }
+        self.compare_inlined_internal(other, false)
     }
 
     /// Compare two fuzzy hashes assuming both are different.
