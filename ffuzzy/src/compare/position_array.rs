@@ -772,10 +772,15 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 }
 
 
-/// An example of position array-related traits.
+/// A simple struct representing a position array of a block hash.
 ///
-/// This type is not used by [`FuzzyHashCompareTarget`] but can be a good
-/// example to use internal efficient implementation.
+/// This type is not a part of the [`FuzzyHashCompareTarget`] struct but can be
+/// a good example to use internal efficient implementation.
+///
+/// It's (currently) used internally on the
+/// [`FuzzyHashData::compare()`](crate::hash::FuzzyHashData::compare()) method
+/// family (comparing two fuzzy hash objects) for the "shortcut path"
+/// (when the block sizes are different but near).
 ///
 /// See also:
 /// 1.  [`BlockHashPositionArrayData`]

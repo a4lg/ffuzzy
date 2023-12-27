@@ -25,6 +25,7 @@ mod test_utils;
 mod tests;
 
 use position_array::{
+    BlockHashPositionArray,
     BlockHashPositionArrayData,
     BlockHashPositionArrayImpl,
     BlockHashPositionArrayImplInternal,
@@ -1537,11 +1538,21 @@ where
         if check_equality && rel == BlockSizeRelation::NearEq && self == other {
             return 100;
         }
-        let target = FuzzyHashCompareTarget::from(self);
         match rel {
-            BlockSizeRelation::NearEq => { target.compare_unequal_near_eq_internal(other) },
-            BlockSizeRelation::NearLt => { target.compare_unequal_near_lt_internal(other) },
-            BlockSizeRelation::NearGt => { target.compare_unequal_near_gt_internal(other) },
+            BlockSizeRelation::NearEq => {
+                let target = FuzzyHashCompareTarget::from(self);
+                target.compare_unequal_near_eq_internal(other)
+            },
+            BlockSizeRelation::NearLt => {
+                let mut target = BlockHashPositionArray::new();
+                target.init_from_partial(self.block_hash_2());
+                target.score_strings_internal(other.block_hash_1(), other.log_blocksize)
+            },
+            BlockSizeRelation::NearGt => {
+                let mut target = BlockHashPositionArray::new();
+                target.init_from_partial(self.block_hash_1());
+                target.score_strings_internal(other.block_hash_2(), self.log_blocksize)
+            },
             BlockSizeRelation::Far => unreachable!(), // grcov-excl-line:UNREACHABLE
         }
     }
