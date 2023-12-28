@@ -1536,7 +1536,7 @@ where
     /// `check_equality` parameter determines whether to perform
     /// an equality test (`100` if `self` and `other` are the same).
     #[inline(always)]
-    fn compare_inlined_internal(&self, other: &Self, check_equality: bool) -> u32 {
+    fn compare_optimized_internal(&self, other: &Self, check_equality: bool) -> u32 {
         let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
         if !rel.is_near() {
             return 0;
@@ -1567,7 +1567,7 @@ where
     #[inline]
     pub fn compare(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
-        self.compare_inlined_internal(other, true)
+        self.compare_optimized_internal(other, true)
     }
 
     /// The internal implementation of [`Self::compare_unequal_unchecked()`].
@@ -1575,7 +1575,7 @@ where
     fn compare_unequal_internal(&self, other: impl AsRef<Self>) -> u32 {
         let other = other.as_ref();
         debug_assert!(self != other);
-        self.compare_inlined_internal(other, false)
+        self.compare_optimized_internal(other, false)
     }
 
     /// Compare two fuzzy hashes assuming both are different.
