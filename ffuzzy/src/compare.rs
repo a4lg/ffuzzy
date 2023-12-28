@@ -1409,7 +1409,7 @@ impl FuzzyHashCompareTarget {
     ///
     /// This function (and its variants) can return [`false`] if `self` and
     /// `other` are equivalent (the base fuzzy hash object of `self` and `other`
-    /// are the same and their similarity score is 100).
+    /// are the same).  In this case, their similarity score is `100`.
     ///
     /// Because of this, we have to use a set of *unique* fuzzy hash values
     /// on the use case above to prevent false-negative matches.
