@@ -28,10 +28,18 @@ pub mod block_hash_position_array_element {
     /// [`has_sequences_const()`] forces to do that.
     #[inline(always)]
     pub const fn has_sequences(pa_elem: u64, len: u32) -> bool {
-        if len == 0 { return true; }
-        if len == 1 { return pa_elem != 0; }
-        if len == u64::BITS { return pa_elem == u64::MAX; }
-        if len >  u64::BITS { return false; }
+        if len == 0 {
+            return true;
+        }
+        if len == 1 {
+            return pa_elem != 0;
+        }
+        if len == u64::BITS {
+            return pa_elem == u64::MAX;
+        }
+        if len >  u64::BITS {
+            return false;
+        }
         let cont_01 = pa_elem;
         let cont_02 = cont_01 & (cont_01 >>  1);
         let cont_04 = cont_02 & (cont_02 >>  2);
@@ -146,7 +154,9 @@ pub trait BlockHashPositionArrayData {
     /// [`is_valid_and_normalized()`](Self::is_valid_and_normalized()) instead.
     fn is_valid(&self) -> bool {
         let len = self.len();
-        if len > 64 { return false; }
+        if len > 64 {
+            return false;
+        }
         let expected_total: u64 = u64_lsb_ones(len as u32);
         let mut total: u64 = 0;
         for &pos in self.representation() {
@@ -176,7 +186,9 @@ pub trait BlockHashPositionArrayData {
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](crate::hash::FuzzyHashData#normalization)
     fn is_valid_and_normalized(&self) -> bool {
-        if !self.is_valid() { return false; }
+        if !self.is_valid() {
+            return false;
+        }
         for &pos in self.representation() {
             if block_hash_position_array_element::has_sequences_const::<
                 { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 }
@@ -225,7 +237,9 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(other.len() <= 64);
         let len = self.len();
         let representation = self.representation();
-        if (len as usize) != other.len() { return false; }
+        if (len as usize) != other.len() {
+            return false;
+        }
         optionally_unsafe! {
             for (i, &ch) in other.iter().enumerate() {
                 invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
@@ -283,7 +297,9 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(self.is_valid());
         debug_assert!((len as usize) <= block_hash::FULL_SIZE);
         debug_assert!(other.len() <= block_hash::FULL_SIZE);
-        if len == 0 { return other.len() as u32; }
+        if len == 0 {
+            return other.len() as u32;
+        }
         let mut cur = len as u32;
         optionally_unsafe! {
             let msb: u64 = 1u64 << (len - 1);

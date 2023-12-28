@@ -534,7 +534,9 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let hash = hash.as_ref();
-        if self.log_blocksize != hash.log_blocksize { return false; }
+        if self.log_blocksize != hash.log_blocksize {
+            return false;
+        }
         self.is_equiv_except_block_size(hash)
     }
 
@@ -900,7 +902,9 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(block_size::is_near_eq(self.log_blocksize, other.log_blocksize));
-        if self.is_equiv_except_block_size(other) { return 100; }
+        if self.is_equiv_except_block_size(other) {
+            return 100;
+        }
         self.compare_unequal_near_eq_internal(other)
     }
 

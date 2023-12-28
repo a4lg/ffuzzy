@@ -638,7 +638,9 @@ impl Generator {
     /// method.
     fn get_log_block_size_from_input_size(size: u64, start: usize) -> usize {
         let size_unit = Self::guessed_preferred_max_input_size_at(0);
-        if size <= size_unit { return start; }
+        if size <= size_unit {
+            return start;
+        }
         let high_size = (size - 1) / size_unit; // grcov-excl-br-line:DIVZERO
         optionally_unsafe! {
             invariant!(high_size > 0);
