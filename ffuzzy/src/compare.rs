@@ -798,6 +798,10 @@ impl FuzzyHashCompareTarget {
     /// *   A memory corruption is occurred somewhere else.
     ///
     /// Because of its purpose, this method is not designed to be fast.
+    ///
+    /// Note that, despite that it is only relevant to users when the
+    /// `unchecked` feature is enabled but made public without any features
+    /// because this method is not *unsafe* or *unchecked* in any way.
     pub fn is_valid(&self) -> bool {
         block_size::is_log_valid(self.log_blocksize)
             && self.block_hash_1_internal().is_valid_and_normalized()
