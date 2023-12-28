@@ -419,8 +419,8 @@ pub mod block_hash {
     /// An object with this type is created by either of those methods
     /// (*normalized forms only*):
     ///
-    /// 1.  [`FuzzyHashData::block_hash_1_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_1_numeric_windows())
-    /// 2.  [`FuzzyHashData::block_hash_2_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_2_numeric_windows())
+    /// *   [`FuzzyHashData::block_hash_1_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_1_numeric_windows())
+    /// *   [`FuzzyHashData::block_hash_2_numeric_windows()`](crate::hash::FuzzyHashData::block_hash_2_numeric_windows())
     ///
     /// Unlike [`block_hash_1_windows()`](crate::hash::FuzzyHashData::block_hash_1_windows()) and
     /// [`block_hash_2_windows()`](crate::hash::FuzzyHashData::block_hash_2_windows()),

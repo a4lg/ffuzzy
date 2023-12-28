@@ -507,11 +507,11 @@ pub enum GeneratorError {
     ///
     /// This error only occurs when:
     ///
-    /// 1.  Truncation is disabled,
-    /// 2.  The output type is a short form  
+    /// *   Truncation is disabled,
+    /// *   The output type is a short form  
     ///     (because of those conditions, it only occurs on a raw
     ///     [`Generator::finalize_raw()`] call) and
-    /// 3.  The resulting block hash 2 is longer than that of the
+    /// *   The resulting block hash 2 is longer than that of the
     ///     short form limit ([`block_hash::HALF_SIZE`]).
     OutputOverflow,
 }
@@ -974,10 +974,10 @@ impl Generator {
     /// the block size until it finds a fuzzy hash of suitable length.
     /// In other words, it tries to find a block hash until:
     ///
-    /// 1.  It find a block size so that corresponding block hash is already
+    /// *   It find a block size so that corresponding block hash is already
     ///     at least [`block_hash::HALF_SIZE`] chars in length
     ///     (one character may be appended on the finalization process) or
-    /// 2.  It reaches the lower bound ([`bhidx_start`](Self::bhidx_start)).
+    /// *   It reaches the lower bound ([`bhidx_start`](Self::bhidx_start)).
     ///
     /// The resulting block size and the corresponding block hash are used as:
     ///

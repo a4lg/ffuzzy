@@ -81,17 +81,17 @@ pub struct FuzzyHashCompareTarget {
     /// The position array representation of block hash 1.
     ///
     /// See also:
-    /// 1.  [`BlockHashPositionArrayData`]
-    /// 2.  [`BlockHashPositionArrayImpl`]
-    /// 3.  [`block_hash_1()`](Self::block_hash_1())
+    /// *   [`BlockHashPositionArrayData`]
+    /// *   [`BlockHashPositionArrayImpl`]
+    /// *   [`block_hash_1()`](Self::block_hash_1())
     blockhash1: [u64; block_hash::ALPHABET_SIZE],
 
     /// The position array representation of block hash 2.
     ///
     /// See also:
-    /// 1.  [`BlockHashPositionArrayData`]
-    /// 2.  [`BlockHashPositionArrayImpl`]
-    /// 3.  [`block_hash_2()`](Self::block_hash_2())
+    /// *   [`BlockHashPositionArrayData`]
+    /// *   [`BlockHashPositionArrayImpl`]
+    /// *   [`block_hash_2()`](Self::block_hash_2())
     blockhash2: [u64; block_hash::ALPHABET_SIZE],
 
     /// Length of the block hash 1 (up to [`block_hash::FULL_SIZE`]).
@@ -343,9 +343,9 @@ impl FuzzyHashCompareTarget {
     /// The result has the same lifetime as this object and implements
     /// following traits:
     ///
-    /// 1.  [`BlockHashPositionArrayData`]
-    /// 2.  [`BlockHashPositionArrayImpl`]
-    /// 3.  [`BlockHashPositionArrayImplUnchecked`]
+    /// *   [`BlockHashPositionArrayData`]
+    /// *   [`BlockHashPositionArrayImpl`]
+    /// *   [`BlockHashPositionArrayImplUnchecked`]
     ///     (only if the `unchecked` feature is enabled)
     #[inline(always)]
     pub fn block_hash_1(&self) -> compare_target_block_hash_pub_impl!('_) {
@@ -794,8 +794,8 @@ impl FuzzyHashCompareTarget {
     /// The primary purpose of this is debugging and it should always
     /// return [`true`] unless...
     ///
-    /// 1.  There is a bug in this crate, corrupting this structure or
-    /// 2.  A memory corruption is occurred somewhere else.
+    /// *   There is a bug in this crate, corrupting this structure or
+    /// *   A memory corruption is occurred somewhere else.
     ///
     /// Because of its purpose, this method is not designed to be fast.
     pub fn is_valid(&self) -> bool {

@@ -960,8 +960,8 @@ where
     /// The primary purpose of this is debugging and it should always
     /// return [`true`] unless...
     ///
-    /// 1.  There is a bug in this crate, corrupting this structure or
-    /// 2.  A memory corruption is occurred somewhere else.
+    /// *   There is a bug in this crate, corrupting this structure or
+    /// *   A memory corruption is occurred somewhere else.
     ///
     /// Because of its purpose, this method is not designed to be fast.
     ///

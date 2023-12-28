@@ -799,8 +799,8 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 /// (when the block sizes are different but near).
 ///
 /// See also:
-/// 1.  [`BlockHashPositionArrayData`]
-/// 2.  [`BlockHashPositionArrayImpl`]
+/// *   [`BlockHashPositionArrayData`]
+/// *   [`BlockHashPositionArrayImpl`]
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     /// The block hash position array representation.
