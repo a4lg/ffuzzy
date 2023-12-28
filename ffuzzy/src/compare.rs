@@ -745,7 +745,7 @@ impl FuzzyHashCompareTarget {
     /// `len_block_hash_rhs` are less than
     /// [`block_hash::MIN_LCS_FOR_COMPARISON`], this is semantically-invalid.
     /// We haven't determined whether we need to reject those cases but at
-    /// least implementation-defined.
+    /// least implementation-defined (may cause a panic in the future).
     ///
     /// # Useful Property
     ///
@@ -763,6 +763,8 @@ impl FuzzyHashCompareTarget {
     ) -> u32
     {
         // assert!((log_block_size as usize) <= block_size::NUM_VALID);
+        // assert!((len_block_hash_lhs as usize) >= block_hash::MIN_LCS_FOR_COMPARISON);
+        // assert!((len_block_hash_rhs as usize) >= block_hash::MIN_LCS_FOR_COMPARISON);
         // assert!((len_block_hash_lhs as usize) <= block_hash::FULL_SIZE);
         // assert!((len_block_hash_rhs as usize) <= block_hash::FULL_SIZE);
         if log_block_size >= FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
