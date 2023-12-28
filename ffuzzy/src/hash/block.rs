@@ -388,10 +388,11 @@ pub mod block_hash {
     /// between two block hashes.
     ///
     /// To score similarity between two block hashes with the same block size,
-    /// ssdeep expects that two block hashes are similar enough.  In specific,
-    /// ssdeep expects that they have a common substring of a length
-    /// [`MIN_LCS_FOR_COMPARISON`] or longer to reduce the possibility of false
-    /// matches by chance.
+    /// ssdeep expects that two block hashes are similar enough.
+    /// In specific, ssdeep expects that they
+    /// [have a common substring](crate::compare::position_array::BlockHashPositionArrayImpl::has_common_substring)
+    /// of a length [`MIN_LCS_FOR_COMPARISON`] or longer to reduce the
+    /// possibility of false matches by chance.
     ///
     /// If we couldn't find such a common substring, the low level block hash
     /// comparison method returns zero (meaning, not similar).
@@ -407,6 +408,8 @@ pub mod block_hash {
     /// have a common substring `cOpEYXB+0Z` (length 10), long enough
     /// (≧ [`MIN_LCS_FOR_COMPARISON`]) to compute the edit distance to compute
     /// the similarity score.
+    ///
+    /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-comparison)
     pub const MIN_LCS_FOR_COMPARISON: usize = 7;
 
 
