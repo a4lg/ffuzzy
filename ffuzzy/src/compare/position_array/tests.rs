@@ -622,21 +622,23 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
                 "failed on bh_norm={:?}", bh_norm
             );
             // Test with score capping
-            for log_block_size in 0..FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
-                let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_internal(
-                    log_block_size,
-                    len_norm,
-                    len_norm
-                ).min(100);
-                let capped_score = expected_score.min(score_cap);
-                assert_eq!(value.score_strings(bh_norm, log_block_size), capped_score,
-                    "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
-                assert_eq!(value.score_strings_internal(bh_norm, log_block_size), capped_score,
-                    "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
-                #[cfg(feature = "unchecked")]
-                unsafe {
-                    assert_eq!(value.score_strings_unchecked(bh_norm, log_block_size), capped_score,
+            if bh_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON {
+                for log_block_size in 0..FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
+                    let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_internal(
+                        log_block_size,
+                        len_norm,
+                        len_norm
+                    ).min(100);
+                    let capped_score = expected_score.min(score_cap);
+                    assert_eq!(value.score_strings(bh_norm, log_block_size), capped_score,
                         "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
+                    assert_eq!(value.score_strings_internal(bh_norm, log_block_size), capped_score,
+                        "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
+                    #[cfg(feature = "unchecked")]
+                    unsafe {
+                        assert_eq!(value.score_strings_unchecked(bh_norm, log_block_size), capped_score,
+                            "failed on bh_norm={:?}, log_block_size={}", bh_norm, log_block_size);
+                    }
                 }
             }
         });

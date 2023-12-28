@@ -735,14 +735,6 @@ fn score_caps_on_block_hash_comparison() {
     // actually depends on min(len1, len2).
     for log_block_size in 0..FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
         let mut score_cap = 0;
-        for len in 1..block_hash::MIN_LCS_FOR_COMPARISON as u8 {
-            // If non-zero arguments are specified, the score cap must be non-zero
-            assert_ne!(
-                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len),
-                0,
-                "failed on log_block_size={}, len={}", log_block_size, len
-            );
-        }
         for len in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
             let new_score_cap =
                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(log_block_size, len, len);
@@ -914,10 +906,22 @@ fn compare_slightly_different() {
                         diff_hash.blockhash1[0] = 2; // Originally, this is not 2.
                         let score = target.compare(&diff_hash);
                         compare!(1, score, diff_hash);
-                        let score_cap_1 = FuzzyHashCompareTarget
-                            ::score_cap_on_block_hash_comparison(log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw);
-                        let score_cap_2 = FuzzyHashCompareTarget
-                            ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
+                        let score_cap_1 =
+                            if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
+                                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
+                                    log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw)
+                            }
+                            else {
+                                100
+                            };
+                        let score_cap_2 =
+                            if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
+                                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
+                                    log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw)
+                            }
+                            else {
+                                100
+                            };
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap,
                             "failed (1-2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
@@ -945,10 +949,22 @@ fn compare_slightly_different() {
                         diff_hash.blockhash2[0] = 0; // Originally, this is not zero.
                         let score = target.compare(&diff_hash);
                         compare!(2, score, diff_hash);
-                        let score_cap_1 = FuzzyHashCompareTarget
-                            ::score_cap_on_block_hash_comparison(log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw);
-                        let score_cap_2 = FuzzyHashCompareTarget
-                            ::score_cap_on_block_hash_comparison(log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw);
+                        let score_cap_1 =
+                            if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
+                                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
+                                    log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw)
+                            }
+                            else {
+                                100
+                            };
+                        let score_cap_2 =
+                            if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
+                                FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
+                                    log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw)
+                            }
+                            else {
+                                100
+                            };
                         let score_cap = u32::max(score_cap_1, score_cap_2);
                         assert!(score <= score_cap,
                             "failed (2-2-1) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
