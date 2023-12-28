@@ -116,7 +116,7 @@ let target: FuzzyHashCompareTarget = FuzzyHashCompareTarget::from(&hash1);
 assert_eq!(target.compare(&hash2), 88);
 
 // If you reuse the same `target` object repeatedly for multiple fuzzy hashes,
-// `new` and `init_from` will be helpful.
+// `new()` and `init_from()` will be helpful.
 let mut target: FuzzyHashCompareTarget = FuzzyHashCompareTarget::new();
 target.init_from(&hash1);
 assert_eq!(target.compare(&hash2), 88);
