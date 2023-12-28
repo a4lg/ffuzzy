@@ -49,8 +49,9 @@ use position_array::BlockHashPositionArrayImplUnchecked;
 /// two fuzzy hashes, it's usually faster than `fuzzy_compare` in ssdeep 2.13.
 ///
 /// In fact, if you just compare two fuzzy hashes in this crate, a temporary
-/// [`FuzzyHashCompareTarget`] object is created from either side
-/// of the comparison.
+/// [`FuzzyHashCompareTarget`] object containing two block hashes or
+/// corresponding [half-baked object](BlockHashPositionArrayData) containing
+/// one block hash, will be created from either side of the comparison.
 ///
 /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
 ///

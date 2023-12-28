@@ -269,8 +269,12 @@ pub(crate) mod test_utils;
 ///     i.e. [block sizes are far](BlockSizeRelation::Far)).
 ///
 /// For actual comparison, a
-/// [`FuzzyHashCompareTarget`](crate::compare::FuzzyHashCompareTarget) object is used.
-/// See this struct for details.
+/// [`FuzzyHashCompareTarget`](crate::compare::FuzzyHashCompareTarget)
+/// object or corresponding
+/// [half-baked object](crate::compare::position_array::BlockHashPositionArray)
+/// is used.
+///
+/// See [`FuzzyHashCompareTarget`](crate::compare::FuzzyHashCompareTarget) for details.
 #[repr(align(8))]
 #[derive(Copy, Clone)]
 pub struct FuzzyHashData<const S1: usize, const S2: usize, const NORM: bool>
