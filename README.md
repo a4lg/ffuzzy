@@ -173,10 +173,10 @@ assert_eq!(hash1.compare(&hash2), 88);
     lookup instead of full FNV hash computation is faster on most cases, it will
     not affect the performance much on some configurations.
     Enabling this option will turn off using precomputed FNV hash table (4KiB).
-    Note that it's not recommended to enable this feature for memory footprint
-    since a generator is about 2KiB in size and a temporary object used for
-    fuzzy hash comparison is about 1KiB in size (so that reducing 4KiB does not
-    benefit well).
+    Note that it's not recommended to enable this feature even if you want to
+    reduce memory footprint since a generator is about 2KiB in size and a
+    temporary object used for fuzzy hash comparison is about 1KiB in size (so
+    that reducing 4KiB does not benefit well).
 *   `tests-slow` and `tests-very-slow`  
     They will enable "slow" (may take seconds or even a couple of minutes) and
     "very slow" (may take more than that) tests, respectively.
