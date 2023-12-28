@@ -1387,25 +1387,31 @@ where
     /// ```
     /// use ssdeep::FuzzyHash;
     ///
+    /// // Fuzzy hash index in the database
+    /// struct FuzzyHashIndex(u64);
+    ///
+    /// // It generates the index for corresponding fuzzy hash.
+    /// fn get_idx_for_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex {
+    /// #   FuzzyHashIndex(0)
+    ///     /* ... */
+    /// }
+    ///
     /// // It stores a fuzzy hash with keys (with duplicates) like this:
-    /// //     db_entries(log_block_size, substring).add(hash)
+    /// //     db_entries(log_block_size, substring).add(hash_index)
     /// // ... to enable later filtering.
-    /// fn insert_to_database(key: (u8, &[u8]), value: &FuzzyHash) { /* ... */ }
+    /// fn insert_to_database(key: (u8, &[u8]), value: &FuzzyHashIndex) {
+    ///     /* ... */
+    /// }
     ///
     /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
     /// // let hash_str = ...;
     /// let hash: FuzzyHash = str::parse(hash_str).unwrap();
+    /// let idx: FuzzyHashIndex = get_idx_for_fuzzy_hash(&hash);
     /// for window in hash.block_hash_1_windows() {
-    ///     insert_to_database(
-    ///         (hash.log_block_size(), window),
-    ///         &hash
-    ///     );
+    ///     insert_to_database((hash.log_block_size(), window), &idx);
     /// }
     /// for window in hash.block_hash_2_windows() {
-    ///     insert_to_database(
-    ///         (hash.log_block_size() + 1, window),
-    ///         &hash
-    ///     );
+    ///     insert_to_database((hash.log_block_size() + 1, window), &idx);
     /// }
     /// ```
     #[inline]
