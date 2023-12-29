@@ -1390,8 +1390,8 @@ where
     /// // Fuzzy hash index in the database
     /// struct FuzzyHashIndex(u64);
     ///
-    /// // It generates the index for corresponding fuzzy hash.
-    /// fn get_idx_for_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex {
+    /// // It generates the index of corresponding fuzzy hash.
+    /// fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex {
     /// #   FuzzyHashIndex(0)
     ///     /* ... */
     /// }
@@ -1406,7 +1406,7 @@ where
     /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
     /// // let hash_str = ...;
     /// let hash: FuzzyHash = str::parse(hash_str).unwrap();
-    /// let idx: FuzzyHashIndex = get_idx_for_fuzzy_hash(&hash);
+    /// let idx: FuzzyHashIndex = get_idx_of_fuzzy_hash(&hash);
     /// for window in hash.block_hash_1_windows() {
     ///     insert_to_database((hash.log_block_size(), window), &idx);
     /// }
