@@ -1258,11 +1258,11 @@ mod const_asserts {
     #[cfg(test)]
     #[test]
     fn rolling_hash_h3_shift_amount() {
-        assert!(
-            u32::try_from(
-                RollingHash::WINDOW_SIZE.checked_mul(RollingHash::H3_LSHIFT).unwrap()
-            ).unwrap() >= u32::BITS
-        );
+        assert!(RollingHash::WINDOW_SIZE
+            .checked_mul(RollingHash::H3_LSHIFT)
+            .and_then(|x| u32::try_from(x).ok())
+            .map(|x| x >= u32::BITS)
+            .unwrap_or(false));
     }
     // grcov-excl-br-end
 

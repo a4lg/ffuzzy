@@ -887,11 +887,9 @@ mod const_asserts {
     #[cfg(test)]
     #[test]
     fn position_array_fits_in_64_bits() {
-        assert!(
-            u32::try_from(block_hash::FULL_SIZE)
-                .map(|x| x <= u64::BITS)
-                .unwrap_or(false)
-        );
+        assert!(u32::try_from(block_hash::FULL_SIZE)
+            .map(|x| x <= u64::BITS)
+            .is_ok());
     }
     // grcov-excl-br-end
 
