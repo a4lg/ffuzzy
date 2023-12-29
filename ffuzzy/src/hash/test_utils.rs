@@ -7,12 +7,14 @@
 use crate::hash::block::block_hash;
 
 
+const NUM_SLOW_SEQUENCES: usize = 4;
+
 #[test]
 fn test_common_prerequisites() {
     // Generic requirements
     assert!(block_hash::ALPHABET_SIZE <= block_hash::FULL_SIZE);
-    // test_blockhash_content_multiple_sequences (4: number of sequences)
-    assert!(block_hash::ALPHABET_SIZE > 4);
+    // test_blockhash_content_multiple_sequences
+    assert!(block_hash::ALPHABET_SIZE > NUM_SLOW_SEQUENCES);
 }
 
 
@@ -98,7 +100,7 @@ fn test_blockhash_content_multiple_sequences(test_func: impl Fn(&[u8], &[u8])) {
     // Generated sequences of block hash:
     // "BCDE", "BCDEE",... "BCDDE", "BCDDEE",... "BBB...BCDE"
     // ("B" * l1 :: "C" * l2 :: "D" * l3 :: "E" * l4 for l1..l4 > 0 and sum(l1..l4) <= FULL_SIZE)
-    const NUM_SEQUENCES: usize = 4;
+    const NUM_SEQUENCES: usize = NUM_SLOW_SEQUENCES;
     for l1 in 1..=(block_hash::FULL_SIZE - (NUM_SEQUENCES - 1)) {
         let s1 = usize::min(l1, block_hash::MAX_SEQUENCE_SIZE);
         let total = l1;
