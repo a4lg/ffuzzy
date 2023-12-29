@@ -1391,17 +1391,15 @@ where
     /// struct FuzzyHashIndex(u64);
     ///
     /// // It generates the index of corresponding fuzzy hash.
-    /// fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex {
-    /// #   FuzzyHashIndex(0)
-    ///     /* ... */
-    /// }
+    /// # fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex { FuzzyHashIndex(0) }
+    /// # /*
+    /// fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex { /* ... */ }
+    /// # */
     ///
     /// // It stores a fuzzy hash with keys (with duplicates) like this:
     /// //     db_entries(log_block_size, substring).add(hash_index)
     /// // ... to enable later filtering.
-    /// fn insert_to_database(key: (u8, &[u8]), value: &FuzzyHashIndex) {
-    ///     /* ... */
-    /// }
+    /// fn insert_to_database(key: (u8, &[u8]), value: &FuzzyHashIndex) { /* ... */ }
     ///
     /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
     /// // let hash_str = ...;
