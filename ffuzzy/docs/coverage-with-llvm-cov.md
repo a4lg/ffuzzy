@@ -8,7 +8,7 @@ The coverage of this crate is tested by `cargo llvm-cov` and
 However, since it doesn't have fine-grained exclusion control, it may mark
 "expectedly" uncovered lines.  To exclude those from function coverage,
 using Nightly channel and the `nightly` feature will work (due to the
-`no_coverage` attribute).  There's no control over line and region coverage.
+`coverage(off)` attribute).  There's no control over line and region coverage.
 
 ## Comparison with `grcov`
 
@@ -19,8 +19,3 @@ using Nightly channel and the `nightly` feature will work (due to the
 ## Known Issues
 
 *   Some lines of code may be incorrectly uncovered.
-
-## Notes
-
-*   On branch coverage, there are some cases that "not covered" case is not
-    harmful.  This includes static branch inside a generic function.
