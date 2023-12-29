@@ -2,8 +2,6 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
-#![cfg(test)]
-
 use crate::hash::block::block_hash;
 
 
