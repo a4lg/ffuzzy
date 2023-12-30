@@ -41,7 +41,7 @@ macro_rules! test_for_each_block_size {
 
 #[test]
 fn test_normalize_block_hash_in_place() {
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
             if bh.len() > N { break; }
@@ -59,7 +59,7 @@ fn test_normalize_block_hash_in_place() {
 
 #[test]
 fn test_is_normalized() {
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
             if bh.len() > N { break; }
@@ -74,7 +74,7 @@ fn test_is_normalized() {
 
 #[test]
 fn insert_block_hash_into_bytes_contents() {
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
             let verify_block_hash = |test_num: i32, bh: &[u8]| {
@@ -103,7 +103,7 @@ fn insert_block_hash_into_bytes_contents() {
 #[test]
 fn insert_block_hash_into_str_contents() {
     use alloc::string::String;
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
             let test = |test_num: i32, bh: &[u8]| {
@@ -221,7 +221,7 @@ fn parse_block_size_from_bytes_overflow_on_block_size() {
 
 #[test]
 fn parse_block_hash_from_bytes_states_and_normalization() {
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
             if bh.len() > N { break; }

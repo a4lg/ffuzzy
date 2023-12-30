@@ -172,7 +172,7 @@ fn data_model_basic() {
             *   block_hash_2_internal
             *   block_hash_2_mut
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let len_blockhash1 = bh1_norm.len();
             let len_blockhash2 = bh2_norm.len();
@@ -294,7 +294,7 @@ fn data_model_equiv() {
         *   is_equiv
         *   is_equiv_except_block_size
     */
-    test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         let empty_hash_s = FuzzyHash::new();
         let empty_hash_l = LongFuzzyHash::new();
         for log_block_size in 0..block_size::NUM_VALID {
@@ -371,7 +371,7 @@ fn data_model_equiv_inequality_block_hash() {
         *   is_equiv
         *   is_equiv_except_block_size
     */
-    test_blockhash_contents_no_sequences(|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_no_sequences(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let block_size = block_size::from_log_internal(log_block_size as u8);
             // Template
@@ -783,7 +783,7 @@ fn compare_self() {
         *   compare_near_eq_unchecked
         *   compare (FuzzyHashData)
     */
-    test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let block_size = block_size::from_log_internal(log_block_size as u8);
             // Template
@@ -840,7 +840,7 @@ fn compare_slightly_different() {
         *   compare_unequal_unchecked (FuzzyHashData)
         *   score_cap_on_block_hash_comparison
     */
-    test_blockhash_contents_no_sequences(|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_no_sequences(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         let len_blockhash1 = bh1_norm.len();
         let len_blockhash2 = bh2_norm.len();
         let len_blockhash1_raw = len_blockhash1 as u8;
@@ -1246,7 +1246,7 @@ fn compare_candidate_self() {
         *   is_comparison_candidate_near_eq_internal
         *   is_comparison_candidate_near_eq_unchecked
     */
-    test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         let expected_value =
             bh1_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON ||
             bh2_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON;

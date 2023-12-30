@@ -87,7 +87,7 @@ fn data_model_init_and_basic() {
         4. Plain Copy of the Internal Data
             *   clone
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
@@ -177,7 +177,7 @@ fn data_model_init_from_normalized() {
         *   from_normalized
         *   from (normalized)
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             let block_size = block_size::from_log(log_block_size_raw).unwrap();
@@ -241,7 +241,7 @@ fn data_model_corresponding_fuzzy_hashes() {
         2. Normalization
             *   normalize_in_place
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
@@ -317,7 +317,7 @@ fn data_model_corresponding_fuzzy_hash_strings() {
         *   to_normalized_string
         *   to_raw_form_string
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);

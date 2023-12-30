@@ -314,14 +314,14 @@ cfg_if::cfg_if! {
 
 
 /// Check one block hash with [`BlockHashPositionArray`] using `test_func`.
-fn check_one_bhpa(bh: &[u8], test_func: &dyn Fn(&dyn CompositeImpl)) {
+fn check_one_bhpa(bh: &[u8], test_func: &mut dyn FnMut(&dyn CompositeImpl)) {
     let mut value = BlockHashPositionArray::new();
     value.init_from(bh);
     test_func(&value);
 }
 
 /// Check one block hash with [`BlockHashPositionArrayRef`] using `test_func`.
-fn check_one_bhpa_ref(bh: &[u8], test_func: &dyn Fn(&dyn CompositeImpl)) {
+fn check_one_bhpa_ref(bh: &[u8], test_func: &mut dyn FnMut(&dyn CompositeImpl)) {
     let mut value = BlockHashPositionArray::new();
     value.init_from(bh);
     let value_ref = BlockHashPositionArrayRef(&value.representation, &value.len);
@@ -329,7 +329,7 @@ fn check_one_bhpa_ref(bh: &[u8], test_func: &dyn Fn(&dyn CompositeImpl)) {
 }
 
 /// Check one block hash with [`BlockHashPositionArrayMutRef`] using `test_func`.
-fn check_one_bhpa_mut_ref(bh: &[u8], test_func: &dyn Fn(&dyn CompositeImpl)) {
+fn check_one_bhpa_mut_ref(bh: &[u8], test_func: &mut dyn FnMut(&dyn CompositeImpl)) {
     let mut value = BlockHashPositionArray::new();
     value.init_from(bh);
     let value_ref = BlockHashPositionArrayMutRef(&mut value.representation, &mut value.len);
@@ -337,9 +337,9 @@ fn check_one_bhpa_mut_ref(bh: &[u8], test_func: &dyn Fn(&dyn CompositeImpl)) {
 }
 
 
-fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
+fn check_data_model_basic(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
     // Test block hash contents
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         let is_already_normalized = bh == bh_norm;
         /*
             Basic operations, validness and normalization:
@@ -351,7 +351,7 @@ fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
             *   is_equiv_unchecked (likewise)
         */
         // Initialize with not normalized block hash.
-        wrapper(bh, &|value| {
+        wrapper(bh, &mut |value| {
             assert_eq!(value.is_empty(), bh.is_empty(), "failed on bh={:?}", bh);
             assert!(value.is_valid(), "failed on bh={:?}", bh);
             assert!(value.is_equiv(bh), "failed on bh={:?}", bh);
@@ -363,7 +363,7 @@ fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
             }
         });
         // Initialize with normalized block hash.
-        wrapper(bh_norm, &|value| {
+        wrapper(bh_norm, &mut |value| {
             assert_eq!(value.is_empty(), bh_norm.is_empty(), "failed on bh={:?}", bh);
             assert!(value.is_valid(), "failed on bh={:?}", bh);
             assert!(value.is_equiv(bh_norm), "failed on bh={:?}", bh);
@@ -382,31 +382,31 @@ fn check_data_model_basic(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
 
 #[test]
 fn data_model_basic_bhpa() {
-    check_data_model_basic(&check_one_bhpa);
+    check_data_model_basic(&mut check_one_bhpa);
 }
 #[test]
 fn data_model_basic_bhpa_ref() {
-    check_data_model_basic(&check_one_bhpa_ref);
+    check_data_model_basic(&mut check_one_bhpa_ref);
 }
 #[test]
 fn data_model_basic_bhpa_mut_ref() {
-    check_data_model_basic(&check_one_bhpa_mut_ref);
+    check_data_model_basic(&mut check_one_bhpa_mut_ref);
 }
 
 
-fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
+fn check_data_model_inequality(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
     // Prerequisite for inequality test:
     assert_eq!(block_hash::ALPHABET_SIZE % 2, 0);
     // Test inequality
-    test_blockhash_content_all(&|bh, bh_norm| {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         /*
             Inequality (compare with different string):
             *   is_equiv
             *   is_equiv_internal
             *   is_equiv_unchecked
         */
-        let test = |bh: &[u8]| {
-            wrapper(bh, &|value: &dyn CompositeImpl| {
+        let mut test = |bh: &[u8]| {
+            wrapper(bh, &mut |value: &dyn CompositeImpl| {
                 if bh.is_empty() { return; }
                 let mut bh_mod = [0u8; block_hash::FULL_SIZE];
                 let bh_mod = bh_mod[0..bh.len()].as_mut();
@@ -433,28 +433,28 @@ fn check_data_model_inequality(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeIm
 
 #[test]
 fn data_model_inequality_bhpa() {
-    check_data_model_inequality(&check_one_bhpa);
+    check_data_model_inequality(&mut check_one_bhpa);
 }
 #[test]
 fn data_model_inequality_bhpa_ref() {
-    check_data_model_inequality(&check_one_bhpa_ref);
+    check_data_model_inequality(&mut check_one_bhpa_ref);
 }
 #[test]
 fn data_model_inequality_bhpa_mut_ref() {
-    check_data_model_inequality(&check_one_bhpa_mut_ref);
+    check_data_model_inequality(&mut check_one_bhpa_mut_ref);
 }
 
 
-fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
-    test_blockhash_content_all(&|bh, bh_norm| {
+fn check_substring_itself(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         /*
             Substring (check with itself and subsets):
             *   has_common_substring
             *   has_common_substring_internal
             *   has_common_substring_unchecked
         */
-        let test = |bh: &[u8]| {
-            wrapper(bh, &|value: &dyn CompositeImpl| {
+        let mut test = |bh: &[u8]| {
+            wrapper(bh, &mut |value: &dyn CompositeImpl| {
                 // False if another string is too short.
                 for len in 1..block_hash::MIN_LCS_FOR_COMPARISON {
                     for window in bh.windows(len) {
@@ -492,19 +492,19 @@ fn check_substring_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl)))
 
 #[test]
 fn substring_itself_bhpa() {
-    check_substring_itself(&check_one_bhpa);
+    check_substring_itself(&mut check_one_bhpa);
 }
 #[test]
 fn substring_itself_bhpa_ref() {
-    check_substring_itself(&check_one_bhpa_ref);
+    check_substring_itself(&mut check_one_bhpa_ref);
 }
 #[test]
 fn substring_itself_bhpa_mut_ref() {
-    check_substring_itself(&check_one_bhpa_mut_ref);
+    check_substring_itself(&mut check_one_bhpa_mut_ref);
 }
 
 
-fn check_substring_fail_example(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
+fn check_substring_fail_example(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
     /*
         Substring (check with the "no match" example):
         *   has_common_substring
@@ -531,7 +531,7 @@ fn check_substring_fail_example(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeI
         assert!(STR2.iter().all(|x| alphabets.contains(x)));
     }
     // Test has_common_substring failure
-    wrapper(STR1, &|value: &dyn CompositeImpl| {
+    wrapper(STR1, &mut |value: &dyn CompositeImpl| {
         assert!(!value.has_common_substring(STR2));
         assert!(!value.has_common_substring_internal(STR2));
         #[cfg(feature = "unchecked")]
@@ -543,28 +543,28 @@ fn check_substring_fail_example(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeI
 
 #[test]
 fn substring_fail_example_bhpa() {
-    check_substring_fail_example(&check_one_bhpa);
+    check_substring_fail_example(&mut check_one_bhpa);
 }
 #[test]
 fn substring_fail_example_bhpa_ref() {
-    check_substring_fail_example(&check_one_bhpa_ref);
+    check_substring_fail_example(&mut check_one_bhpa_ref);
 }
 #[test]
 fn substring_fail_example_bhpa_mut_ref() {
-    check_substring_fail_example(&check_one_bhpa_mut_ref);
+    check_substring_fail_example(&mut check_one_bhpa_mut_ref);
 }
 
 
-fn check_edit_distance_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
-    test_blockhash_content_all(&|bh, bh_norm| {
+fn check_edit_distance_itself(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
+    test_blockhash_content_all(&mut |bh, bh_norm| {
         /*
             Edit_distance (itself):
             *   edit_distance
             *   edit_distance_internal
             *   edit_distance_unchecked
         */
-        let test = |bh: &[u8]| {
-            wrapper(bh, &|value: &dyn CompositeImpl| {
+        let mut test = |bh: &[u8]| {
+            wrapper(bh, &mut |value: &dyn CompositeImpl| {
                 // Compare with itself.
                 assert_eq!(value.edit_distance(bh), 0, "failed on bh={:?}", bh);
                 assert_eq!(value.edit_distance_internal(bh), 0, "failed on bh={:?}", bh);
@@ -581,20 +581,20 @@ fn check_edit_distance_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImp
 
 #[test]
 fn edit_distance_itself_bhpa() {
-    check_edit_distance_itself(&check_one_bhpa);
+    check_edit_distance_itself(&mut check_one_bhpa);
 }
 #[test]
 fn edit_distance_itself_bhpa_ref() {
-    check_edit_distance_itself(&check_one_bhpa_ref);
+    check_edit_distance_itself(&mut check_one_bhpa_ref);
 }
 #[test]
 fn edit_distance_itself_bhpa_mut_ref() {
-    check_edit_distance_itself(&check_one_bhpa_mut_ref);
+    check_edit_distance_itself(&mut check_one_bhpa_mut_ref);
 }
 
 
-fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl))) {
-    test_blockhash_content_all(&|_bh, bh_norm| {
+fn check_scoring_with_itself(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&dyn CompositeImpl))) {
+    test_blockhash_content_all(&mut |_bh, bh_norm| {
         /*
             Scoring (with itself):
             *   score_strings_raw
@@ -604,7 +604,7 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
             Note: raw similarity score with itself should always return 100
             unless the block hash is too small (in this case, it should be 0).
         */
-        wrapper(bh_norm, &|value| {
+        wrapper(bh_norm, &mut |value| {
             let len_norm = u8::try_from(bh_norm.len()).unwrap();
             let expected_score = if bh_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON { 100 } else { 0 };
             assert_eq!(value.score_strings_raw(bh_norm), expected_score,
@@ -647,15 +647,15 @@ fn check_scoring_with_itself(wrapper: &impl Fn(&[u8], &dyn Fn(&dyn CompositeImpl
 
 #[test]
 fn scoring_with_itself_bhpa() {
-    check_scoring_with_itself(&check_one_bhpa);
+    check_scoring_with_itself(&mut check_one_bhpa);
 }
 #[test]
 fn scoring_with_itself_bhpa_ref() {
-    check_scoring_with_itself(&check_one_bhpa_ref);
+    check_scoring_with_itself(&mut check_one_bhpa_ref);
 }
 #[test]
 fn scoring_with_itself_bhpa_mut_ref() {
-    check_scoring_with_itself(&check_one_bhpa_mut_ref);
+    check_scoring_with_itself(&mut check_one_bhpa_mut_ref);
 }
 
 

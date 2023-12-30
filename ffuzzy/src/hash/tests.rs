@@ -120,7 +120,7 @@ fn data_model_init_and_basic() {
         3. Plain Copy of the Internal Data
             *   clone
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
             let log_block_size_raw = log_block_size as u8;
@@ -362,7 +362,7 @@ fn data_model_block_hash_contents_basic() {
             *   is_normalized
     */
     // Test block hash contents.
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
@@ -476,7 +476,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
             *   try_from (long -> short)
             *   try_into_mut_short
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
             // Make input bytes
@@ -689,7 +689,7 @@ fn data_model_block_hash_contents_and_normalization() {
             *   to_raw_form
             *   from_raw_form
     */
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
@@ -830,7 +830,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
     const NULL_CH: u8 = 0xa9; // Latin-1 copyright mark, not a valid character in the fuzzy hash.
     assert!(!is_ch_okay_for_output_byte(NULL_CH));
     // Test block hash contents.
-    test_blockhash_contents_all(&|bh1, bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in 0..block_size::NUM_VALID {
             let log_block_size_raw = log_block_size as u8;
@@ -1287,7 +1287,7 @@ fn data_model_eq_and_full_eq() {
 
 #[test]
 fn data_model_normalized_windows() {
-    test_blockhash_contents_no_sequences(|bh1, bh2, _bh1_norm, _bh2_norm| {
+    test_blockhash_contents_no_sequences(&mut |bh1, bh2, _bh1_norm, _bh2_norm| {
         macro_rules! test {
             ($bh1sz: expr, $bh2sz: expr) => {
                 let bh1sz = $bh1sz;
@@ -1347,7 +1347,7 @@ fn data_model_normalized_windows() {
 
 #[test]
 fn data_model_normalized_numeric_windows() {
-    test_blockhash_contents_all(&|_bh1, _bh2, bh1_norm, bh2_norm| {
+    test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         macro_rules! test {
             ($bh1sz: expr, $bh2sz: expr) => {
                 let bh1sz = $bh1sz;
