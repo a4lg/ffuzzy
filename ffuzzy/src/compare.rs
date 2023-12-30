@@ -335,7 +335,7 @@ impl FuzzyHashCompareTarget {
 
     /// Position array-based representation of the block hash 1.
     ///
-    /// This method provices raw access to the internal efficient block hash
+    /// This method provides raw access to the internal efficient block hash
     /// representation and fast bit-parallel string functions.
     ///
     /// You are not recommended to use this unless
@@ -711,7 +711,7 @@ impl FuzzyHashCompareTarget {
     /// two block hash lengths.
     ///
     /// The internal block hash comparison method "caps" the score to prevent
-    /// exaggregating the matches that are not meaningful enough.  This behavior
+    /// exaggerating the matches that are not meaningful enough.  This behavior
     /// depends on the block size (the "cap" gets higher as the block size gets
     /// higher) and the minimum of block hash lengths.
     ///

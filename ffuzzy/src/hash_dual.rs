@@ -117,7 +117,7 @@ mod rle_encoding {
 ///
 /// # Unstable Type
 ///
-/// Despite that this type is public, it is strongly discourged to use this
+/// Despite that this type is public, it is strongly discouraged to use this
 /// type because it exposes a part of opaque "reverse normalization" data and
 /// the only reason this type is public is due to restrictions of Rust's
 /// current constant generics.
@@ -243,7 +243,7 @@ mod private {
 ///
 /// # Unstable Trait
 ///
-/// Despite that this trait is public, it is strongly discourged to use this
+/// Despite that this trait is public, it is strongly discouraged to use this
 /// trait because it exposes a part of opaque "reverse normalization" data and
 /// the only reason this trait is public is due to restrictions of Rust's
 /// current constant generics.

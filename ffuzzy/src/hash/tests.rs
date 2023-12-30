@@ -625,7 +625,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                     test_lossless_conversion!(hash_l_n, cloned_hash_l_n);
                     test_lossless_conversion!(hash_l_r, cloned_hash_l_r);
                 }
-                // Lossless (raw, short and long forms; fails somtimes):
+                // Lossless (raw, short and long forms; fails sometimes):
                 // preparation
                 let hash_l_r: LongRawFuzzyHash = opt_hash_l_r.unwrap();
                 // `try_from`

@@ -293,7 +293,7 @@ fn position_array_impl_debug() {
 
 cfg_if::cfg_if! {
     if #[cfg(not(feature = "unchecked"))] {
-        /// Composit trait for dynamic dispatching-based tests.
+        /// Composite trait for dynamic dispatching-based tests.
         trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal {}
         /// Auto implementation of [`CompositeImpl`].
         impl<T> CompositeImpl for T
@@ -302,7 +302,7 @@ cfg_if::cfg_if! {
         {}
     }
     else {
-        /// Composit trait for dynamic dispatching-based tests.
+        /// Composite trait for dynamic dispatching-based tests.
         trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnchecked {}
         /// Auto implementation of [`CompositeImpl`].
         impl<T> CompositeImpl for T

@@ -7,7 +7,7 @@
 /*
     We want to suppress the needless borrow error WITH THE FOLLOWING MESSAGE (ONLY):
         "warning: the borrowed expression implements the required traits"
-    So we have to check (in the maintainance mode) whether we haven't disabled
+    So we have to check (in the maintenance mode) whether we haven't disabled
     other clippy::needless_borrow failures.
 */
 #![cfg_attr(not(feature = "maint-lints"), allow(clippy::needless_borrow))]
@@ -127,7 +127,7 @@ fn data_model_new() {
         // Test Default and Clone
         assert!(hash.full_eq(&hash_default));
         assert!(hash.full_eq(&hash_cloned));
-        // Test Clone::clone_from (hash2 is initialized with a non-defualt value)
+        // Test Clone::clone_from (hash2 is initialized with a non-default value)
         let mut hash2 =
             FuzzyHashCompareTarget::from(str::parse::<FuzzyHash>("6:3ll7QzDkmJmMHkQoO/llSZEnEuLszmbMAWn:VqDk5QtLbW").unwrap());
         hash2.clone_from(&hash);

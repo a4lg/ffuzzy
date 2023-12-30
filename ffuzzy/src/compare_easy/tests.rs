@@ -143,7 +143,7 @@ fn compare_errors() {
         If both sides are invalid, an error with ParseErrorSide::Left is
         generated on the current implementation but this property is not
         guaranteed by any version.
-        It just make sures that this is an actual error generated in an
+        It just makes sure that this is an actual error generated in an
         consistent manner (X side + parse error on the X side).
     */
     for (hash_str_invalid_l, err_l) in ERROR_CASES {

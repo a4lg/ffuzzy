@@ -24,8 +24,8 @@ pub mod block_hash_position_array_element {
     ///
     /// # Performance Analysis
     ///
-    /// This function expects many constant foldings assuming constant `len`.
-    /// [`has_sequences_const()`] forces to do that.
+    /// This function expects many constant folding operations assuming constant
+    /// `len`.  [`has_sequences_const()`] forces to do that.
     #[inline(always)]
     pub const fn has_sequences(pa_elem: u64, len: u32) -> bool {
         if len == 0 {
@@ -89,7 +89,7 @@ pub mod block_hash_position_array_element {
 
     /// The generic variant of [`has_sequences()`](has_sequences()).
     ///
-    /// It improves the performance by intensive constant foldings.
+    /// It improves the performance by intensive constant folding operations.
     #[inline(always)]
     pub const fn has_sequences_const<const LEN: u32>(pa_elem: u64) -> bool {
         has_sequences(pa_elem, LEN)
@@ -212,7 +212,7 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
     /// [`BlockHashPositionArrayData::representation`].
     fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE];
 
-    /// Returne the raw mutable representation of the block hash position array.
+    /// Return the raw mutable representation of the block hash position array.
     fn len_mut(&mut self) -> &mut u8;
 }
 
@@ -359,7 +359,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(other.len() <= block_hash::FULL_SIZE);
         debug_assert!((log_block_size as usize) <= block_size::NUM_VALID);
         let score = self.score_strings_raw_internal(other);
-        // Cap the score to prevent exaggregating the match size if block size is small enough.
+        // Cap the score to prevent exaggerating the match size if block size is small enough.
         if log_block_size >= FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER {
             return score;
         }
@@ -457,7 +457,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     /// Compare two block hashes and computes the similarity score
     /// without capping.
     ///
-    /// This method does not "cap" the score to prevent exaggregating the
+    /// This method does not "cap" the score to prevent exaggerating the
     /// matches that are not meaningful enough, making this function block size
     /// independent.
     ///
@@ -473,7 +473,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
 
     /// Compare two block hashes and computes the similarity score.
     ///
-    /// This method "caps" the score to prevent exaggregating the matches that
+    /// This method "caps" the score to prevent exaggerating the matches that
     /// are not meaningful enough.  This behavior depends on the block size
     /// (score cap gets higher when block size gets higher).
     ///
@@ -589,7 +589,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// Compare two block hashes and computes the similarity score
     /// without capping.
     ///
-    /// This method does not "cap" the score to prevent exaggregating the
+    /// This method does not "cap" the score to prevent exaggerating the
     /// matches that are not meaningful enough, making this function block size
     /// independent.
     ///
@@ -603,7 +603,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
 
     /// Compare two block hashes and computes the similarity score.
     ///
-    /// This method "caps" the score to prevent exaggregating the matches that
+    /// This method "caps" the score to prevent exaggerating the matches that
     /// are not meaningful enough.  This behavior depends on the block size
     /// (score cap gets higher when block size gets higher).
     ///

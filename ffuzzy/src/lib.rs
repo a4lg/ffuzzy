@@ -23,9 +23,9 @@
 #![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
-// Unless in the maintainance mode, allow unknown lints.
+// Unless in the maintenance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
-// Unless in the maintainance mode, allow old lint names.
+// Unless in the maintenance mode, allow old lint names.
 #![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
 
 // Tests: constant (and/or obvious) assertions should be allowed.

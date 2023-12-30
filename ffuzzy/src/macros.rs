@@ -44,7 +44,7 @@ macro_rules! optionally_unsafe_impl {
 /// When the feature `unsafe` is disabled, it only places [`debug_assert!()`].
 /// If both `unsafe` and `nightly` are enabled, [`core::intrinsics::assume()`]
 /// is used (which requires the `core_intrinsics` Rust unstable feature).
-/// If only the `unsafe` feautre is enabled,
+/// If only the `unsafe` feature is enabled,
 /// [`core::hint::unreachable_unchecked()`] is used.
 ///
 /// If `unsafe` and `nightly` are enabled, enable unstable `core_intrinsics`

@@ -262,7 +262,7 @@ pub(crate) mod test_utils;
 ///         rounding-related one).
 ///
 ///     3.  For [small block sizes](crate::compare::FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER),
-///         [cap the score to prevent exaggregating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+///         [cap the score to prevent exaggerating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
 ///
 /// 3.  Take the maximum of sub-similarity scores
 ///     (`0` if there's no sub-similarity scores
@@ -1369,7 +1369,7 @@ where
     /// the specialized clustering application to filter fuzzy hashes to compare
     /// prior to actual comparison.  It makes possible to implement a function
     /// equivalent to [`FuzzyHashCompareTarget::is_comparison_candidate()`](crate::compare::FuzzyHashCompareTarget::is_comparison_candidate())
-    /// with precomputation.
+    /// with pre-computation.
     ///
     /// *Note*: This is particularly useful for large scale clustering because
     /// if we have a common substring, there is a guarantee that the final
@@ -1382,7 +1382,7 @@ where
     /// For instance, you may store fuzzy hashes indexed by the elements of
     /// this window.
     ///
-    /// # Example (pseudocode)
+    /// # Example (pseudo code)
     ///
     /// ```
     /// use ssdeep::FuzzyHash;

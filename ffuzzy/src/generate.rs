@@ -715,7 +715,7 @@ impl Generator {
 /// *   `$buffer`  
 ///     An iterator-like object (each item is in [`u8`]) to consume.
 /// *   `$proc_per_byte`  
-///     Statemenets to run each time the generator consumes a byte
+///     Statements to run each time the generator consumes a byte
 ///     (e.g. on the iterator variant, advance the `input_size` variable).
 macro_rules! generator_update_template {
     ($self: expr, $buffer: expr, $proc_per_byte: block) => {
