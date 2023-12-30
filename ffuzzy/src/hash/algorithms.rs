@@ -252,7 +252,6 @@ where
                     pre_ret!();
                     ret!(BlockHashParseState::OverflowError);
                 }
-                invariant!((len as usize) < N);
                 blockhash[len as usize] = curr; // grcov-excl-br-line:ARRAY
                 len += 1;
             }
