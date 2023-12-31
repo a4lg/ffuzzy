@@ -578,6 +578,11 @@ impl FuzzyHashCompareTarget {
     ///
     /// This method assumes that following constraints are satisfied.
     ///
+    /// # Incompatibility Notice
+    ///
+    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` will be
+    /// changed from [`u32`] to [`u8`] on the version 0.3.
+    ///
     /// # Safety
     ///
     /// *   Both `len_block_hash_lhs` and `len_block_hash_rhs` must satisfy:
@@ -621,6 +626,11 @@ impl FuzzyHashCompareTarget {
     /// (that should be performed on [smaller block sizes](Self::LOG_BLOCK_SIZE_CAPPING_BORDER)).
     ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` will be
+    /// changed from [`u32`] to [`u8`] on the version 0.3.
     ///
     /// # Usage Constraints
     ///
