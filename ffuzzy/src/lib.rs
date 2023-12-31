@@ -40,6 +40,13 @@
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
+
+// std is required when we are testing.
+#[cfg(test)]
+#[macro_use]
+extern crate std;
+
+// Other crates only used when testing:
 #[cfg(test)]
 extern crate rand;
 #[cfg(test)]
