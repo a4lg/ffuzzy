@@ -34,10 +34,11 @@ pub fn hash_buf(buffer: &[u8]) -> Result<RawFuzzyHash, GeneratorError> {
 // grcov-excl-br-start
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "alloc")]
     #[test]
     fn hash_buf_usage() {
         use crate::generate_easy::hash_buf;
+        #[cfg(not(feature = "alloc"))]
+        use std::string::ToString;
         assert_eq!(
             hash_buf(b"Hello, World!\n").unwrap().to_string(),
             "3:aaX8v:aV"

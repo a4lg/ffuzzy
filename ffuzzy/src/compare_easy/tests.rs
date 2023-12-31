@@ -6,8 +6,6 @@
 
 #[cfg(all(not(feature = "std"), feature = "nightly"))]
 use core::error::Error;
-#[cfg(feature = "alloc")]
-use alloc::format;
 #[cfg(feature = "std")]
 use std::error::Error;
 use crate::compare_easy::{compare, ParseErrorSide, ParseErrorEither};
@@ -65,7 +63,6 @@ fn parse_error_either_basic_and_impls() {
     }
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn parse_error_either_impls_display_and_debug_with_side() {
     for (err, err_str_display, err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {

@@ -5,12 +5,6 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
-#[cfg(feature = "alloc")]
-use alloc::format;
-#[cfg(feature = "alloc")]
-use alloc::vec::Vec;
-#[cfg(feature = "alloc")]
-use alloc::string::{String, ToString};
 
 use crate::base64::BASE64_INVALID;
 use crate::hash::{
@@ -912,7 +906,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                     assert!(hash.full_eq(&hash_alt), "failed ({}-3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     // to_string and String::from matches.
                                     let s1 = hash.to_string();
-                                    let s2 = String::from(hash);
+                                    let s2 = alloc::string::String::from(hash);
                                     assert_eq!(s1, s2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     let s = s1;
                                     // String matches to the bytes expected.
@@ -1824,9 +1818,10 @@ fn parsed_data_example() {
 }
 
 
-#[cfg(feature = "alloc")]
 #[test]
 fn normalization_examples() {
+    #[cfg(not(feature = "alloc"))]
+    use std::string::ToString;
     // Prerequisites (partial)
     assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     // Target strings
@@ -1845,7 +1840,6 @@ fn normalization_examples() {
 }
 
 
-#[cfg(feature = "std")]
 #[test]
 fn cover_hash() {
     macro_rules! test {($ty: ty) => {
@@ -1858,9 +1852,13 @@ fn cover_hash() {
 }
 
 
-#[cfg(feature = "alloc")]
 #[test]
 fn ord_and_sorting() {
+    use std::vec::Vec;
+    #[cfg(feature = "alloc")]
+    use alloc::string::ToString;
+    #[cfg(not(feature = "alloc"))]
+    use std::string::ToString;
     // Sorted by block hash order (Base64 indices and length).
     // Note that 'A' has Base64 index zero and FuzzyHashData zero-fills
     // each tail of block hashes (making the behavior more deterministic).
@@ -1909,9 +1907,11 @@ fn ord_and_sorting() {
     assert_eq!(hashes, cloned);
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn ord_by_block_size_examples() {
+    use std::vec::Vec;
+    #[cfg(not(feature = "alloc"))]
+    use std::string::ToString;
     const STRS_UNSORTED: [&str; 8] = [
         "12:a:",
         "12:z:",
@@ -1963,7 +1963,6 @@ fn ord_by_block_size_examples() {
 }
 
 
-#[cfg(feature = "alloc")]
 #[test]
 fn impl_debug() {
     // Test empty hashes

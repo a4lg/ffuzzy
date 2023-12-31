@@ -5,8 +5,6 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
-#[cfg(feature = "alloc")]
-use alloc::string::ToString;
 
 use crate::hash::block::{block_size, block_hash, BlockSizeRelation};
 use crate::test_utils::assert_fits_in;
@@ -167,6 +165,7 @@ fn block_size_strings() {
             "failed on log_block_size={}", log_block_size);
         #[cfg(feature = "alloc")]
         {
+            use alloc::string::ToString;
             assert_eq!(block_size::BLOCK_SIZES_STR[log_block_size], block_size.to_string(),
                 "failed on log_block_size={}", log_block_size);
         }

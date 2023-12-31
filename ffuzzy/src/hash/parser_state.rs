@@ -149,8 +149,6 @@ pub(crate) enum BlockHashParseState {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    #[cfg(feature = "alloc")]
-    use alloc::format;
     use crate::test_utils::test_auto_clone;
     #[cfg(feature = "alloc")]
     use crate::test_utils::test_auto_debug_for_enum;
@@ -244,14 +242,12 @@ pub(crate) mod tests {
         assert_eq!(err.offset(), OFFSET);
     }
 
-    #[cfg(any(feature = "alloc", all(feature = "nightly", feature = "easy-functions")))]
     pub(crate) const PARSE_ERROR_CASES: [(ParseError, &str, &str); 3] = [
         (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected",   "ParseError(UnexpectedEndOfString, BlockSize, 0)"),
         (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected", "ParseError(UnexpectedEndOfString, BlockHash1, 2)"),
         (ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): block size is not valid",         "ParseError(BlockSizeIsInvalid, BlockSize, 0)"),
     ];
 
-    #[cfg(feature = "alloc")]
     #[test]
     fn parse_error_impls_display_and_debug() {
         for (err, err_str_display, err_str_debug) in PARSE_ERROR_CASES {

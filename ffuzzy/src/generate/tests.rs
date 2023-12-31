@@ -4,9 +4,6 @@
 
 #![cfg(test)]
 
-#[cfg(feature = "alloc")]
-use alloc::format;
-
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro256StarStar;
 
@@ -85,10 +82,8 @@ fn partial_fnv_hash_usage() {
     assert_eq!(hash.value(), EXPECTED_HASH);
 }
 
-#[cfg(feature = "alloc")]
 pub(crate) const EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH: &str = "PartialFNVHash(39)";
 
-#[cfg(feature = "alloc")]
 #[test]
 fn partial_fnv_hash_impl_debug() {
     // 39 == 0x27 == the lowest 6 bits of 0x28021967
@@ -438,7 +433,6 @@ fn rolling_hash_usage() {
     assert_eq!(hash.value(), EXPECTED_HASH);
 }
 
-#[cfg(feature = "alloc")]
 pub(crate) const EXPECTED_DEBUG_INITIAL_ROLLING_HASH: &str =
     "RollingHash { \
         index: 0, \
@@ -448,7 +442,6 @@ pub(crate) const EXPECTED_DEBUG_INITIAL_ROLLING_HASH: &str =
         window: [0, 0, 0, 0, 0, 0, 0] \
     }";
 
-#[cfg(feature = "alloc")]
 #[test]
 fn rolling_hash_impl_debug() {
     assert_eq!(
@@ -548,7 +541,6 @@ fn block_hash_context_impls() {
     cover_auto_clone::<BlockHashContext>(&BlockHashContext::new());
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn block_hash_context_impl_debug() {
     // 39 == 0x27 == the lowest 6 bits of 0x28021967
@@ -601,7 +593,6 @@ fn generator_error_impls() {
     test_auto_clone::<GeneratorError>(&GeneratorError::FixedSizeMismatch);
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn generator_error_impl_display() {
     assert_eq!(format!("{}", GeneratorError::FixedSizeMismatch), "current state mismatches to the fixed size previously set");
@@ -625,7 +616,6 @@ fn cover_generator_basic() {
     cover_auto_clone::<Generator>(&Generator::new());
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn impl_debug() {
     // Make expected bh_context output dynamically.
@@ -633,7 +623,7 @@ fn impl_debug() {
     // block_hash_context_impl_debug above.
     let str_bh_contexts =
         core::iter::repeat(format!("{:?}", BlockHashContext::new()).as_str())
-            .take(block_size::NUM_VALID).collect::<alloc::vec::Vec<&str>>().join(", ");
+            .take(block_size::NUM_VALID).collect::<std::vec::Vec<&str>>().join(", ");
     // Test the generator
     assert_eq!(
         format!("{:?}", Generator::new()),
@@ -1045,11 +1035,13 @@ fn large_data_triggers() {
     }
 }
 
-#[cfg(feature = "std")]
 #[test]
 fn verify_with_small_precomputed_vectors() {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
+    use std::vec::Vec;
+    #[cfg(not(feature = "alloc"))]
+    use std::string::ToString;
     use crate::hash::LongRawFuzzyHash;
 
     let index = BufReader::new(

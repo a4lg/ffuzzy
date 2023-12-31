@@ -30,10 +30,9 @@ fn u64_ilog2_near_borders() {
     }
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn u64_lsb_ones_from_binary_string() {
-    use alloc::borrow::ToOwned;
+    use std::borrow::ToOwned;
     // Make binary number string "01...1" (with `n` ones), parse and compare
     for n in 0..=u64::BITS {
         let size = usize::try_from(n).unwrap();

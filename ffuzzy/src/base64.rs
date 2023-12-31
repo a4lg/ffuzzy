@@ -114,7 +114,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "alloc")]
     #[test]
     fn values_and_indices() {
         let mut covered_idxes = 0u64;
@@ -124,7 +123,10 @@ mod tests {
             assert!(idx < 64);
             assert_eq!(expected_idx, idx);
             assert_eq!(base64_index_simple(ch), Some(idx as u8));
-            assert_eq!(BASE64_TABLE[idx], ch as char);
+            #[cfg(feature = "alloc")]
+            {
+                assert_eq!(BASE64_TABLE[idx], ch as char);
+            }
             assert_eq!(BASE64_TABLE_U8[idx], ch);
             covered_idxes |= 1 << idx;
             expected_idx += 1;
@@ -198,10 +200,10 @@ mod tests {
         assert_eq!(expected_idx, 64);
     }
 
-    #[cfg(feature = "std")]
     #[test]
     fn alphabets() {
         // Each alphabet must be representable in u8 (and in ASCII 7-bit).
+        #[cfg(feature = "alloc")]
         for ch in BASE64_TABLE {
             assert!((ch as u32) < 0x100);
             assert!(ch.is_ascii());
@@ -215,7 +217,7 @@ mod tests {
 
     #[cfg(feature = "alloc")]
     #[test]
-    fn equiv_representations() {
+    fn equiv_between_u8_and_char() {
         use alloc::string::String;
         assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());
         for i in 0..BASE64_TABLE.len() {
@@ -225,7 +227,6 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "std")]
     #[test]
     fn invalid_chars() {
         // Collect valid alphabets first.
@@ -242,8 +243,11 @@ mod tests {
             assert_eq!(base64_index_simple(ch), None);
         }
         // Invalid character has invalid index.
-        assert!(BASE64_TABLE.len() <= BASE64_INVALID as usize);
         assert!(BASE64_TABLE_U8.len() <= BASE64_INVALID as usize);
+        #[cfg(feature = "alloc")]
+        {
+            assert!(BASE64_TABLE.len() <= BASE64_INVALID as usize);
+        }
         // Just to make sure
         assert!(BASE64_INVALID >= 64);
     }

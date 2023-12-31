@@ -4,9 +4,6 @@
 
 #![cfg(test)]
 
-#[cfg(feature = "alloc")]
-use alloc::format;
-
 use crate::compare::FuzzyHashCompareTarget;
 use crate::compare::position_array::{
     BlockHashPositionArray,
@@ -198,51 +195,46 @@ fn position_array_usage() {
 }
 
 
-cfg_if::cfg_if! {
-    if #[cfg(feature = "alloc")] {
-        /// Position array representation of the empty string.
-        pub(crate) const EXPECTED_DEBUG_REPR_EMPTY: &str = "[\
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
-        ]";
+/// Position array representation of the empty string.
+pub(crate) const EXPECTED_DEBUG_REPR_EMPTY: &str = "[\
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+]";
 
-        /// Position array representation of `"AAABCDEFG"` (normalized).
-        pub(crate) const EXPECTED_DEBUG_REPR_NORMALIZED_1: &str = "[\
-            7, 8, 16, 32, 64, 128, 256, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
-        ]";  // 7 == 1 + 2 + 4
+/// Position array representation of `"AAABCDEFG"` (normalized).
+pub(crate) const EXPECTED_DEBUG_REPR_NORMALIZED_1: &str = "[\
+    7, 8, 16, 32, 64, 128, 256, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+]";  // 7 == 1 + 2 + 4
 
-        /// Position array representation of `"HIJKLMMM"` (normalized).
-        pub(crate) const EXPECTED_DEBUG_REPR_NORMALIZED_2: &str = "[\
-            0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16, 224, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
-        ]";  // 224 == 32 + 64 + 128
+/// Position array representation of `"HIJKLMMM"` (normalized).
+pub(crate) const EXPECTED_DEBUG_REPR_NORMALIZED_2: &str = "[\
+    0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16, 224, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+]";  // 224 == 32 + 64 + 128
 
-        /// Position array representation of `"AAAABCDEFG"` (not normalized).
-        pub(crate) const EXPECTED_DEBUG_REPR_RAW_1: &str = "[\
-            15, 16, 32, 64, 128, 256, 512, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
-        ]";  // 15 == 1 + 2 + 4 + 8
+/// Position array representation of `"AAAABCDEFG"` (not normalized).
+pub(crate) const EXPECTED_DEBUG_REPR_RAW_1: &str = "[\
+    15, 16, 32, 64, 128, 256, 512, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+]";  // 15 == 1 + 2 + 4 + 8
 
-        /// Position array representation of `"HIJKLMMMM"` (not normalized).
-        pub(crate) const EXPECTED_DEBUG_REPR_RAW_2: &str = "[\
-            0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16, 480, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
-        ]";  // 480 == 32 + 64 + 128 + 256
-    }
-}
+/// Position array representation of `"HIJKLMMMM"` (not normalized).
+pub(crate) const EXPECTED_DEBUG_REPR_RAW_2: &str = "[\
+    0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, 16, 480, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\
+]";  // 480 == 32 + 64 + 128 + 256
 
-#[cfg(feature = "alloc")]
 #[test]
 fn position_array_impl_debug() {
     let mut pa = BlockHashPositionArray::new();
@@ -804,7 +796,6 @@ fn data_model_corruption_bhpa_mut_ref() {
 }
 
 
-#[cfg(feature = "std")]
 fn has_common_substring_naive(
     str1: &[u8],
     str2: &[u8]
@@ -823,7 +814,6 @@ fn has_common_substring_naive(
     !set1.is_disjoint(&set2)
 }
 
-#[cfg(feature = "std")]
 #[test]
 fn test_has_common_substring_naive() {
     // Prerequisites
@@ -841,13 +831,14 @@ fn test_has_common_substring_naive() {
     assert!(!has_common_substring_naive(b"+r/kcOpEYXX+0ZJ", b"7ocOpEYXB+0ZF29"));
 }
 
-#[cfg(all(feature = "std", feature = "tests-slow"))]
+#[cfg(feature = "tests-slow")]
 #[test]
 fn verify_has_common_substring_by_real_blockhash_vectors() {
     use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
+    use std::vec::Vec;
     use crate::hash::LongFuzzyHash;
     let mut block_hashes: HashSet<Vec<u8>> = HashSet::new();
     for filename in [
@@ -879,13 +870,14 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
     }
 }
 
-#[cfg(all(feature = "std", feature = "tests-slow"))]
+#[cfg(feature = "tests-slow")]
 #[test]
 fn verify_edit_distance_by_real_blockhash_vectors() {
     use core::str::FromStr;
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
+    use std::vec::Vec;
     use crate::compare::position_array::{BlockHashPositionArray, BlockHashPositionArrayImpl};
     use crate::hash::LongFuzzyHash;
     let mut block_hashes: HashSet<Vec<u8>> = HashSet::new();

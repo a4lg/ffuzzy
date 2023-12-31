@@ -4,9 +4,6 @@
 
 #![cfg(test)]
 
-#[cfg(feature = "alloc")]
-use alloc::format;
-
 use crate::hash::FuzzyHashData;
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
@@ -311,7 +308,6 @@ fn data_model_corresponding_fuzzy_hashes() {
 #[cfg(feature = "alloc")]
 #[test]
 fn data_model_corresponding_fuzzy_hash_strings() {
-    use alloc::string::String;
     /*
         Corresponding Fuzzy Hash Strings:
         *   to_normalized_string
@@ -335,8 +331,8 @@ fn data_model_corresponding_fuzzy_hash_strings() {
                     let hash_raw: RawFuzzyHashType = RawFuzzyHashType::from_bytes(bytes_raw).unwrap();
                     let hash_norm: FuzzyHashType = FuzzyHashType::from_bytes(bytes_norm).unwrap();
                     // Create strings
-                    let str_raw: String = hash_raw.to_string();
-                    let str_norm: String = hash_norm.to_string();
+                    let str_raw = hash_raw.to_string();
+                    let str_norm = hash_norm.to_string();
                     // Create fuzzy hashes in various ways and make sure that they are all the same.
                     let dual_hash_from_raw: $ty = <$ty>::from(hash_raw);
                     let dual_hash_from_norm: $ty = <$ty>::from(hash_norm);
@@ -680,7 +676,6 @@ fn parse_errors() {
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
-#[cfg(feature = "std")]
 #[test]
 fn cover_hash() {
     macro_rules! test {($ty: ty) => {
@@ -693,13 +688,12 @@ fn cover_hash() {
 }
 
 
-#[cfg(feature = "std")]
 #[test]
 fn ord_and_sorting() {
     use core::cmp::Ordering;
-    use alloc::string::ToString;
-    use alloc::vec;
-    use alloc::vec::Vec;
+    use std::string::ToString;
+    use std::vec;
+    use std::vec::Vec;
     use std::collections::HashSet;
     /*
         Sorted by block hash order (Base64 indices and length).
@@ -843,7 +837,6 @@ fn ord_and_sorting() {
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn impl_debug() {
     // Test empty hashes
@@ -1015,12 +1008,9 @@ fn impl_debug() {
     );
 }
 
-#[cfg(feature = "alloc")]
 const TEST_VECTOR_SHORT_FHASH_NORM_0: &str = "3:ABBCCCDDDDEEEEE:555554444333221";
-#[cfg(feature = "alloc")]
 const TEST_VECTOR_SHORT_FHASH_NORM_1: &str = "3:ABBCCCDDDEEE:555444333221";
 
-#[cfg(feature = "alloc")]
 #[test]
 fn impl_display() {
     macro_rules! test {($ty: ty) => {

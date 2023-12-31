@@ -4,8 +4,6 @@
 
 #![cfg(test)]
 
-#[cfg(feature = "alloc")]
-use alloc::format;
 use crate::base64::{base64_index, BASE64_TABLE_U8};
 #[cfg(feature = "alloc")]
 use crate::base64::BASE64_TABLE;
@@ -20,7 +18,6 @@ use crate::hash::algorithms::{
 #[cfg(feature = "alloc")]
 use crate::hash::algorithms::insert_block_hash_into_str;
 use crate::hash::block::block_hash;
-#[cfg(feature = "alloc")]
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::test_utils::test_blockhash_content_all;
@@ -102,7 +99,6 @@ fn insert_block_hash_into_bytes_contents() {
 #[cfg(feature = "alloc")]
 #[test]
 fn insert_block_hash_into_str_contents() {
-    use alloc::string::String;
     test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
@@ -111,7 +107,7 @@ fn insert_block_hash_into_str_contents() {
                 let mut buffer: [u8; N] = [0u8; N];
                 buffer[..bh.len()].copy_from_slice(bh);
                 let len = bh.len() as u8;
-                let mut s: String = String::new();
+                let mut s = alloc::string::String::new();
                 insert_block_hash_into_str(&mut s, &buffer, len);
                 assert_eq!(s.len(), bh.len(), "failed ({}-1) on bhsz={}, bh={:?}", test_num, bhsz, bh);
                 assert_eq!(s.bytes().len(), bh.len(), "failed ({}-2) on bhsz={}, bh={:?}", test_num, bhsz, bh);
@@ -136,13 +132,12 @@ fn insert_block_hash_into_str_contents() {
 #[cfg(feature = "alloc")]
 #[test]
 fn insert_block_hash_into_str_examples_and_append() {
-    use alloc::string::String;
     let mut buffer: [u8; block_hash::FULL_SIZE] = [0u8; block_hash::FULL_SIZE];
     for (i, ch) in buffer.iter_mut().enumerate().take(7) {
         *ch = i as u8;
     } // "ABCDEFG"
     let len = 7u8;
-    let mut s: String = String::from("@@");
+    let mut s = alloc::string::String::from("@@");
     // This operation is "append".
     insert_block_hash_into_str(&mut s, &buffer, len);
     assert_eq!("@@ABCDEFG", s);
@@ -197,7 +192,6 @@ fn parse_block_size_from_bytes_patterns() {
     }
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn parse_block_size_from_bytes_overflow_on_block_size() {
     // Block size with u32::MAX

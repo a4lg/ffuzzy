@@ -12,9 +12,6 @@
 */
 #![cfg_attr(not(feature = "maint-lints"), allow(clippy::needless_borrow))]
 
-#[cfg(feature = "alloc")]
-use alloc::format;
-
 use crate::compare::FuzzyHashCompareTarget;
 use crate::compare::position_array::{
     BlockHashPositionArrayData,
@@ -1437,7 +1434,6 @@ fn compare_candidate_with_block_size_pairs() {
 }
 
 
-#[cfg(feature = "alloc")]
 #[test]
 fn impl_debug() {
     use super::position_array::tests::{
