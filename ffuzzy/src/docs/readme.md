@@ -222,14 +222,23 @@ However, some portions are licensed under more permissive licenses (see the
 source code for details).
 
 
-## References
+## External References
 
 *   Jesse Kornblum (2006)
     "Identifying almost identical files using context triggered piecewise hashing"
     ([doi:10.1016/j.diin.2006.06.015](https://doi.org/10.1016/j.diin.2006.06.015))
 
 
-## For Developers
+## Internal References (for Fuzzy Hashes and Internal Algorithms)
+
+*   ["Fuzzy Hash Internals" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-internals)
+*   ["Position Array Representation" section of `BlockHashPositionArrayData`](crate::compare::position_array::BlockHashPositionArrayData#position-array-representation)
+    for internal position array implementation
+*   [`BlockHashPositionArrayImpl`](crate::compare::position_array::BlockHashPositionArrayImpl)
+    and its methods for internal position array-based algorithms
+
+
+## Internal References (For Developers)
 
 *   [Compatibility Policy](crate::docs::compat_policy)
 *   [Implementation Notes](crate::docs::internals::impl_notes)
