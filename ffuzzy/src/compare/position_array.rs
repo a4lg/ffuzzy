@@ -99,6 +99,8 @@ pub mod block_hash_position_array_element {
 
 /// Represents abstract representation of the block hash position array.
 ///
+/// # Position Array Representation
+///
 /// Each element of the position array indicates which positions in
 /// the corresponding block hash has the given alphabet
 /// (note that the array index is of the alphabet).
@@ -126,6 +128,11 @@ pub mod block_hash_position_array_element {
 ///
 /// For an example of such algorithms, see
 /// [Bitap algorithm](https://en.wikipedia.org/wiki/Bitap_algorithm).
+///
+/// See also:
+/// *   [`BlockHashPositionArrayImpl`] for algorithms based on this representation.
+/// *   [`FuzzyHashCompareTarget`] for the full fuzzy hash object
+///     based on this representation.
 ///
 /// # Alphabet / Character Sets
 ///
@@ -525,7 +532,8 @@ where
 }
 
 
-/// The implementation of the block hash position array (safe; immutable).
+/// The implementation of [the block hash position array](BlockHashPositionArrayData)
+/// (safe; immutable).
 pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
