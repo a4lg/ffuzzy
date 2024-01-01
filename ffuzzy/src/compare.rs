@@ -53,7 +53,10 @@ use position_array::BlockHashPositionArrayImplUnchecked;
 /// corresponding [half-baked object](BlockHashPositionArrayData) containing
 /// one block hash, will be created from either side of the comparison.
 ///
-/// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+/// See also:
+/// *   ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
+/// *   ["Position Array Representation" section of `BlockHashPositionArrayData`](BlockHashPositionArrayData#position-array-representation)
+///     for the details of internal representation
 ///
 /// # Examples
 ///
