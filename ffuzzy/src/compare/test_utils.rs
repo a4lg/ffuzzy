@@ -12,23 +12,31 @@
 /// distance, allowing character insertion and deletion as two primitive
 /// operations (in cost 1).
 ///
-/// This is a port of the `edit_distn` function
-/// from libfuzzy's `edit_dist.c`.
+/// # Note
+///
+/// This function assumes that no arithmetic overflow occurs.
+///
+/// # History
+///
+/// This is an optimized port of the `edit_distn` function
+/// from libfuzzy's `edit_dist.c`, written by kikairoya.
 #[allow(dead_code)]
 pub(crate) fn edit_distn(s1: &[u8], s2: &[u8]) -> usize {
-    let mut t1 = std::vec::Vec::from_iter((0usize..).take(s2.len() + 1));
-    let mut t2 = std::vec::Vec::from_iter(core::iter::repeat(0usize).take(s2.len() + 1));
-    for (i1, s1ch) in s1.iter().enumerate() {
-        t2[0] = i1 + 1;
-        for (i2, s2ch) in s2.iter().enumerate() {
+    let mut row = std::vec::Vec::from_iter(0usize..=s2.len());
+    for (i1, &s1ch) in s1.iter().enumerate() {
+        let mut prev_l = row[0];
+        row[0] = i1 + 1;
+        for (i2, &s2ch) in s2.iter().enumerate() {
+            let curr_l = row[i2];
+            let prev_c = row[i2 + 1];
             // Costs of character addition and deletion
-            let cost_a = t2[i2] + 1;
-            let cost_d = t1[i2 + 1] + 1;
+            let cost_a = curr_l + 1;
+            let cost_d = prev_c + 1;
             // Replacement cost below: 2 for LCS distance, 1 for Levenshtein distance
-            let cost_r = t1[i2] + if *s1ch == *s2ch { 0 } else { 2 };
-            t2[i2 + 1] = usize::min(usize::min(cost_a, cost_d), cost_r);
+            let cost_r = prev_l + if s1ch == s2ch { 0 } else { 2 };
+            prev_l = prev_c;
+            row[i2 + 1] = cost_a.min(cost_d.min(cost_r));
         }
-        core::mem::swap(&mut t1, &mut t2);
     }
-    t1[s2.len()]
+    row[s2.len()]
 }
