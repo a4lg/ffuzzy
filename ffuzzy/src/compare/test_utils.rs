@@ -21,8 +21,9 @@ pub(crate) fn edit_distn(s1: &[u8], s2: &[u8]) -> usize {
     for (i1, s1ch) in s1.iter().enumerate() {
         t2[0] = i1 + 1;
         for (i2, s2ch) in s2.iter().enumerate() {
-            let cost_a = t1[i2 + 1] + 1;
-            let cost_d = t2[i2] + 1;
+            // Costs of character addition and deletion
+            let cost_a = t2[i2] + 1;
+            let cost_d = t1[i2 + 1] + 1;
             // Replacement cost below: 2 for LCS distance, 1 for Levenshtein distance
             let cost_r = t1[i2] + if *s1ch == *s2ch { 0 } else { 2 };
             t2[i2 + 1] = usize::min(usize::min(cost_a, cost_d), cost_r);
