@@ -438,7 +438,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     /// Computes the edit distance between two given strings.
     ///
     /// Specifically, it computes the Longest Common Subsequence (LCS)
-    /// distance, allowing character insertion and deletion as two primitive
+    /// distance, allowing character addition and deletion as two primitive
     /// operations (in cost 1).
     ///
     /// # Algorithm Implemented (By Default)
@@ -573,7 +573,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// Computes the edit distance between two given strings.
     ///
     /// Specifically, it computes the Longest Common Subsequence (LCS)
-    /// distance, allowing character insertion and deletion as two primitive
+    /// distance, allowing character addition and deletion as two primitive
     /// operations (in cost 1).
     ///
     /// # Algorithm Implemented (By Default)
