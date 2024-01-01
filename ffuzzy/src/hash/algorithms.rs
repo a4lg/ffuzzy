@@ -248,7 +248,7 @@ where
                         prev = curr;
                     }
                 }
-                if len as usize == N {
+                if len as usize >= N {
                     pre_ret!();
                     ret!(BlockHashParseState::OverflowError);
                 }
