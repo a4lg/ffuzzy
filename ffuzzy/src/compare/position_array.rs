@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 use crate::compare::FuzzyHashCompareTarget;
 use crate::hash::block::{block_size, block_hash};
@@ -310,26 +310,24 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         let mut cur = len as u32;
         optionally_unsafe! {
             let msb: u64 = 1u64 << (len - 1);
-            let mut pv: u64 = 0xffff_ffff_ffff_ffff_u64;
-            let mut nv: u64 = 0;
+            let mut h: u64 = !0;
             for &ch in other.iter() {
                 invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                let mt: u64 = representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                let zd: u64 = ((mt & pv).wrapping_add(pv) ^ pv) | mt | nv;
-                let nh: u64 = pv & zd;
-                cur -= u32::from((nh & msb) != 0);
-                let x: u64 = nv | !(pv | zd) | (pv & !mt & 1u64);
-                let y: u64 = u64::wrapping_sub(pv, nh) >> 1;
-                /*
-                    i-th bit of ph does not depend on i-th bit of y
-                    (only upper bits of ph are affected).
-                    So, ph does not depend on invalid bit in y.
-                */
-                let ph: u64 = u64::wrapping_add(x, y) ^ y;
-                cur += u32::from((ph & msb) != 0);
-                let t: u64 = (ph << 1).wrapping_add(1);
-                nv = t & zd;
-                pv = (nh << 1) | !(t | zd) | (t & u64::wrapping_sub(pv, nh));
+                // All 'E's in the algorithm (in the proof) appear as
+                // `~E` (complement of equality).  So we replace all `~E` as `N`.
+                let n: u64 = !representation[ch as usize]; // grcov-excl-br-line:ARRAY
+                let x: u64 = !h | (n & 1);
+                let y: u64 = n >> 1;
+                // Despite that the i-th bit of `y` equals to the (i+1)-th bit of `n`,
+                // the i-th bit of `v` *does not* depend on that.
+                let v: u64 = (((x & y).wrapping_add(y)) ^ y) | x;
+                if v & msb != 0 {
+                    cur += 1;
+                }
+                else {
+                    cur -= 1;
+                }
+                h = (!v << 1) | (h & n);
             }
         }
         cur
@@ -443,13 +441,14 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// [[Hyyrö et al., 2005] (doi:10.1007/11427186_33)](https://doi.org/10.1007/11427186_33)
-    /// presented a way to compute so called Indel-Distance using a
-    /// bit-parallel approach and this method is based on it.
+    /// Inspired by [[Myers, 1999] (doi:10.1145/316542.316550)](https://doi.org/10.1145/316542.316550),
+    /// Tsukasa OI (the author of this crate) created the new algorithm
+    /// optimized for the LCS distance, reducing the number of hot spot
+    /// instructions and the number of variables to keep track.
     ///
-    /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring"
-    /// similar to a pattern string.
+    /// The validness of this algorithm (naïve DP to bit-parallel conversion)
+    /// is formally-verified using Z3 and can be seen on the source code:
+    /// `dev/prover/compare/lcs_distance_algorithm_oi_2024.py`.
     ///
     /// # Safety
     ///
@@ -578,13 +577,14 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// [[Hyyrö et al., 2005] (doi:10.1007/11427186_33)](https://doi.org/10.1007/11427186_33)
-    /// presented a way to compute so called Indel-Distance using a
-    /// bit-parallel approach and this method is based on it.
+    /// Inspired by [[Myers, 1999] (doi:10.1145/316542.316550)](https://doi.org/10.1145/316542.316550),
+    /// Tsukasa OI (the author of this crate) created the new algorithm
+    /// optimized for the LCS distance, reducing the number of hot spot
+    /// instructions and the number of variables to keep track.
     ///
-    /// This algorithm is needed to be modified for our purpose because the
-    /// purpose of the original algorithm is to find a "substring"
-    /// similar to a pattern string.
+    /// The validness of this algorithm (naïve DP to bit-parallel conversion)
+    /// is formally-verified using Z3 and can be seen on the source code:
+    /// `dev/prover/compare/lcs_distance_algorithm_oi_2024.py`.
     ///
     /// # Usage Constraints
     ///
