@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSL-1.0 OR GPL-2.0-only OR GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright (C) 2014 kikairoya <kikairoya@gmail.com>
 // SPDX-FileCopyrightText: Copyright (C) 2014 Jesse Kornblum <research@jessekornblum.com>
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 #![cfg(any(all(test, feature = "tests-slow"), doc))]
 
 /// Computes the edit distance between two given strings.
