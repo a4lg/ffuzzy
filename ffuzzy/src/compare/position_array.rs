@@ -409,9 +409,10 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
-    /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the *k*-LCF problem
+    /// This function implements an extension to the algorithm described in
+    /// [[Baeza-Yates and Gonnet, 1992] (doi:10.1145/135239.135243)](https://doi.org/10.1145/135239.135243)
+    /// to find a fixed-length common substring.  The original algorithm is the
+    /// Backward Shift-Add algorithm for the *k*-LCF problem as described in
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
     /// (which searches the longest common substring with
     /// up to *k* errors under the Hamming distance).
@@ -548,9 +549,10 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// This function implements a Boyer–Moore-like bit-parallel algorithm to
-    /// find a fixed-length common substring.  The original algorithm is the
-    /// Backward Shift-Add algorithm for the *k*-LCF problem
+    /// This function implements an extension to the algorithm described in
+    /// [[Baeza-Yates and Gonnet, 1992] (doi:10.1145/135239.135243)](https://doi.org/10.1145/135239.135243)
+    /// to find a fixed-length common substring.  The original algorithm is the
+    /// Backward Shift-Add algorithm for the *k*-LCF problem as described in
     /// [[Hirvola, 2016]](https://aaltodoc.aalto.fi/bitstream/handle/123456789/21625/master_Hirvola_Tommi_2016.pdf)
     /// (which searches the longest common substring with
     /// up to *k* errors under the Hamming distance).
