@@ -33,21 +33,20 @@ def DeMorganNot(and_clauses):
     return z3.Or(*[z3.Not(p) for p in and_clauses])
 
 def FindCounterexamples(name, constraints):
-    print('Whether {} has a counterexample... '.format(name), end='')
+    print('Whether {} has a counterexample... '.format(name), file=sys.stderr, end='')
+    sys.stderr.flush()
     solver = z3.Solver()
     for constraint in constraints:
         solver.add(constraint)
     result = solver.check()
     if result == z3.sat:
-        print('found!')
-        print('')
-        print('Counterexample:')
+        print('found!\n\nCounterexample:', file=sys.stderr)
         model = solver.model()
         for d in sorted(model.decls(), key=str):
             print('{} = {}'.format(d, model[d]))
         sys.exit(1)
     else:
-        print('not found.')
+        print('not found.', file=sys.stderr)
 
 
 
