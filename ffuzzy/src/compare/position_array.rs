@@ -304,33 +304,17 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(self.is_valid());
         debug_assert!((len as usize) <= block_hash::FULL_SIZE);
         debug_assert!(other.len() <= block_hash::FULL_SIZE);
-        if len == 0 {
-            return other.len() as u32;
-        }
-        let mut cur = len as u32;
+        let mut v: u64 = !0;
         optionally_unsafe! {
-            let msb: u64 = 1u64 << (len - 1);
-            let mut h: u64 = !0;
             for &ch in other.iter() {
                 invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                // All 'E's in the algorithm (in the proof) appear as
-                // `~E` (complement of equality).  So we replace all `~E` as `N`.
-                let n: u64 = !representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                let x: u64 = !h | (n & 1);
-                let y: u64 = n >> 1;
-                // Despite that the i-th bit of `y` equals to the (i+1)-th bit of `n`,
-                // the i-th bit of `v` *does not* depend on that.
-                let v: u64 = (((x & y).wrapping_add(y)) ^ y) | x;
-                if v & msb != 0 {
-                    cur += 1;
-                }
-                else {
-                    cur -= 1;
-                }
-                h = (!v << 1) | (h & n);
+                let e: u64 = representation[ch as usize];
+                let p: u64 = e & v;
+                v = (v.wrapping_add(p)) | (v.wrapping_sub(p));
             }
         }
-        cur
+        let llcs = v.count_zeros();
+        (len as u32) + (other.len() as u32) - 2 * llcs
     }
 
     /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::score_strings_raw_unchecked()`].
@@ -442,14 +426,10 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// Inspired by [[Myers, 1999] (doi:10.1145/316542.316550)](https://doi.org/10.1145/316542.316550),
-    /// Tsukasa OI (the author of this crate) created the new algorithm
-    /// optimized for the LCS distance, reducing the number of hot spot
-    /// instructions and the number of variables to keep track.
-    ///
-    /// The validness of this algorithm (naïve DP to bit-parallel conversion)
-    /// is formally-verified using Z3 and can be seen on the source code:
-    /// `dev/prover/compare/lcs_distance_algorithm_oi_2024.py`.
+    /// This method implements the longest common subsequence length (LCS length
+    /// or LLCS) algorithm as in [Hyyrö (2004)](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
+    /// and then converts the LCS length to the LCS distance
+    /// using the basic relation between them.
     ///
     /// # Safety
     ///
@@ -579,14 +559,10 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     ///
     /// # Algorithm Implemented (By Default)
     ///
-    /// Inspired by [[Myers, 1999] (doi:10.1145/316542.316550)](https://doi.org/10.1145/316542.316550),
-    /// Tsukasa OI (the author of this crate) created the new algorithm
-    /// optimized for the LCS distance, reducing the number of hot spot
-    /// instructions and the number of variables to keep track.
-    ///
-    /// The validness of this algorithm (naïve DP to bit-parallel conversion)
-    /// is formally-verified using Z3 and can be seen on the source code:
-    /// `dev/prover/compare/lcs_distance_algorithm_oi_2024.py`.
+    /// This method implements the longest common subsequence length (LCS length
+    /// or LLCS) algorithm as in [Hyyrö (2004)](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
+    /// and then converts the LCS length to the LCS distance
+    /// using the basic relation between them.
     ///
     /// # Usage Constraints
     ///
