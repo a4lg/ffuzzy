@@ -29,6 +29,36 @@ fn partial_fnv_hash_initial_state() {
     assert_eq!(PartialFNVHash::new().value(), 0x27);
 }
 
+#[cfg(not(feature = "opt-reduce-fnv-table"))]
+#[test]
+fn partial_fnv_hash_table_contents() {
+    use crate::generate::fnv_table::{FNV_HASH_PRIME, FNV_TABLE};
+    use crate::test_utils::assert_fits_in;
+    assert_fits_in!(block_hash::ALPHABET_SIZE, u8);
+    #[inline(always)]
+    fn naive_impl(state: u8, ch: u8) -> u8 {
+        let state: u32 = state as u32;
+        let ch: u32 = ch as u32;
+        (state.wrapping_mul(FNV_HASH_PRIME) ^ ch) as u8
+    }
+    for state in 0..(block_hash::ALPHABET_SIZE as u8) {
+        for ch in 0..(block_hash::ALPHABET_SIZE as u8) {
+            // Make sure that `FNV_TABLE` is correctly generated.
+            assert_eq!(
+                FNV_TABLE[state as usize][ch as usize],
+                naive_impl(state, ch) % (block_hash::ALPHABET_SIZE as u8),
+                "failed (1) on state={}, ch={}", state, ch
+            );
+            // Of course, `FNV_TABLE` matches to masked `update_by_byte`.
+            assert_eq!(
+                PartialFNVHash(state).update_by_byte(ch).value(),
+                naive_impl(state, ch) % (block_hash::ALPHABET_SIZE as u8),
+                "failed (2) on state={}, ch={}", state, ch
+            );
+        }
+    }
+}
+
 #[test]
 fn partial_fnv_hash_usage() {
     const STR: &[u8] = b"Hello, World!\n";

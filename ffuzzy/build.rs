@@ -99,7 +99,7 @@ const OLD_HASH_INIT: u32 = 0x{0:08x};
 pub(crate) const FNV_HASH_INIT: u8 = (OLD_HASH_INIT % block_hash::ALPHABET_SIZE as u32) as u8;
 pub(crate) const _ALPHABET_SIZE: usize = 0x{2:x};
 
-#[cfg(feature = "opt-reduce-fnv-table")]
+#[allow(dead_code)]
 pub(crate) const FNV_HASH_PRIME: u32 = 0x{1:08x};
 
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
