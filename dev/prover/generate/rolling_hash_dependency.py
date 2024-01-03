@@ -66,6 +66,7 @@ class RollingHash:
 
 
 # Old (fading) bytes (as prefix)
+# Note: they may be different (there's no constraints for them)
 old_1 = [z3.BitVec('o1_{}'.format(i), BITS_OF_BYTE) for i in range(ROLLING_WINDOW)]
 old_2 = [z3.BitVec('o2_{}'.format(i), BITS_OF_BYTE) for i in range(ROLLING_WINDOW)]
 # New updating bytes
