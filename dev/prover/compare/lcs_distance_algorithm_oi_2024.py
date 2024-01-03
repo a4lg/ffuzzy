@@ -18,6 +18,13 @@ import z3
 # (Maximum) string 1 length and the word size in the bit-parallel algorithm.
 STRLEN = 64
 
+# Generalized mode:
+# When we need to take care multiple word variant of the algorithm,
+# the vertical difference just under the LSB (in the bit-parallel algorithm)
+# may not be always +1 (but can be -1).
+# In this crate, this generalization is not required.
+GENERALIZED = False
+
 # For variable naming
 DIGITS = len(str(STRLEN))
 DIGIT_FORMAT = '{{:0{}}}'.format(DIGITS)
@@ -84,7 +91,16 @@ for i in range(STRLEN):
         dp_row0[i+1] - dp_row0[i] == -1
     ))
 # Initialization of the first column of the current row
-constraints_dp_row1_init.append(dp_row1[0] == dp_row0[0] + 1)
+# (depending on the generalization)
+if GENERALIZED:
+    constraints_dp_row1_init.append(z3.Or(
+        dp_row1[0] - dp_row0[0] ==  1,
+        dp_row1[0] - dp_row0[0] == -1,
+    ))
+else:
+    constraints_dp_row1_init.append(
+        dp_row1[0] - dp_row0[0] ==  1
+    )
 # Calculation of the current row (remaining columns corresponding string 1)
 for i in range(STRLEN):
     constraints_dp_row1_calc.append(dp_row1[i+1] == Min3(
@@ -178,10 +194,12 @@ if True:
 
 # Calculation of vertical differences
 # V[ 0, 0] == 1 <-> H[-1, 0] == 0 || (V[ 0,-1] == 1 && E[ 0, 0] == 0)
-# (except b_V_-1, which is always True because of the row initialization)
+# (except b_V_-1, which stays True [unless in the generalized proof]
+# because of the row initialization)
 for i in range(-1, STRLEN):
     if i == -1:
-        constraints_b_V_calc.append(b_V[i+1])
+        if not GENERALIZED:
+            constraints_b_V_calc.append(b_V[i+1])
     else:
         # Beware that b_V[i+1] depends on b_V[i+0],
         # making the bit-parallel calculation of V below not simple.
@@ -233,9 +251,21 @@ for i in range(STRLEN):
     constraints_bitpar_dp_bool.append(b_H[i  ] == (Hs[i] == 1))
     constraints_bitpar_dp_bool.append(b_E[i  ] == (Es[i] == 1))
 
+# Construction of the "carry".
+# This is:
+# *  1       (non-generalized proof)
+# *  1 or 0  (generalized proof)
+# In the generalized variant, C is the MSB of the previous word's V,
+# shifted to the LSB position (i.e. prevword_V >> 63 if STRLEN == 64).
+C = z3.BitVec('C', STRLEN)
+constraints_bitpar_C_init = [
+    z3.Implies(b_V[0], C == 1),
+    z3.Implies(z3.Not(b_V[0]), C == 0)
+]
+
 # Calculation of vertical differences
 # (horizontal dependency resolved using Myers (1999))
-X = ~P | (~E & 1)
+X = ~P | (C & ~E & 1)
 Y = ~E >> 1
 constraints_bitpar_V_calc = [
     V == (((X & Y) + Y) ^ Y) | X
@@ -245,24 +275,27 @@ if True:
         'Bit-parallel calculation (vertical)',
         constraints_dp + constraints_dp_bool + \
         constraints_bitpar_dp_bool + \
+        constraints_bitpar_C_init + \
         [DeMorganNot(constraints_bitpar_V_calc)]
     )
 
 # Calculation of horizontal differences
 constraints_bitpar_H_calc = [
-    H == ~((V << 1) | 1) | (P & ~E)
+    H == ~((V << 1) | C) | (P & ~E)
 ]
 if True:
     FindCounterexamples(
         'Bit-parallel calculation (horizontal)',
         constraints_dp + constraints_dp_bool + \
         constraints_bitpar_dp_bool + \
+        constraints_bitpar_C_init + \
         constraints_bitpar_V_calc + \
         [DeMorganNot(constraints_bitpar_H_calc)]
     )
 
 constraints_bitpar = \
     constraints_bitpar_dp_bool + \
+    constraints_bitpar_C_init + \
     constraints_bitpar_V_calc + \
     constraints_bitpar_H_calc
 
@@ -272,17 +305,19 @@ constraints_bitpar = \
 ##  Further optimization (minor)
 ##
 
-# (-1)-st bit of V in DP-BOOL domain is True and the original expression
-# reflected that.  But this expression can be simplified as follows:
-constraints_bitpar_H_opt_calc = [
-    H == (~V << 1) | (P & ~E)
-]
-if True:
-    FindCounterexamples(
-        'Bit-parallel calculation (horizontal; optimized)',
-        constraints_dp + constraints_dp_bool + constraints_bitpar + \
-        [DeMorganNot(constraints_bitpar_H_opt_calc)]
-    )
+# (-1)-st bit of V in DP-BOOL domain is True on the non-generalized proof
+# and the original expression reflected that.
+# But this expression can be simplified as follows:
+if not GENERALIZED:
+    constraints_bitpar_H_opt_calc = [
+        H == (~V << 1) | (P & ~E)
+    ]
+    if True:
+        FindCounterexamples(
+            'Bit-parallel calculation (horizontal; optimized)',
+            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            [DeMorganNot(constraints_bitpar_H_opt_calc)]
+        )
 
 
 
@@ -300,36 +335,38 @@ if True:
 
 # Calculation of horizontal differences and compare
 # with the latest simplified algorithm.
-ZD = (((E & P) + P) ^ P) | E | ~P
-NH = P & ZD
-X_ = ~P | ~(P | ZD) | (P & ~E & 1)
-Y_ = (P - NH) >> 1
-PH = (X_ + Y_) ^ Y_
-constraints_bitpar_old_V_calc = [
-    V == PH,
-    NH == ~PH   # PH and NH are complements
-]
-if True:
-    FindCounterexamples(
-        'Old bit-parallel calculation (vertical)',
-        constraints_dp + constraints_dp_bool + constraints_bitpar + \
-        [DeMorganNot(constraints_bitpar_old_V_calc)]
-    )
+if not GENERALIZED:
+    ZD = (((E & P) + P) ^ P) | E | ~P
+    NH = P & ZD
+    X_ = ~P | ~(P | ZD) | (P & ~E & 1)
+    Y_ = (P - NH) >> 1
+    PH = (X_ + Y_) ^ Y_
+    constraints_bitpar_old_V_calc = [
+        V == PH,
+        NH == ~PH   # PH and NH are complements
+    ]
+    if True:
+        FindCounterexamples(
+            'Old bit-parallel calculation (vertical)',
+            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            [DeMorganNot(constraints_bitpar_old_V_calc)]
+        )
 
 # Calculation of horizontal differences and compare
 # with the latest simplified algorithm.
-T = (PH << 1) | 1
-NV = T & ZD
-PV = (NH << 1) | ~(T | ZD) | (T & (P - NH))
-constraints_bitpar_old_H_calc = [
-    H == PV,
-    NV == ~PV   # PV and NV are complements
-]
-if True:
-    FindCounterexamples(
-        'Old bit-parallel calculation (horizontal)',
-        constraints_dp + constraints_dp_bool + constraints_bitpar + \
-        [DeMorganNot(constraints_bitpar_old_H_calc)]
-    )
+if not GENERALIZED:
+    T = (PH << 1) | 1
+    NV = T & ZD
+    PV = (NH << 1) | ~(T | ZD) | (T & (P - NH))
+    constraints_bitpar_old_H_calc = [
+        H == PV,
+        NV == ~PV   # PV and NV are complements
+    ]
+    if True:
+        FindCounterexamples(
+            'Old bit-parallel calculation (horizontal)',
+            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            [DeMorganNot(constraints_bitpar_old_H_calc)]
+        )
 
 sys.exit(0)
