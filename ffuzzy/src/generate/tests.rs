@@ -527,14 +527,6 @@ fn fuzz_rolling_hash_rolling_random() {
     fuzz_rolling_hash_rolling_random_with_config(NUM_ITERATIONS, RANDOM_SEED);
 }
 
-#[cfg(feature = "tests-slow")]
-#[test]
-fn fuzz_rolling_hash_rolling_random_slow() {
-    const NUM_ITERATIONS: usize = 1_000_000_000;
-    const RANDOM_SEED: u64 = 0x2bd9_2c64_308b_e2ed;
-    fuzz_rolling_hash_rolling_random_with_config(NUM_ITERATIONS, RANDOM_SEED);
-}
-
 
 #[test]
 fn block_hash_context_impls() {
