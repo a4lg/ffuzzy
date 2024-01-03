@@ -37,9 +37,8 @@ fn partial_fnv_hash_table_contents() {
     assert_fits_in!(block_hash::ALPHABET_SIZE, u8);
     #[inline(always)]
     fn naive_impl(state: u8, ch: u8) -> u8 {
-        let state: u32 = state as u32;
-        let ch: u32 = ch as u32;
-        (state.wrapping_mul(FNV_HASH_PRIME) ^ ch) as u8
+        let state = state as u32;
+        (state.wrapping_mul(FNV_HASH_PRIME) ^ (ch as u32)) as u8
     }
     for state in 0..(block_hash::ALPHABET_SIZE as u8) {
         for ch in 0..(block_hash::ALPHABET_SIZE as u8) {
