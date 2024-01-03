@@ -1,6 +1,6 @@
 [package]
 name = "ffuzzy"
-version = "0.2.8"
+version = "0.2.9"
 description = "Library to generate / parse / compare ssdeep Context Triggered Piecewise Hashes (CTPH)"
 keywords = ["ssdeep", "fuzzy", "hash", "security", "clustering"]
 homepage = "https://github.com/a4lg/ffuzzy"
