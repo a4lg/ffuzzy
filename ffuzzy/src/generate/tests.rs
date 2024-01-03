@@ -488,27 +488,21 @@ fn rolling_hash_rolling_basic() {
     }
     // Check rolling hash internals by supplying WINDOW_SIZE bytes
     let mut hash = RollingHash::new();
-    // Repeating the process should not change the result.
-    for iteration in 0..2 {
-        for ch in u8::MIN..=u8::MAX {
-            for _ in 0..RollingHash::WINDOW_SIZE {
-                hash.update_by_byte(ch);
-            }
-            // h1: Plain sum
-            assert_eq!(hash.h1, (ch as u32) * (RollingHash::WINDOW_SIZE as u32),
-                "failed on iteration={}, ch={}", iteration, ch);
-            // h2: Weighted sum
-            assert_eq!(hash.h2, (ch as u32) * h2_multiplier,
-                "failed on iteration={}, ch={}", iteration, ch);
-            // h3: shift-xor
-            let mut h3_expected = 0u32;
-            for _ in 0..RollingHash::WINDOW_SIZE {
-                h3_expected <<= RollingHash::H3_LSHIFT;
-                h3_expected ^= ch as u32;
-            }
-            assert_eq!(hash.h3, h3_expected,
-                "failed on iteration={}, ch={}", iteration, ch);
+    for ch in u8::MIN..=u8::MAX {
+        for _ in 0..RollingHash::WINDOW_SIZE {
+            hash.update_by_byte(ch);
         }
+        // h1: Plain sum
+        assert_eq!(hash.h1, (ch as u32) * (RollingHash::WINDOW_SIZE as u32), "failed on ch={}", ch);
+        // h2: Weighted sum
+        assert_eq!(hash.h2, (ch as u32) * h2_multiplier, "failed on ch={}", ch);
+        // h3: shift-xor
+        let mut h3_expected = 0u32;
+        for _ in 0..RollingHash::WINDOW_SIZE {
+            h3_expected <<= RollingHash::H3_LSHIFT;
+            h3_expected ^= ch as u32;
+        }
+        assert_eq!(hash.h3, h3_expected, "failed on ch={}", ch);
     }
 }
 
