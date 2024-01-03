@@ -77,7 +77,7 @@ constraints_dp_rows_post = []
 # Results of the previous row
 for i in range(STRLEN):
     # Row0: adjacent columns have horizontal differences of either +1 or -1.
-    # This is a definition for the first row (where the difference is all +1).
+    # This is a definition for the first row (where the differences are all +1).
     # For other rows, it is to be proven below.
     constraints_dp_row0.append(z3.Or(
         dp_row0[i+1] - dp_row0[i] ==  1,
@@ -134,6 +134,7 @@ constraints_dp = \
 
 ##
 ##  DP algorithm, converted to boolean expressions
+##  and encoded as "differences".
 ##
 constraints_b_V = []    # Vertical differences
 constraints_b_P = []    # Horizontal differences (on the previous row)
@@ -142,8 +143,8 @@ constraints_b_H = []    # Horizontal differences (on the current row)
 constraints_b_H_calc = []
 constraints_b_V_calc = []
 
-# On the current row (with a character from string 1),
-# whether the character matches to the i-th character of the string 2.
+# On the current row (with a character from string 2),
+# whether the character matches to the i-th character of the string 1.
 b_E = dp_char_equal
 
 # Vertical differences (True if the vertical difference is +1)
@@ -152,7 +153,7 @@ for i in range(-1, STRLEN):
     b_V.append(z3.Bool('b_V_' + DIGIT_FORMAT.format(i)))
     constraints_b_V.append(b_V[i+1] == (dp_row1[i+1] - dp_row0[i+1] == 1))
 
-# Horizontal differences
+# Horizontal differences (likewise)
 b_P = []    # Previous row
 b_H = []    # Current row
 for i in range(STRLEN):
@@ -212,7 +213,7 @@ constraints_dp_bool = \
 ##
 
 # V (representing vertical differences) omits index -1,
-# making all three bit vectors' length STRLEN.
+# making all four bit vectors' length STRLEN.
 V = z3.BitVec('V', STRLEN)
 P = z3.BitVec('P', STRLEN)
 H = z3.BitVec('H', STRLEN)
@@ -271,7 +272,7 @@ constraints_bitpar = \
 ##  Further optimization (minor)
 ##
 
-# (-1)-th bit of V in DP-BOOL domain is 1 and the original expression
+# (-1)-st bit of V in DP-BOOL domain is True and the original expression
 # reflected that.  But this expression can be simplified as follows:
 constraints_bitpar_H_opt_calc = [
     H == (~V << 1) | (P & ~E)
@@ -295,7 +296,7 @@ if True:
 # Note:
 # "Vertical" and "horizontal" are swapped between Hyyrö et al. (2005)
 # and OI (2024).  So, the original "pv" and "nv" are substituted to
-# P and ~P here.
+# P (previous horizontal differences) and ~P (the complement of that) here.
 
 # Calculation of horizontal differences and compare
 # with the latest simplified algorithm.
