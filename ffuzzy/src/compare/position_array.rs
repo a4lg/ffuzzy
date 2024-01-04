@@ -427,7 +427,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     /// # Algorithm Implemented (By Default)
     ///
     /// This method implements the longest common subsequence length (LCS length
-    /// or LLCS) algorithm as in [Hyyrö (2004)](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
+    /// or LLCS) algorithm as in [[Hyyrö, 2004]](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
     /// and then converts the LCS length to the LCS distance
     /// using the basic relation between them.
     ///
@@ -560,7 +560,7 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// # Algorithm Implemented (By Default)
     ///
     /// This method implements the longest common subsequence length (LCS length
-    /// or LLCS) algorithm as in [Hyyrö (2004)](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
+    /// or LLCS) algorithm as in [[Hyyrö, 2004]](https://www.semanticscholar.org/paper/Bit-Parallel-LCS-length-Computation-Revisited-Hyyro/7b1385ba60875b219ce76d5dc0fb343f664c6d6a)
     /// and then converts the LCS length to the LCS distance
     /// using the basic relation between them.
     ///
