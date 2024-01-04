@@ -1051,7 +1051,6 @@ fn data_model_corruption() {
         2. Debug output (when invalid)
             *   fmt (Debug)
     */
-    #[cfg(feature = "alloc")]
     const EXPECTED_ILL_FORMED_PREFIX: &str = "FuzzyHashData { ILL_FORMED: true,";
     macro_rules! test {($ty: ty) => {
         let typename = stringify!($ty);
@@ -1064,7 +1063,6 @@ fn data_model_corruption() {
                 hash.log_blocksize = log_block_size;
                 assert_eq!(hash.is_valid(), block_size::is_log_valid(log_block_size),
                     "failed (2-1) on typename={}, log_block_size={}", typename, log_block_size);
-                #[cfg(feature = "alloc")]
                 if !block_size::is_log_valid(log_block_size) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
                         "failed (2-2) on typename={}, log_block_size={}", typename, log_block_size);
@@ -1084,7 +1082,6 @@ fn data_model_corruption() {
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8,
                     "failed (3-1-1) on typename={}, len_blockhash={}", typename, len_blockhash);
-                #[cfg(feature = "alloc")]
                 if !(len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
                         "failed (3-1-2) on typename={}, len_blockhash={}", typename, len_blockhash);
@@ -1104,7 +1101,6 @@ fn data_model_corruption() {
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8,
                     "failed (3-2-1) on typename={}, len_blockhash={}", typename, len_blockhash);
-                #[cfg(feature = "alloc")]
                 if !(len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8) {
                     assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
                         "failed (3-2-2) on typename={}, len_blockhash={}", typename, len_blockhash);
@@ -1127,11 +1123,8 @@ fn data_model_corruption() {
                     hash.blockhash1[corrupted_index] = BASE64_INVALID;
                     assert!(!hash.is_valid(),
                         "failed (4-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    #[cfg(feature = "alloc")]
-                    {
-                        assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (4-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    }
+                    assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
+                        "failed (4-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                 }
             }
         }
@@ -1151,11 +1144,8 @@ fn data_model_corruption() {
                     hash.blockhash2[corrupted_index] = BASE64_INVALID;
                     assert!(!hash.is_valid(),
                         "failed (4-2-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    #[cfg(feature = "alloc")]
-                    {
-                        assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (4-2-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    }
+                    assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
+                        "failed (4-2-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                 }
             }
         }
@@ -1175,11 +1165,8 @@ fn data_model_corruption() {
                     hash.blockhash1[corrupted_index] = 1;
                     assert!(!hash.is_valid(),
                         "failed (5-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    #[cfg(feature = "alloc")]
-                    {
-                        assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    }
+                    assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
+                        "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                 }
             }
         }
@@ -1199,11 +1186,8 @@ fn data_model_corruption() {
                     hash.blockhash2[corrupted_index] = 1;
                     assert!(!hash.is_valid(),
                         "failed (5-1-2) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    #[cfg(feature = "alloc")]
-                    {
-                        assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
-                            "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
-                    }
+                    assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX),
+                        "failed (5-1-3) on typename={}, block_hash_len={}, corrupted_index={}", typename, block_hash_len, corrupted_index);
                 }
             }
         }
@@ -1216,10 +1200,7 @@ fn data_model_corruption() {
             hash.len_blockhash1 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
             assert!(!hash.is_valid(), "failed (6-1-2) on typename={}", typename);
-            #[cfg(feature = "alloc")]
-            {
-                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-1-3) on typename={}", typename);
-            }
+            assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-1-3) on typename={}", typename);
         }
         // Break block hash 2 normalization
         if <$ty>::IS_NORMALIZED_FORM {
@@ -1230,10 +1211,7 @@ fn data_model_corruption() {
             hash.len_blockhash2 = block_hash::MAX_SEQUENCE_SIZE as u8 + 1;
             // block hash "AAAA" (max sequence size + 1): invalid
             assert!(!hash.is_valid(), "failed (6-2-2) on typename={}", typename);
-            #[cfg(feature = "alloc")]
-            {
-                assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-2-3) on typename={}", typename);
-            }
+            assert!(format!("{:?}", hash).starts_with(EXPECTED_ILL_FORMED_PREFIX), "failed (6-2-3) on typename={}", typename);
         }
     }}
     test_for_each_type!(test_prereq, [FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash]);

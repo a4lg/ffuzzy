@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -375,20 +375,14 @@ fn data_model_corruption() {
         ($ty: ty, $hash: expr, $fmt: literal) => {
             let typename = stringify!($ty);
             assert!(!$hash.is_valid(), $fmt, 1, typename);
-            #[cfg(feature = "alloc")]
-            {
-                assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
-                    $fmt, 2, typename);
-            }
+            assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
+                $fmt, 2, typename);
         };
         ($ty: ty, $hash: expr, $fmt: literal, $($arg:tt)+) => {
             let typename = stringify!($ty);
             assert!(!$hash.is_valid(), $fmt, 1, typename, $($arg)+);
-            #[cfg(feature = "alloc")]
-            {
-                assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
-                    $fmt, 2, typename, $($arg)+);
-            }
+            assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
+                $fmt, 2, typename, $($arg)+);
         };
     }
     macro_rules! test {($ty: ty) => {

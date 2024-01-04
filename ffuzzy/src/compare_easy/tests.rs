@@ -43,21 +43,18 @@ fn parse_error_either_basic_and_impls() {
     assert_eq!(err.kind(), KIND);
     assert_eq!(err.origin(), ORIGIN);
     assert_eq!(err.offset(), OFFSET);
-    #[cfg(feature = "alloc")]
-    {
-        // Test Debug
-        assert_eq!(
-            format!("{:?}", err),
-            "ParseErrorEither(\
-                Left, \
-                ParseError(\
-                    UnexpectedEndOfString, \
-                    BlockHash1, \
-                    2\
-                )\
-            )"
-        );
-    }
+    // Test Debug
+    assert_eq!(
+        format!("{:?}", err),
+        "ParseErrorEither(\
+            Left, \
+            ParseError(\
+                UnexpectedEndOfString, \
+                BlockHash1, \
+                2\
+            )\
+        )"
+    );
 }
 
 #[test]
