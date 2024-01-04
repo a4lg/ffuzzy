@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -8,11 +8,10 @@ use crate::test_utils::{
     assert_fits_in,
     cover_auto_debug,
     test_auto_clone,
+    test_auto_debug_for_enum,
     test_for_each_type,
     test_recommended_default,
 };
-#[cfg(feature = "alloc")]
-use crate::test_utils::test_auto_debug_for_enum;
 
 #[test]
 fn auto_clone_valid() {
@@ -35,7 +34,6 @@ fn auto_clone_counterexample() {
 }
 
 
-#[cfg(feature = "alloc")]
 mod test_auto_debug_for_enum {
     use super::*;
 

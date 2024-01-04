@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -21,7 +21,6 @@ use crate::hash::test_utils::{
     test_blockhash_contents_no_sequences
 };
 use crate::test_utils::{assert_fits_in, test_auto_clone, test_for_each_type};
-#[cfg(feature = "alloc")]
 use crate::test_utils::test_auto_debug_for_enum;
 
 
@@ -29,20 +28,17 @@ use crate::test_utils::test_auto_debug_for_enum;
 fn fuzzy_hash_operation_error_impls() {
     // Test Clone
     test_auto_clone::<FuzzyHashOperationError>(&FuzzyHashOperationError::BlockHashOverflow);
-    #[cfg(feature = "alloc")]
-    {
-        // Test Display
-        assert_eq!(format!("{}", FuzzyHashOperationError::BlockHashOverflow),     "overflow will occur while copying the block hash");
-        assert_eq!(format!("{}", FuzzyHashOperationError::StringizationOverflow), "overflow will occur while converting to the string representation");
-        // Test Debug
-        test_auto_debug_for_enum!(
-            FuzzyHashOperationError,
-            [
-                BlockHashOverflow,
-                StringizationOverflow,
-            ]
-        );
-    }
+    // Test Display
+    assert_eq!(format!("{}", FuzzyHashOperationError::BlockHashOverflow),     "overflow will occur while copying the block hash");
+    assert_eq!(format!("{}", FuzzyHashOperationError::StringizationOverflow), "overflow will occur while converting to the string representation");
+    // Test Debug
+    test_auto_debug_for_enum!(
+        FuzzyHashOperationError,
+        [
+            BlockHashOverflow,
+            StringizationOverflow,
+        ]
+    );
 }
 
 

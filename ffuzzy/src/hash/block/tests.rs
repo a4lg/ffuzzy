@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -177,13 +177,10 @@ fn block_size_strings() {
 fn block_size_relation_impls() {
     // Test Clone
     crate::test_utils::test_auto_clone::<BlockSizeRelation>(&BlockSizeRelation::Far);
-    #[cfg(feature = "alloc")]
-    {
-        // Test Debug
-        crate::test_utils::test_auto_debug_for_enum!(
-            BlockSizeRelation, [Far, NearEq, NearGt, NearLt]
-        );
-    }
+    // Test Debug
+    crate::test_utils::test_auto_debug_for_enum!(
+        BlockSizeRelation, [Far, NearEq, NearGt, NearLt]
+    );
 }
 
 #[test]

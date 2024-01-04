@@ -11,7 +11,6 @@ use crate::generate::{
 use crate::hash::{FuzzyHashData, RawFuzzyHash};
 use crate::hash::block::{block_size, block_hash};
 use crate::test_utils::{cover_auto_clone, cover_default, test_auto_clone, test_recommended_default};
-#[cfg(feature = "alloc")]
 use crate::test_utils::test_auto_debug_for_enum;
 
 
@@ -593,18 +592,15 @@ macro_rules! test_for_each_generator_finalization {
 
 #[test]
 fn generator_error_impls() {
-    #[cfg(feature = "alloc")]
-    {
-        test_auto_debug_for_enum!(
-            GeneratorError,
-            [
-                FixedSizeMismatch,
-                FixedSizeTooLarge,
-                InputSizeTooLarge,
-                OutputOverflow,
-            ]
-        );
-    }
+    test_auto_debug_for_enum!(
+        GeneratorError,
+        [
+            FixedSizeMismatch,
+            FixedSizeTooLarge,
+            InputSizeTooLarge,
+            OutputOverflow,
+        ]
+    );
     test_auto_clone::<GeneratorError>(&GeneratorError::FixedSizeMismatch);
 }
 

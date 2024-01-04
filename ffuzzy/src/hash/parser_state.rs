@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 
 /// An enumeration representing a cause of
@@ -150,37 +150,33 @@ pub(crate) enum BlockHashParseState {
 pub(crate) mod tests {
     use super::*;
     use crate::test_utils::test_auto_clone;
-    #[cfg(feature = "alloc")]
     use crate::test_utils::test_auto_debug_for_enum;
 
     #[test]
     fn parse_error_kind_impls() {
         // Test Clone
         test_auto_clone::<ParseErrorKind>(&ParseErrorKind::BlockHashIsTooLong);
-        #[cfg(feature = "alloc")]
-        {
-            // Test Display
-            assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
-            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
-            assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
-            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
-            assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
-            assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
-            assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
-            // Test Debug
-            test_auto_debug_for_enum!(
-                ParseErrorKind,
-                [
-                    BlockSizeIsEmpty,
-                    BlockSizeStartsWithZero,
-                    BlockSizeIsInvalid,
-                    BlockSizeIsTooLarge,
-                    BlockHashIsTooLong,
-                    UnexpectedCharacter,
-                    UnexpectedEndOfString,
-                ]
-            );
-        }
+        // Test Display
+        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
+        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
+        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
+        // Test Debug
+        test_auto_debug_for_enum!(
+            ParseErrorKind,
+            [
+                BlockSizeIsEmpty,
+                BlockSizeStartsWithZero,
+                BlockSizeIsInvalid,
+                BlockSizeIsTooLarge,
+                BlockHashIsTooLong,
+                UnexpectedCharacter,
+                UnexpectedEndOfString,
+            ]
+        );
     }
 
     #[test]

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -17,17 +17,14 @@ use crate::test_utils::test_auto_clone;
 fn parse_error_side_impls() {
     // Test Clone
     test_auto_clone::<ParseErrorSide>(&ParseErrorSide::Left);
-    #[cfg(feature = "alloc")]
-    {
-        // Test Debug
-        crate::test_utils::test_auto_debug_for_enum!(
-            ParseErrorSide,
-            [
-                Left,
-                Right,
-            ]
-        );
-    }
+    // Test Debug
+    crate::test_utils::test_auto_debug_for_enum!(
+        ParseErrorSide,
+        [
+            Left,
+            Right,
+        ]
+    );
 }
 
 #[test]

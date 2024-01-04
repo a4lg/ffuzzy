@@ -52,12 +52,11 @@ pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(value: &T) {
 
 /// Test automatically generated [`Debug`](core::fmt::Debug)
 /// implementation of an enum with no variants with structs or tuples.
-#[cfg(feature = "alloc")]
 #[doc(alias = "test_auto_debug_for_enum")]
 macro_rules! test_auto_debug_for_enum_impl {
     ($ty: ty, []) => {};
     ($ty: ty, [$var: ident]) => {{
-        assert_eq!(::alloc::format!("{:?}", <$ty>::$var), stringify!($var));
+        assert_eq!(format!("{:?}", <$ty>::$var), stringify!($var));
     }};
     ($ty: ty, [$var: ident, $($rest: ident),+]) => {
         $crate::test_utils::test_auto_debug_for_enum!($ty, [$var]);
@@ -114,7 +113,6 @@ macro_rules! assert_fits_in_impl {
     };
 }
 
-#[cfg(feature = "alloc")]
 pub(crate) use test_auto_debug_for_enum_impl as test_auto_debug_for_enum;
 pub(crate) use test_recommended_default_impl as test_recommended_default;
 pub(crate) use test_for_each_type_impl as test_for_each_type;
