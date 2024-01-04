@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023
+// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023 and 2024
 // grcov-excl-br-start
 
 #![cfg(any(test, doc))]
@@ -45,11 +45,8 @@ pub(crate) fn test_auto_clone<T: Clone + Eq + core::fmt::Debug>(orig_value: &T) 
 /// Testing function for [`Debug`](core::fmt::Debug) (for coverage).
 ///
 /// If an allocator is available, cover debug output.
-pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(_value: &T) {
-    #[cfg(feature = "alloc")]
-    {
-        let _ = alloc::format!("{:?}", _value);
-    }
+pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(value: &T) {
+    let _ = format!("{:?}", value);
 }
 
 
