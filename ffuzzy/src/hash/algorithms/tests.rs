@@ -116,7 +116,6 @@ fn insert_block_hash_into_string_contents() {
                     assert_eq!(BASE64_TABLE_U8[idx_ch as usize], base64_ch,
                         "failed ({}-3) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
                 }
-                #[cfg(feature = "alloc")]
                 for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.chars()).enumerate() {
                     assert_eq!(BASE64_TABLE[idx_ch as usize], base64_ch,
                         "failed ({}-4) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
