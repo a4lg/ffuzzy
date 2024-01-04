@@ -787,13 +787,13 @@ where
         }
         buf.push_str(block_size::BLOCK_SIZES_STR[self.log_blocksize as usize]); // grcov-excl-br-line:ARRAY
         buf.push(':');
-        algorithms::insert_block_hash_into_str(
+        algorithms::insert_block_hash_into_string(
             &mut buf,
             &self.blockhash1,
             self.len_blockhash1
         );
         buf.push(':');
-        algorithms::insert_block_hash_into_str(
+        algorithms::insert_block_hash_into_string(
             &mut buf,
             &self.blockhash2,
             self.len_blockhash2

@@ -16,7 +16,7 @@ use crate::hash::algorithms::{
     parse_block_size_from_bytes,
 };
 #[cfg(feature = "alloc")]
-use crate::hash::algorithms::insert_block_hash_into_str;
+use crate::hash::algorithms::insert_block_hash_into_string;
 use crate::hash::block::block_hash;
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
@@ -98,7 +98,7 @@ fn insert_block_hash_into_bytes_contents() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn insert_block_hash_into_str_contents() {
+fn insert_block_hash_into_string_contents() {
     test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
@@ -108,7 +108,7 @@ fn insert_block_hash_into_str_contents() {
                 buffer[..bh.len()].copy_from_slice(bh);
                 let len = bh.len() as u8;
                 let mut s = alloc::string::String::new();
-                insert_block_hash_into_str(&mut s, &buffer, len);
+                insert_block_hash_into_string(&mut s, &buffer, len);
                 assert_eq!(s.len(), bh.len(), "failed ({}-1) on bhsz={}, bh={:?}", test_num, bhsz, bh);
                 assert_eq!(s.bytes().len(), bh.len(), "failed ({}-2) on bhsz={}, bh={:?}", test_num, bhsz, bh);
                 // Block hash is converted to Base64 alphabets.
@@ -131,7 +131,7 @@ fn insert_block_hash_into_str_contents() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn insert_block_hash_into_str_examples_and_append() {
+fn insert_block_hash_into_string_examples_and_append() {
     let mut buffer: [u8; block_hash::FULL_SIZE] = [0u8; block_hash::FULL_SIZE];
     for (i, ch) in buffer.iter_mut().enumerate().take(7) {
         *ch = i as u8;
@@ -139,7 +139,7 @@ fn insert_block_hash_into_str_examples_and_append() {
     let len = 7u8;
     let mut s = alloc::string::String::from("@@");
     // This operation is "append".
-    insert_block_hash_into_str(&mut s, &buffer, len);
+    insert_block_hash_into_string(&mut s, &buffer, len);
     assert_eq!("@@ABCDEFG", s);
 }
 

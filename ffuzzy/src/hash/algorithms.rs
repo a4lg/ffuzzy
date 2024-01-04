@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 #[cfg(feature = "alloc")]
 use alloc::string::String;
@@ -94,7 +94,7 @@ where
 /// alphabets and appends to a given [`String`].
 #[cfg(feature = "alloc")]
 #[inline]
-pub(crate) fn insert_block_hash_into_str<const N: usize>(
+pub(crate) fn insert_block_hash_into_string<const N: usize>(
     buf: &mut String,
     hash: &[u8; N],
     len: u8
