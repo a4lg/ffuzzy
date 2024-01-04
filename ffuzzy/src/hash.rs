@@ -786,10 +786,10 @@ where
             if #[cfg(feature = "unsafe")] {
                 unsafe {
                     let mut vec = alloc::vec::Vec::<u8>::with_capacity(len_in_str);
-                    vec.set_len(len_in_str);
-                    let mut buf = vec.get_unchecked_mut(..len_in_str);
+                    let buf = vec.get_unchecked_mut(..len_in_str);
                     invariant!(buf.len() == self.len_in_str());
-                    self.store_into_bytes(&mut buf).unwrap();
+                    self.store_into_bytes(buf).unwrap();
+                    vec.set_len(len_in_str);
                     alloc::string::String::from_utf8_unchecked(vec)
                 }
             }
