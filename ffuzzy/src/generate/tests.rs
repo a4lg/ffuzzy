@@ -505,22 +505,25 @@ fn rolling_hash_rolling_basic() {
 
 #[test]
 fn rolling_hash_rolling_inspect_internal_state() {
+    // [0]: fading byte, [RollingHash::WINDOW_SIZE-1]: last (the most weighted) byte
     let mut last_bytes = std::vec::Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
     let mut last_bytes_actual = std::vec::Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
     last_bytes.extend([0u8].iter().cycle().take(RollingHash::WINDOW_SIZE));
-    // [0]: fading byte, [RollingHash::WINDOW_SIZE-1]: last (the most weighted) byte
+    // Test with (0..=255) and two more pseudo-random sequences.
     let mut hash = RollingHash::new();
     for (pos, ch) in (u8::MIN..=u8::MAX)
-        .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0x7f).wrapping_add(0x2b)))
+        .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0xe3).wrapping_add(0x52)))
+        .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0x17).wrapping_add(0xe7)))
         .enumerate()
     {
         hash.update_by_byte(ch);
+        // window
         last_bytes.remove(0);
         last_bytes.push(ch);
-        // window
         last_bytes_actual.clear();
-        last_bytes_actual.extend(&hash.window[hash.index as usize..RollingHash::WINDOW_SIZE]);
-        last_bytes_actual.extend(&hash.window[0..hash.index as usize]);
+        let (segment2, segment1) = hash.window.split_at(hash.index as usize);
+        last_bytes_actual.extend(segment1);
+        last_bytes_actual.extend(segment2);
         assert_eq!(last_bytes, last_bytes_actual, "failed on pos={}", pos);
         // h1: Plain sum
         let h1_expected = last_bytes.iter().fold(0u32, |acc, &x| acc + (x as u32));
