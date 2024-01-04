@@ -46,12 +46,6 @@ extern crate alloc;
 #[macro_use]
 extern crate std;
 
-// Other crates only used when testing:
-#[cfg(test)]
-extern crate rand;
-#[cfg(test)]
-extern crate rand_xoshiro;
-
 mod base64;
 mod compare;
 mod compare_easy;

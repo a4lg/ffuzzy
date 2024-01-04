@@ -4,9 +4,6 @@
 
 #![cfg(test)]
 
-use rand::{Rng, SeedableRng};
-use rand_xoshiro::Xoshiro256StarStar;
-
 use crate::generate::{
     PartialFNVHash, RollingHash, BlockHashContext,
     Generator, GeneratorError
@@ -506,48 +503,48 @@ fn rolling_hash_rolling_basic() {
     }
 }
 
-fn fuzz_rolling_hash_rolling_random_with_config(num_iterations: usize, random_seed: u64) {
+#[test]
+fn rolling_hash_rolling_inspect_internal_state() {
+    let mut last_bytes = std::vec::Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
+    let mut last_bytes_actual = std::vec::Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
+    last_bytes.extend([0u8].iter().cycle().take(RollingHash::WINDOW_SIZE));
     // [0]: fading byte, [RollingHash::WINDOW_SIZE-1]: last (the most weighted) byte
-    let mut last_bytes = [0u8; RollingHash::WINDOW_SIZE];
-    let mut rng = Xoshiro256StarStar::seed_from_u64(random_seed);
     let mut hash = RollingHash::new();
-    for iteration in 0..num_iterations {
-        for i in 1..RollingHash::WINDOW_SIZE {
-            last_bytes[i - 1] = last_bytes[i];
-        }
-        let last_ch = rng.gen();
-        last_bytes[last_bytes.len() - 1] = last_ch;
-        hash.update_by_byte(last_ch);
+    for (pos, ch) in (u8::MIN..=u8::MAX)
+        .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0x7f).wrapping_add(0x2b)))
+        .enumerate()
+    {
+        hash.update_by_byte(ch);
+        last_bytes.remove(0);
+        last_bytes.push(ch);
+        // window
+        last_bytes_actual.clear();
+        last_bytes_actual.extend(&hash.window[hash.index as usize..RollingHash::WINDOW_SIZE]);
+        last_bytes_actual.extend(&hash.window[0..hash.index as usize]);
+        assert_eq!(last_bytes, last_bytes_actual, "failed on pos={}", pos);
         // h1: Plain sum
         let h1_expected = last_bytes.iter().fold(0u32, |acc, &x| acc + (x as u32));
-        assert_eq!(hash.h1, h1_expected, "failed on iteration={}", iteration);
+        assert_eq!(hash.h1, h1_expected, "failed on pos={}", pos);
         // h2: Weighted sum
         let mut h2_expected = 0u32;
         for (i, &ch) in last_bytes.iter().enumerate() {
             h2_expected += ((i as u32) + 1) * (ch as u32);
         }
-        assert_eq!(hash.h2, h2_expected, "failed on iteration={}", iteration);
+        assert_eq!(hash.h2, h2_expected, "failed on pos={}", pos);
         // h3: shift-xor
         let mut h3_expected = 0u32;
         for &ch in last_bytes.iter() {
             h3_expected <<= RollingHash::H3_LSHIFT;
             h3_expected ^= ch as u32;
         }
-        assert_eq!(hash.h3, h3_expected, "failed on iteration={}", iteration);
+        assert_eq!(hash.h3, h3_expected, "failed on pos={}", pos);
         // value: h1+h2+h3
         assert_eq!(
             hash.value(),
             h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected),
-            "failed on iteration={}", iteration
+            "failed on pos={}", pos
         );
     }
-}
-
-#[test]
-fn fuzz_rolling_hash_rolling_random() {
-    const NUM_ITERATIONS: usize = 1_000_000;
-    const RANDOM_SEED: u64 = 0x4d75_bf08_e0e0_9e73;
-    fuzz_rolling_hash_rolling_random_with_config(NUM_ITERATIONS, RANDOM_SEED);
 }
 
 
