@@ -8,7 +8,7 @@
 ///
 /// This is the same alphabet set defined in the Table 1 of
 /// [RFC 4648](https://datatracker.ietf.org/doc/rfc4648/).
-#[cfg(any(doc, all(feature = "alloc", not(feature = "unsafe"))))]
+#[cfg(all(feature = "alloc", any(doc, not(feature = "unsafe"))))]
 pub(crate) const BASE64_TABLE: [char; 64] = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
     'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
