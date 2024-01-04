@@ -92,6 +92,14 @@ where
 ///
 /// It converts internal block hash contents into the sequence of Base64
 /// alphabets and appends to a given [`String`].
+///
+/// # Performance Consideration
+///
+/// To avoid duplicate reservation / reallocation, this function expects that
+/// `buf` (the output [`String`]) is expected to be reserved before calling this
+/// method.  Pre-allocating the string should be easy because we have the
+/// [`FuzzyHashData::len_in_str()`](crate::hash::FuzzyHashData::len_in_str())
+/// method.
 #[cfg(feature = "alloc")]
 #[inline]
 pub(crate) fn insert_block_hash_into_string<const N: usize>(
