@@ -875,16 +875,9 @@ where
         Ok(())
     }
 
-    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
-    /// of a string representation.
-    ///
-    /// If the parser succeeds, it also updates the `index` argument to the
-    /// first non-used index to construct the fuzzy hash, which is that of
-    /// either the end of the string or the character `','` to separate the rest
-    /// of the fuzzy hash and the file name field.
-    ///
-    /// If the parser fails, `index` is not updated.
-    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
+    /// The internal implementation of [`from_bytes_with_last_index()`](Self::from_bytes_with_last_index()).
+    #[inline(always)]
+    fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {
         let mut fuzzy = Self::new();
@@ -960,11 +953,25 @@ where
 
     /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
     /// of a string representation.
-    #[inline(always)]
+    ///
+    /// If the parser succeeds, it also updates the `index` argument to the
+    /// first non-used index to construct the fuzzy hash, which is that of
+    /// either the end of the string or the character `','` to separate the rest
+    /// of the fuzzy hash and the file name field.
+    ///
+    /// If the parser fails, `index` is not updated.
+    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
+        -> Result<Self, ParseError>
+    {
+        Self::from_bytes_with_last_index_internal(str, index)
+    }
+
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
+    /// of a string representation.
     pub fn from_bytes(str: &[u8])
         -> Result<Self, ParseError>
     {
-        Self::from_bytes_with_last_index(str, &mut 0usize)
+        Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }
 
     /// Normalize the fuzzy hash in place.
