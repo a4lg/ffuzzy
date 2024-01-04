@@ -11,6 +11,7 @@
     other clippy::needless_borrow failures.
 */
 #![cfg_attr(not(feature = "maint-lints"), allow(clippy::needless_borrow))]
+#![cfg_attr(not(feature = "maint-lints"), allow(clippy::needless_borrows_for_generic_args))]
 
 use crate::compare::FuzzyHashCompareTarget;
 use crate::compare::position_array::{
