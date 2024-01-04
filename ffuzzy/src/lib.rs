@@ -46,6 +46,10 @@ extern crate alloc;
 #[macro_use]
 extern crate std;
 
+// Other crates only used when testing:
+#[cfg(test)]
+extern crate collect_slice;
+
 mod base64;
 mod compare;
 mod compare_easy;

@@ -5,6 +5,7 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
+use collect_slice::CollectSlice;
 
 use crate::base64::BASE64_INVALID;
 use crate::hash::{
@@ -1074,11 +1075,8 @@ fn data_model_corruption() {
             for len_blockhash in u8::MIN..=u8::MAX {
                 let mut hash = hash;
                 hash.len_blockhash1 = len_blockhash;
-                // Fill with valid pattern (up to block hash length)
-                for (i, ch) in hash.blockhash1.iter_mut().enumerate() {
-                    if i as u8 == len_blockhash { break; }
-                    *ch = i as u8;
-                }
+                // Fill with valid values first
+                (0..len_blockhash).collect_slice(&mut hash.blockhash1);
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_1 as u8,
                     "failed (3-1-1) on typename={}, len_blockhash={}", typename, len_blockhash);
@@ -1093,11 +1091,8 @@ fn data_model_corruption() {
             for len_blockhash in u8::MIN..=u8::MAX {
                 let mut hash = hash;
                 hash.len_blockhash2 = len_blockhash;
-                // Fill with valid pattern (up to block hash length)
-                for (i, ch) in hash.blockhash2.iter_mut().enumerate() {
-                    if i as u8 == len_blockhash { break; }
-                    *ch = i as u8;
-                }
+                // Fill with valid values first
+                (0..len_blockhash).collect_slice(&mut hash.blockhash2);
                 // Validness depends on the block hash length we set
                 assert_eq!(hash.is_valid(), len_blockhash <= <$ty>::MAX_BLOCK_HASH_SIZE_2 as u8,
                     "failed (3-2-1) on typename={}, len_blockhash={}", typename, len_blockhash);
@@ -1113,9 +1108,7 @@ fn data_model_corruption() {
                 let mut hash = hash;
                 hash.len_blockhash1 = block_hash_len as u8;
                 // Fill with valid values first
-                for (i, ch) in hash.blockhash1[..block_hash_len].iter_mut().enumerate() {
-                    *ch = i as u8;
-                }
+                (0..).collect_slice(&mut hash.blockhash1[..block_hash_len]);
                 assert!(hash.is_valid(), "failed (4-1-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put an invalid character in the block hash.
                 for corrupted_index in 0..block_hash_len {
@@ -1134,9 +1127,7 @@ fn data_model_corruption() {
                 let mut hash = hash;
                 hash.len_blockhash2 = block_hash_len as u8;
                 // Fill with valid values first
-                for (i, ch) in hash.blockhash2[..block_hash_len].iter_mut().enumerate() {
-                    *ch = i as u8;
-                }
+                (0..).collect_slice(&mut hash.blockhash2[..block_hash_len]);
                 assert!(hash.is_valid(), "failed (4-2-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put an invalid character in the block hash.
                 for corrupted_index in 0..block_hash_len {
@@ -1155,9 +1146,7 @@ fn data_model_corruption() {
                 let mut hash = hash;
                 hash.len_blockhash1 = block_hash_len as u8;
                 // Fill with valid values first
-                for (i, ch) in hash.blockhash1[..block_hash_len].iter_mut().enumerate() {
-                    *ch = i as u8;
-                }
+                (0..).collect_slice(&mut hash.blockhash1[..block_hash_len]);
                 assert!(hash.is_valid(), "failed (5-1-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put a non-zero character outside the block hash.
                 for corrupted_index in block_hash_len..<$ty>::MAX_BLOCK_HASH_SIZE_1 {
@@ -1176,9 +1165,7 @@ fn data_model_corruption() {
                 let mut hash = hash;
                 hash.len_blockhash2 = block_hash_len as u8;
                 // Fill with valid values first
-                for (i, ch) in hash.blockhash2[..block_hash_len].iter_mut().enumerate() {
-                    *ch = i as u8;
-                }
+                (0..).collect_slice(&mut hash.blockhash2[..block_hash_len]);
                 assert!(hash.is_valid(), "failed (5-2-1) on typename={}, block_hash_len={}", typename, block_hash_len);
                 // Put a non-zero character outside the block hash.
                 for corrupted_index in block_hash_len..<$ty>::MAX_BLOCK_HASH_SIZE_2 {

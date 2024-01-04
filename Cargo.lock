@@ -9,6 +9,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "collect_slice"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fcf7ebe98d2f8eba5ecf08e7ffa74384eea74b35d2fdee7aa417cf3a9cbe658"
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -19,6 +25,7 @@ name = "ffuzzy"
 version = "0.2.10"
 dependencies = [
  "cfg-if",
+ "collect_slice",
  "itertools",
  "static_assertions",
  "version_check",
