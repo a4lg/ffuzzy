@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 // Separate from README.md to use rustdoc-specific features in docs/readme.md.
 #![doc = include_str!("docs/readme.md")]
@@ -41,8 +41,8 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-// std is required when we are testing.
-#[cfg(test)]
+// std is required when we are testing (including doctests).
+#[cfg(any(test, doc))]
 #[macro_use]
 extern crate std;
 
