@@ -50,7 +50,7 @@ use position_array::BlockHashPositionArrayImplUnchecked;
 ///
 /// In fact, if you just compare two fuzzy hashes in this crate, a temporary
 /// [`FuzzyHashCompareTarget`] object containing two block hashes or
-/// corresponding [half-baked object](BlockHashPositionArrayData) containing
+/// corresponding [half-baked object](BlockHashPositionArray) containing
 /// one block hash, will be created from either side of the comparison.
 ///
 /// See also:
