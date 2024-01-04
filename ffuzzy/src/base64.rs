@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023
+// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023 and 2024
 
 
 /// Base64 alphabet table in [`char`].
@@ -8,7 +8,7 @@
 ///
 /// This is the same alphabet set defined in the Table 1 of
 /// [RFC 4648](https://datatracker.ietf.org/doc/rfc4648/).
-#[cfg(feature = "alloc")]
+#[cfg(any(doc, all(feature = "alloc", not(feature = "unsafe"))))]
 pub(crate) const BASE64_TABLE: [char; 64] = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
     'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -85,7 +85,7 @@ pub(crate) fn base64_index(ch: u8) -> u8 {
 
 
 /// Constant assertions related to this module.
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 #[doc(hidden)]
 mod const_asserts {
     use super::*;
@@ -123,7 +123,7 @@ mod tests {
             assert!(idx < 64);
             assert_eq!(expected_idx, idx);
             assert_eq!(base64_index_simple(ch), Some(idx as u8));
-            #[cfg(feature = "alloc")]
+            #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
             {
                 assert_eq!(BASE64_TABLE[idx], ch as char);
             }
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn alphabets() {
         // Each alphabet must be representable in u8 (and in ASCII 7-bit).
-        #[cfg(feature = "alloc")]
+        #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
         for ch in BASE64_TABLE {
             assert!((ch as u32) < 0x100);
             assert!(ch.is_ascii());
@@ -215,7 +215,7 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "alloc")]
+    #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
     #[test]
     fn equiv_between_u8_and_char() {
         use alloc::string::String;
@@ -244,7 +244,7 @@ mod tests {
         }
         // Invalid character has invalid index.
         assert!(BASE64_TABLE_U8.len() <= BASE64_INVALID as usize);
-        #[cfg(feature = "alloc")]
+        #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
         {
             assert!(BASE64_TABLE.len() <= BASE64_INVALID as usize);
         }

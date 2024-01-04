@@ -3,11 +3,11 @@
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 use alloc::string::String;
 
 use crate::base64::{BASE64_INVALID, BASE64_TABLE_U8, base64_index};
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 use crate::base64::BASE64_TABLE;
 use crate::hash::block::{
     block_hash, block_size, BlockHashSize, ConstrainedBlockHashSize
@@ -100,7 +100,7 @@ where
 /// method.  Pre-allocating the string should be easy because we have the
 /// [`FuzzyHashData::len_in_str()`](crate::hash::FuzzyHashData::len_in_str())
 /// method.
-#[cfg(feature = "alloc")]
+#[cfg(any(doc, all(feature = "alloc", not(feature = "unsafe"))))]
 #[inline]
 pub(crate) fn insert_block_hash_into_string<const N: usize>(
     buf: &mut String,

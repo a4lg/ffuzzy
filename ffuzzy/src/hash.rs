@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 #[cfg(feature = "alloc")]
 use alloc::string::String;
@@ -781,24 +781,36 @@ where
         debug_assert!((self.len_blockhash1 as usize) <= block_hash::FULL_SIZE);
         debug_assert!((self.len_blockhash2 as usize) <= block_hash::FULL_SIZE);
         debug_assert!(block_size::is_log_valid(self.log_blocksize));
-        let mut buf = String::with_capacity(self.len_in_str());
-        optionally_unsafe! {
-            invariant!((self.log_blocksize as usize) < block_size::NUM_VALID);
+        let len_in_str = self.len_in_str();
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "unsafe")] {
+                unsafe {
+                    let mut vec = alloc::vec::Vec::<u8>::with_capacity(len_in_str);
+                    vec.set_len(len_in_str);
+                    let mut buf = vec.get_unchecked_mut(..len_in_str);
+                    invariant!(buf.len() == self.len_in_str());
+                    self.store_into_bytes(&mut buf).unwrap();
+                    alloc::string::String::from_utf8_unchecked(vec)
+                }
+            }
+            else {
+                let mut buf = String::with_capacity(len_in_str);
+                buf.push_str(block_size::BLOCK_SIZES_STR[self.log_blocksize as usize]); // grcov-excl-br-line:ARRAY
+                buf.push(':');
+                algorithms::insert_block_hash_into_string(
+                    &mut buf,
+                    &self.blockhash1,
+                    self.len_blockhash1
+                );
+                buf.push(':');
+                algorithms::insert_block_hash_into_string(
+                    &mut buf,
+                    &self.blockhash2,
+                    self.len_blockhash2
+                );
+                buf
+            }
         }
-        buf.push_str(block_size::BLOCK_SIZES_STR[self.log_blocksize as usize]); // grcov-excl-br-line:ARRAY
-        buf.push(':');
-        algorithms::insert_block_hash_into_string(
-            &mut buf,
-            &self.blockhash1,
-            self.len_blockhash1
-        );
-        buf.push(':');
-        algorithms::insert_block_hash_into_string(
-            &mut buf,
-            &self.blockhash2,
-            self.len_blockhash2
-        );
-        buf
     }
 
     /// Store the string representation of the fuzzy hash into the bytes.

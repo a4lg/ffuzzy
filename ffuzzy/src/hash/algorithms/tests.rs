@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
 
 use crate::base64::{base64_index, BASE64_TABLE_U8};
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 use crate::base64::BASE64_TABLE;
 use crate::hash::algorithms::{
     BlockHashParseState,
@@ -15,7 +15,7 @@ use crate::hash::algorithms::{
     parse_block_hash_from_bytes,
     parse_block_size_from_bytes,
 };
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 use crate::hash::algorithms::insert_block_hash_into_string;
 use crate::hash::block::block_hash;
 use crate::hash::block::block_size;
@@ -96,7 +96,7 @@ fn insert_block_hash_into_bytes_contents() {
     });
 }
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 #[test]
 fn insert_block_hash_into_string_contents() {
     test_blockhash_content_all(&mut |bh, bh_norm| {
@@ -116,6 +116,7 @@ fn insert_block_hash_into_string_contents() {
                     assert_eq!(BASE64_TABLE_U8[idx_ch as usize], base64_ch,
                         "failed ({}-3) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
                 }
+                #[cfg(not(feature = "unsafe"))]
                 for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.chars()).enumerate() {
                     assert_eq!(BASE64_TABLE[idx_ch as usize], base64_ch,
                         "failed ({}-4) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
@@ -128,7 +129,7 @@ fn insert_block_hash_into_string_contents() {
     });
 }
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
 #[test]
 fn insert_block_hash_into_string_examples_and_append() {
     let mut buffer: [u8; block_hash::FULL_SIZE] = [0u8; block_hash::FULL_SIZE];
