@@ -720,29 +720,14 @@ impl Generator {
 macro_rules! generator_update_template {
     ($self: expr, $buffer: expr, $proc_per_byte: block) => {
         optionally_unsafe! {
-            #[cfg(not(feature = "unsafe"))]
-            #[doc(hidden)]
-            macro_rules! bhrange0_init {() => { 0 }}
-            #[cfg(not(feature = "unsafe"))]
-            #[doc(hidden)]
-            macro_rules! bhrange1_init {() => { 0 }}
-            #[cfg(not(feature = "unsafe"))]
-            #[doc(hidden)]
-            macro_rules! bh_ref_type {() => { &mut BlockHashContext }}
-            #[cfg(feature = "unsafe")]
-            #[doc(hidden)]
-            macro_rules! bhrange0_init {() => { $self.bh_context.as_mut_ptr().add($self.bhidx_start) }}
-            #[cfg(feature = "unsafe")]
-            #[doc(hidden)]
-            macro_rules! bhrange1_init {() => { $self.bh_context.as_mut_ptr().add($self.bhidx_end) }}
-            #[cfg(feature = "unsafe")]
-            #[doc(hidden)]
-            macro_rules! bh_ref_type {() => { *mut BlockHashContext }}
-
-            let mut _bhrange0 = bhrange0_init!();
-            let mut _bhrange1 = bhrange1_init!();
-            let mut _bh : bh_ref_type!();
-            let mut _bh_next : bh_ref_type!();
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "unsafe")] {
+                    let mut bhrange0 = $self.bh_context.as_mut_ptr().add($self.bhidx_start);
+                    let mut bhrange1 = $self.bh_context.as_mut_ptr().add($self.bhidx_end);
+                    let mut bh: *mut BlockHashContext;
+                    let mut bh_next: *mut BlockHashContext;
+                }
+            }
 
             for ch in $buffer {
                 $proc_per_byte;
@@ -752,37 +737,25 @@ macro_rules! generator_update_template {
                     $self.h_last.update_by_byte(ch);
                 }
 
-                #[cfg(not(feature = "unsafe"))]
-                #[doc(hidden)]
-                macro_rules! bh_loop_1 {
-                    ($block: block) => {
-                        for _bh1 in &mut $self.bh_context[$self.bhidx_start..$self.bhidx_end] {
-                            _bh = _bh1;
-                            $block
-                        }
-                    };
-                }
-                #[cfg(feature = "unsafe")]
-                #[doc(hidden)]
-                macro_rules! bh_loop_1 {
-                    ($block: block) => {
-                        _bh = _bhrange0;
+                cfg_if::cfg_if! {
+                    if #[cfg(feature = "unsafe")] {
+                        bh = bhrange0;
                         loop {
-                            $block
-                            _bh = _bh.add(1);
-                            if _bh == _bhrange1 {
+                            (*bh).h_full.update_by_byte(ch);
+                            (*bh).h_half.update_by_byte(ch);
+                            bh = bh.add(1);
+                            if bh == bhrange1 {
                                 break;
                             }
                         }
-                    };
-                }
-                bh_loop_1!({
-                    #[allow(clippy::explicit_auto_deref)]
-                    {
-                        (*_bh).h_full.update_by_byte(ch);
-                        (*_bh).h_half.update_by_byte(ch);
                     }
-                });
+                    else {
+                        for bh1 in &mut $self.bh_context[$self.bhidx_start..$self.bhidx_end] {
+                            bh1.h_full.update_by_byte(ch);
+                            bh1.h_half.update_by_byte(ch);
+                        }
+                    }
+                }
 
                 let h_org = $self.roll_hash.value().wrapping_add(1);
                 let mut h = h_org / block_size::MIN;
@@ -797,61 +770,54 @@ macro_rules! generator_update_template {
                 }
                 h >>= $self.bhidx_start;
 
-                let mut _i = $self.bhidx_start;
-                #[cfg(not(feature = "unsafe"))]
-                #[doc(hidden)]
-                macro_rules! bh_loop_2 {
-                    ($block: block) => {
-                        loop {
-                            $block;
-                            _i += 1;
-                            if _i >= $self.bhidx_end {
-                                break;
-                            }
+                cfg_if::cfg_if! {
+                    if #[cfg(feature = "unsafe")] {
+                        #[doc(hidden)]
+                        macro_rules! bh_loop_2 {
+                            ($block: block) => {
+                                bh = bhrange0;
+                                loop {
+                                    bh_next = bh.add(1);
+                                    $block
+                                    bh = bh_next;
+                                    if bh >= bhrange1 {
+                                        break;
+                                    }
+                                }
+                            };
                         }
-                    };
-                }
-                #[cfg(feature = "unsafe")]
-                #[doc(hidden)]
-                macro_rules! bh_loop_2 {
-                    ($block: block) => {
-                        _bh = _bhrange0;
-                        loop {
-                            _bh_next = _bh.add(1);
-                            $block
-                            _bh = _bh_next;
-                            if _bh >= _bhrange1 {
-                                break;
-                            }
+                    }
+                    else {
+                        let mut i = $self.bhidx_start;
+                        #[doc(hidden)]
+                        macro_rules! bh_loop_2 {
+                            ($block: block) => {
+                                loop {
+                                    $block;
+                                    i += 1;
+                                    if i >= $self.bhidx_end {
+                                        break;
+                                    }
+                                }
+                            };
                         }
-                    };
+                    }
                 }
                 bh_loop_2!({
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr {() => { $self.bh_context[_i] }}
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_next {() => { $self.bh_context[_i+1] }}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr {() => { (*_bh) }}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_next {() => { (*_bh_next) }}
-
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_advance_start {() => {}}
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_advance_end   {() => {}}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_advance_start {() => { _bhrange0 = _bhrange0.add(1) }}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_advance_end   {() => { _bhrange1 = _bhrange1.add(1) }}
+                    cfg_if::cfg_if! {
+                        if #[cfg(feature = "unsafe")] {
+                            #[doc(hidden)]
+                            macro_rules! bh_curr {() => { *bh }}
+                            #[doc(hidden)]
+                            macro_rules! bh_next {() => { *bh_next }}
+                        }
+                        else {
+                            #[doc(hidden)]
+                            macro_rules! bh_curr {() => { $self.bh_context[i] }}
+                            #[doc(hidden)]
+                            macro_rules! bh_next {() => { $self.bh_context[i+1] }}
+                        }
+                    }
 
                     if unlikely(
                         bh_curr!().blockhash_index == 0 // grcov-excl-br-line:ARRAY
@@ -876,24 +842,25 @@ macro_rules! generator_update_template {
                             bh_next!().h_full = bh_curr!().h_full; // grcov-excl-br-line:ARRAY
                             bh_next!().h_half = bh_curr!().h_half; // grcov-excl-br-line:ARRAY
                             $self.bhidx_end += 1;
-                            bh_advance_end!();
+                            cfg_if::cfg_if! {
+                                if #[cfg(feature = "unsafe")] {
+                                    bhrange1 = bhrange1.add(1);
+                                }
+                            }
                         }
                     }
 
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr_reuse_init {() => { _bh = &mut $self.bh_context[_i] }}
-                    #[cfg(not(feature = "unsafe"))]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr_reused {() => { _bh }}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr_reuse_init {() => {}}
-                    #[cfg(feature = "unsafe")]
-                    #[doc(hidden)]
-                    macro_rules! bh_curr_reused {() => { *_bh }}
-
-                    bh_curr_reuse_init!(); // grcov-excl-br-line:ARRAY
+                    cfg_if::cfg_if! {
+                        if #[cfg(feature = "unsafe")] {
+                            #[doc(hidden)]
+                            macro_rules! bh_curr_reused {() => { *bh }}
+                        }
+                        else {
+                            let bh_curr_reused = &mut $self.bh_context[i]; // grcov-excl-br-line:ARRAY
+                            #[doc(hidden)]
+                            macro_rules! bh_curr_reused {() => { bh_curr_reused }}
+                        }
+                    }
                     invariant!(bh_curr_reused!().blockhash_index < block_hash::FULL_SIZE);
                     bh_curr_reused!().blockhash[bh_curr_reused!().blockhash_index] = bh_curr_reused!().h_full.value(); // grcov-excl-br-line:ARRAY
                     bh_curr_reused!().blockhash_ch_half = bh_curr_reused!().h_half.value();
@@ -913,7 +880,11 @@ macro_rules! generator_update_template {
                         // Current block hash context will be never used on the final fuzzy hash.
                         // Advance bhidx_start and prepare for the next block hash elimination.
                         $self.bhidx_start += 1;
-                        bh_advance_start!();
+                        cfg_if::cfg_if! {
+                            if #[cfg(feature = "unsafe")] {
+                                bhrange0 = bhrange0.add(1);
+                            }
+                        }
                         $self.roll_mask = $self.roll_mask.wrapping_mul(2).wrapping_add(1);
                         $self.elim_border = $self.elim_border.wrapping_mul(2);
                     }
