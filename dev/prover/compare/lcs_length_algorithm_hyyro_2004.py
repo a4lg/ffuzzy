@@ -117,8 +117,8 @@ if True:
     )
 
 # Hyyrö, 2017: Observation 2:
-# The difference of the accumlated LLCS equals the number of
-# non-changed columns.
+# The difference of the accumlated LLCS equals the number of horizontally
+# changed columns.
 llcs_after_row1_calc = dp_row1[-1] - dp_row1[0]
 num_of_changes = functools.reduce(
     lambda x, y: x + y,
