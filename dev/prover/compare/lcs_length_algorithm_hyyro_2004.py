@@ -122,7 +122,7 @@ if True:
 llcs_after_row1_calc = dp_row1[-1] - dp_row1[0]
 num_of_changes = functools.reduce(
     lambda x, y: x + y,
-    [(dp_row1[i+1] - dp_row1[i+0]) for i in range(STRLEN)]
+    [(dp_row1[i+1] - dp_row1[i]) for i in range(STRLEN)]
 )
 constraints_dp_llcs_post = [llcs_after_row1_calc == num_of_changes]
 if True:
@@ -258,7 +258,7 @@ if True:
 ####
 ####    NOT IN THIS FORMAL PROOF:
 ####
-####    Because LLCS is the *longest* common subsequence,
+####    Because LLCS is length of the *longest* common subsequence,
 ####    the LCS distance can be thought as number of operations
 ####    preserving the longest common subsequence between two and
 ####    add / remove all other characters.  That would minimize the
