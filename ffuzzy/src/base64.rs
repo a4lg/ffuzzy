@@ -2,22 +2,6 @@
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023 and 2024
 
 
-/// Base64 alphabet table in [`char`].
-///
-/// This table lists all Base64 alphabets as used in ssdeep.
-///
-/// This is the same alphabet set defined in the Table 1 of
-/// [RFC 4648](https://datatracker.ietf.org/doc/rfc4648/).
-#[cfg(all(feature = "alloc", any(doc, not(feature = "unsafe"))))]
-pub(crate) const BASE64_TABLE: [char; 64] = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    '+', '/',
-];
-
 /// Base64 alphabet table in [`u8`].
 ///
 /// This table lists all Base64 alphabets as used in ssdeep.
@@ -84,16 +68,6 @@ pub(crate) fn base64_index(ch: u8) -> u8 {
 
 
 
-/// Constant assertions related to this module.
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-#[doc(hidden)]
-mod const_asserts {
-    use super::*;
-    use static_assertions::const_assert_eq;
-
-    const_assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());
-}
-
 // grcov-excl-br-start
 #[cfg(test)]
 mod tests {
@@ -123,10 +97,6 @@ mod tests {
             assert!(idx < 64);
             assert_eq!(expected_idx, idx);
             assert_eq!(base64_index_simple(ch), Some(idx as u8));
-            #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-            {
-                assert_eq!(BASE64_TABLE[idx], ch as char);
-            }
             assert_eq!(BASE64_TABLE_U8[idx], ch);
             covered_idxes |= 1 << idx;
             expected_idx += 1;
@@ -202,28 +172,10 @@ mod tests {
 
     #[test]
     fn alphabets() {
-        // Each alphabet must be representable in u8 (and in ASCII 7-bit).
-        #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-        for ch in BASE64_TABLE {
-            assert!((ch as u32) < 0x100);
-            assert!(ch.is_ascii());
-        }
         // Each alphabet must be unique (no duplicates in BASE64_TABLE)
         let mut alphabets = std::collections::HashSet::new();
         for ch in BASE64_TABLE_U8 {
             assert!(alphabets.insert(ch));
-        }
-    }
-
-    #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-    #[test]
-    fn equiv_between_u8_and_char() {
-        use alloc::string::String;
-        assert_eq!(BASE64_TABLE.len(), BASE64_TABLE_U8.len());
-        for i in 0..BASE64_TABLE.len() {
-            let repr_u8 = BASE64_TABLE_U8[i];
-            let repr_ch = BASE64_TABLE[i];
-            assert_eq!(String::from(repr_ch), core::str::from_utf8(&[repr_u8]).unwrap());
         }
     }
 
@@ -244,10 +196,6 @@ mod tests {
         }
         // Invalid character has invalid index.
         assert!(BASE64_TABLE_U8.len() <= BASE64_INVALID as usize);
-        #[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-        {
-            assert!(BASE64_TABLE.len() <= BASE64_INVALID as usize);
-        }
         // Just to make sure
         assert!(BASE64_INVALID >= 64);
     }

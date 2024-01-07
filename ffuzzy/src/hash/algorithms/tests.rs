@@ -5,8 +5,6 @@
 #![cfg(test)]
 
 use crate::base64::{base64_index, BASE64_TABLE_U8};
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-use crate::base64::BASE64_TABLE;
 use crate::hash::algorithms::{
     BlockHashParseState,
     insert_block_hash_into_bytes,
@@ -15,8 +13,6 @@ use crate::hash::algorithms::{
     parse_block_hash_from_bytes,
     parse_block_size_from_bytes,
 };
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-use crate::hash::algorithms::insert_block_hash_into_string;
 use crate::hash::block::block_hash;
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
@@ -94,53 +90,6 @@ fn insert_block_hash_into_bytes_contents() {
         }}
         test_for_each_block_size!(test);
     });
-}
-
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-#[test]
-fn insert_block_hash_into_string_contents() {
-    test_blockhash_content_all(&mut |bh, bh_norm| {
-        macro_rules! test {() => {
-            let bhsz = N;
-            let test = |test_num: i32, bh: &[u8]| {
-                if bh.len() > N { return; }
-                let mut buffer: [u8; N] = [0u8; N];
-                buffer[..bh.len()].copy_from_slice(bh);
-                let len = bh.len() as u8;
-                let mut s = alloc::string::String::new();
-                insert_block_hash_into_string(&mut s, &buffer, len);
-                assert_eq!(s.len(), bh.len(), "failed ({}-1) on bhsz={}, bh={:?}", test_num, bhsz, bh);
-                assert_eq!(s.bytes().len(), bh.len(), "failed ({}-2) on bhsz={}, bh={:?}", test_num, bhsz, bh);
-                // Block hash is converted to Base64 alphabets.
-                for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.bytes()).enumerate() {
-                    assert_eq!(BASE64_TABLE_U8[idx_ch as usize], base64_ch,
-                        "failed ({}-3) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
-                }
-                #[cfg(not(feature = "unsafe"))]
-                for (index, (&idx_ch, base64_ch)) in buffer[..bh.len()].iter().zip(s.chars()).enumerate() {
-                    assert_eq!(BASE64_TABLE[idx_ch as usize], base64_ch,
-                        "failed ({}-4) on bhsz={}, bh={:?}, index={}", test_num, bhsz, bh, index);
-                }
-            };
-            test(1, bh);
-            test(2, bh_norm);
-        }}
-        test_for_each_block_size!(test);
-    });
-}
-
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-#[test]
-fn insert_block_hash_into_string_examples_and_append() {
-    let mut buffer: [u8; block_hash::FULL_SIZE] = [0u8; block_hash::FULL_SIZE];
-    for (i, ch) in buffer.iter_mut().enumerate().take(7) {
-        *ch = i as u8;
-    } // "ABCDEFG"
-    let len = 7u8;
-    let mut s = alloc::string::String::from("@@");
-    // This operation is "append".
-    insert_block_hash_into_string(&mut s, &buffer, len);
-    assert_eq!("@@ABCDEFG", s);
 }
 
 #[test]

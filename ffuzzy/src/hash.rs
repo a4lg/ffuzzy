@@ -781,31 +781,16 @@ where
         debug_assert!((self.len_blockhash1 as usize) <= block_hash::FULL_SIZE);
         debug_assert!((self.len_blockhash2 as usize) <= block_hash::FULL_SIZE);
         debug_assert!(block_size::is_log_valid(self.log_blocksize));
-        let len_in_str = self.len_in_str();
+        let mut vec = alloc::vec![0u8; self.len_in_str()];
+        self.store_into_bytes(vec.as_mut_slice()).unwrap();
         cfg_if::cfg_if! {
             if #[cfg(feature = "unsafe")] {
                 unsafe {
-                    let mut vec = alloc::vec![0u8; len_in_str];
-                    self.store_into_bytes(vec.as_mut_slice()).unwrap();
                     alloc::string::String::from_utf8_unchecked(vec)
                 }
             }
             else {
-                let mut buf = String::with_capacity(len_in_str);
-                buf.push_str(block_size::BLOCK_SIZES_STR[self.log_blocksize as usize]); // grcov-excl-br-line:ARRAY
-                buf.push(':');
-                algorithms::insert_block_hash_into_string(
-                    &mut buf,
-                    &self.blockhash1,
-                    self.len_blockhash1
-                );
-                buf.push(':');
-                algorithms::insert_block_hash_into_string(
-                    &mut buf,
-                    &self.blockhash2,
-                    self.len_blockhash2
-                );
-                buf
+                alloc::string::String::from_utf8(vec).unwrap()
             }
         }
     }

@@ -4,8 +4,6 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 use crate::base64::{BASE64_INVALID, BASE64_TABLE_U8, base64_index};
-#[cfg(all(feature = "alloc", not(feature = "unsafe")))]
-use crate::base64::BASE64_TABLE;
 use crate::hash::block::{
     block_hash, block_size, BlockHashSize, ConstrainedBlockHashSize
 };
@@ -83,37 +81,6 @@ where
         }
     }
     true
-}
-
-/// Push block hash contents at the end of a given [`String`].
-///
-/// It converts internal block hash contents into the sequence of Base64
-/// alphabets and appends to a given [`String`].
-///
-/// # Performance Consideration
-///
-/// To avoid duplicate reservation / reallocation, this function expects that
-/// `buf` (the output [`String`]) is expected to be reserved before calling this
-/// method.  Pre-allocating the string should be easy because we have the
-/// [`FuzzyHashData::len_in_str()`](crate::hash::FuzzyHashData::len_in_str())
-/// method.
-#[cfg(all(feature = "alloc", any(doc, not(feature = "unsafe"))))]
-#[inline]
-pub(crate) fn insert_block_hash_into_string<const N: usize>(
-    buf: &mut alloc::string::String,
-    hash: &[u8; N],
-    len: u8
-)
-where
-    BlockHashSize<N>: ConstrainedBlockHashSize
-{
-    optionally_unsafe! {
-        invariant!((len as usize) <= N);
-        for idx in &hash[0..len as usize] { // grcov-excl-br-line:ARRAY
-            invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
-            buf.push(BASE64_TABLE[*idx as usize]); // grcov-excl-br-line:ARRAY
-        }
-    }
 }
 
 /// Push block hash contents at the end of a given [`u8`] slice.
