@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn alphabets() {
-        // Each alphabet must be unique (no duplicates in BASE64_TABLE)
+        // Each alphabet must be unique (no duplicates in BASE64_TABLE_U8)
         let mut alphabets = std::collections::HashSet::new();
         for ch in BASE64_TABLE_U8 {
             assert!(alphabets.insert(ch));
