@@ -146,6 +146,10 @@ const ROLLING_WINDOW: usize = 7;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RollingHash {
     /// Current rolling window index.
+    ///
+    /// **Performance Analysis:**
+    /// Substituting this variable's type to `usize` (more semantically correct)
+    /// resulted in some slowdown (~10%).  Keeping this state for now.
     index: u32,
 
     /// Hash component 1.
