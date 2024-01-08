@@ -25,18 +25,18 @@ pub(crate) fn normalize_block_hash_in_place<const N: usize>(
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    let mut seq: u32 = 0;
+    let mut seq: usize = 0;
     let mut prev = BASE64_INVALID;
     let old_blockhash_len = *blockhash_len;
-    let mut len: u32 = 0;
+    let mut len: usize = 0;
     optionally_unsafe! {
         for i in 0..old_blockhash_len as usize {
             invariant!(i < N);
             let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
             if curr == prev {
                 seq += 1;
-                if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
-                    seq = block_hash::MAX_SEQUENCE_SIZE as u32;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                    seq = block_hash::MAX_SEQUENCE_SIZE;
                     continue;
                 }
             }
@@ -44,16 +44,16 @@ where
                 seq = 0;
                 prev = curr;
             }
-            invariant!((len as usize) < N);
-            blockhash[len as usize] = curr; // grcov-excl-br-line:ARRAY
+            invariant!(len < N);
+            blockhash[len] = curr; // grcov-excl-br-line:ARRAY
             len += 1;
         }
         *blockhash_len = len as u8;
         // Clear old (possibly) non-zero hash buffer (for default Eq)
         invariant!(len as u8 <= old_blockhash_len);
-        invariant!((len as usize) <= N);
+        invariant!(len <= N);
         invariant!((old_blockhash_len as usize) <= N);
-        blockhash[len as usize..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
+        blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
     }
 }
 
@@ -65,13 +65,13 @@ pub(crate) fn is_normalized<const N: usize>(
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    let mut seq: u32 = 0;
+    let mut seq: usize = 0;
     let mut prev = BASE64_INVALID;
     for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
         let curr: u8 = *ch;
         if *ch == prev {
             seq += 1;
-            if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
+            if seq >= block_hash::MAX_SEQUENCE_SIZE {
                 return false;
             }
         }
@@ -192,10 +192,10 @@ pub(crate) fn parse_block_hash_from_bytes<const N: usize, const NORM: bool>(
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    let mut seq: u32 = 0;
+    let mut seq: usize = 0;
     let mut prev = BASE64_INVALID;
     let mut j = *i;
-    let mut len: u32 = 0;
+    let mut len: usize = 0;
     #[doc(hidden)]
     macro_rules! pre_ret {() => { *blockhash_len = len as u8 }}
     #[doc(hidden)]
@@ -209,8 +209,8 @@ where
                 if NORM {
                     if curr == prev {
                         seq += 1;
-                        if seq >= block_hash::MAX_SEQUENCE_SIZE as u32 {
-                            seq = block_hash::MAX_SEQUENCE_SIZE as u32;
+                        if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                            seq = block_hash::MAX_SEQUENCE_SIZE;
                             j += 1;
                             continue;
                         }
@@ -220,11 +220,11 @@ where
                         prev = curr;
                     }
                 }
-                if len as usize >= N {
+                if len >= N {
                     pre_ret!();
                     ret!(BlockHashParseState::OverflowError);
                 }
-                blockhash[len as usize] = curr; // grcov-excl-br-line:ARRAY
+                blockhash[len] = curr; // grcov-excl-br-line:ARRAY
                 len += 1;
             }
             else {
