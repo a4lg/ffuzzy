@@ -184,11 +184,12 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                     let mut buffer = [u8::MAX; N];
                     let mut input_offset = insert_offset;
                     assert_eq!(
-                        parse_block_hash_from_bytes::<N, $norm>(
+                        parse_block_hash_from_bytes::<_, N, $norm>(
                             &mut buffer,
                             &mut len_out,
                             &str_buffer[..insert_offset + bh.len()],
-                            &mut input_offset
+                            &mut input_offset,
+                            |_, _| {}
                         ),
                         BlockHashParseState::MetEndOfString,
                         "failed (1-{}-1) on bhsz={}, bh={:?}, insert_offset={}", test_num, bhsz, bh, insert_offset
@@ -219,11 +220,12 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                         let mut buffer = [u8::MAX; N];
                         let mut input_offset = insert_offset;
                         assert_eq!(
-                            parse_block_hash_from_bytes::<N, $norm>(
+                            parse_block_hash_from_bytes::<_, N, $norm>(
                                 &mut buffer,
                                 &mut len_out,
                                 &str_buffer[..insert_offset + bh.len() + 1],
-                                &mut input_offset
+                                &mut input_offset,
+                                |_, _| {}
                             ),
                             status,
                             "failed (2-{}-1) on bhsz={}, bh={:?}, insert_offset={}, ch={:?}", test_num, bhsz, bh, insert_offset, ch
@@ -244,6 +246,127 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
         }}
         test_for_each_block_size!(test);
     });
+}
+
+#[test]
+fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
+    use std::vec::Vec;
+    // Prerequisite
+    assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
+    // Shorthand for an invalid value
+    const I: u8 = u8::MAX;
+    let samples: &[(&[u8], Vec<(usize, usize)>, [u8; 32], BlockHashParseState, usize, u8)] = &[
+        // Test Group 1A: Terminating behavior ending with a sequence
+        (
+            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG"[..],
+            vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 28, 18
+        ),
+        (
+            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG:"[..],
+            vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetColon, 29, 18
+        ),
+        (
+            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG,"[..],
+            vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetComma, 29, 18
+        ),
+        (
+            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG@"[..],
+            vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::Base64Error, 28, 18
+        ),
+        // Test Group 1B: Terminating behavior *not* ending with a sequence.
+        (
+            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA"[..],
+            vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 28, 18
+        ),
+        (
+            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA:"[..],
+            vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetColon, 29, 18
+        ),
+        (
+            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA,"[..],
+            vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetComma, 29, 18
+        ),
+        (
+            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA@"[..],
+            vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::Base64Error, 28, 18
+        ),
+        // Test Group 2: Single Sequence
+        (
+            &b"AAA"[..],
+            vec![],
+            [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 3, 3
+        ),
+        (
+            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
+            vec![(0, 32)],
+            [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 32, 3
+        ),
+        (
+            // This sample may fail in the future!
+            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
+            vec![(0, 64)],
+            [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 64, 3
+        ),
+        // Test Group 3: Complex
+        (
+            &b"AAAAAAABCCCCCCCC"[..],
+            vec![(0, 7), (4, 8)],
+            [0, 0, 0, 1, 2, 2, 2, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 16, 7
+        ),
+        (
+            &b"DAAAAAAABCCCCCCCCEEE"[..],
+            vec![(1, 7), (5, 8)],
+            [3, 0, 0, 0, 1, 2, 2, 2, 4, 4, 4, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetEndOfString, 20, 11
+        ),
+    ];
+    for sample in samples {
+        let bytes = sample.0;
+        let expected_reported_seqs = &sample.1;
+        let expected_buffer = sample.2;
+        let expected_state = sample.3;
+        let expected_input_offset = sample.4;
+        let expected_blockhash_len = sample.5;
+        let mut reported_seqs = Vec::new();
+        let mut buffer = [I; 32];
+        let mut input_offset = 0;
+        let mut blockhash_len = 0;
+        let state = parse_block_hash_from_bytes::<_, 32, true>(
+            &mut buffer,
+            &mut blockhash_len,
+            bytes,
+            &mut input_offset,
+            |start_pos_norm, seq_len| {
+                assert!(seq_len > block_hash::MAX_SEQUENCE_SIZE, "failed on bytes={:?}", bytes);
+                reported_seqs.push((start_pos_norm, seq_len));
+            }
+        );
+        assert_eq!(&reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes);
+        assert_eq!(state, expected_state, "failed on bytes={:?}", bytes);
+        assert_eq!(&buffer, &expected_buffer, "failed on bytes={:?}", bytes);
+        assert_eq!(input_offset, expected_input_offset, "failed on bytes={:?}", bytes);
+        assert_eq!(blockhash_len, expected_blockhash_len, "failed on bytes={:?}", bytes);
+    }
 }
 
 #[test]
@@ -268,11 +391,12 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                 let mut offset: usize = 0;
                 let mut buffer: [u8; N] = [u8::MAX; N];
                 assert_eq!(
-                    parse_block_hash_from_bytes::<N, $norm>(
+                    parse_block_hash_from_bytes::<_, N, $norm>(
                         &mut buffer,
                         &mut len,
                         &str_buffer[..corrupt_size],
-                        &mut offset
+                        &mut offset,
+                        |_, _| {}
                     ),
                     BlockHashParseState::OverflowError,
                     "failed (1) on bhsz={}, overflow_size={}, norm={}", bhsz, overflow_size, norm

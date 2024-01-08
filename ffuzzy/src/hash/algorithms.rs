@@ -183,21 +183,42 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
 ///
 /// `i` (input/output) is updated to the last character index
 /// to continue parsing.
-pub(crate) fn parse_block_hash_from_bytes<const N: usize, const NORM: bool>(
+///
+/// `report_norm_seq` is called when `NORM` (normalization) is true (enabled)
+/// and we have found a sequence longer than
+/// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
+///
+/// Arguments to `report_norm_seq` is as follows:
+///
+/// 1.  The offset in the *normalized* block hash
+///     (the first character of consecutive characters that are shortened).
+/// 2.  The length of the original consecutive characters
+///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
+pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
     bytes: &[u8],
-    i: &mut usize
+    i: &mut usize,
+    mut report_norm_seq: F
 ) -> BlockHashParseState
 where
-    BlockHashSize<N>: ConstrainedBlockHashSize
+    F: FnMut(usize, usize),
+    BlockHashSize<N>: ConstrainedBlockHashSize,
 {
     let mut seq: usize = 0;
+    let mut seq_start: usize = 0;
+    let mut seq_start_in: usize = 0;
     let mut prev = BASE64_INVALID;
     let mut j = *i;
     let mut len: usize = 0;
     #[doc(hidden)]
-    macro_rules! pre_ret {() => { *blockhash_len = len as u8 }}
+    macro_rules! pre_ret {() => {
+        *blockhash_len = len as u8;
+        if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
+            let len = j - seq_start_in;
+            report_norm_seq(seq_start, len);
+        }
+    }}
     #[doc(hidden)]
     macro_rules! ret {($expr: expr) => { *i = j; return $expr }}
     optionally_unsafe! {
@@ -216,7 +237,13 @@ where
                         }
                     }
                     else {
+                        if seq == block_hash::MAX_SEQUENCE_SIZE {
+                            let len = j - seq_start_in;
+                            report_norm_seq(seq_start, len);
+                        }
                         seq = 0;
+                        seq_start = len;
+                        seq_start_in = j;
                         prev = curr;
                     }
                 }

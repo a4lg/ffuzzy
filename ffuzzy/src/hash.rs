@@ -871,10 +871,10 @@ where
             }
             Err(err) => { return Err(err); }
         }
-        match algorithms::parse_block_hash_from_bytes::<S1, NORM>(
+        match algorithms::parse_block_hash_from_bytes::<_, S1, NORM>(
             &mut fuzzy.blockhash1,
             &mut fuzzy.len_blockhash1,
-            str, &mut i
+            str, &mut i, |_, _| {}
         ) {
             // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
             BlockHashParseState::MetColon => { }
@@ -903,10 +903,10 @@ where
                 ));
             }
         }
-        match algorithms::parse_block_hash_from_bytes::<S2, NORM>(
+        match algorithms::parse_block_hash_from_bytes::<_, S2, NORM>(
             &mut fuzzy.blockhash2,
             &mut fuzzy.len_blockhash2,
-            str, &mut i
+            str, &mut i, |_, _| {}
         ) {
             // End of BH2: Optional comma or end-of-string is expected.
             BlockHashParseState::MetComma       => { *index = i - 1; }
