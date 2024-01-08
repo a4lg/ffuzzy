@@ -248,6 +248,7 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
     });
 }
 
+#[allow(clippy::type_complexity)]
 #[test]
 fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
     use std::vec::Vec;
