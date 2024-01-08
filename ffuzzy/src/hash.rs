@@ -19,7 +19,7 @@ use crate::hash::parser_state::{
 use crate::macros::{optionally_unsafe, invariant};
 
 
-mod algorithms;
+pub(crate) mod algorithms;
 pub mod block;
 pub mod parser_state;
 #[cfg(test)]

@@ -11,7 +11,10 @@ use crate::hash::block::{
     BlockHashSize, ConstrainedBlockHashSize,
     BlockHashSizes, ConstrainedBlockHashSizes
 };
-use crate::hash::parser_state::ParseError;
+use crate::hash::parser_state::{
+    ParseError, ParseErrorKind, ParseErrorOrigin,
+    BlockHashParseState
+};
 use crate::intrinsics::unlikely;
 use crate::macros::{optionally_unsafe, invariant};
 
@@ -931,10 +934,140 @@ where
         self.to_raw_form().to_string()
     }
 
-    /// Parse a fuzzy hash from given bytes (a slice of [`u8`]).
+    /// The internal implementation of [`from_bytes_with_last_index()`](Self::from_bytes_with_last_index()).
+    #[inline(always)]
+    fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
+        -> Result<Self, ParseError>
+    {
+        use crate::hash::algorithms;
+        let mut fuzzy = Self::new();
+        // Parse fuzzy hash
+        let mut i = 0;
+        match algorithms::parse_block_size_from_bytes(str, &mut i) {
+            Ok(bs) => {
+                fuzzy.norm_hash.log_blocksize = block_size::log_from_valid_internal(bs);
+            }
+            Err(err) => { return Err(err); }
+        }
+        let mut rle_offset = 0;
+        match algorithms::parse_block_hash_from_bytes::<_, S1, true>(
+            &mut fuzzy.norm_hash.blockhash1,
+            &mut fuzzy.norm_hash.len_blockhash1,
+            str, &mut i,
+            |pos, len| {
+                optionally_unsafe! {
+                    let base_offset = pos + block_hash::MAX_SEQUENCE_SIZE - 1;
+                    let seq = (len - block_hash::MAX_SEQUENCE_SIZE) - 1;
+                    let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
+                    invariant!(rle_offset < fuzzy.rle_block1.len());
+                    invariant!(rle_offset + seq_fill_size <= fuzzy.rle_block1.len());
+                    invariant!(rle_offset <= rle_offset + seq_fill_size);
+                    fuzzy.rle_block1[rle_offset..rle_offset+seq_fill_size]
+                        .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                    rle_offset += seq_fill_size;
+                    invariant!(rle_offset < fuzzy.rle_block1.len());
+                    fuzzy.rle_block1[rle_offset] =
+                        rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                    rle_offset += 1;
+                    invariant!(rle_offset <= fuzzy.rle_block1.len());
+                }
+            }
+        ) {
+            // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
+            BlockHashParseState::MetColon => { }
+            BlockHashParseState::MetComma => {
+                return Err(ParseError(
+                    ParseErrorKind::UnexpectedCharacter,
+                    ParseErrorOrigin::BlockHash1, i - 1
+                ));
+            }
+            BlockHashParseState::Base64Error => {
+                return Err(ParseError(
+                    ParseErrorKind::UnexpectedCharacter,
+                    ParseErrorOrigin::BlockHash1, i
+                ));
+            }
+            BlockHashParseState::MetEndOfString => {
+                return Err(ParseError(
+                    ParseErrorKind::UnexpectedEndOfString,
+                    ParseErrorOrigin::BlockHash1, i
+                ));
+            }
+            BlockHashParseState::OverflowError => {
+                return Err(ParseError(
+                    ParseErrorKind::BlockHashIsTooLong,
+                    ParseErrorOrigin::BlockHash1, i
+                ));
+            }
+        }
+        let mut rle_offset = 0;
+        match algorithms::parse_block_hash_from_bytes::<_, S2, true>(
+            &mut fuzzy.norm_hash.blockhash2,
+            &mut fuzzy.norm_hash.len_blockhash2,
+            str, &mut i,
+            |pos, len| {
+                optionally_unsafe! {
+                    let base_offset = pos + block_hash::MAX_SEQUENCE_SIZE - 1;
+                    let seq = (len - block_hash::MAX_SEQUENCE_SIZE) - 1;
+                    let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
+                    invariant!(rle_offset < fuzzy.rle_block2.len());
+                    invariant!(rle_offset + seq_fill_size <= fuzzy.rle_block2.len());
+                    invariant!(rle_offset <= rle_offset + seq_fill_size);
+                    fuzzy.rle_block2[rle_offset..rle_offset+seq_fill_size]
+                        .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+                    rle_offset += seq_fill_size;
+                    invariant!(rle_offset < fuzzy.rle_block2.len());
+                    fuzzy.rle_block2[rle_offset] =
+                        rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
+                    rle_offset += 1;
+                    invariant!(rle_offset <= fuzzy.rle_block2.len());
+                }
+            }
+        ) {
+            // End of BH2: Optional comma or end-of-string is expected.
+            BlockHashParseState::MetComma       => { *index = i - 1; }
+            BlockHashParseState::MetEndOfString => { *index = i; }
+            BlockHashParseState::MetColon => {
+                return Err(ParseError(
+                    ParseErrorKind::UnexpectedCharacter,
+                    ParseErrorOrigin::BlockHash2, i - 1
+                ));
+            }
+            BlockHashParseState::Base64Error => {
+                return Err(ParseError(
+                    ParseErrorKind::UnexpectedCharacter,
+                    ParseErrorOrigin::BlockHash2, i
+                ));
+            }
+            BlockHashParseState::OverflowError => {
+                return Err(ParseError(
+                    ParseErrorKind::BlockHashIsTooLong,
+                    ParseErrorOrigin::BlockHash2, i
+                ));
+            }
+        }
+        Ok(fuzzy)
+    }
+
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
+    /// of a string representation.
+    ///
+    /// If the parser succeeds, it also updates the `index` argument to the
+    /// first non-used index to construct the fuzzy hash, which is that of
+    /// either the end of the string or the character `','` to separate the rest
+    /// of the fuzzy hash and the file name field.
+    ///
+    /// If the parser fails, `index` is not updated.
+    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
+        -> Result<Self, ParseError>
+    {
+        Self::from_bytes_with_last_index_internal(str, index)
+    }
+
+    /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
+    /// of a string representation.
     pub fn from_bytes(str: &[u8]) -> Result<Self, ParseError> {
-        let raw_hash = <fuzzy_raw_type!(S1, S2)>::from_bytes(str)?;
-        Ok(Self::from_raw_form(&raw_hash))
+        Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }
 
     /// Normalize the fuzzy hash in place.
@@ -1215,8 +1348,7 @@ where
     type Err = ParseError;
     #[inline(always)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let raw_hash = <fuzzy_raw_type!(S1, S2)>::from_bytes(s.as_bytes())?;
-        Ok(Self::from_raw_form(&raw_hash))
+        Self::from_bytes(s.as_bytes())
     }
 }
 
