@@ -2,7 +2,9 @@
 name = "ffuzzy"
 version = "0.2.15"
 description = "Library to generate / parse / compare ssdeep Context Triggered Piecewise Hashes (CTPH)"
+authors = ["Tsukasa OI", "Helmut Grohne", "Jesse Kornblum"]
 keywords = ["ssdeep", "fuzzy", "hash", "security", "clustering"]
+categories = ["encoding", "parser-implementations", "no-std::no-alloc"]
 homepage = "https://github.com/a4lg/ffuzzy"
 repository = "https://github.com/a4lg/ffuzzy"
 documentation = "https://docs.rs/ffuzzy"
