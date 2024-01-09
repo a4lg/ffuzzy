@@ -956,24 +956,66 @@ where
         Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }
 
-    /// Normalize the fuzzy hash in place.
+    /// Normalize the fuzzy hash in place (or don't, depending on the input normalization).
+    ///
+    /// After calling this method, `self` will be normalized.
+    ///
+    /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
+    #[inline(always)]
+    fn normalize_in_place_internal<const IN_NORM: bool>(&mut self) {
+        // DO NOT add debug_assert!(self.is_valid()) here.
+        // Raw to normalized conversion involves temporary invalid state
+        // that is resolved *here*.
+        algorithms::normalize_block_hash_in_place::<S1, IN_NORM>(
+            &mut self.blockhash1,
+            &mut self.len_blockhash1
+        );
+        algorithms::normalize_block_hash_in_place::<S2, IN_NORM>(
+            &mut self.blockhash2,
+            &mut self.len_blockhash2
+        );
+        debug_assert!(self.is_valid());
+    }
+
+    /// Normalize the fuzzy hash in place (or don't, depending on the type normalization).
     ///
     /// After calling this method, `self` will be normalized.
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
     pub fn normalize_in_place(&mut self) {
-        // DO NOT add debug_assert!(self.is_valid()) here.
-        // Raw to normalized conversion involves temporary invalid state
-        // that is resolved *here*.
-        algorithms::normalize_block_hash_in_place(
-            &mut self.blockhash1,
-            &mut self.len_blockhash1
-        );
-        algorithms::normalize_block_hash_in_place(
-            &mut self.blockhash2,
-            &mut self.len_blockhash2
-        );
-        debug_assert!(self.is_valid());
+        self.normalize_in_place_internal::<NORM>();
+    }
+
+    /// Converts the fuzzy hash to a normalized form (with normalization).
+    ///
+    /// On the normalized variant, this is effectively a copy.
+    ///
+    /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
+    #[inline]
+    pub fn normalize(&self) -> FuzzyHashData<S1, S2, true> {
+        // This object may be invalid on the initialization
+        // because it's still a copy of a (possibly) raw fuzzy hash but has a
+        // normalized fuzzy hash variant type.
+        let mut dest = FuzzyHashData {
+            blockhash1: self.blockhash1,
+            blockhash2: self.blockhash2,
+            len_blockhash1: self.len_blockhash1,
+            len_blockhash2: self.len_blockhash2,
+            log_blocksize: self.log_blocksize
+        };
+        // Make it valid here.
+        dest.normalize_in_place_internal::<NORM>();
+        dest
+    }
+
+    /// Clones the fuzzy hash with normalization but without changing a type.
+    ///
+    /// On the normalized variant, this is effectively a clone.
+    #[inline]
+    pub fn clone_normalized(&self) -> Self {
+        let mut new = *self;
+        new.normalize_in_place_internal::<NORM>();
+        new
     }
 
     /// Performs full validity checking of the internal structure.
@@ -1483,20 +1525,6 @@ where
         dest.log_blocksize = self.log_blocksize;
     }
 
-    /// Converts the fuzzy hash to a normalized form (with normalization).
-    ///
-    /// In this normalized variant, this normalization is just a clone.
-    ///
-    /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
-    #[inline]
-    pub fn normalize(&self) -> norm_type!(S1, S2) { *self }
-
-    /// Clones the fuzzy hash with normalization but without changing a type.
-    ///
-    /// For a normalized fuzzy hash type, it always clones itself.
-    #[inline]
-    pub fn clone_normalized(&self) -> Self { *self }
-
     /// Returns whether the fuzzy hash is normalized.
     ///
     /// For a normalized fuzzy hash type, it always returns [`true`].
@@ -1521,36 +1549,6 @@ where
     /// Converts the fuzzy hash from a normalized form.
     #[inline]
     pub fn from_normalized(source: &norm_type!(S1, S2)) -> Self { source.to_raw_form() }
-
-    /// Converts the fuzzy hash to a normalized form (with normalization).
-    ///
-    /// In this raw form variant, it performs a normalization operation.
-    ///
-    /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
-    #[inline]
-    pub fn normalize(&self) -> norm_type!(S1, S2) {
-        // This object may be invalid on the initialization
-        // because it's still a copy of a raw fuzzy hash but has a normalized
-        // fuzzy hash variant type.
-        let mut dest = FuzzyHashData {
-            blockhash1: self.blockhash1,
-            blockhash2: self.blockhash2,
-            len_blockhash1: self.len_blockhash1,
-            len_blockhash2: self.len_blockhash2,
-            log_blocksize: self.log_blocksize
-        };
-        // Make it valid here.
-        dest.normalize_in_place();
-        dest
-    }
-
-    /// Clones the fuzzy hash with normalization but without changing a type.
-    #[inline]
-    pub fn clone_normalized(&self) -> Self {
-        let mut new = *self;
-        new.normalize_in_place();
-        new
-    }
 
     /// Returns whether the fuzzy hash is normalized.
     ///

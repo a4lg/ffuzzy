@@ -17,43 +17,45 @@ use crate::macros::{optionally_unsafe, invariant};
 mod tests;
 
 
-/// Normalize a block hash in place.
-pub(crate) fn normalize_block_hash_in_place<const N: usize>(
+/// Normalize a block hash in place only if the original (expected) form is raw.
+pub(crate) fn normalize_block_hash_in_place<const N: usize, const ORIG_NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
 )
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    let mut seq: usize = 0;
-    let mut prev = BASE64_INVALID;
-    let old_blockhash_len = *blockhash_len;
-    let mut len: usize = 0;
-    optionally_unsafe! {
-        for i in 0..old_blockhash_len as usize {
-            invariant!(i < N);
-            let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
-            if curr == prev {
-                seq += 1;
-                if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                    seq = block_hash::MAX_SEQUENCE_SIZE;
-                    continue;
+    if !ORIG_NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
+        let mut seq: usize = 0;
+        let mut prev = BASE64_INVALID;
+        let old_blockhash_len = *blockhash_len;
+        let mut len: usize = 0;
+        optionally_unsafe! {
+            for i in 0..old_blockhash_len as usize {
+                invariant!(i < N);
+                let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
+                if curr == prev {
+                    seq += 1;
+                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                        seq = block_hash::MAX_SEQUENCE_SIZE;
+                        continue;
+                    }
                 }
+                else {
+                    seq = 0;
+                    prev = curr;
+                }
+                invariant!(len < N);
+                blockhash[len] = curr; // grcov-excl-br-line:ARRAY
+                len += 1;
             }
-            else {
-                seq = 0;
-                prev = curr;
-            }
-            invariant!(len < N);
-            blockhash[len] = curr; // grcov-excl-br-line:ARRAY
-            len += 1;
+            *blockhash_len = len as u8;
+            // Clear old (possibly) non-zero hash buffer (for default Eq)
+            invariant!(len as u8 <= old_blockhash_len);
+            invariant!(len <= N);
+            invariant!((old_blockhash_len as usize) <= N);
+            blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
         }
-        *blockhash_len = len as u8;
-        // Clear old (possibly) non-zero hash buffer (for default Eq)
-        invariant!(len as u8 <= old_blockhash_len);
-        invariant!(len <= N);
-        invariant!((old_blockhash_len as usize) <= N);
-        blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
     }
 }
 

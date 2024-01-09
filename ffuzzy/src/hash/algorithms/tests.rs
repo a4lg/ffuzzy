@@ -41,7 +41,7 @@ fn test_normalize_block_hash_in_place() {
             let mut buffer: [u8; N] = [0u8; N];
             buffer[..bh.len()].copy_from_slice(bh);
             let mut len = bh.len() as u8;
-            normalize_block_hash_in_place(&mut buffer, &mut len);
+            normalize_block_hash_in_place::<N, false>(&mut buffer, &mut len);
             assert_eq!(bh_norm.len() as u8, len, "failed (1) on bhsz={}, bh={:?}", bhsz, bh);
             assert_eq!(&buffer[..bh_norm.len()], bh_norm, "failed (2) on bhsz={}, bh={:?}", bhsz, bh);
             assert!(buffer[bh_norm.len()..].iter().all(|&x| x == 0), "failed (3) on bhsz={}, bh={:?}", bhsz, bh);
