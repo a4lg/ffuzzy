@@ -25,17 +25,74 @@ mod tests;
 
 /// An RLE Encoding as used in [`FuzzyHashDualData`].
 ///
+/// # Compression Scheme
+///
+/// See: ["Bit Fields" section](Self#bit-fields) below for detailed encoding.
+///
+/// Suppose that we have a block hash `ABCCCCCCDDDDDDDDDDDD`
+/// (`A`, `B` and then 6 `C`s and 12 `D`s).
+///
+/// We also have a normalized block hash.
+///
+/// ```text
+/// Raw:        ABCCCCCCDDDDDDDDDDDD
+/// Normalized: ABCCCDDD
+/// ```
+///
+/// To reconstruct the raw block hash, we store "where and how many
+/// characters to repeat".  That's the idea of classic run-length encoding.
+///
+/// ```text
+/// ABCCC...
+///     |
+///     +--Repeat 3 more times: RLE(pos=4, len=3)
+///
+/// -> ABCCCCCC...
+///         ^^^
+/// ```
+///
+/// The `pos` field is that of the normalized block hash and the *last
+/// character* of the consecutive characters (to prohibit redundant encodings
+/// and to reserve position `0` for the terminator).
+///
+/// Due to the limitation of the bit field encoding, we can only repeat
+/// up to 4 characters by one RLE encoding.  On such cases, we use multiple RLE
+/// encodings with the same `pos` field:
+///
+/// ```text
+///     +--Repeat 3 more times: RLE(pos=4, len=3)
+///     |
+/// ABCCCDDD
+///        |
+///        +-- Repeat 9 more times:
+///               RLE(pos=7, len=4)
+///               RLE(pos=7, len=4)
+///               RLE(pos=7, len=1)
+///
+/// -> ABCCCCCCDDDDDDDDDDDD
+///         ^^^   ^^^^----^
+/// ```
+///
+/// For reasons below, lengths larger than 4 are encoded by consecutive 4s and
+/// a remainder.  So, `9` is encoded as `4+4+1`, not `1+4+4`, `3+3+3`
+/// or `2+2+2+2+1`:
+///
+/// *   To avoid issues regarding redundant encodings,
+/// *   To make sure that plain memory comparison is sufficient
+///     to check equivalence and
+/// *   To maximize the compression rate.
+///
 /// # Bit Fields
 ///
 /// Current design of the RLE block is basic and compact RLE encoded bytes
 /// each consisting of following bitfields:
 ///
-/// *   6 bits of offset
-/// *   2 bits of length
+/// *   6 bits of offset (`pos`)
+/// *   2 bits of length (`len`)
 ///
 /// 6 bits is enough to store any block hash offset.
 ///
-/// This `offset` is the one of a normalized block hash (and must be the last
+/// This `pos` is the one of a normalized block hash (and must be the last
 /// character offset of the sequence).
 ///
 /// Because [`block_hash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
@@ -47,7 +104,7 @@ mod tests;
 /// the long sequence able to be compressed in a fixed-size RLE block.
 ///
 /// The encoded length is one less than the actual length for efficiency.
-/// For instance, encoded `length` of `0` actually means repeating a character
+/// For instance, encoded `len` of `0` actually means repeating a character
 /// once (`1` time) to reverse normalization.  Likewise, encoded `1` means
 /// repeating a character twice (`2` times).
 ///
@@ -572,13 +629,13 @@ where
     /// RLE block 1 for reverse normalization of
     /// [block hash 1](crate::hash::FuzzyHashData::blockhash1).
     ///
-    /// See [`rle_encoding`] for encoding details.
+    /// See [`rle_encoding`] for encoding details and full compression scheme.
     rle_block1: [u8; C1],
 
     /// RLE block 2 for reverse normalization of
     /// [block hash 2](crate::hash::FuzzyHashData::blockhash2).
     ///
-    /// See [`rle_encoding`] for encoding details.
+    /// See [`rle_encoding`] for encoding details and full compression scheme.
     rle_block2: [u8; C2],
 
     /// A normalized fuzzy hash object for comparison and the base storage
