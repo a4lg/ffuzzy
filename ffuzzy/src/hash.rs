@@ -401,10 +401,8 @@ where
         debug_assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         debug_assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
         debug_assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
-        if NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
-            debug_assert!(algorithms::is_normalized(block_hash_1, block_hash_1_len));
-            debug_assert!(algorithms::is_normalized(block_hash_2, block_hash_2_len));
-        }
+        debug_assert!(algorithms::is_normalized_input::<S1, NORM>(block_hash_1, block_hash_1_len));
+        debug_assert!(algorithms::is_normalized_input::<S2, NORM>(block_hash_2, block_hash_2_len));
         self.blockhash1 = *block_hash_1;
         self.blockhash2 = *block_hash_2;
         self.len_blockhash1 = block_hash_1_len;
@@ -473,10 +471,8 @@ where
         assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
         assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
-        if NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
-            assert!(algorithms::is_normalized(block_hash_1, block_hash_1_len));
-            assert!(algorithms::is_normalized(block_hash_2, block_hash_2_len));
-        }
+        assert!(algorithms::is_normalized_input::<S1, NORM>(block_hash_1, block_hash_1_len));
+        assert!(algorithms::is_normalized_input::<S2, NORM>(block_hash_2, block_hash_2_len));
         self.init_from_internals_raw_internal(
             log_block_size,
             block_hash_1,
@@ -580,10 +576,8 @@ where
         hash.len_blockhash1 = block_hash_1.len() as u8;
         hash.len_blockhash2 = block_hash_2.len() as u8;
         hash.log_blocksize = block_size::log_from_valid_internal(block_size);
-        if NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
-            debug_assert!(algorithms::is_normalized(&hash.blockhash1, hash.len_blockhash1));
-            debug_assert!(algorithms::is_normalized(&hash.blockhash2, hash.len_blockhash2));
-        }
+        debug_assert!(algorithms::is_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
+        debug_assert!(algorithms::is_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
         hash
     }
 
@@ -641,10 +635,8 @@ where
             block_hash_1,
             block_hash_2
         );
-        if NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
-            assert!(algorithms::is_normalized(&hash.blockhash1, hash.len_blockhash1));
-            assert!(algorithms::is_normalized(&hash.blockhash2, hash.len_blockhash2));
-        }
+        assert!(algorithms::is_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
+        assert!(algorithms::is_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
         hash
     }
 
@@ -956,6 +948,24 @@ where
         Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }
 
+    /// Returns whether the fuzzy hash is normalized.
+    ///
+    /// For a non-normalized fuzzy hash type (in raw form), it checks whether
+    /// the fuzzy hash is already normalized.
+    ///
+    /// Note that this method is only for convenience purposes and checking
+    /// whether a fuzzy hash is normalized does not usually improve the performance.
+    pub fn is_normalized(&self) -> bool {
+        algorithms::is_normalized_current::<S1, NORM>(
+            &self.blockhash1,
+            self.len_blockhash1
+        ) &&
+        algorithms::is_normalized_current::<S2, NORM>(
+            &self.blockhash2,
+            self.len_blockhash2
+        )
+    }
+
     /// Normalize the fuzzy hash in place (or don't, depending on the input normalization).
     ///
     /// After calling this method, `self` will be normalized.
@@ -1043,16 +1053,8 @@ where
                 .iter().all(|&x| { x < block_hash::ALPHABET_SIZE as u8 })
             && self.blockhash2[self.len_blockhash2 as usize..]
                 .iter().all(|&x| { x == 0 })
-            && (!NORM || (
-                algorithms::is_normalized(
-                    &self.blockhash1,
-                    self.len_blockhash1
-                ) &&
-                algorithms::is_normalized(
-                    &self.blockhash2,
-                    self.len_blockhash2
-                )
-            ))
+            && algorithms::is_normalized_input::<S1, NORM>(&self.blockhash1, self.len_blockhash1)
+            && algorithms::is_normalized_input::<S2, NORM>(&self.blockhash2, self.len_blockhash2)
     }
 
     /// Performs full equality checking of the internal structure.
@@ -1524,15 +1526,6 @@ where
         dest.len_blockhash2 = self.len_blockhash2;
         dest.log_blocksize = self.log_blocksize;
     }
-
-    /// Returns whether the fuzzy hash is normalized.
-    ///
-    /// For a normalized fuzzy hash type, it always returns [`true`].
-    ///
-    /// Note that this method is only for convenience purposes and checking
-    /// whether a fuzzy hash is normalized does not usually improve the performance.
-    #[inline(always)]
-    pub fn is_normalized(&self) -> bool { true }
 }
 
 
@@ -1550,23 +1543,6 @@ where
     #[inline]
     pub fn from_normalized(source: &norm_type!(S1, S2)) -> Self { source.to_raw_form() }
 
-    /// Returns whether the fuzzy hash is normalized.
-    ///
-    /// For a non-normalized fuzzy hash type (in raw form), it checks whether
-    /// the fuzzy hash is already normalized.
-    ///
-    /// Note that this method is only for convenience purposes and checking
-    /// whether a fuzzy hash is normalized does not usually improve the performance.
-    pub fn is_normalized(&self) -> bool {
-        algorithms::is_normalized(
-            &self.blockhash1,
-            self.len_blockhash1
-        ) &&
-        algorithms::is_normalized(
-            &self.blockhash2,
-            self.len_blockhash2
-        )
-    }
 }
 
 

@@ -59,30 +59,56 @@ where
     }
 }
 
-/// Check whether a given block hash is normalized.
-pub(crate) fn is_normalized<const N: usize>(
+/// Check whether a given block hash is normalized only if `verify` is true.
+#[inline(always)]
+fn is_normalized_internal<const N: usize>(
+    blockhash: &[u8; N],
+    blockhash_len: u8,
+    verify: bool
+) -> bool
+where
+    BlockHashSize<N>: ConstrainedBlockHashSize
+{
+    if verify {
+        let mut seq: usize = 0;
+        let mut prev = BASE64_INVALID;
+        for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
+            let curr: u8 = *ch;
+            if *ch == prev {
+                seq += 1;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                    return false;
+                }
+            }
+            else {
+                seq = 0;
+                prev = curr;
+            }
+        }
+    }
+    true
+}
+
+/// Check whether a given block hash is normalized (or don't, depending on the input normalization).
+pub(crate) fn is_normalized_input<const N: usize, const EXPECT_NORM: bool>(
     blockhash: &[u8; N],
     blockhash_len: u8,
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    let mut seq: usize = 0;
-    let mut prev = BASE64_INVALID;
-    for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
-        let curr: u8 = *ch;
-        if *ch == prev {
-            seq += 1;
-            if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                return false;
-            }
-        }
-        else {
-            seq = 0;
-            prev = curr;
-        }
-    }
-    true
+    is_normalized_internal(blockhash, blockhash_len, EXPECT_NORM)
+}
+
+/// Check whether a given block hash is normalized (or don't, depending on the type normalization).
+pub(crate) fn is_normalized_current<const N: usize, const TYPE_NORM: bool>(
+    blockhash: &[u8; N],
+    blockhash_len: u8,
+) -> bool
+where
+    BlockHashSize<N>: ConstrainedBlockHashSize
+{
+    is_normalized_internal(blockhash, blockhash_len, !TYPE_NORM)
 }
 
 /// Push block hash contents at the end of a given [`u8`] slice.
