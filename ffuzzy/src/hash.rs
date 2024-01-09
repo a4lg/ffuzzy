@@ -962,6 +962,9 @@ where
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
     pub fn normalize_in_place(&mut self) {
+        // DO NOT add debug_assert!(self.is_valid()) here.
+        // Raw to normalized conversion involves temporary invalid state
+        // that is resolved *here*.
         algorithms::normalize_block_hash_in_place(
             &mut self.blockhash1,
             &mut self.len_blockhash1
@@ -970,6 +973,7 @@ where
             &mut self.blockhash2,
             &mut self.len_blockhash2
         );
+        debug_assert!(self.is_valid());
     }
 
     /// Performs full validity checking of the internal structure.
@@ -1525,6 +1529,9 @@ where
     /// See also: ["Normalization" section of `FuzzyHashData`](Self#normalization)
     #[inline]
     pub fn normalize(&self) -> norm_type!(S1, S2) {
+        // This object may be invalid on the initialization
+        // because it's still a copy of a raw fuzzy hash but has a normalized
+        // fuzzy hash variant type.
         let mut dest = FuzzyHashData {
             blockhash1: self.blockhash1,
             blockhash2: self.blockhash2,
@@ -1532,6 +1539,7 @@ where
             len_blockhash2: self.len_blockhash2,
             log_blocksize: self.log_blocksize
         };
+        // Make it valid here.
         dest.normalize_in_place();
         dest
     }
