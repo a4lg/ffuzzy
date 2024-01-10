@@ -75,6 +75,7 @@ it's not obligated to check such corruption
 *   [`crate::hash::FuzzyHashData::compare_unequal()`]
 *   [`crate::hash::FuzzyHashData::init_from_internals_raw()`]
 *   [`crate::hash::FuzzyHashData::new_from_internals()`]
+*   [`crate::hash::FuzzyHashData::new_from_internals_near_raw()`]
 *   [`crate::hash::FuzzyHashData::new_from_internals_raw()`]
 *   [`crate::hash::block::block_size::from_log()`] ([`Option`] is used instead of assertions)
 *   [`crate::hash::block::block_size::log_from_valid()`]

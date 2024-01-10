@@ -627,15 +627,15 @@ where
         hash
     }
 
-    /// The internal implementation of [`Self::new_from_internals_unchecked()`].
-    fn new_from_internals_internal(
-        block_size: u32,
+    /// The internal implementation of [`Self::new_from_internals_near_raw_unchecked()`].
+    fn new_from_internals_near_raw_internal(
+        log_block_size: u8,
         block_hash_1: &[u8],
         block_hash_2: &[u8]
     ) -> Self
     {
         let mut hash = Self::new();
-        debug_assert!(block_size::is_valid(block_size));
+        debug_assert!(block_size::is_log_valid(log_block_size));
         debug_assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         debug_assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         optionally_unsafe! {
@@ -646,10 +646,87 @@ where
         hash.blockhash2[..block_hash_2.len()].clone_from_slice(block_hash_2); // grcov-excl-br-line:ARRAY
         hash.len_blockhash1 = block_hash_1.len() as u8;
         hash.len_blockhash2 = block_hash_2.len() as u8;
-        hash.log_blocksize = block_size::log_from_valid_internal(block_size);
+        hash.log_blocksize = log_block_size;
         debug_assert!(algorithms::is_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
         debug_assert!(algorithms::is_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
         hash
+    }
+
+    /// Creates a new fuzzy hash object with internal contents (with raw block size).
+    ///
+    /// # Safety
+    ///
+    /// *   `block_hash_1` and `block_hash_2` must have valid lengths.
+    /// *   Elements of `block_hash_1` and `block_hash_2` must consist of valid
+    ///     Base64 indices.
+    /// *   `log_block_size` must hold a valid
+    ///     *base-2 logarithm* form of a block size.
+    /// *   On the normalized variant, contents of `block_hash_1` and
+    ///     `block_hash_2` must be normalized.
+    ///
+    /// If they are not satisfied, the resulting object will be corrupted.
+    #[cfg(feature = "unchecked")]
+    #[allow(unsafe_code)]
+    #[inline(always)]
+    pub unsafe fn new_from_internals_near_raw_unchecked(
+        log_block_size: u8,
+        block_hash_1: &[u8],
+        block_hash_2: &[u8]
+    ) -> Self
+    {
+        Self::new_from_internals_near_raw_internal(log_block_size, block_hash_1, block_hash_2)
+    }
+
+    /// Creates a new fuzzy hash object with internal contents (with raw block size).
+    ///
+    /// Because this function assumes that you know the fuzzy hash internals,
+    /// it panics when you fail to satisfy fuzzy hash constraints.
+    ///
+    /// # Usage Constraints
+    ///
+    /// *   `block_hash_1` and `block_hash_2` must have valid lengths.
+    /// *   Elements of `block_hash_1` and `block_hash_2` must consist of valid
+    ///     Base64 indices.
+    /// *   `log_block_size` must hold a valid
+    ///     *base-2 logarithm* form of a block size.
+    /// *   On the normalized variant, contents of `block_hash_1` and
+    ///     `block_hash_2` must be normalized.
+    #[inline]
+    pub fn new_from_internals_near_raw(
+        log_block_size: u8,
+        block_hash_1: &[u8],
+        block_hash_2: &[u8]
+    ) -> Self
+    {
+        assert!(block_size::is_log_valid(log_block_size));
+        assert!(block_hash_1.len() <= S1);
+        assert!(block_hash_2.len() <= S2);
+        assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        let hash = Self::new_from_internals_near_raw_internal(
+            log_block_size,
+            block_hash_1,
+            block_hash_2
+        );
+        assert!(algorithms::is_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
+        assert!(algorithms::is_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
+        hash
+    }
+
+    /// The internal implementation of [`Self::new_from_internals_unchecked()`].
+    #[allow(dead_code)]
+    #[inline(always)]
+    fn new_from_internals_internal(
+        block_size: u32,
+        block_hash_1: &[u8],
+        block_hash_2: &[u8]
+    ) -> Self
+    {
+        debug_assert!(block_size::is_valid(block_size));
+        Self::new_from_internals_near_raw_internal(
+            block_size::log_from_valid_internal(block_size),
+            block_hash_1, block_hash_2
+        )
     }
 
     /// Creates a new fuzzy hash object with internal contents.
@@ -697,18 +774,10 @@ where
     ) -> Self
     {
         assert!(block_size::is_valid(block_size));
-        assert!(block_hash_1.len() <= S1);
-        assert!(block_hash_2.len() <= S2);
-        assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        let hash = Self::new_from_internals_internal(
-            block_size,
-            block_hash_1,
-            block_hash_2
-        );
-        assert!(algorithms::is_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
-        assert!(algorithms::is_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
-        hash
+        Self::new_from_internals_near_raw(
+            block_size::log_from_valid_internal(block_size),
+            block_hash_1, block_hash_2
+        )
     }
 
     /// The *base-2 logarithm* form of the block size.
