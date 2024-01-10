@@ -995,82 +995,23 @@ where
         -> Result<Self, ParseError>
     {
         use crate::hash_dual::algorithms::update_rle_block;
-        use crate::hash::algorithms;
+        use crate::hash::{algorithms, hash_from_bytes_with_last_index_internal_template};
         let mut fuzzy = Self::new();
-        // Parse fuzzy hash
-        let mut i = 0;
-        match algorithms::parse_block_size_from_bytes(str, &mut i) {
-            Ok(bs) => {
-                fuzzy.norm_hash.log_blocksize = block_size::log_from_valid_internal(bs);
-            }
-            Err(err) => { return Err(err); }
-        }
-        let mut rle_offset = 0;
-        match algorithms::parse_block_hash_from_bytes::<_, S1, true>(
-            &mut fuzzy.norm_hash.blockhash1,
-            &mut fuzzy.norm_hash.len_blockhash1,
-            str, &mut i,
+        hash_from_bytes_with_last_index_internal_template! {
+            str, index, true,
+            fuzzy.norm_hash.log_blocksize,
+            { let mut rle_offset = 0; },
             |pos, len| {
-                rle_offset = update_rle_block(&mut fuzzy.rle_block1, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
-            }
-        ) {
-            // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
-            BlockHashParseState::MetColon => { }
-            BlockHashParseState::MetComma => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash1, i - 1
-                ));
-            }
-            BlockHashParseState::Base64Error => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-            BlockHashParseState::MetEndOfString => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedEndOfString,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-            BlockHashParseState::OverflowError => {
-                return Err(ParseError(
-                    ParseErrorKind::BlockHashIsTooLong,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-        }
-        let mut rle_offset = 0;
-        match algorithms::parse_block_hash_from_bytes::<_, S2, true>(
-            &mut fuzzy.norm_hash.blockhash2,
-            &mut fuzzy.norm_hash.len_blockhash2,
-            str, &mut i,
+                rle_offset = update_rle_block(
+                    &mut fuzzy.rle_block1, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
+            },
+            fuzzy.norm_hash.blockhash1, fuzzy.norm_hash.len_blockhash1,
+            { let mut rle_offset = 0; },
             |pos, len| {
-                rle_offset = update_rle_block(&mut fuzzy.rle_block2, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
-            }
-        ) {
-            // End of BH2: Optional comma or end-of-string is expected.
-            BlockHashParseState::MetComma       => { *index = i - 1; }
-            BlockHashParseState::MetEndOfString => { *index = i; }
-            BlockHashParseState::MetColon => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash2, i - 1
-                ));
-            }
-            BlockHashParseState::Base64Error => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash2, i
-                ));
-            }
-            BlockHashParseState::OverflowError => {
-                return Err(ParseError(
-                    ParseErrorKind::BlockHashIsTooLong,
-                    ParseErrorOrigin::BlockHash2, i
-                ));
-            }
+                rle_offset = update_rle_block(
+                    &mut fuzzy.rle_block2, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
+            },
+            fuzzy.norm_hash.blockhash2, fuzzy.norm_hash.len_blockhash2
         }
         Ok(fuzzy)
     }

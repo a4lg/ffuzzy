@@ -343,6 +343,77 @@ impl std::error::Error for FuzzyHashOperationError {}
 impl core::error::Error for FuzzyHashOperationError {}
 
 
+/// Template to generate `from_bytes_with_last_index_internal()`
+/// internal functions.
+///
+/// They are the template for following functions:
+/// *   [`FuzzyHashData::from_bytes_with_last_index_internal()`]
+/// *   [`FuzzyHashDualData::from_bytes_with_last_index_internal()`](crate::hash_dual::FuzzyHashDualData::from_bytes_with_last_index_internal())
+#[doc(alias = "hash_from_bytes_with_last_index_internal_template")]
+macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
+    (
+        $str: expr, $index: expr, $norm: expr,
+        $log_blocksize: expr,
+        { $($proc_to_prepare_blockhash1:tt)* }, $proc_to_process_sequence_1: expr,
+        $blockhash1: expr, $len_blockhash1: expr,
+        { $($proc_to_prepare_blockhash2:tt)* }, $proc_to_process_sequence_2: expr,
+        $blockhash2: expr, $len_blockhash2: expr
+    ) => {
+        // Parse fuzzy hash
+        let mut i = 0;
+        match algorithms::parse_block_size_from_bytes($str, &mut i) {
+            Ok(bs) => {
+                $log_blocksize = block_size::log_from_valid_internal(bs);
+            }
+            Err(err) => { return Err(err); }
+        }
+        $($proc_to_prepare_blockhash1)*
+        match algorithms::parse_block_hash_from_bytes::<_, S1, $norm>(
+            &mut $blockhash1,
+            &mut $len_blockhash1,
+            $str, &mut i, $proc_to_process_sequence_1
+        ) {
+            // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
+            BlockHashParseState::MetColon => { }
+            BlockHashParseState::MetComma => {
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, i - 1));
+            }
+            BlockHashParseState::Base64Error => {
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, i));
+            }
+            BlockHashParseState::MetEndOfString => {
+                return Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, i));
+            }
+            BlockHashParseState::OverflowError => {
+                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash1, i));
+            }
+        }
+        $($proc_to_prepare_blockhash2)*
+        match algorithms::parse_block_hash_from_bytes::<_, S2, $norm>(
+            &mut $blockhash2,
+            &mut $len_blockhash2,
+            $str, &mut i, $proc_to_process_sequence_2
+        ) {
+            // End of BH2: Optional comma or end-of-string is expected.
+            BlockHashParseState::MetComma       => { *$index = i - 1; }
+            BlockHashParseState::MetEndOfString => { *$index = i; }
+            BlockHashParseState::MetColon => {
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, i - 1));
+            }
+            BlockHashParseState::Base64Error => {
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, i));
+            }
+            BlockHashParseState::OverflowError => {
+                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, i));
+            }
+        }
+    };
+}
+
+pub(crate) use hash_from_bytes_with_last_index_internal_template_impl
+    as hash_from_bytes_with_last_index_internal_template;
+
+
 /// Implementation for all variants of fuzzy hashes.
 ///
 /// Constants and methods below are available on all variants of fuzzy hashes.
@@ -855,72 +926,11 @@ where
         -> Result<Self, ParseError>
     {
         let mut fuzzy = Self::new();
-        // Parse fuzzy hash
-        let mut i = 0;
-        match algorithms::parse_block_size_from_bytes(str, &mut i) {
-            Ok(bs) => {
-                fuzzy.log_blocksize = block_size::log_from_valid_internal(bs);
-            }
-            Err(err) => { return Err(err); }
-        }
-        match algorithms::parse_block_hash_from_bytes::<_, S1, NORM>(
-            &mut fuzzy.blockhash1,
-            &mut fuzzy.len_blockhash1,
-            str, &mut i, |_, _| {}
-        ) {
-            // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
-            BlockHashParseState::MetColon => { }
-            BlockHashParseState::MetComma => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash1, i - 1
-                ));
-            }
-            BlockHashParseState::Base64Error => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-            BlockHashParseState::MetEndOfString => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedEndOfString,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-            BlockHashParseState::OverflowError => {
-                return Err(ParseError(
-                    ParseErrorKind::BlockHashIsTooLong,
-                    ParseErrorOrigin::BlockHash1, i
-                ));
-            }
-        }
-        match algorithms::parse_block_hash_from_bytes::<_, S2, NORM>(
-            &mut fuzzy.blockhash2,
-            &mut fuzzy.len_blockhash2,
-            str, &mut i, |_, _| {}
-        ) {
-            // End of BH2: Optional comma or end-of-string is expected.
-            BlockHashParseState::MetComma       => { *index = i - 1; }
-            BlockHashParseState::MetEndOfString => { *index = i; }
-            BlockHashParseState::MetColon => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash2, i - 1
-                ));
-            }
-            BlockHashParseState::Base64Error => {
-                return Err(ParseError(
-                    ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockHash2, i
-                ));
-            }
-            BlockHashParseState::OverflowError => {
-                return Err(ParseError(
-                    ParseErrorKind::BlockHashIsTooLong,
-                    ParseErrorOrigin::BlockHash2, i
-                ));
-            }
+        hash_from_bytes_with_last_index_internal_template! {
+            str, index, NORM,
+            fuzzy.log_blocksize,
+            {}, |_, _| {}, fuzzy.blockhash1, fuzzy.len_blockhash1,
+            {}, |_, _| {}, fuzzy.blockhash2, fuzzy.len_blockhash2
         }
         Ok(fuzzy)
     }
