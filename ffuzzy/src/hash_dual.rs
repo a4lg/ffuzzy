@@ -1000,17 +1000,13 @@ where
         hash_from_bytes_with_last_index_internal_template! {
             str, index, true,
             fuzzy.norm_hash.log_blocksize,
-            { let mut rle_offset = 0; },
-            |pos, len| {
-                rle_offset = update_rle_block(
-                    &mut fuzzy.rle_block1, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
-            },
+            { let mut  rle_offset = 0; },
+            |pos, len| rle_offset = update_rle_block(
+                &mut fuzzy.rle_block1, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len),
             fuzzy.norm_hash.blockhash1, fuzzy.norm_hash.len_blockhash1,
-            { let mut rle_offset = 0; },
-            |pos, len| {
-                rle_offset = update_rle_block(
-                    &mut fuzzy.rle_block2, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
-            },
+            { let mut  rle_offset = 0; },
+            |pos, len| rle_offset = update_rle_block(
+                &mut fuzzy.rle_block2, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len),
             fuzzy.norm_hash.blockhash2, fuzzy.norm_hash.len_blockhash2
         }
         Ok(fuzzy)
