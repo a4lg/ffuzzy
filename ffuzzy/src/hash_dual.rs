@@ -717,6 +717,11 @@ where
     }
 
     /// The internal implementation of [`Self::init_from_raw_form_internals_raw_unchecked()`].
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This method is deprecated and will be removed on the version 0.3.0.
+    #[deprecated]
     fn init_from_raw_form_internals_raw_internal(
         &mut self,
         log_block_size: u8,
@@ -763,9 +768,15 @@ where
     ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This method is deprecated and will be removed on the version 0.3.0.
     #[cfg(feature = "unchecked")]
     #[allow(unsafe_code)]
+    #[allow(deprecated)]
     #[inline(always)]
+    #[deprecated]
     pub unsafe fn init_from_raw_form_internals_raw_unchecked(
         &mut self,
         log_block_size: u8,
@@ -789,7 +800,13 @@ where
     /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
     /// *   `log_block_size` must hold a valid *base-2 logarithm* form
     ///     of a block size.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This method is deprecated and will be removed on the version 0.3.0.
+    #[allow(deprecated)]
     #[inline]
+    #[deprecated]
     pub fn init_from_raw_form_internals_raw(
         &mut self,
         log_block_size: u8,
@@ -815,7 +832,13 @@ where
     }
 
     /// The internal implementation of [`Self::new_from_raw_form_internals_raw_unchecked()`].
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This function is deprecated and will be removed on the version 0.3.0.
     #[allow(dead_code)]
+    #[allow(deprecated)]
+    #[deprecated]
     fn new_from_raw_form_internals_raw_internal(
         log_block_size: u8,
         block_hash_1: &[u8; S1],
@@ -843,9 +866,15 @@ where
     ///     of a block size.
     ///
     /// If they are not satisfied, the resulting object will be corrupted.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This function is deprecated and will be removed on the version 0.3.0.
     #[cfg(feature = "unchecked")]
     #[allow(unsafe_code)]
+    #[allow(deprecated)]
     #[inline(always)]
+    #[deprecated]
     pub unsafe fn new_from_raw_form_internals_raw_unchecked(
         log_block_size: u8,
         block_hash_1: &[u8; S1],
@@ -869,7 +898,13 @@ where
     /// *   `block_hash_1_len` and `block_hash_2_len` must be valid.
     /// *   `log_block_size` must hold a valid *base-2 logarithm* form
     ///     of a block size.
+    ///
+    /// # Incompatibility Notice
+    ///
+    /// This function is deprecated and will be removed on the version 0.3.0.
+    #[allow(deprecated)]
     #[inline]
+    #[deprecated]
     pub fn new_from_raw_form_internals_raw(
         log_block_size: u8,
         block_hash_1: &[u8; S1],

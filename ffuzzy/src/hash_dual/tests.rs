@@ -60,6 +60,7 @@ fn data_model_internal_ref() {
 }
 
 
+#[allow(deprecated)]
 #[test]
 fn data_model_init_and_basic() {
     /*
@@ -167,6 +168,7 @@ fn data_model_init_and_basic() {
     });
 }
 
+#[allow(deprecated)]
 #[test]
 fn data_model_init_from_normalized() {
     /*
