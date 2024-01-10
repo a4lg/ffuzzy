@@ -110,7 +110,7 @@ mod tests;
 ///
 /// 2 bits of length is still small.  If we need to extend a character 5
 /// (`4 + 1`) times or more, we need multiple RLE encodings (with the same
-/// offset field).
+/// `pos` field).
 mod rle_encoding {
     /// Bits used to represent the position (offset).
     ///
