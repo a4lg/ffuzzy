@@ -316,6 +316,38 @@ impl<T> ConstrainedReconstructionBlockSize for T where T: private::SealedReconst
 mod algorithms {
     use super::*;
 
+    /// Update the RLE block to compressed given sequence.
+    ///
+    /// `pos` is of the last consecutive character in the sequence and
+    /// `len` is the raw sequence length.
+    ///
+    /// It returns new `rle_offset` to use.
+    #[inline(always)]
+    pub(crate) fn update_rle_block<const SZ_RLE: usize>(
+        rle_block: &mut [u8; SZ_RLE],
+        rle_offset: usize,
+        pos: usize,
+        len: usize
+    ) -> usize {
+        debug_assert!(len > block_hash::MAX_SEQUENCE_SIZE);
+        optionally_unsafe! {
+            let extend_len_minus_one = len - block_hash::MAX_SEQUENCE_SIZE - 1;
+            let seq_fill_size = extend_len_minus_one / rle_encoding::MAX_RUN_LENGTH;
+            let start = rle_offset;
+            invariant!(start < rle_block.len());
+            invariant!(start + seq_fill_size <= rle_block.len());
+            invariant!(start <= start + seq_fill_size);
+            rle_block[start..start + seq_fill_size]
+                .fill(rle_encoding::encode(pos as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
+            invariant!(start + seq_fill_size < rle_block.len());
+            rle_block[start + seq_fill_size] = rle_encoding::encode(
+                pos as u8,
+                (extend_len_minus_one % rle_encoding::MAX_RUN_LENGTH) as u8 + 1
+            ); // grcov-excl-br-line:ARRAY
+            start + seq_fill_size + 1
+        }
+    }
+
     /// Compress a raw block hash with normalizing and generating RLE encodings.
     #[inline]
     pub(crate) fn compress_block_hash_with_rle<const SZ_BH: usize, const SZ_RLE: usize>(
@@ -330,11 +362,10 @@ mod algorithms {
         ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
         optionally_unsafe! {
-            let mut rle_offset = 0usize;
+            let mut rle_offset = 0;
             let mut seq = 0usize;
             let mut len = 0usize;
             let mut prev = crate::base64::BASE64_INVALID;
-            rle_block_out.fill(0);
             for i in 0..blockhash_len_in as usize {
                 invariant!(i < blockhash_in.len());
                 let curr: u8 = blockhash_in[i]; // grcov-excl-br-line:ARRAY
@@ -347,21 +378,7 @@ mod algorithms {
                 }
                 else {
                     if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                        // Use the last character offset in the identical character sequence.
-                        let base_offset = len - 1;
-                        seq -= block_hash::MAX_SEQUENCE_SIZE;
-                        let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
-                        invariant!(rle_offset < rle_block_out.len());
-                        invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
-                        invariant!(rle_offset <= rle_offset + seq_fill_size);
-                        rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                            .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
-                        rle_offset += seq_fill_size;
-                        invariant!(rle_offset < rle_block_out.len());
-                        rle_block_out[rle_offset] =
-                            rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
-                        rle_offset += 1;
-                        invariant!(rle_offset <= rle_block_out.len());
+                        rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
                     }
                     seq = 0;
                     prev = curr;
@@ -373,25 +390,13 @@ mod algorithms {
             // If we processed all original block hash, there's a case where
             // we are in an identical character sequence.
             if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                // Use the last character offset in the identical character sequence.
-                let base_offset = len - 1;
-                seq -= block_hash::MAX_SEQUENCE_SIZE;
-                let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
-                invariant!(rle_offset < rle_block_out.len());
-                invariant!(rle_offset + seq_fill_size <= rle_block_out.len());
-                invariant!(rle_offset <= rle_offset + seq_fill_size);
-                rle_block_out[rle_offset..rle_offset+seq_fill_size]
-                    .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
-                rle_offset += seq_fill_size;
-                invariant!(rle_offset < rle_block_out.len());
-                rle_block_out[rle_offset] =
-                    rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
-                rle_offset += 1;
-                invariant!(rle_offset <= rle_block_out.len());
+                rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
             }
             *blockhash_len_out = len as u8;
-            invariant!(len <= blockhash_out.len()); // grcov-excl-br-line:ARRAY
-            blockhash_out[len..].fill(0);
+            invariant!(len <= blockhash_out.len());
+            blockhash_out[len..].fill(0); // grcov-excl-br-line:ARRAY
+            invariant!(rle_offset <= rle_block_out.len());
+            rle_block_out[rle_offset..].fill(0); // grcov-excl-br-line:ARRAY
         }
     }
 
@@ -989,6 +994,7 @@ where
     fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {
+        use crate::hash_dual::algorithms::update_rle_block;
         use crate::hash::algorithms;
         let mut fuzzy = Self::new();
         // Parse fuzzy hash
@@ -1005,22 +1011,7 @@ where
             &mut fuzzy.norm_hash.len_blockhash1,
             str, &mut i,
             |pos, len| {
-                optionally_unsafe! {
-                    let base_offset = pos + block_hash::MAX_SEQUENCE_SIZE - 1;
-                    let seq = (len - block_hash::MAX_SEQUENCE_SIZE) - 1;
-                    let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
-                    invariant!(rle_offset < fuzzy.rle_block1.len());
-                    invariant!(rle_offset + seq_fill_size <= fuzzy.rle_block1.len());
-                    invariant!(rle_offset <= rle_offset + seq_fill_size);
-                    fuzzy.rle_block1[rle_offset..rle_offset+seq_fill_size]
-                        .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
-                    rle_offset += seq_fill_size;
-                    invariant!(rle_offset < fuzzy.rle_block1.len());
-                    fuzzy.rle_block1[rle_offset] =
-                        rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
-                    rle_offset += 1;
-                    invariant!(rle_offset <= fuzzy.rle_block1.len());
-                }
+                rle_offset = update_rle_block(&mut fuzzy.rle_block1, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
             }
         ) {
             // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
@@ -1056,22 +1047,7 @@ where
             &mut fuzzy.norm_hash.len_blockhash2,
             str, &mut i,
             |pos, len| {
-                optionally_unsafe! {
-                    let base_offset = pos + block_hash::MAX_SEQUENCE_SIZE - 1;
-                    let seq = (len - block_hash::MAX_SEQUENCE_SIZE) - 1;
-                    let seq_fill_size = seq / rle_encoding::MAX_RUN_LENGTH;
-                    invariant!(rle_offset < fuzzy.rle_block2.len());
-                    invariant!(rle_offset + seq_fill_size <= fuzzy.rle_block2.len());
-                    invariant!(rle_offset <= rle_offset + seq_fill_size);
-                    fuzzy.rle_block2[rle_offset..rle_offset+seq_fill_size]
-                        .fill(rle_encoding::encode(base_offset as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
-                    rle_offset += seq_fill_size;
-                    invariant!(rle_offset < fuzzy.rle_block2.len());
-                    fuzzy.rle_block2[rle_offset] =
-                        rle_encoding::encode(base_offset as u8, (seq % rle_encoding::MAX_RUN_LENGTH) as u8 + 1); // grcov-excl-br-line:ARRAY
-                    rle_offset += 1;
-                    invariant!(rle_offset <= fuzzy.rle_block2.len());
-                }
+                rle_offset = update_rle_block(&mut fuzzy.rle_block2, rle_offset, pos + block_hash::MAX_SEQUENCE_SIZE - 1, len);
             }
         ) {
             // End of BH2: Optional comma or end-of-string is expected.
