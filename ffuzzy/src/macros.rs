@@ -55,15 +55,17 @@ macro_rules! optionally_unsafe_impl {
 /// the other hand, [`core::intrinsics::assume()`] guarantees that it does not
 /// emit any code).
 ///
+/// Optimization behaviors are disabled on tests.
+///
 /// Use this macro along with [`optionally_unsafe!{}`].
 #[doc(alias = "invariant")]
 macro_rules! invariant_impl {
     ($expr: expr) => {
         cfg_if::cfg_if! {
-            if #[cfg(all(feature = "unsafe", feature = "nightly"))] {
+            if #[cfg(all(feature = "unsafe", feature = "nightly", not(test)))] {
                 core::intrinsics::assume($expr);
             }
-            else if #[cfg(feature = "unsafe")] {
+            else if #[cfg(all(feature = "unsafe", not(test)))] {
                 if !($expr) {
                     core::hint::unreachable_unchecked();
                 }
@@ -78,3 +80,14 @@ macro_rules! invariant_impl {
 
 pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 pub(crate) use invariant_impl as invariant;
+
+
+#[forbid(unsafe_code)]
+#[cfg(test)]
+#[test]
+#[should_panic]
+fn violation_invariant() {
+    // On tests, an invariant is just a debug_assert,
+    // that should work outside an unsafe block.
+    invariant!(false);
+}

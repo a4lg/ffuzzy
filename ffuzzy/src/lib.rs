@@ -28,6 +28,9 @@
 // Unless in the maintenance mode, allow old lint names.
 #![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
 
+// Tests: allow unused unsafe blocks (invariant! does will not need unsafe
+// on tests but others may need this macro).
+#![cfg_attr(test, allow(unused_unsafe))]
 // Tests: constant (and/or obvious) assertions should be allowed.
 #![cfg_attr(test, allow(clippy::assertions_on_constants))]
 // Tests: obvious +1 and -1 along with comparison should be allowed.
