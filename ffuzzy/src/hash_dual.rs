@@ -407,8 +407,8 @@ mod algorithms {
         blockhash_out: &mut [u8; SZ_BH],
         blockhash_len_out: &mut u8,
         blockhash_in: &[u8; SZ_BH],
-        rle_block_in: &[u8; SZ_RLE],
-        blockhash_len_in: u8
+        blockhash_len_in: u8,
+        rle_block_in: &[u8; SZ_RLE]
     )
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
@@ -971,15 +971,15 @@ where
             &mut hash.blockhash1,
             &mut hash.len_blockhash1,
             &self.norm_hash.blockhash1,
-            &self.rle_block1,
-            self.norm_hash.len_blockhash1
+            self.norm_hash.len_blockhash1,
+            &self.rle_block1
         );
         algorithms::expand_block_hash_using_rle(
             &mut hash.blockhash2,
             &mut hash.len_blockhash2,
             &self.norm_hash.blockhash2,
-            &self.rle_block2,
-            self.norm_hash.len_blockhash2
+            self.norm_hash.len_blockhash2,
+            &self.rle_block2
         );
     }
 
