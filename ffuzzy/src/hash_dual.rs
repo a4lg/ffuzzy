@@ -349,26 +349,27 @@ mod algorithms {
     }
 
     /// Compress a raw block hash with normalizing and generating RLE encodings.
+    ///
+    /// Note that, the length of `blockhash_in` must not exceed the maximum
+    /// length of `blockhash_out` (`SZ_BH`).
     #[inline]
     pub(crate) fn compress_block_hash_with_rle<const SZ_BH: usize, const SZ_RLE: usize>(
         blockhash_out: &mut [u8; SZ_BH],
         rle_block_out: &mut [u8; SZ_RLE],
         blockhash_len_out: &mut u8,
-        blockhash_in: &[u8; SZ_BH],
-        blockhash_len_in: u8
+        blockhash_in: &[u8]
     )
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
         ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
+        debug_assert!(blockhash_in.len() <= SZ_BH);
         optionally_unsafe! {
             let mut rle_offset = 0;
             let mut seq = 0usize;
             let mut len = 0usize;
             let mut prev = crate::base64::BASE64_INVALID;
-            for i in 0..blockhash_len_in as usize {
-                invariant!(i < blockhash_in.len());
-                let curr: u8 = blockhash_in[i]; // grcov-excl-br-line:ARRAY
+            for &curr in blockhash_in {
                 if curr == prev {
                     seq += 1;
                     if seq >= block_hash::MAX_SEQUENCE_SIZE {
@@ -704,15 +705,13 @@ where
             &mut self.norm_hash.blockhash1,
             &mut self.rle_block1,
             &mut self.norm_hash.len_blockhash1,
-            &hash.blockhash1,
-            hash.len_blockhash1
+            hash.block_hash_1()
         );
         algorithms::compress_block_hash_with_rle(
             &mut self.norm_hash.blockhash2,
             &mut self.rle_block2,
             &mut self.norm_hash.len_blockhash2,
-            &hash.blockhash2,
-            hash.len_blockhash2
+            hash.block_hash_2()
         );
     }
 
@@ -742,15 +741,13 @@ where
             &mut self.norm_hash.blockhash1,
             &mut self.rle_block1,
             &mut self.norm_hash.len_blockhash1,
-            block_hash_1,
-            block_hash_1_len
+            &block_hash_1[..block_hash_1_len as usize]
         );
         algorithms::compress_block_hash_with_rle(
             &mut self.norm_hash.blockhash2,
             &mut self.rle_block2,
             &mut self.norm_hash.len_blockhash2,
-            block_hash_2,
-            block_hash_2_len
+            &block_hash_2[..block_hash_2_len as usize]
         );
     }
 
