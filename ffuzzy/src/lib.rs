@@ -6,6 +6,8 @@
 
 // no_std
 #![cfg_attr(not(feature = "std"), no_std)]
+// Allow using internal features when use of Nightly Rust features are allowed.
+#![cfg_attr(feature = "nightly", allow(internal_features))]
 // Regular nightly features
 #![cfg_attr(feature = "nightly", feature(doc_cfg))]
 #![cfg_attr(feature = "nightly", feature(doc_auto_cfg))]
