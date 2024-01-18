@@ -896,6 +896,11 @@ where
     ///
     /// This is the maximum possible value of
     /// the [`len_in_str()`](Self::len_in_str()) method.
+    ///
+    /// Note that, this value does not count
+    /// [the file name part of the fuzzy hash](Self#fuzzy-hash-internals)
+    /// (not even an optional "comma" character separating the file name part)
+    /// because [`len_in_str()`](Self::len_in_str()) does not.
     pub const MAX_LEN_IN_STR: usize = block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS
         + Self::MAX_BLOCK_HASH_SIZE_1
         + Self::MAX_BLOCK_HASH_SIZE_2

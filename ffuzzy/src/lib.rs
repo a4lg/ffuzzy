@@ -131,7 +131,12 @@ pub mod constraints {
 /// The maximum length of the fuzzy hash's string representation.
 ///
 /// This is the maximum length of the longest valid fuzzy hash
-/// when represented in a string.
+/// (except the file name part) when represented in a string.
+///
+/// Note that again, this value does not count
+/// [the file name part of the fuzzy hash](crate::hash::FuzzyHashData#fuzzy-hash-internals)
+/// (not even an optional "comma" character separating the file name part)
+/// because [`LongRawFuzzyHash::len_in_str()`] does not.
 pub const MAX_LEN_IN_STR: usize = LongRawFuzzyHash::MAX_LEN_IN_STR;
 
 
