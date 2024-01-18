@@ -444,6 +444,7 @@ mod algorithms {
                 let lastch = blockhash_in[pos]; // grcov-excl-br-line:ARRAY
                 invariant!(offset_dst + copy_len <= blockhash_out.len());
                 invariant!(offset_dst + copy_len + len <= blockhash_out.len());
+                invariant!(offset_dst + copy_len <= offset_dst + copy_len + len);
                 blockhash_out[offset_dst+copy_len..offset_dst+copy_len+len].fill(lastch); // grcov-excl-br-line:ARRAY
                 // Update next offset
                 offset_src += copy_len;
