@@ -149,13 +149,9 @@ mod const_asserts {
     use super::*;
     use static_assertions::const_assert;
 
-    // We expect that usize is at least 8 bits in width.
-    // For buffer-related operations in this crate except generator_easy,
-    // this should be enough.  In reality, generator_easy would require
-    // usize of >= 16 bits and in fact some structs in this crate
-    // exceeds 256 bytes.  Some tests even require that usize is at least
-    // 32 bits.
-    const_assert!(usize::BITS >= 8);
+    // We expect that usize is at least 16 bits in width.
+    // Note that, some tests even require that usize is at least 32 bits.
+    const_assert!(usize::BITS >= 16);
 
     // MAX_LEN_IN_STR is sufficient to represent every variant of
     // a fuzzy hash.
