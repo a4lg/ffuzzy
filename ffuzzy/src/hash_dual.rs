@@ -334,7 +334,7 @@ mod algorithms {
             let extend_len_minus_one = len - block_hash::MAX_SEQUENCE_SIZE - 1;
             let seq_fill_size = extend_len_minus_one / rle_encoding::MAX_RUN_LENGTH;
             let start = rle_offset;
-            invariant!(start < rle_block.len());
+            invariant!(start <= rle_block.len());
             invariant!(start + seq_fill_size <= rle_block.len());
             invariant!(start <= start + seq_fill_size);
             rle_block[start..start + seq_fill_size]
@@ -419,10 +419,10 @@ mod algorithms {
             let mut offset_dst = 0usize;
             let mut len_out = blockhash_len_in;
             let copy_as_is = |blockhash_out: &mut [u8; SZ_BH], dst, src, len| {
-                invariant!(src < blockhash_in.len());
+                invariant!(src <= blockhash_in.len());
                 invariant!(src + len <= blockhash_in.len());
                 invariant!(src <= src + len);
-                invariant!(dst < blockhash_out.len());
+                invariant!(dst <= blockhash_out.len());
                 invariant!(dst + len <= blockhash_out.len());
                 invariant!(dst <= dst + len);
                 blockhash_out[dst..dst+len].clone_from_slice(&blockhash_in[src..src+len]); // grcov-excl-br-line:ARRAY
@@ -442,7 +442,7 @@ mod algorithms {
                 // Copy with duplication
                 invariant!(pos < blockhash_in.len());
                 let lastch = blockhash_in[pos]; // grcov-excl-br-line:ARRAY
-                invariant!(offset_dst + copy_len < blockhash_out.len());
+                invariant!(offset_dst + copy_len <= blockhash_out.len());
                 invariant!(offset_dst + copy_len + len <= blockhash_out.len());
                 blockhash_out[offset_dst+copy_len..offset_dst+copy_len+len].fill(lastch); // grcov-excl-br-line:ARRAY
                 // Update next offset
