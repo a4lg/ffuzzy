@@ -161,14 +161,13 @@ fn block_size_strings() {
     for log_block_size in RANGE_LOG_VALID {
         let index = log_block_size as usize;
         // BLOCK_SIZES_STR[i] must have direct correspondence with valid block size.
-        let block_size = block_size::from_log(log_block_size).unwrap();
-        let block_size_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[index]).unwrap();
-        assert_eq!(block_size, block_size_from_str, "failed on log_block_size={}", log_block_size);
+        let bs = block_size::from_log(log_block_size).unwrap();
+        let bs_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[index]).unwrap();
+        assert_eq!(bs, bs_from_str, "failed on log_block_size={}", log_block_size);
         // The length must be bounded by MAX_BLOCK_SIZE_LEN_IN_CHARS.
         assert!(block_size::BLOCK_SIZES_STR[index].len() <= block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS,
             "failed on log_block_size={}", log_block_size);
-        assert_eq!(block_size::BLOCK_SIZES_STR[index], block_size.to_string(),
-            "failed on log_block_size={}", log_block_size);
+        assert_eq!(block_size::BLOCK_SIZES_STR[index], bs.to_string(), "failed on log_block_size={}", log_block_size);
     }
 }
 
