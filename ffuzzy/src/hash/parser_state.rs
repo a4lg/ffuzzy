@@ -7,9 +7,8 @@
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum will not be
+/// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorKind {
@@ -54,9 +53,8 @@ impl core::fmt::Display for ParseErrorKind {
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum will not be
+/// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorOrigin {
     /// Block size.

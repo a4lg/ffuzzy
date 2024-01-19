@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 use core::ops::AddAssign;
 
@@ -492,9 +492,8 @@ pub struct Generator {
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum will not be
+/// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[repr(u8)]
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GeneratorError {

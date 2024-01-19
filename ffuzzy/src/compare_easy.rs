@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 #![cfg(feature = "easy-functions")]
 
@@ -17,9 +17,8 @@ mod tests;
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum will not be
+/// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorSide {
     /// The left hand side.

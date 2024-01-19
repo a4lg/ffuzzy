@@ -39,9 +39,8 @@ mod tests;
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum will not be
+/// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockSizeRelation {
     /// Two block sizes are *near* and the block hash 2 (one with a larger block
