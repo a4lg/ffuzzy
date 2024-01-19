@@ -1228,8 +1228,7 @@ where
 
     /// Returns whether the dual fuzzy hash is normalized.
     pub fn is_normalized(&self) -> bool {
-        self.rle_block1.iter().all(|&x| x == 0) &&
-        self.rle_block2.iter().all(|&x| x == 0)
+        self.rle_block1[0] == 0 && self.rle_block2[0] == 0
     }
 
     /// Performs full validity checking of the internal structure.
