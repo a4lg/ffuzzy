@@ -5,9 +5,9 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
-use core::ops::{Range, RangeInclusive};
+use core::ops::RangeInclusive;
 
-use crate::hash::block::{block_size, block_hash, BlockSizeRelation};
+use crate::hash::block::{block_size::{self, RANGE_LOG_VALID}, block_hash, BlockSizeRelation};
 use crate::test_utils::assert_fits_in;
 
 
@@ -18,7 +18,6 @@ fn prerequisites() {
 }
 
 
-const RANGE_LOG_VALID:   Range<u8> = 0..block_size::NUM_VALID as u8;
 const RANGE_LOG_INVALID: RangeInclusive<u8> = block_size::NUM_VALID as u8..=u8::MAX;
 
 #[test]

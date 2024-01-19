@@ -97,6 +97,11 @@ pub mod block_size {
     /// logarithm* form of the block size (explicitly documented in such cases).
     pub const NUM_VALID: usize = 31;
 
+    /// The range representing the valid *base-2 logarithm* form of the block size
+    /// (used while testing).
+    #[cfg(any(test, doc))]
+    pub(crate) const RANGE_LOG_VALID: core::ops::Range<u8> = 0..block_size::NUM_VALID as u8;
+
     /// Checks whether a given block size is valid.
     #[inline]
     pub const fn is_valid(block_size: u32) -> bool {
