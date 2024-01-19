@@ -10,7 +10,8 @@
 /// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorKind {
     /// Block size: is empty.
     BlockSizeIsEmpty,
@@ -55,7 +56,8 @@ impl core::fmt::Display for ParseErrorKind {
 ///
 /// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorOrigin {
     /// Block size.
     BlockSize,
@@ -125,7 +127,8 @@ impl core::error::Error for ParseError {}
 /// Note that while some of them always represent one of error conditions,
 /// some are valid depending on the context.
 #[repr(u32)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum BlockHashParseState {
     /// The end of the string is encountered.
     MetEndOfString,

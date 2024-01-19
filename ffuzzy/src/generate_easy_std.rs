@@ -21,7 +21,7 @@ mod tests;
 /// This type contains either:
 /// *   A fuzzy hash generator error ([`GeneratorError`]) or
 /// *   An I/O error ([`std::io::Error`]).
-#[derive(Debug)]
+#[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
 pub enum GeneratorOrIOError {
     /// An error caused by the fuzzy hash generator.
     GeneratorError(GeneratorError),
