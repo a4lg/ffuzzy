@@ -1830,10 +1830,7 @@ fn cover_hash() {
 #[test]
 fn ord_and_sorting() {
     use std::vec::Vec;
-    #[cfg(feature = "alloc")]
     use alloc::string::ToString;
-    #[cfg(not(feature = "alloc"))]
-    use std::string::ToString;
     // Sorted by block hash order (Base64 indices and length).
     // Note that 'A' has Base64 index zero and FuzzyHashData zero-fills
     // each tail of block hashes (making the behavior more deterministic).
