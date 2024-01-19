@@ -171,13 +171,12 @@ fn data_model_basic() {
             *   block_hash_2_mut
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..block_size::NUM_VALID {
+        for log_block_size in block_size::RANGE_LOG_VALID {
             let len_blockhash1 = bh1_norm.len();
             let len_blockhash2 = bh2_norm.len();
-            let log_block_size_raw = log_block_size as u8;
             let len_blockhash1_raw = len_blockhash1 as u8;
             let len_blockhash2_raw = len_blockhash2 as u8;
-            let block_size = block_size::from_log_internal(log_block_size_raw);
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident, $dual_hash: ident) => {
@@ -215,16 +214,16 @@ fn data_model_basic() {
                     assert!(target.is_equiv(&$hash),
                         "failed (1-4) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check raw values (except position array)
-                    assert_eq!(target.log_blocksize, log_block_size_raw,
+                    assert_eq!(target.log_blocksize, log_block_size,
                         "failed (1-5) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.len_blockhash1, len_blockhash1_raw,
                         "failed (1-6) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     assert_eq!(target.len_blockhash2, len_blockhash2_raw,
                         "failed (1-7) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check direct correspondence to raw values and basic functions
-                    assert_eq!(target.log_block_size(), log_block_size_raw,
+                    assert_eq!(target.log_block_size(), log_block_size,
                         "failed (1-8) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
-                    assert_eq!(target.block_size(), block_size,
+                    assert_eq!(target.block_size(), bs,
                         "failed (1-9) on log_block_size={}, bh1_norm={:?}, bh2_norm={:?}", log_block_size, bh1_norm, bh2_norm);
                     // Check BlockHashPositionArrayRef
                     // (except `reference()`, which is checked by `data_model_internal_refs`)
@@ -261,24 +260,24 @@ fn data_model_basic() {
             // Test body
             if len_blockhash2 <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
-                assert_eq!(hash, FuzzyHash::try_from(LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize()).unwrap(),
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
+                assert_eq!(hash, FuzzyHash::try_from(LongRawFuzzyHash::new_from_internals(bs, bh1, bh2).normalize()).unwrap(),
                     "failed on log_block_size={}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
                 if bh2.len() <= block_hash::HALF_SIZE {
-                    let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                    let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(bs, bh1, bh2));
                     test_all!(hash, dual_hash);
                 }
                 else {
-                    let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                    let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(bs, bh1, bh2));
                     test_all!(hash, dual_hash);
                 }
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
-                assert_eq!(hash, LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2).normalize(),
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
+                assert_eq!(hash, LongRawFuzzyHash::new_from_internals(bs, bh1, bh2).normalize(),
                     "failed on log_block_size={}, bh1={:?}, bh2={:?}", log_block_size, bh1, bh2);
-                let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(block_size, bh1, bh2));
+                let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(bs, bh1, bh2));
                 test_all!(hash, dual_hash);
             }
         }
@@ -295,8 +294,8 @@ fn data_model_equiv() {
     test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
         let empty_hash_s = FuzzyHash::new();
         let empty_hash_l = LongFuzzyHash::new();
-        for log_block_size in 0..block_size::NUM_VALID {
-            let block_size = block_size::from_log_internal(log_block_size as u8);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident) => {
@@ -320,8 +319,8 @@ fn data_model_equiv() {
                     // Inequality when block size is changed from the original.
                     // Note: `is_equiv_except_block_size()` should still return true.
                     let mut hash2 = $hash;
-                    for log_block_size_2 in 0..block_size::NUM_VALID {
-                        hash2.log_blocksize = log_block_size_2 as u8;
+                    for log_block_size_2 in block_size::RANGE_LOG_VALID {
+                        hash2.log_blocksize = log_block_size_2;
                         assert_eq!(target.is_equiv(&hash2), log_block_size == log_block_size_2,
                             "failed (2-1) on \
                                 log_block_size={}, \
@@ -350,12 +349,12 @@ fn data_model_equiv() {
             // Test body
             if bh2_norm.len() <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
         }
@@ -370,8 +369,8 @@ fn data_model_equiv_inequality_block_hash() {
         *   is_equiv_except_block_size
     */
     test_blockhash_contents_no_sequences(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..block_size::NUM_VALID {
-            let block_size = block_size::from_log_internal(log_block_size as u8);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident) => {
@@ -399,12 +398,12 @@ fn data_model_equiv_inequality_block_hash() {
             // Test body
             if bh2_norm.len() <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
         }
@@ -782,8 +781,8 @@ fn compare_self() {
         *   compare (FuzzyHashData)
     */
     test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..block_size::NUM_VALID {
-            let block_size = block_size::from_log_internal(log_block_size as u8);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident) => {
@@ -806,12 +805,12 @@ fn compare_self() {
             // Test body
             if bh2_norm.len() <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
         }
@@ -843,9 +842,8 @@ fn compare_slightly_different() {
         let len_blockhash2 = bh2_norm.len();
         let len_blockhash1_raw = len_blockhash1 as u8;
         let len_blockhash2_raw = len_blockhash2 as u8;
-        for log_block_size in 0..block_size::NUM_VALID {
-            let log_block_size_raw = log_block_size as u8;
-            let block_size = block_size::from_log_internal(log_block_size_raw);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident) => {
@@ -907,7 +905,7 @@ fn compare_slightly_different() {
                         let score_cap_1 =
                             if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                                    log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw)
+                                    log_block_size, len_blockhash1_raw, len_blockhash1_raw)
                             }
                             else {
                                 100
@@ -915,7 +913,7 @@ fn compare_slightly_different() {
                         let score_cap_2 =
                             if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                                    log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw)
+                                    log_block_size + 1, len_blockhash2_raw, len_blockhash2_raw)
                             }
                             else {
                                 100
@@ -950,7 +948,7 @@ fn compare_slightly_different() {
                         let score_cap_1 =
                             if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                                    log_block_size_raw, len_blockhash1_raw, len_blockhash1_raw)
+                                    log_block_size, len_blockhash1_raw, len_blockhash1_raw)
                             }
                             else {
                                 100
@@ -958,7 +956,7 @@ fn compare_slightly_different() {
                         let score_cap_2 =
                             if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                                    log_block_size_raw + 1, len_blockhash2_raw, len_blockhash2_raw)
+                                    log_block_size + 1, len_blockhash2_raw, len_blockhash2_raw)
                             }
                             else {
                                 100
@@ -989,12 +987,12 @@ fn compare_slightly_different() {
             // Test body
             if bh2_norm.len() <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
         }
@@ -1063,10 +1061,9 @@ fn comparison_with_block_size_pairs() {
     }
     let mut target_s = FuzzyHashCompareTarget::new();
     let mut target_l = FuzzyHashCompareTarget::new();
-    for bs1 in 0..block_size::NUM_VALID {
+    for bs1 in block_size::RANGE_LOG_VALID {
         // Hash 1: (BS1):[0]:[1]
-        let log_block_size_1 = bs1 as u8;
-        let block_size_1 = block_size::from_log(log_block_size_1).unwrap();
+        let block_size_1 = block_size::from_log(bs1).unwrap();
         let hash1_s = FuzzyHash::new_from_internals(
             block_size_1,
             BLOCK_HASH_SAMPLE_DATA[0],
@@ -1077,10 +1074,9 @@ fn comparison_with_block_size_pairs() {
         target_l.init_from(&hash1_l);
         assert!(target_s.full_eq(&target_l), "failed on bs1={}", bs1);
         let target: &FuzzyHashCompareTarget = &target_s;
-        for bs2 in 0..block_size::NUM_VALID {
+        for bs2 in block_size::RANGE_LOG_VALID {
             // Hash 2: (BS2):[2]:[3]
-            let log_block_size_2 = bs2 as u8;
-            let block_size_2 = block_size::from_log(log_block_size_2).unwrap();
+            let block_size_2 = block_size::from_log(bs2).unwrap();
             let hash2_s = FuzzyHash::new_from_internals(
                 block_size_2,
                 BLOCK_HASH_SAMPLE_DATA[2],
@@ -1106,7 +1102,7 @@ fn comparison_with_block_size_pairs() {
                 assert_eq!(score, hash1_s.compare_unequal_unchecked(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
                 assert_eq!(score, hash1_l.compare_unequal_unchecked(&hash2_l), "failed on bs1={}, bs2={}", bs1, bs2);
             }
-            match block_size::compare_sizes(log_block_size_1, log_block_size_2) {
+            match block_size::compare_sizes(bs1, bs2) {
                 BlockSizeRelation::Far => {
                     assert_eq!(score, 0, "failed on bs1={}, bs2={}", bs1, bs2);
                     assert!(!target.is_comparison_candidate(&hash2_s), "failed on bs1={}, bs2={}", bs1, bs2);
@@ -1128,13 +1124,13 @@ fn comparison_with_block_size_pairs() {
                     // and take the maximum (considering the capping).
                     let score_cap_1 =
                         FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                            log_block_size_1,
+                            bs1,
                             hash1_s.len_blockhash1,
                             hash2_s.len_blockhash1
                         );
                     let score_cap_2 =
                         FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                            log_block_size_1 + 1,
+                            bs1 + 1,
                             hash1_s.len_blockhash2,
                             hash2_s.len_blockhash2
                         );
@@ -1177,7 +1173,7 @@ fn comparison_with_block_size_pairs() {
                     // Compare [0] and [3] and cap the raw score.
                     let score_cap =
                         FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                            log_block_size_1,
+                            bs1,
                             hash1_s.len_blockhash1,
                             hash2_s.len_blockhash2
                         );
@@ -1211,7 +1207,7 @@ fn comparison_with_block_size_pairs() {
                     // Compare [1] and [2] and cap the raw score.
                     let score_cap =
                         FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
-                            log_block_size_2,
+                            bs2,
                             hash1_s.len_blockhash2,
                             hash2_s.len_blockhash1
                         );
@@ -1248,8 +1244,8 @@ fn compare_candidate_self() {
         let expected_value =
             bh1_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON ||
             bh2_norm.len() >= block_hash::MIN_LCS_FOR_COMPARISON;
-        for log_block_size in 0..block_size::NUM_VALID {
-            let block_size = block_size::from_log_internal(log_block_size as u8);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bs = block_size::from_log_internal(log_block_size);
             // Template
             macro_rules! test_all {
                 ($hash: ident) => {
@@ -1270,12 +1266,12 @@ fn compare_candidate_self() {
             // Test body
             if bh2_norm.len() <= block_hash::HALF_SIZE {
                 // Short fuzzy hash
-                let hash = FuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = FuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
             // Long fuzzy hash
             {
-                let hash = LongFuzzyHash::new_from_internals(block_size, bh1_norm, bh2_norm);
+                let hash = LongFuzzyHash::new_from_internals(bs, bh1_norm, bh2_norm);
                 test_all!(hash);
             }
         }
@@ -1366,10 +1362,9 @@ fn compare_candidate_with_block_size_pairs() {
     for (pair_idx, &(bh_1_1, bh_1_2, bh_2_1, bh_2_2, cand_eq, cand_gt, cand_lt))
         in BLOCK_HASH_PAIRS.iter().enumerate()
     {
-        for bs1 in 0..block_size::NUM_VALID {
+        for bs1 in block_size::RANGE_LOG_VALID {
             // Hash 1: (BS1):[bh_1_1]:[bh_1_2]
-            let log_block_size_1 = bs1 as u8;
-            let block_size_1 = block_size::from_log(log_block_size_1).unwrap();
+            let block_size_1 = block_size::from_log(bs1).unwrap();
             let hash1_s =
                 FuzzyHash::new_from_internals(block_size_1, bh_1_1, bh_1_2);
             let hash1_l = hash1_s.to_long_form();
@@ -1377,14 +1372,13 @@ fn compare_candidate_with_block_size_pairs() {
             target_l.init_from(&hash1_l);
             assert!(target_s.full_eq(&target_l), "failed on pair_idx={}, bs1={}", pair_idx, bs1);
             let target: &FuzzyHashCompareTarget = &target_s;
-            for bs2 in 0..block_size::NUM_VALID {
+            for bs2 in block_size::RANGE_LOG_VALID {
                 // Hash 2: (BS2):[bh_2_1]:[bh_2_2]
-                let log_block_size_2 = bs2 as u8;
-                let block_size_2 = block_size::from_log(log_block_size_2).unwrap();
+                let block_size_2 = block_size::from_log(bs2).unwrap();
                 let hash2_s =
                     FuzzyHash::new_from_internals(block_size_2, bh_2_1, bh_2_2);
                 let hash2_l = hash2_s.to_long_form();
-                match block_size::compare_sizes(log_block_size_1, log_block_size_2) {
+                match block_size::compare_sizes(bs1, bs2) {
                     BlockSizeRelation::Far => {
                         assert!(!target.is_comparison_candidate(&hash2_s), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
                         assert!(!target.is_comparison_candidate(&hash2_l), "failed on pair_idx={}, bs1={}, bs2={}", pair_idx, bs1, bs2);
