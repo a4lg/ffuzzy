@@ -214,8 +214,8 @@ pub mod block_size {
     /// The internal implementation of [`log_from_valid_unchecked()`].
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
-        let value = LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
         debug_assert!(is_valid(block_size));
+        let value = LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
         optionally_unsafe! {
             invariant!((value as usize) < NUM_VALID);
         }
