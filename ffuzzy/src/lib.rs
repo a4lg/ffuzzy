@@ -128,7 +128,8 @@ pub mod constraints {
     };
 }
 
-/// The maximum length of the fuzzy hash's string representation.
+/// The maximum length of the fuzzy hash's string representation
+/// (except the file name part).
 ///
 /// This is the maximum length of the longest valid fuzzy hash
 /// (except the file name part) when represented in a string.
