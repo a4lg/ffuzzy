@@ -746,9 +746,9 @@ fn verify_get_log_block_size_from_input_size() {
         }
         log_block_size
     }
-    for index in 0..block_size::NUM_VALID {
-        let size = Generator::guessed_preferred_max_input_size_at(index as u8);
-        for start in 0..block_size::NUM_VALID {
+    for index in block_size::RANGE_LOG_VALID {
+        let size = Generator::guessed_preferred_max_input_size_at(index);
+        for start in block_size::RANGE_LOG_VALID.map(|x| x as usize) {
             assert_eq!(
                 get_log_block_size_from_input_size_naive(size - 2, start),
                 Generator::get_log_block_size_from_input_size(size - 2, start),
