@@ -270,19 +270,19 @@ mod failures {
 mod failures_on_debug {
     use super::*;
 
-    const INVALID_LOG_BS: u8 = block_size::NUM_VALID as u8;
+    const INVALID_LOG_BLOCK_SIZE: u8 = block_size::NUM_VALID as u8;
 
     #[test] #[should_panic] fn log_from_valid_internal_fail() { block_size::log_from_valid_internal(0); }
-    #[test] #[should_panic] fn is_near_fail_1() { block_size::is_near(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn is_near_fail_2() { block_size::is_near(0, INVALID_LOG_BS); }
-    #[test] #[should_panic] fn is_near_eq_fail_1() { block_size::is_near_eq(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn is_near_eq_fail_2() { block_size::is_near_eq(0, INVALID_LOG_BS); }
-    #[test] #[should_panic] fn is_near_lt_fail_1() { block_size::is_near_lt(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn is_near_lt_fail_2() { block_size::is_near_lt(0, INVALID_LOG_BS); }
-    #[test] #[should_panic] fn is_near_gt_fail_1() { block_size::is_near_gt(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn is_near_gt_fail_2() { block_size::is_near_gt(0, INVALID_LOG_BS); }
-    #[test] #[should_panic] fn compare_sizes_fail_1() { block_size::compare_sizes(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn compare_sizes_fail_2() { block_size::compare_sizes(0, INVALID_LOG_BS); }
-    #[test] #[should_panic] fn cmp_fail_1() { block_size::cmp(INVALID_LOG_BS, 0); }
-    #[test] #[should_panic] fn cmp_fail_2() { block_size::cmp(0, INVALID_LOG_BS); }
+    #[test] #[should_panic] fn is_near_fail_1() { block_size::is_near(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn is_near_fail_2() { block_size::is_near(0, INVALID_LOG_BLOCK_SIZE); }
+    #[test] #[should_panic] fn is_near_eq_fail_1() { block_size::is_near_eq(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn is_near_eq_fail_2() { block_size::is_near_eq(0, INVALID_LOG_BLOCK_SIZE); }
+    #[test] #[should_panic] fn is_near_lt_fail_1() { block_size::is_near_lt(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn is_near_lt_fail_2() { block_size::is_near_lt(0, INVALID_LOG_BLOCK_SIZE); }
+    #[test] #[should_panic] fn is_near_gt_fail_1() { block_size::is_near_gt(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn is_near_gt_fail_2() { block_size::is_near_gt(0, INVALID_LOG_BLOCK_SIZE); }
+    #[test] #[should_panic] fn compare_sizes_fail_1() { block_size::compare_sizes(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn compare_sizes_fail_2() { block_size::compare_sizes(0, INVALID_LOG_BLOCK_SIZE); }
+    #[test] #[should_panic] fn cmp_fail_1() { block_size::cmp(INVALID_LOG_BLOCK_SIZE, 0); }
+    #[test] #[should_panic] fn cmp_fail_2() { block_size::cmp(0, INVALID_LOG_BLOCK_SIZE); }
 }
