@@ -5,6 +5,7 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
+use core::ops::{Range, RangeInclusive};
 
 use crate::hash::block::{block_size, block_hash, BlockSizeRelation};
 use crate::test_utils::assert_fits_in;
@@ -16,10 +17,26 @@ fn prerequisites() {
     assert_fits_in!(block_size::NUM_VALID, u8);
 }
 
+
+const RANGE_LOG_VALID:   Range<u8> = 0..block_size::NUM_VALID as u8;
+const RANGE_LOG_INVALID: RangeInclusive<u8> = block_size::NUM_VALID as u8..=u8::MAX;
+
+#[test]
+fn block_size_log_whole_range() {
+    for log_block_size in u8::MIN..=u8::MAX {
+        // Make sure that those two ranges are mutually exclusive.
+        assert_ne!(
+            RANGE_LOG_VALID.contains(&log_block_size),
+            RANGE_LOG_INVALID.contains(&log_block_size),
+            "failed on log_block_size={}", log_block_size
+        );
+    }
+}
+
 #[test]
 fn block_size_validness_near_the_border() {
     const WIDTH: u32 = 10;
-    for log_block_size in 0..block_size::NUM_VALID as u8 {
+    for log_block_size in RANGE_LOG_VALID {
         let block_size = block_size::from_log_internal(log_block_size);
         let block_size_prev_plus_1 =
             if log_block_size > 0 {
@@ -91,7 +108,7 @@ fn block_size_validness_all() {
 
 #[test]
 fn block_size_log_valid() {
-    for log_block_size in 0..block_size::NUM_VALID as u8 {
+    for log_block_size in RANGE_LOG_VALID {
         assert!(block_size::is_log_valid(log_block_size), "failed on log_block_size={}", log_block_size);
         // exp(i)
         let bs = {
@@ -130,7 +147,7 @@ fn block_size_log_valid() {
 
 #[test]
 fn block_size_log_invalid() {
-    for log_block_size in block_size::NUM_VALID as u8..=u8::MAX {
+    for log_block_size in RANGE_LOG_INVALID {
         assert!(!block_size::is_log_valid(log_block_size), "failed on log_block_size={}", log_block_size);
         assert_eq!(block_size::from_log(log_block_size), None, "failed on log_block_size={}", log_block_size);
     }
@@ -145,7 +162,8 @@ fn block_size_strings() {
     // Prerequisites
     assert_eq!(block_size::NUM_VALID, block_size::BLOCK_SIZES_STR.len());
     // Test all valid *base-2 logarithm* values.
-    for log_block_size in 0..block_size::NUM_VALID {
+    for log_block_size_raw in RANGE_LOG_VALID {
+        let log_block_size = log_block_size_raw as usize;
         // BLOCK_SIZES_STR[i] must have direct correspondence with valid block size.
         let block_size = block_size::from_log(log_block_size as u8).unwrap();
         let block_size_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[log_block_size]).unwrap();
@@ -172,8 +190,8 @@ fn block_size_relation_impls() {
 
 #[test]
 fn block_size_relation_consistency() {
-    for bs1 in 0..block_size::NUM_VALID as u8 {
-        for bs2 in 0..block_size::NUM_VALID as u8 {
+    for bs1 in RANGE_LOG_VALID {
+        for bs2 in RANGE_LOG_VALID {
             // Use cmp.
             let ord = block_size::cmp(bs1, bs2);
             match ord {
