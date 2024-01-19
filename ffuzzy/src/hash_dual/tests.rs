@@ -78,6 +78,12 @@ fn data_model_init_and_basic() {
             *   new_from_raw_form_internals_raw
             *   new_from_raw_form_internals_raw_internal
             *   new_from_raw_form_internals_raw_unchecked
+            *   new_from_internals
+            *   new_from_internals_internal
+            *   new_from_internals_unchecked
+            *   new_from_internals_near_raw
+            *   new_from_internals_near_raw_internal
+            *   new_from_internals_near_raw_unchecked
         3. Direct Mapping to Internal Fuzzy Hash
             *   log_block_size
             *   block_size
@@ -133,23 +139,35 @@ fn data_model_init_and_basic() {
                     let hash7: $ty = <$ty>::from_bytes(bytes_raw).unwrap();
                     let hash8: $ty = str::parse::<$ty>(bytes_str).unwrap();
                     let hash9: $ty = hash1.clone();
-                    assert_eq!(hash, hash1, "failed (1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash2, "failed (1-2) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash3, "failed (1-3) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash4, "failed (1-4) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash5, "failed (1-5) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash6, "failed (1-6) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash7, "failed (1-7) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash8, "failed (1-8) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash9, "failed (1-9) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    let hash10: $ty = <$ty>::new_from_internals_internal(block_size, bh1, bh2);
+                    let hash11: $ty = <$ty>::new_from_internals(block_size, bh1, bh2);
+                    let hash12: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size_raw, bh1, bh2);
+                    let hash13: $ty = <$ty>::new_from_internals_near_raw(log_block_size_raw, bh1, bh2);
+                    assert_eq!(hash, hash1, "failed (1-1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash2, "failed (1-1-2) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash3, "failed (1-1-3) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash4, "failed (1-1-4) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash5, "failed (1-1-5) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash6, "failed (1-1-6) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash7, "failed (1-1-7) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash8, "failed (1-1-8) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash9, "failed (1-1-9) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash10, "failed (1-1-10) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash11, "failed (1-1-11) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash12, "failed (1-1-12) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash, hash13, "failed (1-1-13) on typename={}, bytes_str={:?}", typename, bytes_str);
                     #[cfg(feature = "unchecked")]
                     unsafe {
                         let mut hash_u4: $ty = <$ty>::new();
                         hash_u4.init_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
                         let hash_u6: $ty =
                             <$ty>::new_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                        assert_eq!(hash, hash_u4, "failed (1-10) on typename={}, bytes_str={:?}", typename, bytes_str);
-                        assert_eq!(hash, hash_u6, "failed (1-11) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        let hash_u10: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
+                        let hash_u12: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size_raw, bh1, bh2);
+                        assert_eq!(hash, hash_u4, "failed (1-2-4) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        assert_eq!(hash, hash_u6, "failed (1-2-6) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        assert_eq!(hash, hash_u10, "failed (1-2-10) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        assert_eq!(hash, hash_u12, "failed (1-2-12) on typename={}, bytes_str={:?}", typename, bytes_str);
                     }
                     // Validness
                     assert!(hash.is_valid(), "failed (2) on typename={}, bytes_str={:?}", typename, bytes_str);
