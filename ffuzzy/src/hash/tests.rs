@@ -1442,7 +1442,7 @@ fn block_hash_const_substring_lengths() {
 }
 
 #[allow(clippy::type_complexity)]
-const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>); 41] = [
+pub(crate) const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>); 41] = [
     // Block Size
     parser_case_fail_both!("",     UnexpectedEndOfString, BlockSize, 0),
     parser_case_fail_both!("::",   BlockSizeIsEmpty,      BlockSize, 0),

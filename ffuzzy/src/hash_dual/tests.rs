@@ -7,7 +7,7 @@
 use crate::hash::FuzzyHashData;
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
-use crate::hash::tests::FuzzyHashStringBytes;
+use crate::hash::tests::{FuzzyHashStringBytes, PARSER_ERR_CASES};
 use crate::hash::test_utils::test_blockhash_contents_all;
 use crate::hash_dual::{DualFuzzyHash, LongDualFuzzyHash, rle_encoding};
 use crate::test_utils::test_for_each_type;
@@ -686,6 +686,56 @@ fn parse_errors() {
             Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize, 0)),
             "failed on typename={}", typename
         );
+    }}
+    test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
+}
+
+#[test]
+fn parse_patterns() {
+    macro_rules! test {($ty: ty) => {
+        let typename = stringify!($ty);
+        for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
+            let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
+            let mut index1 = 0;
+            let mut index2 = usize::MAX;
+            assert_eq!(
+                <$ty>::from_bytes(hash_str.as_bytes()).map(|_| ()), err,
+                "failed (1-1) on typename={}, hash_str={:?}", typename, hash_str
+            );
+            assert_eq!(
+                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index1).map(|_| ()), err,
+                "failed (1-2-1-1-1) on typename={}, hash_str={:?}", typename, hash_str
+            );
+            assert_eq!(
+                <$ty>::from_bytes_with_last_index(hash_str.as_bytes(), &mut index2).map(|_| ()), err,
+                "failed (1-2-1-1-2) on typename={}, hash_str={:?}", typename, hash_str
+            );
+            match err {
+                Ok(_) => {
+                    assert_eq!(index1, index2,
+                        "failed (1-2-1-2) on typename={}, hash_str={:?}", typename, hash_str);
+                    // If the index is not that of the end of the string...
+                    if index1 != hash_str.len() {
+                        // It must point to the character ',' and...
+                        assert!(hash_str.as_bytes()[index1] == b',',
+                            "failed (1-2-2-1) on typename={}, hash_str={:?}", typename, hash_str);
+                        // The index must be the leftmost ',' character.
+                        assert_eq!(hash_str.find(','), Some(index1),
+                            "failed (1-2-2-2) on typename={}, hash_str={:?}", typename, hash_str);
+                    }
+                }
+                Err(_) => {
+                    assert_eq!(index1, 0,
+                        "failed (1-2-2-3-1) on typename={}, hash_str={:?}", typename, hash_str);
+                    assert_eq!(index2, usize::MAX,
+                        "failed (1-2-2-3-2) on typename={}, hash_str={:?}", typename, hash_str);
+                }
+            }
+            assert_eq!(
+                str::parse::<$ty>(hash_str).map(|_| ()), err,
+                "failed (2) on typename={}, hash_str={:?}", typename, hash_str
+            );
+        }
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
