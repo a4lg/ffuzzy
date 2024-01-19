@@ -83,7 +83,7 @@ pub(crate) use invariant_impl as invariant;
 
 
 #[forbid(unsafe_code)]
-#[cfg(test)]
+#[cfg(all(test, not(ffuzzy_tests_without_debug_assertions)))]
 #[test]
 #[should_panic]
 fn violation_invariant() {
