@@ -83,7 +83,7 @@ fn data_model_init_and_basic() {
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
         for log_block_size in block_size::RANGE_LOG_VALID {
-            let block_size = block_size::from_log(log_block_size).unwrap();
+            let bs = block_size::from_log(log_block_size).unwrap();
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
@@ -119,8 +119,8 @@ fn data_model_init_and_basic() {
                     let hash3: $ty = <$ty>::from_bytes(bytes_raw).unwrap();
                     let hash4: $ty = str::parse::<$ty>(bytes_str).unwrap();
                     let hash5: $ty = hash1.clone();
-                    let hash6: $ty = <$ty>::new_from_internals_internal(block_size, bh1, bh2);
-                    let hash7: $ty = <$ty>::new_from_internals(block_size, bh1, bh2);
+                    let hash6: $ty = <$ty>::new_from_internals_internal(bs, bh1, bh2);
+                    let hash7: $ty = <$ty>::new_from_internals(bs, bh1, bh2);
                     let hash8: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size, bh1, bh2);
                     let hash9: $ty = <$ty>::new_from_internals_near_raw(log_block_size, bh1, bh2);
                     assert_eq!(hash, hash1, "failed (1-1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
@@ -134,7 +134,7 @@ fn data_model_init_and_basic() {
                     assert_eq!(hash, hash9, "failed (1-1-9) on typename={}, bytes_str={:?}", typename, bytes_str);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        let hash_u6: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
+                        let hash_u6: $ty = <$ty>::new_from_internals_unchecked(bs, bh1, bh2);
                         let hash_u8: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size, bh1, bh2);
                         assert_eq!(hash, hash_u6, "failed (1-2-6) on typename={}, bytes_str={:?}", typename, bytes_str);
                         assert_eq!(hash, hash_u8, "failed (1-2-8) on typename={}, bytes_str={:?}", typename, bytes_str);
@@ -147,7 +147,7 @@ fn data_model_init_and_basic() {
                         "failed (3-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     // Check direct correspondence to raw values
                     assert_eq!(hash.log_block_size(), log_block_size, "failed (4-1) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash.block_size(), block_size, "failed (4-2) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash.block_size(), bs, "failed (4-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.as_normalized(), &hash_norm, "failed (4-3) on typename={}, bytes_str={:?}", typename, bytes_str);
                 };
             }
@@ -165,7 +165,7 @@ fn data_model_init_from_normalized() {
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         for log_block_size in block_size::RANGE_LOG_VALID {
-            let block_size = block_size::from_log(log_block_size).unwrap();
+            let bs = block_size::from_log(log_block_size).unwrap();
             let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
             let bytes_str = core::str::from_utf8(bobj_raw.as_bytes()).unwrap();
             macro_rules! test {
@@ -203,7 +203,7 @@ fn data_model_init_from_normalized() {
                     assert_eq!(hash.to_raw_form(), hash_raw, "failed (4-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     // Check direct correspondence to raw values
                     assert_eq!(hash.log_block_size(), log_block_size, "failed (5-1) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash.block_size(), block_size, "failed (5-2) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash.block_size(), bs, "failed (5-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.as_normalized(), &hash_norm, "failed (5-3) on typename={}, bytes_str={:?}", typename, bytes_str);
                 };
             }
