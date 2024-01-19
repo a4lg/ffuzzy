@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -681,10 +681,10 @@ fn raw_scores_on_block_hash_comparison() {
         *   raw_score_by_edit_distance
         *   raw_score_by_edit_distance_unchecked
     */
-    for len1 in block_hash::MIN_LCS_FOR_COMPARISON as u32..=block_hash::FULL_SIZE as u32 {
-        for len2 in block_hash::MIN_LCS_FOR_COMPARISON as u32..=block_hash::FULL_SIZE as u32 {
+    for len1 in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
+        for len2 in block_hash::MIN_LCS_FOR_COMPARISON as u8..=block_hash::FULL_SIZE as u8 {
             let mut score = 100;
-            for edit_distance in 0..=(len1 + len2 - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32) {
+            for edit_distance in 0..=(len1 as u32 + len2 as u32 - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32) {
                 let new_score =
                     FuzzyHashCompareTarget::raw_score_by_edit_distance(len1, len2, edit_distance);
                 #[cfg(feature = "unchecked")]

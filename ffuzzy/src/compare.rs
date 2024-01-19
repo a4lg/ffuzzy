@@ -536,17 +536,17 @@ impl FuzzyHashCompareTarget {
     /// The internal implementation of [`Self::raw_score_by_edit_distance_unchecked()`].
     #[inline(always)]
     fn raw_score_by_edit_distance_internal(
-        len_block_hash_lhs: u32,
-        len_block_hash_rhs: u32,
+        len_block_hash_lhs: u8,
+        len_block_hash_rhs: u8,
         edit_distance: u32
     ) -> u32
     {
         // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
-        debug_assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
-        debug_assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
-        debug_assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u32);
-        debug_assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u32);
-        debug_assert!(edit_distance <= len_block_hash_lhs + len_block_hash_rhs - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        debug_assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
+        debug_assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
+        debug_assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u8);
+        debug_assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u8);
+        debug_assert!(edit_distance <= len_block_hash_lhs as u32 + len_block_hash_rhs as u32 - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
         optionally_unsafe! {
             // rustc/LLVM cannot prove that
             // (len_block_hash_lhs + len_block_hash_rhs)
@@ -561,7 +561,7 @@ impl FuzzyHashCompareTarget {
         */
         100 - (100 * (
             (edit_distance * block_hash::FULL_SIZE as u32)
-                / (len_block_hash_lhs + len_block_hash_rhs) // grcov-excl-br-line:DIVZERO
+                / (len_block_hash_lhs as u32 + len_block_hash_rhs as u32) // grcov-excl-br-line:DIVZERO
         )) / block_hash::FULL_SIZE as u32
     }
 
@@ -570,9 +570,9 @@ impl FuzzyHashCompareTarget {
     ///
     /// This method assumes that following constraints are satisfied.
     ///
-    /// # Incompatibility Notice
+    /// # Compatibility Note
     ///
-    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` will be
+    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` were
     /// changed from [`u32`] to [`u8`] on the version 0.3.
     ///
     /// # Safety
@@ -595,8 +595,8 @@ impl FuzzyHashCompareTarget {
     #[allow(unsafe_code)]
     #[inline(always)]
     pub unsafe fn raw_score_by_edit_distance_unchecked(
-        len_block_hash_lhs: u32,
-        len_block_hash_rhs: u32,
+        len_block_hash_lhs: u8,
+        len_block_hash_rhs: u8,
         edit_distance: u32
     ) -> u32
     {
@@ -619,9 +619,9 @@ impl FuzzyHashCompareTarget {
     ///
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](FuzzyHashData#fuzzy-hash-comparison)
     ///
-    /// # Incompatibility Notice
+    /// # Compatibility Note
     ///
-    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` will be
+    /// The types of `len_block_hash_lhs` and `len_block_hash_rhs` were
     /// changed from [`u32`] to [`u8`] on the version 0.3.
     ///
     /// # Usage Constraints
@@ -648,17 +648,17 @@ impl FuzzyHashCompareTarget {
     /// distance-based comparison.
     #[inline(always)]
     pub fn raw_score_by_edit_distance(
-        len_block_hash_lhs: u32,
-        len_block_hash_rhs: u32,
+        len_block_hash_lhs: u8,
+        len_block_hash_rhs: u8,
         edit_distance: u32
     ) -> u32
     {
         // Scale the raw edit distance to a 0 to 100 score (familiar to humans).
-        assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
-        assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u32);
-        assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u32);
-        assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u32);
-        assert!(edit_distance <= len_block_hash_lhs + len_block_hash_rhs - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
+        assert!(len_block_hash_lhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
+        assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
+        assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u8);
+        assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u8);
+        assert!(edit_distance <= len_block_hash_lhs as u32 + len_block_hash_rhs as u32 - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32);
         Self::raw_score_by_edit_distance_internal(
             len_block_hash_lhs,
             len_block_hash_rhs,

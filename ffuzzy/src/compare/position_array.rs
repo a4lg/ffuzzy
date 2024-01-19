@@ -335,8 +335,8 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
             return 0;
         }
         FuzzyHashCompareTarget::raw_score_by_edit_distance_internal(
-            len as u32,
-            other.len() as u32,
+            len,
+            other.len() as u8,
             self.edit_distance_internal(other)
         )
     }
