@@ -131,10 +131,8 @@ fn block_size_log_valid() {
 #[test]
 fn block_size_log_invalid() {
     for log_block_size in block_size::NUM_VALID as u8..=u8::MAX {
-        assert!(!block_size::is_log_valid(log_block_size),
-            "failed on log_block_size={}", log_block_size);
-        assert_eq!(block_size::from_log(log_block_size), None,
-            "failed on log_block_size={}", log_block_size);
+        assert!(!block_size::is_log_valid(log_block_size), "failed on log_block_size={}", log_block_size);
+        assert_eq!(block_size::from_log(log_block_size), None, "failed on log_block_size={}", log_block_size);
     }
 }
 
