@@ -36,35 +36,35 @@ fn block_size_log_whole_range() {
 fn block_size_validness_near_the_border() {
     const WIDTH: u32 = 10;
     for log_block_size in RANGE_LOG_VALID {
-        let block_size = block_size::from_log_internal(log_block_size);
-        let block_size_prev_plus_1 =
+        let bs_valid = block_size::from_log_internal(log_block_size);
+        let bs_valid_prev_plus_1 =
             if log_block_size > 0 {
                 block_size::from_log_internal(log_block_size - 1) + 1
             }
             else {
-                0
+                u32::MIN // Saturation for "no previous" valid block size case
             };
-        let block_size_next_minus_1 =
+        let bs_valid_next_minus_1 =
             if block_size::is_log_valid(log_block_size + 1) {
                 block_size::from_log_internal(log_block_size + 1) - 1
             }
             else {
-                u32::MAX
+                u32::MAX // Saturation for "no next" valid block size case
             };
         for bs in
             u32::max(
-                block_size.saturating_sub(WIDTH),
-                block_size_prev_plus_1
-            )..block_size
+                bs_valid.saturating_sub(WIDTH),
+                bs_valid_prev_plus_1
+            )..bs_valid
         {
             assert!(!block_size::is_valid(bs), "failed on bs={}", bs);
         }
-        assert!(block_size::is_valid(block_size), "failed on block_size={}", block_size);
-        if block_size == u32::MAX { continue; }
+        assert!(block_size::is_valid(bs_valid), "failed on bs_valid={}", bs_valid);
+        if bs_valid == u32::MAX { continue; }
         for bs in
-            (block_size + 1)..=u32::min(
-                block_size.saturating_add(WIDTH),
-                block_size_next_minus_1
+            (bs_valid + 1)..=u32::min(
+                bs_valid.saturating_add(WIDTH),
+                bs_valid_next_minus_1
             )
         {
             assert!(!block_size::is_valid(bs), "failed on bs={}", bs);
