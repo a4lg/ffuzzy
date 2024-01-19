@@ -43,7 +43,8 @@
 //        but not on MSRV (Rust 1.56).
 #![cfg_attr(test, allow(clippy::or_fun_call))]
 
-#[cfg(feature = "alloc")]
+// alloc is required when the "alloc" feature is enabled or testing (including doctests).
+#[cfg(any(feature = "alloc", test, doc))]
 extern crate alloc;
 
 // std is required when we are testing (including doctests).
