@@ -1149,8 +1149,8 @@ impl Generator {
     /// The type of resulting fuzzy hash ([`RawFuzzyHash`]) is in
     /// a raw form (not normalized).  This is the default behavior of ssdeep.
     ///
-    /// This is equivalent to the libfuzzy's `fuzzy_digest` function
-    /// without non-default flags.
+    /// This is equivalent to calling libfuzzy's `fuzzy_digest` function
+    /// with default flags.
     #[inline]
     pub fn finalize(&self) -> Result<RawFuzzyHash, GeneratorError> {
         self.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>()
@@ -1160,8 +1160,8 @@ impl Generator {
     ///
     /// Note that *not* doing the truncation is usually not what you want.
     ///
-    /// This is equivalent to the `FUZZY_FLAG_NOTRUNC` flag of libfuzzy's
-    /// `fuzzy_digest` function.
+    /// This is equivalent to calling libfuzzy's `fuzzy_digest` function
+    /// with the flag `FUZZY_FLAG_NOTRUNC`.
     #[inline]
     pub fn finalize_without_truncation(&self) -> Result<LongRawFuzzyHash, GeneratorError> {
         self.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>()
