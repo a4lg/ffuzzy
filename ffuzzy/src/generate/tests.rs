@@ -741,7 +741,7 @@ fn verify_get_log_block_size_from_input_size() {
         let mut log_block_size = start;
         let mut max_guessed_size = Generator::guessed_preferred_max_input_size_at(log_block_size as u8);
         while max_guessed_size < size {
-            log_block_size    += 1;
+            log_block_size   += 1;
             max_guessed_size *= 2;
         }
         log_block_size
