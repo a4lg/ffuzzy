@@ -60,12 +60,20 @@ fn block_size_validness_near_the_border() {
 #[test]
 fn block_size_validness_all() {
     assert!(!block_size::is_valid(0));
+    let mut num_valid_total = 0;
     let mut next_log_block_size = 0;
     let mut next_bs_minus_1 = block_size::from_log_internal(next_log_block_size) - 1;
     let mut test_next = false;
     for bs in u32::MIN..=u32::MAX {
-        assert_eq!(block_size::is_valid(bs), test_next, "failed on bs={}", bs);
+        let test_curr = test_next;
         test_next = false;
+        assert_eq!(block_size::is_valid(bs), test_curr, "failed on bs={}", bs);
+        if test_curr {
+            let log_block_size = next_log_block_size - 1;
+            assert!(block_size::is_log_valid(log_block_size), "failed on bs={}", bs);
+            assert_eq!(block_size::log_from_valid(bs), log_block_size, "failed on bs={}", bs);
+            num_valid_total += 1;
+        }
         if bs == next_bs_minus_1 {
             test_next = true;
             next_log_block_size += 1;
@@ -78,6 +86,7 @@ fn block_size_validness_all() {
                 };
         }
     }
+    assert_eq!(num_valid_total, block_size::NUM_VALID);
 }
 
 #[test]
