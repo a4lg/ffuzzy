@@ -99,6 +99,9 @@ fn data_model_init_and_basic() {
             *   new_from_internals
             *   new_from_internals_internal
             *   new_from_internals_unchecked
+            *   new_from_internals_near_raw
+            *   new_from_internals_near_raw_internal
+            *   new_from_internals_near_raw_unchecked
         2. Direct Mapping to the Internal Data
             *   block_hash_1
             *   block_hash_2
@@ -154,18 +157,24 @@ fn data_model_init_and_basic() {
                             let hash6: $ty =
                                 <$ty>::new_from_internals(block_size, bh1, bh2);
                             let hash7: $ty = hash1.clone();
-                            assert_eq!(hash1, hash2, "failed ({}-1-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert_eq!(hash1, hash3, "failed ({}-1-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert_eq!(hash1, hash4, "failed ({}-1-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert_eq!(hash1, hash5, "failed ({}-1-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert_eq!(hash1, hash6, "failed ({}-1-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert_eq!(hash1, hash7, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash2), "failed ({}-2-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash3), "failed ({}-2-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash4), "failed ({}-2-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash5), "failed ({}-2-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash6), "failed ({}-2-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                            assert!(hash1.full_eq(&hash7), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            let hash8: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size_raw, bh1, bh2);
+                            let hash9: $ty = <$ty>::new_from_internals_near_raw(log_block_size_raw, bh1, bh2);
+                            assert_eq!(hash1, hash2, "failed ({}-1-1-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash3, "failed ({}-1-1-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash4, "failed ({}-1-1-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash5, "failed ({}-1-1-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash6, "failed ({}-1-1-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash7, "failed ({}-1-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash8, "failed ({}-1-1-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert_eq!(hash1, hash9, "failed ({}-1-1-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash2), "failed ({}-1-2-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash3), "failed ({}-1-2-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash4), "failed ({}-1-2-3) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash5), "failed ({}-1-2-4) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash6), "failed ({}-1-2-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash7), "failed ({}-1-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash8), "failed ({}-1-2-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                            assert!(hash1.full_eq(&hash9), "failed ({}-1-2-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             #[cfg(feature = "unchecked")]
                             unsafe {
                                 let mut hash_u1: $ty = <$ty>::new();
@@ -173,12 +182,15 @@ fn data_model_init_and_basic() {
                                 let hash_u2: $ty =
                                     <$ty>::new_from_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
                                 let hash_u5: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
-                                assert_eq!(hash1, hash_u1, "failed ({}-1-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                                assert_eq!(hash1, hash_u2, "failed ({}-1-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                                assert_eq!(hash1, hash_u5, "failed ({}-1-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                                assert!(hash1.full_eq(&hash_u1), "failed ({}-2-6) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                                assert!(hash1.full_eq(&hash_u2), "failed ({}-2-7) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
-                                assert!(hash1.full_eq(&hash_u5), "failed ({}-2-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                let hash_u8: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size_raw, bh1, bh2);
+                                assert_eq!(hash1, hash_u1, "failed ({}-2-1-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u2, "failed ({}-2-1-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u5, "failed ({}-2-1-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert_eq!(hash1, hash_u8, "failed ({}-2-1-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u1), "failed ({}-2-2-1) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u2), "failed ({}-2-2-2) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u5), "failed ({}-2-2-5) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
+                                assert!(hash1.full_eq(&hash_u8), "failed ({}-2-2-8) on bh1sz={}, bh2sz={}, log_block_size={}, bh1={:?}, bh2={:?}", test_num, bh1sz, bh2sz, log_block_size, bh1, bh2);
                             }
                             let hash: $ty = hash1;
                             // Check raw values
