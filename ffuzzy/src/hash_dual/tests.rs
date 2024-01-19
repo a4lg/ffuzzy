@@ -82,10 +82,9 @@ fn data_model_init_and_basic() {
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..block_size::NUM_VALID {
-            let log_block_size_raw = log_block_size as u8;
-            let block_size = block_size::from_log(log_block_size_raw).unwrap();
-            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let block_size = block_size::from_log(log_block_size).unwrap();
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
             macro_rules! test {
@@ -110,8 +109,8 @@ fn data_model_init_and_basic() {
                     let len_bh1_norm = u8::try_from(bh1_norm.len()).unwrap();
                     let len_bh2_norm = u8::try_from(bh2_norm.len()).unwrap();
                     // Create base fuzzy hashes (to compare)
-                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
+                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
                     // Create fuzzy hashes in various ways and make sure that they are all the same.
                     let mut hash: $ty = <$ty>::new();
                     hash.init_from_raw_form(&hash_raw);
@@ -122,8 +121,8 @@ fn data_model_init_and_basic() {
                     let hash5: $ty = hash1.clone();
                     let hash6: $ty = <$ty>::new_from_internals_internal(block_size, bh1, bh2);
                     let hash7: $ty = <$ty>::new_from_internals(block_size, bh1, bh2);
-                    let hash8: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size_raw, bh1, bh2);
-                    let hash9: $ty = <$ty>::new_from_internals_near_raw(log_block_size_raw, bh1, bh2);
+                    let hash8: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size, bh1, bh2);
+                    let hash9: $ty = <$ty>::new_from_internals_near_raw(log_block_size, bh1, bh2);
                     assert_eq!(hash, hash1, "failed (1-1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash2, "failed (1-1-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash3, "failed (1-1-3) on typename={}, bytes_str={:?}", typename, bytes_str);
@@ -136,7 +135,7 @@ fn data_model_init_and_basic() {
                     #[cfg(feature = "unchecked")]
                     unsafe {
                         let hash_u6: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
-                        let hash_u8: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size_raw, bh1, bh2);
+                        let hash_u8: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size, bh1, bh2);
                         assert_eq!(hash, hash_u6, "failed (1-2-6) on typename={}, bytes_str={:?}", typename, bytes_str);
                         assert_eq!(hash, hash_u8, "failed (1-2-8) on typename={}, bytes_str={:?}", typename, bytes_str);
                     }
@@ -147,7 +146,7 @@ fn data_model_init_and_basic() {
                     assert_eq!(hash.rle_block1 == [0u8; <$ty>::RLE_BLOCK_SIZE_1] && hash.rle_block2 == [0u8; <$ty>::RLE_BLOCK_SIZE_2], is_normalized,
                         "failed (3-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     // Check direct correspondence to raw values
-                    assert_eq!(hash.log_block_size(), log_block_size_raw, "failed (4-1) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash.log_block_size(), log_block_size, "failed (4-1) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.block_size(), block_size, "failed (4-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.as_normalized(), &hash_norm, "failed (4-3) on typename={}, bytes_str={:?}", typename, bytes_str);
                 };
@@ -165,10 +164,9 @@ fn data_model_init_from_normalized() {
         *   from (normalized)
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..block_size::NUM_VALID {
-            let log_block_size_raw = log_block_size as u8;
-            let block_size = block_size::from_log(log_block_size_raw).unwrap();
-            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let block_size = block_size::from_log(log_block_size).unwrap();
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
             let bytes_str = core::str::from_utf8(bobj_raw.as_bytes()).unwrap();
             macro_rules! test {
                 ($ty: ty) => {
@@ -188,8 +186,8 @@ fn data_model_init_from_normalized() {
                     // Create base fuzzy hashes (to compare)
                     // ... changed from data_model_init_and_basic so that the raw fuzzy hash is
                     // initialized from the normalized data.
-                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
-                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    let hash_raw = RawFuzzyHashType::new_from_internals_raw(log_block_size, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
+                    let hash_norm = FuzzyHashType::new_from_internals_raw(log_block_size, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
                     // Create fuzzy hashes in various ways and make sure that they are all the same.
                     let hash1: $ty = <$ty>::from_normalized(&hash_norm);
                     let hash2: $ty = <$ty>::from(hash_norm);
@@ -204,7 +202,7 @@ fn data_model_init_from_normalized() {
                     assert_eq!(hash.norm_hash, hash_norm, "failed (4-1) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.to_raw_form(), hash_raw, "failed (4-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     // Check direct correspondence to raw values
-                    assert_eq!(hash.log_block_size(), log_block_size_raw, "failed (5-1) on typename={}, bytes_str={:?}", typename, bytes_str);
+                    assert_eq!(hash.log_block_size(), log_block_size, "failed (5-1) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.block_size(), block_size, "failed (5-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash.as_normalized(), &hash_norm, "failed (5-3) on typename={}, bytes_str={:?}", typename, bytes_str);
                 };
@@ -227,10 +225,9 @@ fn data_model_corresponding_fuzzy_hashes() {
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
         let is_normalized = bh1 == bh1_norm && bh2 == bh2_norm;
-        for log_block_size in 0..block_size::NUM_VALID {
-            let log_block_size_raw = log_block_size as u8;
-            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
-            let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
+            let bobj_norm = FuzzyHashStringBytes::new(log_block_size, bh1_norm, bh2_norm);
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_norm = bobj_norm.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
@@ -301,10 +298,9 @@ fn data_model_corresponding_fuzzy_hash_strings() {
         *   to_raw_form_string
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        for log_block_size in 0..block_size::NUM_VALID {
-            let log_block_size_raw = log_block_size as u8;
-            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size_raw, bh1, bh2);
-            let bobj_norm = FuzzyHashStringBytes::new(log_block_size_raw, bh1_norm, bh2_norm);
+        for log_block_size in block_size::RANGE_LOG_VALID {
+            let bobj_raw  = FuzzyHashStringBytes::new(log_block_size, bh1, bh2);
+            let bobj_norm = FuzzyHashStringBytes::new(log_block_size, bh1_norm, bh2_norm);
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_norm = bobj_norm.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
@@ -809,12 +805,12 @@ fn ord_and_sorting() {
         let typename = stringify!($ty);
         // Construct sorted hashes list
         let mut hashes: Vec<$ty> = Vec::new();
-        for log_block_size_raw in 0u8..=3 {
+        for log_block_size in 0u8..=3 {
             for bh1 in &sorted_dict {
                 for bh2 in &sorted_dict {
                     for &bh1_entry in bh1 {
                         for &bh2_entry in bh2 {
-                            let mut s = block_size::from_log_internal(log_block_size_raw).to_string();
+                            let mut s = block_size::from_log_internal(log_block_size).to_string();
                             s += ":";
                             s += bh1_entry;
                             s += ":";
