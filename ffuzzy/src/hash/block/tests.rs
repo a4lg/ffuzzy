@@ -64,15 +64,8 @@ fn block_size_validness_all() {
     let mut next_bs_minus_1 = block_size::from_log_internal(next_log_block_size) - 1;
     let mut test_next = false;
     for bs in u32::MIN..=u32::MAX {
-        if test_next {
-            assert!(block_size::is_valid(bs),
-                "failed on bs={}", bs);
-            test_next = false;
-        }
-        else {
-            assert!(!block_size::is_valid(bs),
-                "failed on bs={}", bs);
-        }
+        assert_eq!(block_size::is_valid(bs), test_next, "failed on bs={}", bs);
+        test_next = false;
         if bs == next_bs_minus_1 {
             test_next = true;
             next_log_block_size += 1;
