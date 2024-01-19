@@ -293,8 +293,6 @@ pub mod block_size {
     /// Both arguments must be valid.
     #[inline(always)]
     pub fn is_near_gt(lhs: u8, rhs: u8) -> bool {
-        debug_assert!(is_log_valid(lhs));
-        debug_assert!(is_log_valid(rhs));
         is_near_lt(rhs, lhs)
     }
 
