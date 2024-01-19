@@ -90,54 +90,41 @@ fn block_size_validness_all() {
 }
 
 #[test]
-fn block_size_log_validness() {
+fn block_size_log_valid() {
     for log_block_size in 0..block_size::NUM_VALID as u8 {
-        assert!(block_size::is_log_valid(log_block_size),
-            "failed on log_block_size={}", log_block_size);
+        assert!(block_size::is_log_valid(log_block_size), "failed on log_block_size={}", log_block_size);
         // exp(i)
-        let block_size = {
-            let block_size_1 = block_size::from_log(log_block_size).unwrap();
-            let block_size_2 = block_size::from_log_internal(log_block_size);
-            assert_eq!(block_size_1, block_size_2,
-                "failed on log_block_size={}", log_block_size);
+        let bs = {
+            let bs_1 = block_size::from_log(log_block_size).unwrap();
+            let bs_2 = block_size::from_log_internal(log_block_size);
+            assert_eq!(bs_1, bs_2, "failed on log_block_size={}", log_block_size);
             #[cfg(feature = "unchecked")]
             unsafe {
-                let block_size_3 = block_size::from_log_unchecked(log_block_size);
-                assert_eq!(block_size_1, block_size_3,
-                    "failed on log_block_size={}", log_block_size);
+                let bs_3 = block_size::from_log_unchecked(log_block_size);
+                assert_eq!(bs_1, bs_3, "failed on log_block_size={}", log_block_size);
             }
-            block_size_1
+            bs_1
         };
-        assert!(block_size::is_valid(block_size),
-            "failed on log_block_size={}", log_block_size);
+        assert!(block_size::is_valid(bs), "failed on log_block_size={}", log_block_size);
         // log(exp(i)) == i.
-        assert_eq!(
-            log_block_size,
-            block_size::log_from_valid(block_size),
-            "failed on log_block_size={}", log_block_size
-        );
-        assert_eq!(
-            log_block_size,
-            block_size::log_from_valid_internal(block_size),
-            "failed on log_block_size={}", log_block_size
-        );
+        assert_eq!(log_block_size, block_size::log_from_valid(bs), "failed on log_block_size={}", log_block_size);
+        assert_eq!(log_block_size, block_size::log_from_valid_internal(bs), "failed on log_block_size={}", log_block_size);
         #[cfg(feature = "unchecked")]
         unsafe {
             assert_eq!(
                 log_block_size,
-                block_size::log_from_valid_unchecked(block_size),
+                block_size::log_from_valid_unchecked(bs),
                 "failed on log_block_size={}", log_block_size
             );
         }
         // Relations with block_size::MIN
-        assert_eq!(block_size % block_size::MIN, 0,
-            "failed on log_block_size={}", log_block_size);
-        assert!((block_size / block_size::MIN).is_power_of_two(),
-            "failed on log_block_size={}", log_block_size);
+        assert_eq!(bs % block_size::MIN, 0, "failed on log_block_size={}", log_block_size);
+        assert!((bs / block_size::MIN).is_power_of_two(), "failed on log_block_size={}", log_block_size);
         assert_eq!(
-            u8::try_from(crate::utils::u64_ilog2((block_size / block_size::MIN) as u64)).unwrap(),
+            u8::try_from(crate::utils::u64_ilog2((bs / block_size::MIN) as u64)).unwrap(),
             log_block_size,
-            "failed on log_block_size={}", log_block_size);
+            "failed on log_block_size={}", log_block_size
+        );
     }
 }
 
