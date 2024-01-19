@@ -79,5 +79,3 @@ it's not obligated to check such corruption
 *   [`crate::hash::FuzzyHashData::new_from_internals_raw()`]
 *   [`crate::hash::block::block_size::from_log()`] ([`Option`] is used instead of assertions)
 *   [`crate::hash::block::block_size::log_from_valid()`]
-*   [`crate::hash_dual::FuzzyHashDualData::init_from_raw_form_internals_raw()`]
-*   [`crate::hash_dual::FuzzyHashDualData::new_from_raw_form_internals_raw()`]

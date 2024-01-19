@@ -37,7 +37,6 @@ fn data_model_new() {
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
-#[allow(deprecated)]
 #[test]
 fn data_model_internal_ref() {
     macro_rules! test {($ty: ty) => {
@@ -47,20 +46,16 @@ fn data_model_internal_ref() {
         let norm_hash_1: &NormalizedType = &hash.norm_hash;
         let norm_hash_2: &NormalizedType = hash.as_ref();
         let norm_hash_3: &NormalizedType = hash.as_normalized();
-        let norm_hash_4: &NormalizedType = hash.as_ref_normalized(); // deprecated
         let p1 = norm_hash_1 as *const NormalizedType;
         let p2 = norm_hash_2 as *const NormalizedType;
         let p3 = norm_hash_3 as *const NormalizedType;
-        let p4 = norm_hash_4 as *const NormalizedType;
         assert_eq!(p1, p2, "failed (1) on typename={}", typename);
         assert_eq!(p1, p3, "failed (2) on typename={}", typename);
-        assert_eq!(p1, p4, "failed (3) on typename={}", typename);
     }}
     test_for_each_type!(test, [DualFuzzyHash, LongDualFuzzyHash]);
 }
 
 
-#[allow(deprecated)]
 #[test]
 fn data_model_init_and_basic() {
     /*
@@ -72,12 +67,6 @@ fn data_model_init_and_basic() {
             *   from_str
                 *   str::parse is used
         2. Initialization from Internal Data (only valid cases)
-            *   init_from_raw_form_internals_raw
-            *   init_from_raw_form_internals_raw_internal
-            *   init_from_raw_form_internals_raw_unchecked
-            *   new_from_raw_form_internals_raw
-            *   new_from_raw_form_internals_raw_internal
-            *   new_from_raw_form_internals_raw_unchecked
             *   new_from_internals
             *   new_from_internals_internal
             *   new_from_internals_unchecked
@@ -88,7 +77,7 @@ fn data_model_init_and_basic() {
             *   log_block_size
             *   block_size
             *   as_normalized
-        4. Plain Copy of the Internal Data
+        3. Plain Copy of the Internal Data
             *   clone
     */
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
@@ -128,21 +117,13 @@ fn data_model_init_and_basic() {
                     hash.init_from_raw_form(&hash_raw);
                     let hash1: $ty = <$ty>::from_raw_form(&hash_raw);
                     let hash2: $ty = <$ty>::from(hash_raw);
-                    let mut hash3: $ty = <$ty>::new();
-                    hash3.init_from_raw_form_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                    let mut hash4: $ty = <$ty>::new();
-                    hash4.init_from_raw_form_internals_raw_internal(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                    let hash5: $ty =
-                        <$ty>::new_from_raw_form_internals_raw(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                    let hash6: $ty =
-                        <$ty>::new_from_raw_form_internals_raw_internal(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                    let hash7: $ty = <$ty>::from_bytes(bytes_raw).unwrap();
-                    let hash8: $ty = str::parse::<$ty>(bytes_str).unwrap();
-                    let hash9: $ty = hash1.clone();
-                    let hash10: $ty = <$ty>::new_from_internals_internal(block_size, bh1, bh2);
-                    let hash11: $ty = <$ty>::new_from_internals(block_size, bh1, bh2);
-                    let hash12: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size_raw, bh1, bh2);
-                    let hash13: $ty = <$ty>::new_from_internals_near_raw(log_block_size_raw, bh1, bh2);
+                    let hash3: $ty = <$ty>::from_bytes(bytes_raw).unwrap();
+                    let hash4: $ty = str::parse::<$ty>(bytes_str).unwrap();
+                    let hash5: $ty = hash1.clone();
+                    let hash6: $ty = <$ty>::new_from_internals_internal(block_size, bh1, bh2);
+                    let hash7: $ty = <$ty>::new_from_internals(block_size, bh1, bh2);
+                    let hash8: $ty = <$ty>::new_from_internals_near_raw_internal(log_block_size_raw, bh1, bh2);
+                    let hash9: $ty = <$ty>::new_from_internals_near_raw(log_block_size_raw, bh1, bh2);
                     assert_eq!(hash, hash1, "failed (1-1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash2, "failed (1-1-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash3, "failed (1-1-3) on typename={}, bytes_str={:?}", typename, bytes_str);
@@ -152,22 +133,12 @@ fn data_model_init_and_basic() {
                     assert_eq!(hash, hash7, "failed (1-1-7) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash8, "failed (1-1-8) on typename={}, bytes_str={:?}", typename, bytes_str);
                     assert_eq!(hash, hash9, "failed (1-1-9) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash10, "failed (1-1-10) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash11, "failed (1-1-11) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash12, "failed (1-1-12) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash, hash13, "failed (1-1-13) on typename={}, bytes_str={:?}", typename, bytes_str);
                     #[cfg(feature = "unchecked")]
                     unsafe {
-                        let mut hash_u4: $ty = <$ty>::new();
-                        hash_u4.init_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                        let hash_u6: $ty =
-                            <$ty>::new_from_raw_form_internals_raw_unchecked(log_block_size_raw, &blockhash1, &blockhash2, len_bh1_raw, len_bh2_raw);
-                        let hash_u10: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
-                        let hash_u12: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size_raw, bh1, bh2);
-                        assert_eq!(hash, hash_u4, "failed (1-2-4) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        let hash_u6: $ty = <$ty>::new_from_internals_unchecked(block_size, bh1, bh2);
+                        let hash_u8: $ty = <$ty>::new_from_internals_near_raw_unchecked(log_block_size_raw, bh1, bh2);
                         assert_eq!(hash, hash_u6, "failed (1-2-6) on typename={}, bytes_str={:?}", typename, bytes_str);
-                        assert_eq!(hash, hash_u10, "failed (1-2-10) on typename={}, bytes_str={:?}", typename, bytes_str);
-                        assert_eq!(hash, hash_u12, "failed (1-2-12) on typename={}, bytes_str={:?}", typename, bytes_str);
+                        assert_eq!(hash, hash_u8, "failed (1-2-8) on typename={}, bytes_str={:?}", typename, bytes_str);
                     }
                     // Validness
                     assert!(hash.is_valid(), "failed (2) on typename={}, bytes_str={:?}", typename, bytes_str);
@@ -186,7 +157,6 @@ fn data_model_init_and_basic() {
     });
 }
 
-#[allow(deprecated)]
 #[test]
 fn data_model_init_from_normalized() {
     /*
@@ -223,10 +193,7 @@ fn data_model_init_from_normalized() {
                     // Create fuzzy hashes in various ways and make sure that they are all the same.
                     let hash1: $ty = <$ty>::from_normalized(&hash_norm);
                     let hash2: $ty = <$ty>::from(hash_norm);
-                    let hash3: $ty =
-                        <$ty>::new_from_raw_form_internals_raw(log_block_size_raw, &blockhash1_norm, &blockhash2_norm, len_bh1_norm, len_bh2_norm);
                     assert_eq!(hash1, hash2, "failed (1-1) on typename={}, bytes_str={:?}", typename, bytes_str);
-                    assert_eq!(hash1, hash3, "failed (1-2) on typename={}, bytes_str={:?}", typename, bytes_str);
                     let hash: $ty = hash1;
                     // Validness
                     assert!(hash.is_valid(), "failed (2) on typename={}, bytes_str={:?}", typename, bytes_str);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 use crate::hash::{FuzzyHashData, fuzzy_norm_type};
 use crate::hash::block::{
@@ -150,17 +150,6 @@ cfg_if::cfg_if! {
 }
 
 impl FuzzyHashCompareTarget {
-    /// The minimum length of the common substring to compute edit distance
-    /// between two block hashes.
-    ///
-    /// Use [`block_hash::MIN_LCS_FOR_COMPARISON`] instead.
-    ///
-    /// # Incompatibility Notice
-    ///
-    /// This constant will be removed on the version 0.3.0.
-    #[deprecated]
-    pub const MIN_LCS_FOR_BLOCKHASH: usize = block_hash::MIN_LCS_FOR_COMPARISON;
-
     /// The lower bound (inclusive) of the *base-2 logarithm* form of
     /// the block size in which the score capping is no longer required.
     ///
