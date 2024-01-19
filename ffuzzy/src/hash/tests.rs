@@ -90,15 +90,15 @@ fn data_model_new() {
 fn data_model_init_and_basic() {
     /*
         1. Initialization from Internal Data (only valid cases)
+            *   init_from_internals_raw
             *   init_from_internals_raw_internal
             *   init_from_internals_raw_unchecked
+            *   new_from_internals_raw
             *   new_from_internals_raw_internal
             *   new_from_internals_raw_unchecked
-            *   init_from_internals_raw
-            *   new_from_internals_raw
+            *   new_from_internals
             *   new_from_internals_internal
             *   new_from_internals_unchecked
-            *   new_from_internals
         2. Direct Mapping to the Internal Data
             *   block_hash_1
             *   block_hash_2
