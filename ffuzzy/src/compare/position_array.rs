@@ -138,7 +138,7 @@ pub mod block_hash_position_array_element {
 /// In other words, a string must be an array of Base64 indices
 /// (not a Base64 string itself).
 ///
-/// # Incompatibility Notice
+/// # Compatibility Note
 ///
 /// Since version 0.3.0, all types implementing this trait
 /// will automatically implement following public traits:
@@ -146,10 +146,6 @@ pub mod block_hash_position_array_element {
 /// *   [`BlockHashPositionArrayImpl`]
 /// *   [`BlockHashPositionArrayImplUnchecked`]
 ///     (when the `unchecked` feature is enabled)
-///
-/// Not being able to use auto implementation from any type implementing
-/// [`BlockHashPositionArrayData`] was a bug but we need a breaking change to
-/// fix this issue.
 pub trait BlockHashPositionArrayData {
     /// Returns the raw representation of the block hash position array.
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE];
@@ -368,24 +364,21 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
     }
 }
 
+impl<T> BlockHashPositionArrayImplInternal for T
+where
+    T: BlockHashPositionArrayData
+{}
+
 
 /// The implementation of the block hash position array (unchecked; immutable).
+///
+/// This trait is automatically implemented for all types implementing
+/// the [`BlockHashPositionArrayData`] trait.
 ///
 /// # Safety
 ///
 /// This trait contains `unsafe` methods and need to comply with constraints
 /// described in each method.
-///
-/// # Incompatibility Notice
-///
-/// Since version 0.3.0, all types implementing [`BlockHashPositionArrayData`]
-/// will satisfy automatic implementation of methods in this trait.
-/// It enables remote custom types to utilize our implementation of
-/// position array representation.
-///
-/// Not being able to use auto implementation from any type implementing
-/// [`BlockHashPositionArrayData`] was a bug but we need a breaking change to
-/// fix this issue.
 #[cfg(feature = "unchecked")]
 #[allow(unsafe_code)]
 pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData {
@@ -527,16 +520,8 @@ where
 /// The implementation of [the block hash position array](BlockHashPositionArrayData)
 /// (safe; immutable).
 ///
-/// # Incompatibility Notice
-///
-/// Since version 0.3.0, all types implementing [`BlockHashPositionArrayData`]
-/// will satisfy automatic implementation of methods in this trait.
-/// It enables remote custom types to utilize our implementation of
-/// position array representation.
-///
-/// Not being able to use auto implementation from any type implementing
-/// [`BlockHashPositionArrayData`] was a bug but we need a breaking change to
-/// fix this issue.
+/// This trait is automatically implemented for all types implementing
+/// the [`BlockHashPositionArrayData`] trait.
 pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
@@ -783,9 +768,6 @@ impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
     }
 }
 
-impl<'a> BlockHashPositionArrayImplInternal for BlockHashPositionArrayRef<'a> {}
-
-impl<'a> BlockHashPositionArrayImplInternal for BlockHashPositionArrayMutRef<'a> {}
 impl<'a> BlockHashPositionArrayImplMutInternal
     for BlockHashPositionArrayMutRef<'a>
 {
@@ -867,7 +849,6 @@ impl BlockHashPositionArrayDataMut for BlockHashPositionArray {
     }
 }
 
-impl BlockHashPositionArrayImplInternal for BlockHashPositionArray {}
 impl BlockHashPositionArrayImplMutInternal for BlockHashPositionArray {
     fn set_len_internal(&mut self, len: u8) {
         debug_assert!(len <= 64);
