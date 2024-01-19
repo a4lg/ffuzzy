@@ -155,20 +155,16 @@ fn block_size_log_invalid() {
 
 #[test]
 fn block_size_strings() {
-    #[cfg(feature = "alloc")]
     use alloc::string::ToString;
-    #[cfg(not(feature = "alloc"))]
-    use std::string::ToString;
     // Prerequisites
     assert_eq!(block_size::NUM_VALID, block_size::BLOCK_SIZES_STR.len());
     // Test all valid *base-2 logarithm* values.
     for log_block_size_raw in RANGE_LOG_VALID {
         let log_block_size = log_block_size_raw as usize;
         // BLOCK_SIZES_STR[i] must have direct correspondence with valid block size.
-        let block_size = block_size::from_log(log_block_size as u8).unwrap();
+        let block_size = block_size::from_log(log_block_size_raw).unwrap();
         let block_size_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[log_block_size]).unwrap();
-        assert_eq!(block_size, block_size_from_str,
-            "failed on log_block_size={}", log_block_size);
+        assert_eq!(block_size, block_size_from_str, "failed on log_block_size={}", log_block_size);
         // The length must be bounded by MAX_BLOCK_SIZE_LEN_IN_CHARS.
         assert!(block_size::BLOCK_SIZES_STR[log_block_size].len() <= block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS,
             "failed on log_block_size={}", log_block_size);
