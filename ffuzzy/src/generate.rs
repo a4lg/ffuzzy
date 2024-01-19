@@ -776,7 +776,6 @@ macro_rules! generator_update_template {
 
                 cfg_if::cfg_if! {
                     if #[cfg(feature = "unsafe")] {
-                        #[doc(hidden)]
                         macro_rules! bh_loop_2 {
                             ($block: block) => {
                                 bh = bhrange0;
@@ -790,10 +789,11 @@ macro_rules! generator_update_template {
                                 }
                             };
                         }
+                        macro_rules! bh_curr {() => { *bh }}
+                        macro_rules! bh_next {() => { *bh_next }}
                     }
                     else {
                         let mut i = $self.bhidx_start;
-                        #[doc(hidden)]
                         macro_rules! bh_loop_2 {
                             ($block: block) => {
                                 loop {
@@ -805,24 +805,11 @@ macro_rules! generator_update_template {
                                 }
                             };
                         }
+                        macro_rules! bh_curr {() => { $self.bh_context[i] }}
+                        macro_rules! bh_next {() => { $self.bh_context[i+1] }}
                     }
                 }
                 bh_loop_2!({
-                    cfg_if::cfg_if! {
-                        if #[cfg(feature = "unsafe")] {
-                            #[doc(hidden)]
-                            macro_rules! bh_curr {() => { *bh }}
-                            #[doc(hidden)]
-                            macro_rules! bh_next {() => { *bh_next }}
-                        }
-                        else {
-                            #[doc(hidden)]
-                            macro_rules! bh_curr {() => { $self.bh_context[i] }}
-                            #[doc(hidden)]
-                            macro_rules! bh_next {() => { $self.bh_context[i+1] }}
-                        }
-                    }
-
                     if unlikely(
                         bh_curr!().blockhash_index == 0 // grcov-excl-br-line:ARRAY
                     )
@@ -846,22 +833,19 @@ macro_rules! generator_update_template {
                             bh_next!().h_full = bh_curr!().h_full; // grcov-excl-br-line:ARRAY
                             bh_next!().h_half = bh_curr!().h_half; // grcov-excl-br-line:ARRAY
                             $self.bhidx_end += 1;
-                            cfg_if::cfg_if! {
-                                if #[cfg(feature = "unsafe")] {
-                                    bhrange1 = bhrange1.add(1);
-                                }
+                            #[cfg(feature = "unsafe")]
+                            {
+                                bhrange1 = bhrange1.add(1);
                             }
                         }
                     }
 
                     cfg_if::cfg_if! {
                         if #[cfg(feature = "unsafe")] {
-                            #[doc(hidden)]
                             macro_rules! bh_curr_reused {() => { *bh }}
                         }
                         else {
                             let bh_curr_reused = &mut $self.bh_context[i]; // grcov-excl-br-line:ARRAY
-                            #[doc(hidden)]
                             macro_rules! bh_curr_reused {() => { bh_curr_reused }}
                         }
                     }
@@ -884,10 +868,9 @@ macro_rules! generator_update_template {
                         // Current block hash context will be never used on the final fuzzy hash.
                         // Advance bhidx_start and prepare for the next block hash elimination.
                         $self.bhidx_start += 1;
-                        cfg_if::cfg_if! {
-                            if #[cfg(feature = "unsafe")] {
-                                bhrange0 = bhrange0.add(1);
-                            }
+                        #[cfg(feature = "unsafe")]
+                        {
+                            bhrange0 = bhrange0.add(1);
                         }
                         $self.roll_mask = $self.roll_mask.wrapping_mul(2).wrapping_add(1);
                         $self.elim_border = $self.elim_border.wrapping_mul(2);
