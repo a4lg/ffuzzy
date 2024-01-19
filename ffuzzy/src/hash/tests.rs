@@ -883,12 +883,14 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                     "failed ({}-2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert_eq!(str_buffer, [NULL_CH; <$ty>::MAX_LEN_IN_STR + 1],
                                     "failed ({}-2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
-                                hash.store_into_bytes(&mut str_buffer[..hash.len_in_str()]).unwrap();
+                                assert_eq!(hash.store_into_bytes(&mut str_buffer[..hash.len_in_str()]).unwrap(), hash.len_in_str(),
+                                    "failed ({}-2-2-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert!(str_buffer[hash.len_in_str()..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
-                                hash.store_into_bytes(&mut str_buffer_2).unwrap();
+                                    "failed ({}-2-2-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                assert_eq!(hash.store_into_bytes(&mut str_buffer_2).unwrap(), hash.len_in_str(),
+                                    "failed ({}-2-2-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert!(str_buffer_2[hash.len_in_str()..].iter().all(|&x| x == NULL_CH),
-                                    "failed ({}-2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    "failed ({}-2-2-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 assert_eq!(str_buffer, str_buffer_2, "failed ({}-2-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                 // Check store_into_bytes and len_in_str:
                                 // len_in_str is the exact length of the output.

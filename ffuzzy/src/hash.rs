@@ -946,16 +946,14 @@ where
     /// This required size is exact (`buffer` may be larger than that but
     /// never be shorter).
     ///
-    /// # Incompatibility Notice
+    /// # Compatibility Note
     ///
-    /// On the version 0.3.0, the result type will be changed to
-    /// `Result<usize, FuzzyHashOperationError>` in which the non-error
-    /// result is equivalent to [`len_in_str()`](Self::len_in_str()).
+    /// Before version 0.3.0, the result type was `Result<(), FuzzyHashOperationError>`.
     ///
-    /// It will simplify handling the result and the semantics are now similar
-    /// to e.g. [`std::io::Read::read()`].
+    /// Additional [`usize`] in the version 0.3.0 will simplify handling the
+    /// result and the semantics are now similar to e.g. [`std::io::Read::read()`].
     pub fn store_into_bytes(&self, buffer: &mut [u8])
-        -> Result<(), FuzzyHashOperationError>
+        -> Result<usize, FuzzyHashOperationError>
     {
         let len_in_str = self.len_in_str();
         if buffer.len() < len_in_str {
@@ -994,7 +992,7 @@ where
             // grcov-excl-br-stop
             // grcov-excl-stop
         }
-        Ok(())
+        Ok(len_in_str)
     }
 
     /// The internal implementation of [`from_bytes_with_last_index()`](Self::from_bytes_with_last_index()).
@@ -1405,15 +1403,15 @@ where
     /// does not cause problems if a given fuzzy hash is broken.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut buffer = [0u8; crate::MAX_LEN_IN_STR];
-        self.store_into_bytes(&mut buffer).unwrap();
+        let len = self.store_into_bytes(&mut buffer).unwrap();
         cfg_if::cfg_if! {
             if #[cfg(feature = "unsafe")] {
                 unsafe {
-                    f.write_str(core::str::from_utf8_unchecked(&buffer[..self.len_in_str()]))
+                    f.write_str(core::str::from_utf8_unchecked(&buffer[..len]))
                 }
             }
             else {
-                f.write_str(core::str::from_utf8(&buffer[..self.len_in_str()]).unwrap())
+                f.write_str(core::str::from_utf8(&buffer[..len]).unwrap())
             }
         }
     }
