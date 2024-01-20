@@ -156,6 +156,7 @@ mod const_asserts {
 
 // grcov-excl-br-start
 #[cfg(all(test, not(ffuzzy_tests_without_debug_assertions)))]
+#[cfg_attr(feature = "nightly", coverage(off))] // To avoid llvm-cov error
 #[test]
 fn test_prerequisites() {
     assert!(cfg!(debug_assertions), "\
