@@ -74,7 +74,7 @@ where
 
 /// Check whether a given block hash is normalized only if `verify` is true.
 #[inline(always)]
-fn is_normalized_internal<const N: usize>(
+fn is_block_hash_normalized_internal<const N: usize>(
     blockhash: &[u8; N],
     blockhash_len: u8,
     verify: bool
@@ -103,25 +103,25 @@ where
 }
 
 /// Check whether a given block hash is normalized (or don't, depending on the input normalization).
-pub(crate) fn is_normalized_input<const N: usize, const EXPECT_NORM: bool>(
+pub(crate) fn is_block_hash_normalized_input<const N: usize, const EXPECT_NORM: bool>(
     blockhash: &[u8; N],
     blockhash_len: u8,
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    is_normalized_internal(blockhash, blockhash_len, EXPECT_NORM)
+    is_block_hash_normalized_internal(blockhash, blockhash_len, EXPECT_NORM)
 }
 
 /// Check whether a given block hash is normalized (or don't, depending on the type normalization).
-pub(crate) fn is_normalized_current<const N: usize, const TYPE_NORM: bool>(
+pub(crate) fn is_block_hash_normalized_current<const N: usize, const TYPE_NORM: bool>(
     blockhash: &[u8; N],
     blockhash_len: u8,
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    is_normalized_internal(blockhash, blockhash_len, !TYPE_NORM)
+    is_block_hash_normalized_internal(blockhash, blockhash_len, !TYPE_NORM)
 }
 
 /// Push block hash contents at the end of a given [`u8`] slice.

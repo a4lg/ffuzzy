@@ -8,7 +8,7 @@ use crate::base64::{base64_index, BASE64_TABLE_U8};
 use crate::hash::algorithms::{
     BlockHashParseState,
     insert_block_hash_into_bytes,
-    is_normalized_internal,
+    is_block_hash_normalized_internal,
     normalize_block_hash_in_place,
     parse_block_hash_from_bytes,
     parse_block_size_from_bytes,
@@ -51,7 +51,7 @@ fn test_normalize_block_hash_in_place() {
 }
 
 #[test]
-fn test_is_normalized() {
+fn test_is_block_hash_normalized() {
     test_blockhash_content_all(&mut |bh, bh_norm| {
         macro_rules! test {() => {
             let bhsz = N;
@@ -59,7 +59,7 @@ fn test_is_normalized() {
             let mut buffer: [u8; N] = [0u8; N];
             buffer[..bh.len()].copy_from_slice(bh);
             let len = bh.len() as u8;
-            assert_eq!(is_normalized_internal(&buffer, len, true), bh == bh_norm, "failed on bhsz={}, bh={:?}", bhsz, bh);
+            assert_eq!(is_block_hash_normalized_internal(&buffer, len, true), bh == bh_norm, "failed on bhsz={}, bh={:?}", bhsz, bh);
         }}
         test_for_each_block_size!(test);
     });
