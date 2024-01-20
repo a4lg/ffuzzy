@@ -566,7 +566,7 @@ mod algorithms {
 /// The implementation-defined order is not currently guaranteed to be stable.
 /// For instance, different versions of this crate may order them differently.
 /// However, it is guaranteed deterministic so that you can expect the same
-/// order in the same version (and the same configuration) of this crate.
+/// order in the same version of this crate.
 ///
 /// # Safety
 ///
