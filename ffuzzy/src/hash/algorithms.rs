@@ -239,7 +239,6 @@ where
     let mut prev = BASE64_INVALID;
     let mut j = *i;
     let mut len: usize = 0;
-    #[doc(hidden)]
     macro_rules! pre_ret {() => {
         *blockhash_len = len as u8;
         if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
@@ -247,7 +246,6 @@ where
             report_norm_seq(seq_start, len);
         }
     }}
-    #[doc(hidden)]
     macro_rules! ret {($expr: expr) => { *i = j; return $expr }}
     optionally_unsafe! {
         invariant!(j <= bytes.len());
