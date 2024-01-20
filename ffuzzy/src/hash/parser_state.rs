@@ -15,7 +15,7 @@
 pub enum ParseErrorKind {
     /// Block size: is empty.
     BlockSizeIsEmpty,
-    /// Block size: starts with zero.
+    /// Block size: starts with the digit zero (`'0'`).
     BlockSizeStartsWithZero,
     /// Block size: is not valid.
     BlockSizeIsInvalid,
