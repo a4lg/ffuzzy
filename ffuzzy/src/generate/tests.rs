@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: FNV-1 test vectors are based on a PD work by Landon Curt Noll, authored in 2013.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -144,6 +145,7 @@ fn verify_partial_fnv_hash_with_regular_fnv1_test_vector() {
         }
         assert_eq!(hash.value(), (expected_value % (1 << 6)) as u8);
     }
+    // SPDX-SnippetBegin
     /*
         FNV-1 test vectors below are extracted from test_fnv.c by
         Landon Curt Noll, which is in the public domain.
@@ -396,6 +398,7 @@ fn verify_partial_fnv_hash_with_regular_fnv1_test_vector() {
     test(0x0c6c58b9, 500, b"\x07");
     test(0xe2dbccd5, 500, b"~");
     test(0xdb7f50f9, 500, b"\x7f");
+    // SPDX-SnippetEnd
 }
 
 
