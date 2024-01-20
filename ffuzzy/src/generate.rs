@@ -961,18 +961,10 @@ impl Generator {
         log_block_size
     }
 
-    /// Retrieves the resulting fuzzy hash.
-    ///
-    /// Usually, you should use the [`finalize()`](Self::finalize()) method (a
-    /// wrapper of this method) instead because it passes the `TRUNC` option
-    /// [`true`] to this method (as the default ssdeep option).
-    ///
-    /// Although some methods including this is named *finalize*, you can
-    /// continue feeding more data and updating the internal state without
-    /// problems.  Still, it's hard to find such use cases so that using
-    /// [`Generator`] like this is useful.
+    /// The internal implementation of [`Self::finalize_raw()`].
     #[allow(clippy::branches_sharing_code)]
-    pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(&self)
+    #[inline(always)]
+    fn finalize_raw_internal<const S1: usize, const S2: usize>(&self, truncate: bool)
         -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
@@ -1027,7 +1019,7 @@ impl Generator {
                 invariant!(log_block_size + 1 < self.bh_context.len());
             }
             let bh_1 = &self.bh_context[log_block_size + 1]; // grcov-excl-br-line:ARRAY
-            if TRUNC {
+            if truncate {
                 let mut sz = bh_1.blockhash_index;
                 if bh_1.blockhash_ch_half != BLOCKHASH_CHAR_NIL {
                     debug_assert!(sz >= block_hash::HALF_SIZE); // invariant
@@ -1060,7 +1052,7 @@ impl Generator {
                 if !<fuzzy_raw_type!(S1, S2)>::IS_LONG_FORM {
                     if sz > S2 {
                         // Overflow will occur if:
-                        // 1.  truncation is disabled (!TRUNC),
+                        // 1.  truncation is disabled (!truncate),
                         // 2.  the output is short and
                         // 3.  the input (block hash 2) is large enough.
                         return Err(GeneratorError::OutputOverflow);
@@ -1077,7 +1069,7 @@ impl Generator {
                     if !<fuzzy_raw_type!(S1, S2)>::IS_LONG_FORM {
                         if sz >= S2 {
                             // Overflow will occur if:
-                            // 1.  truncation is disabled (!TRUNC),
+                            // 1.  truncation is disabled (!truncate),
                             // 2.  the output is short and
                             // 3.  the input (block hash 2) is large enough.
                             return Err(GeneratorError::OutputOverflow);
@@ -1125,6 +1117,27 @@ impl Generator {
             fuzzy.len_blockhash2 = 0;
         }
         Ok(fuzzy)
+    }
+
+    /// Retrieves the resulting fuzzy hash.
+    ///
+    /// Usually, you should use the [`finalize()`](Self::finalize()) method (a
+    /// wrapper of this method) instead because it passes the `TRUNC` option
+    /// [`true`] to this method (as the default ssdeep option).
+    ///
+    /// Although some methods including this is named *finalize*, you can
+    /// continue feeding more data and updating the internal state without
+    /// problems.  Still, it's hard to find such use cases so that using
+    /// [`Generator`] like this is useful.
+    #[allow(clippy::branches_sharing_code)]
+    pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(&self)
+        -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
+    where
+        BlockHashSize<S1>: ConstrainedBlockHashSize,
+        BlockHashSize<S2>: ConstrainedBlockHashSize,
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    {
+        self.finalize_raw_internal::<S1, S2>(TRUNC)
     }
 
     /// Retrieves the resulting fuzzy hash.
