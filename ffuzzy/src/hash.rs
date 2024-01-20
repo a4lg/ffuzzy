@@ -938,9 +938,6 @@ where
     /// Store the string representation of the fuzzy hash into the bytes.
     /// Returns whether the operation has succeeded.
     ///
-    /// If this method succeeds, it returns [`Ok(n)`](Ok) where `n` is
-    /// the number of bytes written to `buffer`.
-    ///
     /// The only case this function will fail (returns an [`Err`]) is,
     /// when `buffer` does not have enough size to store string representation
     /// of the fuzzy hash.  In this case, `buffer` is not overwritten.
