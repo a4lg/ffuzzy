@@ -18,14 +18,16 @@ mod tests;
 
 
 /// Normalize a block hash in place only if the original (expected) form is raw.
-pub(crate) fn normalize_block_hash_in_place<const N: usize, const ORIG_NORM: bool>(
+#[inline(always)]
+pub(crate) fn normalize_block_hash_in_place_internal<const N: usize>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
+    originally_normalized: bool
 )
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    if !ORIG_NORM { // grcov-excl-br-line:STATIC_NORM_BRANCH
+    if !originally_normalized {
         let mut seq: usize = 0;
         let mut prev = BASE64_INVALID;
         let old_blockhash_len = *blockhash_len;
@@ -57,6 +59,17 @@ where
             blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
         }
     }
+}
+
+/// Normalize a block hash in place only if the original (expected) form is raw.
+pub(crate) fn normalize_block_hash_in_place<const N: usize, const ORIG_NORM: bool>(
+    blockhash: &mut [u8; N],
+    blockhash_len: &mut u8,
+)
+where
+    BlockHashSize<N>: ConstrainedBlockHashSize
+{
+    normalize_block_hash_in_place_internal(blockhash, blockhash_len, ORIG_NORM)
 }
 
 /// Check whether a given block hash is normalized only if `verify` is true.
