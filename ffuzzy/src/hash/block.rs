@@ -514,6 +514,9 @@ pub mod block_hash {
             self.v.len()
         }
     }
+
+    #[cfg(all(feature = "unsafe", feature = "nightly"))]
+    impl <'a> core::iter::TrustedLen for NumericWindows<'a> {}
 }
 
 

@@ -14,6 +14,7 @@
 #![cfg_attr(feature = "nightly", feature(core_intrinsics))]
 #![cfg_attr(feature = "nightly", feature(error_in_core))]
 #![cfg_attr(feature = "nightly", feature(coverage_attribute))]
+#![cfg_attr(feature = "nightly", feature(trusted_len))]
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
 // int_roundings feature depending on div_ceil availability
