@@ -53,7 +53,7 @@ mod tests;
 ///
 /// The `pos` field is that of the normalized block hash and the *last
 /// character* of the consecutive characters (to prohibit redundant encodings
-/// and to reserve position `0` for the terminator).
+/// and to reserve position `0` for [the terminator](rle_encoding::TERMINATOR)).
 ///
 /// Due to the limitation of the bit field encoding, we can only repeat
 /// up to 4 characters by one RLE encoding.  On such cases, we use multiple RLE
@@ -97,7 +97,8 @@ mod tests;
 ///
 /// Because [`block_hash::MAX_SEQUENCE_SIZE`] is larger than `1`, we can use the
 /// offset zero as the terminator (if the offset is zero, the length must be
-/// encoded as zero, making the RLE block zero-terminated).
+/// encoded as zero, making the RLE block
+/// [zero-terminated](rle_encoding::TERMINATOR)).
 ///
 /// 2 bits of length is enough to compress
 /// [`block_hash::MAX_SEQUENCE_SIZE`]` + 1` bytes into one RLE encoding, making
@@ -131,6 +132,12 @@ mod rle_encoding {
 
     /// Maximum run length for the RLE encoding.
     pub const MAX_RUN_LENGTH: usize = 1usize << BITS_RUN_LENGTH;
+
+    /// The terminator symbol.
+    ///
+    /// A valid RLE block must be terminated by this symbol (and filled
+    /// thereafter).  It can be detected as `pos == 0` after decoding.
+    pub const TERMINATOR: u8 = 0;
 
     /// Constant assertions related to RLE encoding prerequisites.
     #[doc(hidden)]
@@ -169,6 +176,13 @@ mod rle_encoding {
     #[inline(always)]
     pub(crate) fn decode(value: u8) -> (u8, u8) {
         (value & MASK_POSITION, (value >> BITS_POSITION) + 1)
+    }
+
+    #[cfg(test)]
+    #[test]
+    fn decode_terminator() {
+        let (pos, _) = decode(TERMINATOR);
+        assert_eq!(pos, 0);
     }
 }
 
@@ -397,7 +411,7 @@ mod algorithms {
             invariant!(len <= blockhash_out.len());
             blockhash_out[len..].fill(0); // grcov-excl-br-line:ARRAY
             invariant!(rle_offset <= rle_block_out.len());
-            rle_block_out[rle_offset..].fill(0); // grcov-excl-br-line:ARRAY
+            rle_block_out[rle_offset..].fill(rle_encoding::TERMINATOR); // grcov-excl-br-line:ARRAY
         }
     }
 
@@ -431,6 +445,8 @@ mod algorithms {
                 // Decode position and length
                 let (pos, len) = rle_encoding::decode(*rle);
                 if pos == 0 {
+                    // Met the terminator
+                    debug_assert!(*rle == rle_encoding::TERMINATOR);
                     break;
                 }
                 let pos = pos as usize;
@@ -471,17 +487,17 @@ mod algorithms {
         ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
     {
         let mut expanded_len = blockhash_len as u32;
-        let mut zero_expected = false;
+        let mut terminator_expected = false;
         let mut prev_pos = 0u8;
         let mut prev_len = 0u8;
         for rle in rle_block {
-            if unlikely(*rle != 0 && zero_expected) {
+            if unlikely(*rle != rle_encoding::TERMINATOR && terminator_expected) {
                 // Non-zero byte after null-terminated encoding.
                 return false;
             }
-            if *rle == 0 {
+            if *rle == rle_encoding::TERMINATOR {
                 // Null terminator or later.
-                zero_expected = true;
+                terminator_expected = true;
                 continue;
             }
             // Decode position and length
@@ -693,8 +709,8 @@ where
     /// This is equivalent to the fuzzy hash string `3::`.
     pub fn new() -> Self {
         Self {
-            rle_block1: [0u8; C1],
-            rle_block2: [0u8; C2],
+            rle_block1: [rle_encoding::TERMINATOR; C1],
+            rle_block2: [rle_encoding::TERMINATOR; C2],
             norm_hash: FuzzyHashData::new()
         }
     }
@@ -895,8 +911,8 @@ where
     /// Constructs an object from a normalized fuzzy hash.
     pub fn from_normalized(hash: &fuzzy_norm_type!(S1, S2)) -> Self {
         Self {
-            rle_block1: [0u8; C1],
-            rle_block2: [0u8; C2],
+            rle_block1: [rle_encoding::TERMINATOR; C1],
+            rle_block2: [rle_encoding::TERMINATOR; C2],
             norm_hash: *hash
         }
     }
@@ -1011,13 +1027,14 @@ where
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](FuzzyHashData#normalization)
     pub fn normalize_in_place(&mut self) {
-        self.rle_block1 = [0u8; C1];
-        self.rle_block2 = [0u8; C2];
+        self.rle_block1 = [rle_encoding::TERMINATOR; C1];
+        self.rle_block2 = [rle_encoding::TERMINATOR; C2];
     }
 
     /// Returns whether the dual fuzzy hash is normalized.
     pub fn is_normalized(&self) -> bool {
-        self.rle_block1[0] == 0 && self.rle_block2[0] == 0
+        self.rle_block1[0] == rle_encoding::TERMINATOR &&
+        self.rle_block2[0] == rle_encoding::TERMINATOR
     }
 
     /// Performs full validity checking of the internal structure.
@@ -1191,7 +1208,7 @@ where
         }
         impl core::fmt::Debug for DebugBuilderForRLEBlockEntry {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                if self.0 != 0 {
+                if self.0 != rle_encoding::TERMINATOR {
                     let (pos, len) = rle_encoding::decode(self.0);
                     f.debug_tuple("RLE")
                         .field(&pos).field(&len)
@@ -1207,7 +1224,7 @@ where
         {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.debug_list()
-                    .entries(self.block.iter().cloned().filter(|x| *x != 0)
+                    .entries(self.block.iter().cloned().filter(|x| *x != rle_encoding::TERMINATOR)
                     .map(DebugBuilderForRLEBlockEntry))
                     .finish()
             }
