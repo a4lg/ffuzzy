@@ -507,6 +507,13 @@ pub mod block_hash {
             (self.v.len(), Some(self.v.len()))
         }
     }
+
+    impl <'a> ExactSizeIterator for NumericWindows<'a> {
+        #[inline]
+        fn len(&self) -> usize {
+            self.v.len()
+        }
+    }
 }
 
 
