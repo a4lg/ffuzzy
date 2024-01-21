@@ -40,6 +40,8 @@
 #![cfg_attr(test, allow(clippy::int_plus_one))]
 // Tests: obvious 1 * n like operations should be allowed.
 #![cfg_attr(test, allow(clippy::identity_op))]
+// Tests: obvious x << 0 like operations should be allowed.
+#![cfg_attr(test, allow(clippy::erasing_op))]
 // Tests: currently allowed on Rust 1.69 (stable as of this writing)
 //        but not on MSRV (Rust 1.56).
 #![cfg_attr(test, allow(clippy::or_fun_call))]

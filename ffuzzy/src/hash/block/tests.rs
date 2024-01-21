@@ -7,7 +7,11 @@
 use core::cmp::Ordering;
 use core::ops::RangeInclusive;
 
-use crate::hash::block::{block_size::{self, RANGE_LOG_VALID}, block_hash, BlockSizeRelation};
+use crate::hash::block::{
+    block_size::{self, RANGE_LOG_VALID},
+    block_hash::{self, NumericWindows},
+    BlockSizeRelation
+};
 use crate::test_utils::assert_fits_in;
 
 
@@ -254,6 +258,50 @@ fn block_hash_numeric_window_prerequisites() {
     let bits = (block_hash::MIN_LCS_FOR_COMPARISON as u32).checked_mul(block_hash::NumericWindows::ILOG2_OF_ALPHABETS).unwrap();
     assert_eq!(block_hash::NumericWindows::BITS, bits);
     assert_eq!(block_hash::NumericWindows::MASK, crate::utils::u64_lsb_ones(bits));
+}
+
+
+#[test]
+fn block_hash_numeric_window_basic() {
+    assert_fits_in!(block_hash::ALPHABET_SIZE, u8);
+    assert_eq!(block_hash::MIN_LCS_FOR_COMPARISON, 7);
+    // Prepare pseudo-random test vector
+    let test_vector =
+              ((0..block_hash::ALPHABET_SIZE as u8).map(|x| x.wrapping_mul(0xcb).wrapping_add(0x66)))
+        .chain((0..block_hash::ALPHABET_SIZE as u8).map(|x| x.wrapping_mul(0x25).wrapping_add(0x23)))
+        .map(|x| x % block_hash::ALPHABET_SIZE as u8)
+        .collect::<std::boxed::Box<[u8]>>();
+    for len in (0..block_hash::MIN_LCS_FOR_COMPARISON * 2)
+        .chain([test_vector.len()])
+        .filter(|x| *x <= test_vector.len())
+    {
+        let vector = &test_vector[..len];
+        let mut windows = NumericWindows::new(vector);
+        if len >= block_hash::MIN_LCS_FOR_COMPARISON {
+            let window_size = len - (block_hash::MIN_LCS_FOR_COMPARISON - 1);
+            for (iter, window) in vector.windows(block_hash::MIN_LCS_FOR_COMPARISON).enumerate() {
+                let current_window_size = window_size - iter;
+                assert_eq!(windows.len(), current_window_size, "failed on len={}, iter={}", len, iter);
+                assert_eq!(windows.size_hint(), (current_window_size, Some(current_window_size)), "failed on len={}, iter={}", len, iter);
+                // Manually calculated window (element by element)
+                let calculated_window =
+                    ((window[0] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 6)) +
+                    ((window[1] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 5)) +
+                    ((window[2] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 4)) +
+                    ((window[3] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 3)) +
+                    ((window[4] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 2)) +
+                    ((window[5] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 1)) +
+                    ((window[6] as u64) << (NumericWindows::ILOG2_OF_ALPHABETS * 0));
+                // Manually calculated window (more elegant and MIN_LCS_FOR_COMPARISON-agnostic)
+                assert_eq!(calculated_window, window.iter().fold(0u64, |x, &ch| (x << NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64));
+                // Make sure that the window is correctly calculated.
+                assert_eq!(windows.next(), Some(calculated_window), "failed on len={}, iter={}", len, iter);
+            }
+        }
+        assert_eq!(windows.len(), 0, "failed on len={}", len);
+        assert_eq!(windows.size_hint(), (0, Some(0)), "failed on len={}", len);
+        assert_eq!(windows.next(), None, "failed on len={}", len);
+    }
 }
 
 
