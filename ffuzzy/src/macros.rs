@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023
+// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
 
 
 /// "Optionally" unsafe block.
@@ -8,7 +8,7 @@
 /// expanded to an `unsafe` block.
 ///
 /// Inside this block, you may place statements that may change the behavior
-/// depending on the feature `unstable`.  For instance, you may place
+/// depending on the feature `unsafe`.  For instance, you may place
 /// [`invariant!()`] inside this block.
 ///
 /// ```ignore
