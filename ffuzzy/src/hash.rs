@@ -1630,7 +1630,6 @@ where
     /// Converts the fuzzy hash from a normalized form.
     #[inline]
     pub fn from_normalized(source: &norm_type!(S1, S2)) -> Self { source.to_raw_form() }
-
 }
 
 
