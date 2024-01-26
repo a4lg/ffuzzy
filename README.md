@@ -122,7 +122,7 @@ It only shows a property of the dual fuzzy hash.  Dual fuzzy hash objects will
 be really useful on much, much complex cases.
 
 ```rust
-// Requires the "alloc" feature to use the `to_string()`-like methods (default enabled).
+// Requires the "alloc" feature to use the `to_*_string()` methods (default enabled).
 use ssdeep::{FuzzyHash, DualFuzzyHash};
 
 // "Normalization" would change the contents.

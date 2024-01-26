@@ -600,9 +600,8 @@ mod algorithms {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(feature = "alloc")]
-/// # {
-/// // Requires the "alloc" feature to use `to_string()` method (default enabled).
+/// // Requires either the "alloc" feature or std environment on your crate
+/// // to use the `to_string()` method (default enabled).
 /// use ssdeep::{DualFuzzyHash, FuzzyHash, RawFuzzyHash};
 ///
 /// let hash_str_raw  = "12288:+ySwl5P+C5IxJ845HYV5sxOH/cccccccei:+Klhav84a5sxJ";
@@ -630,7 +629,6 @@ mod algorithms {
 /// // You need to use `as_normalized()` to compare a FuzzyHash against
 /// // a DualFuzzyHash (direct comparison may be provided on the later version).
 /// assert_eq!(dual_hash.as_normalized().compare(&another_hash), 88);
-/// # }
 /// ```
 #[repr(align(8))]
 #[derive(Copy, Clone)]
