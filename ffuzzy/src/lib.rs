@@ -169,7 +169,7 @@ mod const_asserts {
 fn test_prerequisites() {
     assert!(cfg!(debug_assertions), "\
         The tests in this crate requires debug assertions to be enabled (by default).  \
-        To test this crate without debug assertions, add rustc flag \"--cfg ffuzzy_tests_without_debug_assertions\".\
+        To test this crate without debug assertions, add rustc flags \"--cfg ffuzzy_tests_without_debug_assertions\".\
     ");
 }
 // grcov-excl-br-end
