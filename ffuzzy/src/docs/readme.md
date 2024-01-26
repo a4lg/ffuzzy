@@ -130,7 +130,7 @@ be really useful on much, much complex cases.
 ```rust
 # #[cfg(feature = "alloc")]
 # {
-// Requires the "alloc" feature to use the `to_string()`-like methods (default enabled).
+// Requires the "alloc" feature to use the `to_*_string()` methods (default enabled).
 use ssdeep::{FuzzyHash, DualFuzzyHash};
 
 // "Normalization" would change the contents.

@@ -62,8 +62,6 @@ use position_array::BlockHashPositionArrayImplUnchecked;
 ///
 /// ```rust
 /// // Requires the global allocator to use `Vec` (default on std).
-/// # #[cfg(feature = "alloc")]
-/// # {
 /// use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
 ///
 /// // Brute force comparison
@@ -78,7 +76,6 @@ use position_array::BlockHashPositionArrayImplUnchecked;
 ///         /* ... */
 ///     }
 /// }
-/// # }
 /// ```
 #[derive(Clone, Debug)]
 pub struct FuzzyHashCompareTarget {

@@ -12,8 +12,8 @@ use crate::hash::RawFuzzyHash;
 /// # Example
 ///
 /// ```
-/// // Requires the "alloc" feature to use `to_string()` method (default enabled).
-/// # #[cfg(feature = "alloc")]
+/// // Requires either the "alloc" feature or std environment
+/// // on your crate to use `to_string()` method (default enabled).
 /// assert_eq!(
 ///     ssdeep::hash_buf(b"Hello, World!\n").unwrap().to_string(),
 ///     "3:aaX8v:aV"
