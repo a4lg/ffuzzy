@@ -22,7 +22,7 @@ checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 
 [[package]]
 name = "ffuzzy"
-version = "0.2.17-alpha.0"
+version = "0.2.18-alpha.0"
 dependencies = [
  "cfg-if",
  "collect_slice",
