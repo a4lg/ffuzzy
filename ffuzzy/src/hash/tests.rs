@@ -5,6 +5,8 @@
 #![cfg(test)]
 
 use core::cmp::Ordering;
+use std::string::ToString;
+use std::vec::Vec;
 use collect_slice::CollectSlice;
 
 use crate::base64::BASE64_INVALID;
@@ -1787,8 +1789,6 @@ fn parsed_data_example() {
 
 #[test]
 fn normalization_examples() {
-    #[cfg(not(feature = "alloc"))]
-    use std::string::ToString;
     // Prerequisites (partial)
     assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     // Target strings
@@ -1821,8 +1821,6 @@ fn cover_hash() {
 
 #[test]
 fn ord_and_sorting() {
-    use std::vec::Vec;
-    use alloc::string::ToString;
     // Sorted by block hash order (Base64 indices and length).
     // Note that 'A' has Base64 index zero and FuzzyHashData zero-fills
     // each tail of block hashes (making the behavior more deterministic).
@@ -1873,9 +1871,6 @@ fn ord_and_sorting() {
 
 #[test]
 fn ord_by_block_size_examples() {
-    use std::vec::Vec;
-    #[cfg(not(feature = "alloc"))]
-    use std::string::ToString;
     const STRS_UNSORTED: [&str; 8] = [
         "12:a:",
         "12:z:",

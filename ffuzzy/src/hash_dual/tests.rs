@@ -4,6 +4,11 @@
 
 #![cfg(test)]
 
+use core::cmp::Ordering;
+use std::collections::HashSet;
+use std::string::ToString;
+use std::vec::Vec;
+
 use crate::hash::FuzzyHashData;
 use crate::hash::block::block_size;
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
@@ -707,7 +712,7 @@ fn parse_patterns() {
 fn cover_hash() {
     macro_rules! test {($ty: ty) => {
         let typename = stringify!($ty);
-        let mut hashes = std::collections::HashSet::<$ty>::new();
+        let mut hashes = HashSet::<$ty>::new();
         assert!(hashes.insert(<$ty>::new()), "failed (1) on typename={}", typename);
         assert!(!hashes.insert(<$ty>::new()), "failed (2) on typename={}", typename);
     }}
@@ -717,11 +722,6 @@ fn cover_hash() {
 
 #[test]
 fn ord_and_sorting() {
-    use core::cmp::Ordering;
-    use std::string::ToString;
-    use std::vec;
-    use std::vec::Vec;
-    use std::collections::HashSet;
     /*
         Sorted by block hash order (Base64 indices and length).
 
