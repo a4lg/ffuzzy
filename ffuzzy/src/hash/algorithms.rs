@@ -10,6 +10,7 @@ use crate::hash::block::{
 use crate::hash::parser_state::{
     BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin
 };
+use crate::intrinsics::unlikely;
 use crate::macros::{optionally_unsafe, invariant};
 
 
@@ -229,6 +230,9 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
 /// and we have found a sequence longer than
 /// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
 ///
+/// Note that however, this function *may not* be called when we once know
+/// that the parsing the block hash results in a failure.
+///
 /// Arguments to `report_norm_seq` is as follows:
 ///
 /// 1.  The offset in the *normalized* block hash
@@ -252,8 +256,12 @@ where
     let mut prev = BASE64_INVALID;
     let mut j = *i;
     let mut len: usize = 0;
-    macro_rules! pre_ret {() => {
+    // Mandatory before returning.
+    macro_rules! pre_ret_1 {() => {
         *blockhash_len = len as u8;
+    }}
+    // Not mandatory if the parsing is guaranteed to fail.
+    macro_rules! pre_ret_2 {() => {
         if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
             let len = j - seq_start_in;
             report_norm_seq(seq_start, len);
@@ -286,24 +294,25 @@ where
                         prev = curr;
                     }
                 }
-                if len >= N {
-                    pre_ret!();
+                if unlikely(len >= N) {
+                    pre_ret_1!();
                     ret!(BlockHashParseState::OverflowError);
                 }
                 blockhash[len] = curr; // grcov-excl-br-line:ARRAY
                 len += 1;
             }
             else {
-                pre_ret!();
+                pre_ret_1!();
                 match ch {
-                    b':' => { j += 1; ret!(BlockHashParseState::MetColon); }
-                    b',' => { j += 1; ret!(BlockHashParseState::MetComma); }
+                    b':' => { j += 1; pre_ret_2!(); ret!(BlockHashParseState::MetColon); }
+                    b',' => { j += 1; pre_ret_2!(); ret!(BlockHashParseState::MetComma); }
                     _ => { ret!(BlockHashParseState::Base64Error); }
                 }
             }
             j += 1;
         }
     }
-    pre_ret!();
+    pre_ret_1!();
+    pre_ret_2!();
     ret!(BlockHashParseState::MetEndOfString);
 }
