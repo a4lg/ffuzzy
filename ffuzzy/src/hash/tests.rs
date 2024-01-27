@@ -1055,7 +1055,6 @@ fn data_model_corruption() {
     /*
         1. Validity
             *   is_valid
-            *   is_valid
         2. Debug output (when invalid)
             *   fmt (Debug)
     */
