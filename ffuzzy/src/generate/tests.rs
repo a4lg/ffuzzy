@@ -595,15 +595,12 @@ macro_rules! test_for_each_generator_finalization {
 
 #[test]
 fn generator_error_impls() {
-    test_auto_debug_for_enum!(
-        GeneratorError,
-        [
-            FixedSizeMismatch,
-            FixedSizeTooLarge,
-            InputSizeTooLarge,
-            OutputOverflow,
-        ]
-    );
+    test_auto_debug_for_enum!(GeneratorError, [
+        FixedSizeMismatch,
+        FixedSizeTooLarge,
+        InputSizeTooLarge,
+        OutputOverflow,
+    ]);
     test_auto_clone::<GeneratorError>(&GeneratorError::FixedSizeMismatch);
 }
 

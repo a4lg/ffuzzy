@@ -33,13 +33,10 @@ fn fuzzy_hash_operation_error_impls() {
     assert_eq!(format!("{}", FuzzyHashOperationError::BlockHashOverflow),     "overflow will occur while copying the block hash");
     assert_eq!(format!("{}", FuzzyHashOperationError::StringizationOverflow), "overflow will occur while converting to the string representation");
     // Test Debug
-    test_auto_debug_for_enum!(
-        FuzzyHashOperationError,
-        [
-            BlockHashOverflow,
-            StringizationOverflow,
-        ]
-    );
+    test_auto_debug_for_enum!(FuzzyHashOperationError, [
+        BlockHashOverflow,
+        StringizationOverflow,
+    ]);
 }
 
 

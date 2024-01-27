@@ -181,9 +181,7 @@ fn block_size_relation_impls() {
     // Test Clone
     crate::test_utils::test_auto_clone::<BlockSizeRelation>(&BlockSizeRelation::Far);
     // Test Debug
-    crate::test_utils::test_auto_debug_for_enum!(
-        BlockSizeRelation, [Far, NearEq, NearGt, NearLt]
-    );
+    crate::test_utils::test_auto_debug_for_enum!(BlockSizeRelation, [Far, NearEq, NearGt, NearLt]);
 }
 
 #[test]

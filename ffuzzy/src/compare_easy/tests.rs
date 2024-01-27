@@ -18,13 +18,10 @@ fn parse_error_side_impls() {
     // Test Clone
     test_auto_clone::<ParseErrorSide>(&ParseErrorSide::Left);
     // Test Debug
-    crate::test_utils::test_auto_debug_for_enum!(
-        ParseErrorSide,
-        [
-            Left,
-            Right,
-        ]
-    );
+    crate::test_utils::test_auto_debug_for_enum!(ParseErrorSide, [
+        Left,
+        Right,
+    ]);
 }
 
 #[test]
