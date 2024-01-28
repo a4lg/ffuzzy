@@ -80,7 +80,8 @@ assert_eq!(hash.to_string(), "3:aaX8v:aV");
 ### Comparing Fuzzy Hashes
 
 ```rust
-// Requires the "alloc" feature to use the `to_string()` method (default enabled).
+// Requires either the "alloc" feature or std environment on your crate
+// to use the `to_string()` method (default enabled).
 use ssdeep::{FuzzyHash, FuzzyHashCompareTarget};
 
 // Those fuzzy hash strings are "normalized" so that easier to compare.
@@ -122,7 +123,8 @@ It only shows a property of the dual fuzzy hash.  Dual fuzzy hash objects will
 be really useful on much, much complex cases.
 
 ```rust
-// Requires the "alloc" feature to use the `to_*_string()` methods (default enabled).
+// Requires either the "alloc" feature or std environment on your crate
+// to use the `to_string()` method (default enabled).
 use ssdeep::{FuzzyHash, DualFuzzyHash};
 
 // "Normalization" would change the contents.
