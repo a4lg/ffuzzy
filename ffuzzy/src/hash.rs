@@ -127,8 +127,8 @@ pub(crate) mod test_utils;
 /// ```
 ///
 /// The final similarity score is the maximum of two block hash comparisons
-/// (note that [the `score` function on small block sizes will cap the score to
-/// prevent exaggeration of matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+/// (note that [the score will be capped on small block sizes to prevent
+/// exaggeration of matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
 ///
 /// If you have two fuzzy hashes with different block sizes but they are *near*
 /// enough, we can still perform a block hash comparison.
