@@ -54,8 +54,7 @@ impl core::fmt::Display for ParseErrorKind {
 ///
 /// # Compatibility Note
 ///
-/// Since the version 0.3, the representation of this enum is no longer
-/// specified as specific representation of this enum is not important.
+/// On the next major release, the `FileName` variant will be added.
 #[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ParseErrorOrigin {
