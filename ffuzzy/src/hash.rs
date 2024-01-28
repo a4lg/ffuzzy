@@ -1129,6 +1129,13 @@ where
     /// Note that, despite that it is only relevant to users when the
     /// `unchecked` feature is enabled but made public without any features
     /// because this method is not *unsafe* or *unchecked* in any way.
+    ///
+    /// # Safety: No Panic Guarantee
+    ///
+    /// This method is guaranteed to be panic-free as long as the underlying
+    /// memory region corresponding to `self` is sound.
+    /// In other words, it won't cause panic by itself if *any* data is
+    /// contained in this object.
     pub fn is_valid(&self) -> bool {
         block_size::is_log_valid(self.log_blocksize)
             && (self.len_blockhash1 as usize) <= S1
@@ -1162,6 +1169,13 @@ where
     /// Note that, despite that it is only relevant to users when the
     /// `unchecked` feature is enabled but made public without any features
     /// because this method is not *unsafe* or *unchecked* in any way.
+    ///
+    /// # Safety: No Panic Guarantee
+    ///
+    /// This method is guaranteed to be panic-free as long as the underlying
+    /// memory region corresponding to `self` is sound.
+    /// In other words, it won't cause panic by itself if *any* data is
+    /// contained in this object.
     pub fn full_eq(&self, other: &Self) -> bool {
         // This is the auto-generated code by rust-analyzer as the default
         // PartialEq implementation of FuzzyHashData struct.
