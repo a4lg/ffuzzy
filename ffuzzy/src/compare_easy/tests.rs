@@ -114,12 +114,12 @@ fn compare_example() {
 #[test]
 fn compare_errors() {
     const STR_VALID: &str = "3::";
-    const ERROR_CASES: [(&str, ParseError); 3] = [
+    const ERROR_CASES: &[(&str, ParseError)] = &[
         ("",    ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0)),
         ("3:",  ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2)),
         ("4::", ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0)),
     ];
-    for (hash_str_invalid, err) in ERROR_CASES {
+    for &(hash_str_invalid, err) in ERROR_CASES {
         // Left side has an error.
         assert_eq!(compare(hash_str_invalid, STR_VALID), Err(ParseErrorEither(ParseErrorSide::Left, err)),
             "failed on hash_str_invalid={:?} (left)", hash_str_invalid);
@@ -134,8 +134,8 @@ fn compare_errors() {
         It just makes sure that this is an actual error generated in an
         consistent manner (X side + parse error on the X side).
     */
-    for (hash_str_invalid_l, err_l) in ERROR_CASES {
-        for (hash_str_invalid_r, err_r) in ERROR_CASES {
+    for &(hash_str_invalid_l, err_l) in ERROR_CASES {
+        for &(hash_str_invalid_r, err_r) in ERROR_CASES {
             let err = compare(hash_str_invalid_l, hash_str_invalid_r);
             // grcov-excl-start: Not very relevant to the true coverage.
             assert!(
