@@ -926,11 +926,11 @@ where
         cfg_if::cfg_if! {
             if #[cfg(feature = "unsafe")] {
                 unsafe {
-                    alloc::string::String::from_utf8_unchecked(vec)
+                    String::from_utf8_unchecked(vec)
                 }
             }
             else {
-                alloc::string::String::from_utf8(vec).unwrap()
+                String::from_utf8(vec).unwrap()
             }
         }
     }
