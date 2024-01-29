@@ -877,7 +877,6 @@ fn large_data_triggers() {
     // The loop variable is processed MiBs **after** feeding data to the generator.
     for _mb_processed in 1..=(96 * 1024 - 1) {
         generator_orig.update(&ZERO_1M[..]);
-        #[cfg(feature = "std")]
         if _mb_processed % 1024 == 0 {
             println!("{:3}GiB of {{96,192}}GiB processed...", _mb_processed / 1024);
         }
@@ -957,10 +956,7 @@ fn large_data_triggers() {
         generator3.update_by_byte(ch);
     }
     // Print progress if possible
-    #[cfg(feature = "std")]
-    {
-        println!(" 96GiB of  96GiB processed...");
-    }
+    println!(" 96GiB of  96GiB processed...");
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
@@ -998,7 +994,6 @@ fn large_data_triggers() {
     // The loop variable is processed MiBs **after** feeding data to the generator.
     for _mb_processed in (96 * 1024)..=(192 * 1024 - 1) {
         generator_orig.update(&ZERO_1M[..]);
-        #[cfg(feature = "std")]
         if _mb_processed % 1024 == 0 {
             println!("{:3}GiB of 192GiB processed...", _mb_processed / 1024);
         }
@@ -1027,10 +1022,7 @@ fn large_data_triggers() {
         generator3.update_by_byte(0);
     }
     // Print progress if possible
-    #[cfg(feature = "std")]
-    {
-        println!("192GiB of 192GiB processed...");
-    }
+    println!("192GiB of 192GiB processed...");
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
