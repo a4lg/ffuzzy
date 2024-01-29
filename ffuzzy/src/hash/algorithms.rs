@@ -304,8 +304,8 @@ where
             else {
                 pre_ret_1!();
                 match ch {
-                    b':' => { j += 1; pre_ret_2!(); ret!(BlockHashParseState::MetColon); }
-                    b',' => { j += 1; pre_ret_2!(); ret!(BlockHashParseState::MetComma); }
+                    b':' => { pre_ret_2!(); j += 1; ret!(BlockHashParseState::MetColon); }
+                    b',' => { pre_ret_2!(); j += 1; ret!(BlockHashParseState::MetComma); }
                     _ => { ret!(BlockHashParseState::Base64Error); }
                 }
             }

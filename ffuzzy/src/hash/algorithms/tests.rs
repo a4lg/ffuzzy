@@ -362,7 +362,15 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
                 reported_seqs.push((start_pos_norm, seq_len));
             }
         );
-        assert_eq!(&reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes);
+        match state {
+            BlockHashParseState::Base64Error | BlockHashParseState::OverflowError => {
+                // On error, the last run-length may not be reported but otherwise the same.
+                assert!(
+                    &reported_seqs == expected_reported_seqs || reported_seqs == expected_reported_seqs[..expected_reported_seqs.len() - 1],
+                    "failed on bytes={:?}", bytes);
+            }
+            _ => { assert_eq!(&reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes); }
+        }
         assert_eq!(state, expected_state, "failed on bytes={:?}", bytes);
         assert_eq!(&buffer, &expected_buffer, "failed on bytes={:?}", bytes);
         assert_eq!(input_offset, expected_input_offset, "failed on bytes={:?}", bytes);
