@@ -51,12 +51,10 @@ fn check_call_for_fuzzy_hash_type_and_sizes() {
     let mut params_type  = HashSet::new();
     let mut params_sizes = HashSet::new();
     // Mark parameters as tested (make sure that no duplication happens).
-    fn test_body_for_type<const S1: usize, const S2: usize, const NORM: bool>(params: &mut HashSet<(usize, usize, bool)>)
-    {
+    fn test_body_for_type<const S1: usize, const S2: usize, const NORM: bool>(params: &mut HashSet<(usize, usize, bool)>) {
         assert!(params.insert((S1, S2, NORM)));
     }
-    fn test_body_for_sizes<const S1: usize, const S2: usize>(params: &mut HashSet<(usize, usize)>)
-    {
+    fn test_body_for_sizes<const S1: usize, const S2: usize>(params: &mut HashSet<(usize, usize)>) {
         assert!(params.insert((S1, S2)));
     }
     call_for_fuzzy_hash_type!  { test_body_for_type(&mut params_type) };
