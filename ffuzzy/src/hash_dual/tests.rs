@@ -662,7 +662,7 @@ fn parse_errors() {
 fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
         let typename = stringify!($ty);
-        for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
+        for &(hash_str, result_short, result_long) in PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
             let mut index1 = 0;
             let mut index2 = usize::MAX;

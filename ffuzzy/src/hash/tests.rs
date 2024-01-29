@@ -1438,7 +1438,7 @@ fn block_hash_const_substring_lengths() {
 }
 
 #[allow(clippy::type_complexity)]
-pub(crate) const PARSER_ERR_CASES: [(&str, Result<(), ParseError>, Result<(), ParseError>); 41] = [
+pub(crate) const PARSER_ERR_CASES: &[(&str, Result<(), ParseError>, Result<(), ParseError>)] = &[
     // Block Size
     parser_case_fail_both!("",     UnexpectedEndOfString, BlockSize, 0),
     parser_case_fail_both!("::",   BlockSizeIsEmpty,      BlockSize, 0),
@@ -1514,7 +1514,7 @@ fn parser_err_cases_prerequisites() {
 fn parse_patterns() {
     macro_rules! test {($ty: ty) => {
         let typename = stringify!($ty);
-        for &(hash_str, result_short, result_long) in &PARSER_ERR_CASES {
+        for &(hash_str, result_short, result_long) in PARSER_ERR_CASES {
             let err = if <$ty>::IS_LONG_FORM { result_long } else { result_short };
             let mut index1 = 0;
             let mut index2 = usize::MAX;
