@@ -12,6 +12,7 @@ use crate::generate::{
 use crate::hash::{FuzzyHashData, RawFuzzyHash};
 use crate::hash::block::{block_size, block_hash};
 use crate::test_utils::{
+    assert_fits_in,
     cover_auto_clone, cover_default,
     test_auto_clone, test_auto_debug_for_enum, test_recommended_default
 };
@@ -862,33 +863,61 @@ fn length_mismatches() {
     assert!(generator.finalize().is_ok());
 }
 
-#[cfg(feature = "tests-very-slow")]
+
+// After processing specified count of zero bytes from the initial state,
+// the resulting state is now back to the initial one.
+const FNV_HASH_ZERO_DATA_PERIOD: u64 = 16;
+
 #[test]
-fn large_data_triggers() {
-    const ZERO_1M: [u8; 1024*1024] = [0; 1024*1024];
-    const LAST_USED_METHODS: [&str; 3] = [
-        "update",
-        "update_by_iter",
-        "update_by_byte"
-    ];
+fn test_fnv_hash_zero_data_period() {
+    let mut hash = PartialFNVHash::new();
+    let initial_value = hash.value();
+    hash.update_by_iter([0].iter().cloned().cycle().take(FNV_HASH_ZERO_DATA_PERIOD as usize));
+    let result_value = hash.value();
+    assert_eq!(result_value, initial_value);
+}
 
-    let mut generator_orig = Generator::new();
-    // Feed zero bytes until it reaches 96GiB-1MiB (98303MiB).
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in 1..=(96 * 1024 - 1) {
-        generator_orig.update(&ZERO_1M[..]);
-        if _mb_processed % 1024 == 0 {
-            println!("{:3}GiB of {{96,192}}GiB processed...", _mb_processed / 1024);
-        }
+#[test]
+fn make_generator_with_prefix_zeroes_prerequisites() {
+    assert_fits_in!(FNV_HASH_ZERO_DATA_PERIOD, usize);
+    assert_fits_in!(RollingHash::WINDOW_SIZE, u64);
+}
+
+// Internal function to generate a Generator object which virtually consumed
+// specific count of zero bytes.
+fn make_generator_with_prefix_zeroes(size: u64) -> Generator {
+    let mut generator = Generator::new();
+    generator.0.input_size = size;
+    generator.0.roll_hash.index = (size % (RollingHash::WINDOW_SIZE as u64)) as u32;
+    for _ in 0..(size % FNV_HASH_ZERO_DATA_PERIOD) {
+        generator.0.bh_context[0].h_full.update_by_byte(0);
+        generator.0.bh_context[0].h_half.update_by_byte(0);
     }
-    assert_eq!(
-        generator_orig.0.input_size,
-        96 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
-    );
+    generator
+}
 
+#[test]
+fn test_make_generator_with_prefix_zeroes() {
+    let max_dense_check_size = FNV_HASH_ZERO_DATA_PERIOD * (RollingHash::WINDOW_SIZE as u64) * 2;
+    // Check 0..=max_dense_check_size and sizes 2^n (between 1KiB..1MiB inclusive).
+    for prefix_size in (0..=max_dense_check_size).chain((10..=20u32).map(|x| 1u64 << x))
+    {
+        if prefix_size > Generator::MAX_INPUT_SIZE { continue; }
+        let mut generator1 = Generator::new();
+        for _ in 0..prefix_size {
+            generator1.update_by_byte(0);
+        }
+        let generator2 = make_generator_with_prefix_zeroes(prefix_size);
+        // Because the Generator object intentionally lacks the implementation
+        // of PartialEq, we'll need to format using the Debug trait.
+        assert_eq!(generator1.0, generator2.0, "failed on prefix_size={}", prefix_size);
+    }
+}
+
+#[test]
+fn large_data_triggers_1() {
+    const LAST_USED_METHODS: [&str; 3] = ["update", "update_by_iter", "update_by_byte"];
     /*
-        Test 1:
-
         This test triggers "last hash" (FNV-based) output on the generator.
 
         Input size:
@@ -908,8 +937,7 @@ fn large_data_triggers() {
         last_bytes[i*7..(i+1)*7].clone_from_slice(b"`]]]_CT");
     }
     last_bytes[7*64] = 1;
-    let mut generator_base = generator_orig.clone();
-    generator_base.update(&ZERO_1M[0..(1024*1024-7*64)]);
+    let generator_base = make_generator_with_prefix_zeroes(96 * 1024 * 1024 * 1024 - 7 * 64);
     // Append 7 bytes pattern 64 times **except** one 0x01.
     // Use update
     let mut generator1 = generator_base.clone();
@@ -922,7 +950,7 @@ fn large_data_triggers() {
     for &ch in last_bytes[0..(7*64)].iter() {
         generator3.update_by_byte(ch);
     }
-    // Check all generators (for comparison; without last byte)
+    // Check all generators (for comparison; without the last byte)
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
@@ -943,6 +971,7 @@ fn large_data_triggers() {
         assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_short_as_long, "failed on last_method={}", last_method);
         assert_eq!(generator.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>().unwrap(), hash_expected_short, "failed on last_method={}", last_method);
     }
+
     // Append 7 bytes pattern 64 times **and** one 0x01.
     // Use update
     let mut generator1 = generator_base.clone();
@@ -955,8 +984,6 @@ fn large_data_triggers() {
     for &ch in last_bytes.iter() {
         generator3.update_by_byte(ch);
     }
-    // Print progress if possible
-    println!(" 96GiB of  96GiB processed...");
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
@@ -978,10 +1005,12 @@ fn large_data_triggers() {
         }}
         test_for_each_generator_finalization!(test);
     }
+}
 
+#[test]
+fn large_data_triggers_2() {
+    const LAST_USED_METHODS: [&str; 3] = ["update", "update_by_iter", "update_by_byte"];
     /*
-        Test 2:
-
         This test triggers "input too large error" by all-zero bytes.
 
         Input size:
@@ -990,39 +1019,19 @@ fn large_data_triggers() {
         SHA-256 of the generator input:
         e613117320077150ddb32b33c2e8aaeaa63e9590a656c5aba04a91fa47d1c1b5
     */
-    // Feed zero bytes until it reaches 192GiB-1MiB (196607MiB).
-    // The loop variable is processed MiBs **after** feeding data to the generator.
-    for _mb_processed in (96 * 1024)..=(192 * 1024 - 1) {
-        generator_orig.update(&ZERO_1M[..]);
-        if _mb_processed % 1024 == 0 {
-            println!("{:3}GiB of 192GiB processed...", _mb_processed / 1024);
-        }
-    }
-    assert_eq!(
-        generator_orig.0.input_size,
-        192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
-    );
-    // Append 1 zero byte (now 192GiB-1MiB+1)
-    let mut generator_base = generator_orig.clone();
-    generator_base.update_by_byte(0);
-    assert_eq!(
-        generator_base.0.input_size,
-        192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024) + 1
-    );
-    // Append 1MiB of zeroes:
+    // Feed zero bytes until it reaches 192GiB-1.
+    let generator_base = make_generator_with_prefix_zeroes(192 * 1024 * 1024 * 1024 - 1);
+    // Append two zeroes:
     // Use update
     let mut generator1 = generator_base.clone();
-    generator1.update(&ZERO_1M[..]);
+    generator1.update(&[0, 0]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter(ZERO_1M.iter().cloned());
+    generator2.update_by_iter([0, 0].iter().cloned());
     // Use update_by_byte
     let mut generator3 = generator_base.clone();
-    for _ in 0..(1024 * 1024) {
-        generator3.update_by_byte(0);
-    }
-    // Print progress if possible
-    println!("192GiB of 192GiB processed...");
+    generator3.update_by_byte(0);
+    generator3.update_by_byte(0);
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
