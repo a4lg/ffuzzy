@@ -19,8 +19,8 @@
 // int_roundings feature depending on div_ceil availability
 #![cfg_attr(ffuzzy_div_ceil = "unstable", feature(int_roundings))]
 // unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
-// feature or on the tests.  When only the "unchecked" feature is enabled,
-// unsafe code requires explicit allow.
+// feature or on the tests.  When only the "unchecked" feature is enabled
+// (and not testing), unsafe code requires explicit allow.
 #![cfg_attr(not(any(feature = "unsafe", feature = "unchecked", test)), forbid(unsafe_code))]
 #![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
 // Non-test code requires documents
