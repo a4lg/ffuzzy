@@ -93,7 +93,7 @@ fn test_blockhash_contents_division(max_bh2: usize, test_func: &mut impl FnMut(&
     });
 }
 
-#[cfg(feature = "tests-slow")]
+#[cfg(feature = "tests-very-slow")]
 fn test_blockhash_content_multiple_sequences(test_func: &mut impl FnMut(&[u8], &[u8])) {
     // Generated sequences of block hash:
     // "BCDE", "BCDEE",... "BCDDE", "BCDDEE",... "BBB...BCDE"
@@ -131,7 +131,7 @@ fn test_blockhash_content_multiple_sequences(test_func: &mut impl FnMut(&[u8], &
     }
 }
 
-#[cfg(feature = "tests-slow")]
+#[cfg(feature = "tests-very-slow")]
 fn test_blockhash_contents_multiple_sequences(test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8])) {
     // Because arbitrary division takes some time, we use single loop
     // (unlike double loop on others)
@@ -147,7 +147,7 @@ pub(crate) fn test_blockhash_contents_all(test_func: &mut impl FnMut(&[u8], &[u8
     test_blockhash_contents_one_sequence(test_func);
     test_blockhash_contents_division(block_hash::FULL_SIZE, test_func);
     test_blockhash_contents_division(block_hash::HALF_SIZE, test_func);
-    #[cfg(feature = "tests-slow")]
+    #[cfg(feature = "tests-very-slow")]
     {
         test_blockhash_contents_multiple_sequences(test_func);
     }
@@ -158,7 +158,7 @@ pub(crate) fn test_blockhash_content_all(test_func: &mut impl FnMut(&[u8], &[u8]
     test_blockhash_content_one_sequence(1u8, test_func);
     test_blockhash_content_division(block_hash::FULL_SIZE, false, test_func);
     test_blockhash_content_division(block_hash::HALF_SIZE, false, test_func);
-    #[cfg(feature = "tests-slow")]
+    #[cfg(feature = "tests-very-slow")]
     {
         test_blockhash_content_multiple_sequences(test_func);
     }
