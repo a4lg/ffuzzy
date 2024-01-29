@@ -11,8 +11,10 @@ use crate::generate::{
 };
 use crate::hash::{FuzzyHashData, RawFuzzyHash};
 use crate::hash::block::{block_size, block_hash};
-use crate::test_utils::{cover_auto_clone, cover_default, test_auto_clone, test_recommended_default};
-use crate::test_utils::test_auto_debug_for_enum;
+use crate::test_utils::{
+    cover_auto_clone, cover_default,
+    test_auto_clone, test_auto_debug_for_enum, test_recommended_default
+};
 
 
 #[test]
