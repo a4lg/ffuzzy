@@ -1365,7 +1365,7 @@ fn data_model_normalized_numeric_windows() {
 fn data_model_normalized_windows_example() {
     // Prerequisites
     assert_eq!(block_hash::MIN_LCS_FOR_COMPARISON, 7);
-    assert!(block_hash::MAX_SEQUENCE_SIZE <= 3);
+    assert!(block_hash::MAX_SEQUENCE_SIZE >= 3);
     // Test some example "3:mG+XtIWRQX:7mYCCCWdq"
     macro_rules! test {($ty: ty) => {
         let typename = stringify!($ty);
