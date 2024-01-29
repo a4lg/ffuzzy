@@ -338,6 +338,68 @@ impl BlockHashContext {
 }
 
 
+/// The all internal data inside the [`Generator`] object.
+///
+/// The intent of this separate struct is to provide access to [`Copy`] and
+/// [`PartialEq`] inside this crate but not outside.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct GeneratorInnerData {
+    /// Processed input size.
+    ///
+    /// This value may be inaccurate if the generator has fed more than the
+    /// maximum *hard* size limit (finalization should fail in that case).
+    input_size: u64,
+
+    /// Optional fixed size set by the
+    /// [`set_fixed_input_size()`](Generator::set_fixed_input_size()) method.
+    fixed_size: Option<u64>,
+
+    /// Border size to consider advancing [`bhidx_start`](Self::bhidx_start)
+    /// (or, to perform a block hash elimination).
+    ///
+    /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
+    elim_border: u64,
+
+    /// Start of the block hash "index" to process.
+    ///
+    /// The "index" is equivalent to the *base-2 logarithm* form
+    /// of the block size.  In [`Generator`], it is used as an actual index
+    /// of [`bh_context`](Self::bh_context).
+    bhidx_start: usize,
+
+    /// End of the block hash "index" to process.
+    ///
+    /// See also: [`bhidx_start`](Self::bhidx_start)
+    bhidx_end: usize,
+
+    /// End of the block hash "index" to process (set by a given fixed size).
+    ///
+    /// See also:
+    ///
+    /// *   [`bhidx_start`](Self::bhidx_start)
+    /// *   [`set_fixed_input_size()`](Generator::set_fixed_input_size())
+    bhidx_end_limit: usize,
+
+    /// Rolling hash mask to prevent piece split matching
+    /// before the index [`bhidx_start`](Self::bhidx_start).
+    ///
+    /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
+    roll_mask: u32,
+
+    /// Global rolling hash to control piece splitting.
+    roll_hash: RollingHash,
+
+    /// Block hash contexts per block size.
+    bh_context: [BlockHashContext; block_size::NUM_VALID],
+
+    /// Effectively a [`BlockHashContext::h_full`] but for the block size
+    /// larger than the biggest valid block size.
+    h_last: PartialFNVHash,
+
+    /// Whether to update [`h_last`](Self::h_last).
+    is_last: bool,
+}
+
 /// Fuzzy hash generator.
 ///
 /// This type generates fuzzy hashes from a given data.
@@ -430,62 +492,7 @@ impl BlockHashContext {
 /// assert_eq!(hash.to_string(), "3:aaX8v:aV");
 /// ```
 #[derive(Debug, Clone)]
-pub struct Generator {
-    /// Processed input size.
-    ///
-    /// This value may be inaccurate if the generator has fed more than the
-    /// maximum *hard* size limit (finalization should fail in that case).
-    input_size: u64,
-
-    /// Optional fixed size set by the
-    /// [`set_fixed_input_size()`](Self::set_fixed_input_size()) method.
-    fixed_size: Option<u64>,
-
-    /// Border size to consider advancing [`bhidx_start`](Self::bhidx_start)
-    /// (or, to perform a block hash elimination).
-    ///
-    /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
-    elim_border: u64,
-
-    /// Start of the block hash "index" to process.
-    ///
-    /// The "index" is equivalent to the *base-2 logarithm* form
-    /// of the block size.  In [`Generator`], it is used as an actual index
-    /// of [`bh_context`](Self::bh_context).
-    bhidx_start: usize,
-
-    /// End of the block hash "index" to process.
-    ///
-    /// See also: [`bhidx_start`](Self::bhidx_start)
-    bhidx_end: usize,
-
-    /// End of the block hash "index" to process (set by a given fixed size).
-    ///
-    /// See also:
-    ///
-    /// *   [`bhidx_start`](Self::bhidx_start)
-    /// *   [`set_fixed_input_size()`](Self::set_fixed_input_size())
-    bhidx_end_limit: usize,
-
-    /// Rolling hash mask to prevent piece split matching
-    /// before the index [`bhidx_start`](Self::bhidx_start).
-    ///
-    /// Directly corresponds to: [`bhidx_start`](Self::bhidx_start).
-    roll_mask: u32,
-
-    /// Global rolling hash to control piece splitting.
-    roll_hash: RollingHash,
-
-    /// Block hash contexts per block size.
-    bh_context: [BlockHashContext; block_size::NUM_VALID],
-
-    /// Effectively a [`BlockHashContext::h_full`] but for the block size
-    /// larger than the biggest valid block size.
-    h_last: PartialFNVHash,
-
-    /// Whether to update [`h_last`](Self::h_last).
-    is_last: bool,
-}
+pub struct Generator(GeneratorInnerData);
 
 /// The error type representing an invalid or an unsupported operation of
 /// [the generator](Generator).
@@ -575,7 +582,7 @@ impl Generator {
 
     /// Creates a new [`Generator`] object.
     pub fn new() -> Self {
-        Generator {
+        Generator(GeneratorInnerData {
             input_size: 0,
             fixed_size: None,
             elim_border: Self::guessed_preferred_max_input_size_at(0),
@@ -587,7 +594,7 @@ impl Generator {
             bh_context: [BlockHashContext::new(); block_size::NUM_VALID],
             h_last:  PartialFNVHash::new(),
             is_last: false
-        }
+        })
     }
 
     /// Performs a partial initialization.
@@ -595,23 +602,23 @@ impl Generator {
     /// It effectively resets the state to the initial one but does not
     /// necessarily reinitialize all internal fields.
     pub fn reset(&mut self) {
-        self.input_size = 0;
-        self.fixed_size = None;
-        self.elim_border = Self::guessed_preferred_max_input_size_at(0);
-        self.bhidx_start = 0;
-        self.bhidx_end   = 1;
-        self.bhidx_end_limit = block_size::NUM_VALID - 1;
-        self.roll_mask = 0;
-        self.roll_hash = RollingHash::new();
-        self.bh_context[0].reset();
+        self.0.input_size = 0;
+        self.0.fixed_size = None;
+        self.0.elim_border = Self::guessed_preferred_max_input_size_at(0);
+        self.0.bhidx_start = 0;
+        self.0.bhidx_end   = 1;
+        self.0.bhidx_end_limit = block_size::NUM_VALID - 1;
+        self.0.roll_mask = 0;
+        self.0.roll_hash = RollingHash::new();
+        self.0.bh_context[0].reset();
         // skip bh_context[1..block_size::NUM_VALID] initialization
         // skip h_last initialization
-        self.is_last = false;
+        self.0.is_last = false;
     }
 
     /// Retrieves the input size fed to the generator object.
     #[inline(always)]
-    pub fn input_size(&self) -> u64 { self.input_size }
+    pub fn input_size(&self) -> u64 { self.0.input_size }
 
     /// Checks whether a ssdeep-compatible client may raise a warning due to
     /// its small input size (less meaningful fuzzy hashes will be generated
@@ -628,7 +635,7 @@ impl Generator {
     /// and before resetting the state.
     #[inline]
     pub fn may_warn_about_small_input_size(&self) -> bool {
-        self.fixed_size.unwrap_or(self.input_size) < Self::MIN_RECOMMENDED_INPUT_SIZE
+        self.0.fixed_size.unwrap_or(self.0.input_size) < Self::MIN_RECOMMENDED_INPUT_SIZE
     }
 
     /// Returns the suitable initial block size (equal to or greater than
@@ -668,13 +675,13 @@ impl Generator {
         if size > Self::MAX_INPUT_SIZE {
             return Err(GeneratorError::FixedSizeTooLarge);
         }
-        if let Some(expected_size) = self.fixed_size {
+        if let Some(expected_size) = self.0.fixed_size {
             if expected_size != size {
                 return Err(GeneratorError::FixedSizeMismatch);
             }
         }
-        self.fixed_size = Some(size);
-        self.bhidx_end_limit = usize::min(
+        self.0.fixed_size = Some(size);
+        self.0.bhidx_end_limit = usize::min(
             block_size::NUM_VALID - 1,
             Self::get_log_block_size_from_input_size(size, 0) + 1
         );
@@ -889,9 +896,9 @@ macro_rules! generator_update_template {
 impl Generator {
     /// Process data, updating the internal state.
     pub fn update(&mut self, buffer: &[u8]) -> &mut Self {
-        self.input_size =
+        self.0.input_size =
             if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
-                self.input_size.saturating_add(size)
+                self.0.input_size.saturating_add(size)
             }
             else {
                 // grcov-excl-start: Only reproduces in 128-bit usize environments.
@@ -899,7 +906,7 @@ impl Generator {
                 // grcov-excl-stop
             };
         // grcov-generator-start
-        generator_update_template!(self, buffer.iter().cloned(), {});
+        generator_update_template!(self.0, buffer.iter().cloned(), {});
         // grcov-generator-stop
         self
     }
@@ -907,8 +914,8 @@ impl Generator {
     /// Process data (an iterator), updating the internal state.
     pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self{
         // grcov-generator-start
-        generator_update_template!(self, iter, {
-            self.input_size = self.input_size.saturating_add(1);
+        generator_update_template!(self.0, iter, {
+            self.0.input_size = self.0.input_size.saturating_add(1);
         });
         // grcov-generator-stop
         self
@@ -916,9 +923,9 @@ impl Generator {
 
     /// Process a byte, updating the internal state.
     pub fn update_by_byte(&mut self, ch: u8) -> &mut Self {
-        self.input_size = self.input_size.saturating_add(1);
+        self.0.input_size = self.0.input_size.saturating_add(1);
         // grcov-generator-start
-        generator_update_template!(self, [ch; 1], {});
+        generator_update_template!(self.0, [ch; 1], {});
         // grcov-generator-stop
         self
     }
@@ -935,7 +942,7 @@ impl Generator {
     /// *   It find a block size so that corresponding block hash is already
     ///     at least [`block_hash::HALF_SIZE`] chars in length
     ///     (one character may be appended on the finalization process) or
-    /// *   It reaches the lower bound ([`bhidx_start`](Self::bhidx_start)).
+    /// *   It reaches the lower bound ([`bhidx_start`](GeneratorInnerData::bhidx_start)).
     ///
     /// The resulting block size and the corresponding block hash are used as:
     ///
@@ -945,17 +952,17 @@ impl Generator {
     /// For the block hash 2 part, the block hash for double block size is used.
     fn guess_output_log_block_size(&self) -> usize {
         let mut log_block_size =
-            Self::get_log_block_size_from_input_size(self.input_size, self.bhidx_start);
-        log_block_size = usize::min(log_block_size, self.bhidx_end - 1);
+            Self::get_log_block_size_from_input_size(self.0.input_size, self.0.bhidx_start);
+        log_block_size = usize::min(log_block_size, self.0.bhidx_end - 1);
         optionally_unsafe! {
-            invariant!(log_block_size < self.bh_context.len());
+            invariant!(log_block_size < self.0.bh_context.len());
         }
-        while log_block_size > self.bhidx_start
-            && self.bh_context[log_block_size].blockhash_index < block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
+        while log_block_size > self.0.bhidx_start
+            && self.0.bh_context[log_block_size].blockhash_index < block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
         {
             log_block_size -= 1;
             optionally_unsafe! {
-                invariant!(log_block_size < self.bh_context.len());
+                invariant!(log_block_size < self.0.bh_context.len());
             }
         }
         log_block_size
@@ -971,23 +978,23 @@ impl Generator {
         BlockHashSize<S2>: ConstrainedBlockHashSize,
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
-        if let Some(input_size) = self.fixed_size {
-            if input_size != self.input_size {
+        if let Some(input_size) = self.0.fixed_size {
+            if input_size != self.0.input_size {
                 return Err(GeneratorError::FixedSizeMismatch);
             }
         }
-        if Self::MAX_INPUT_SIZE < self.input_size {
+        if Self::MAX_INPUT_SIZE < self.0.input_size {
             return Err(GeneratorError::InputSizeTooLarge);
         }
         let log_block_size = self.guess_output_log_block_size();
         let mut fuzzy: fuzzy_raw_type!(S1, S2) = FuzzyHashData::new();
         fuzzy.log_blocksize = log_block_size as u8;
         // Copy block hash 1
-        let roll_value = self.roll_hash.value();
+        let roll_value = self.0.roll_hash.value();
         optionally_unsafe! {
-            invariant!(log_block_size < self.bh_context.len());
+            invariant!(log_block_size < self.0.bh_context.len());
         }
-        let bh_0 = &self.bh_context[log_block_size]; // grcov-excl-br-line:ARRAY
+        let bh_0 = &self.0.bh_context[log_block_size]; // grcov-excl-br-line:ARRAY
         {
             let mut sz = bh_0.blockhash_index;
             if bh_0.blockhash[block_hash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
@@ -1013,12 +1020,12 @@ impl Generator {
             }
         }
         // Copy block hash 2 or adjust block hashes.
-        if log_block_size < self.bhidx_end - 1 {
+        if log_block_size < self.0.bhidx_end - 1 {
             // Copy block hash 2 (normal path)
             optionally_unsafe! {
-                invariant!(log_block_size + 1 < self.bh_context.len());
+                invariant!(log_block_size + 1 < self.0.bh_context.len());
             }
-            let bh_1 = &self.bh_context[log_block_size + 1]; // grcov-excl-br-line:ARRAY
+            let bh_1 = &self.0.bh_context[log_block_size + 1]; // grcov-excl-br-line:ARRAY
             if truncate {
                 let mut sz = bh_1.blockhash_index;
                 if bh_1.blockhash_ch_half != BLOCKHASH_CHAR_NIL {
@@ -1106,7 +1113,7 @@ impl Generator {
                 // We need to handle block hash 2 for the largest valid block
                 // size specially because effective block size of the block hash
                 // 2 is not valid (and no regular pieces are available).
-                fuzzy.blockhash2[0] = self.h_last.value(); // grcov-excl-br-line:ARRAY
+                fuzzy.blockhash2[0] = self.0.h_last.value(); // grcov-excl-br-line:ARRAY
                 fuzzy.len_blockhash2 = 1;
             }
         }

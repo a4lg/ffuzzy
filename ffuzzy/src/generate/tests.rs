@@ -641,7 +641,7 @@ fn impl_debug() {
     assert_eq!(
         format!("{:?}", Generator::new()),
         format!(
-            "Generator {{ \
+            "Generator(GeneratorInnerData {{ \
                 input_size: 0, \
                 fixed_size: None, \
                 elim_border: 192, \
@@ -653,7 +653,7 @@ fn impl_debug() {
                 bh_context: [{2}], \
                 h_last: {1}, \
                 is_last: false \
-            }}",
+            }})",
             EXPECTED_DEBUG_INITIAL_ROLLING_HASH,
             EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH,
             str_bh_contexts
@@ -882,7 +882,7 @@ fn large_data_triggers() {
         }
     }
     assert_eq!(
-        generator_orig.input_size,
+        generator_orig.0.input_size,
         96 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
     );
 
@@ -926,7 +926,7 @@ fn large_data_triggers() {
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024), "failed on last_method={}", last_method);
+        assert_eq!(generator.0.input_size, 96 * (1024 * 1024 * 1024), "failed on last_method={}", last_method);
         let hash_expected_long: LongRawFuzzyHash = str::parse(
             "1610612736\
                 :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
@@ -960,7 +960,7 @@ fn large_data_triggers() {
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
-        assert_eq!(generator.input_size, 96 * (1024 * 1024 * 1024) + 1, "failed on last_method={}", last_method);
+        assert_eq!(generator.0.input_size, 96 * (1024 * 1024 * 1024) + 1, "failed on last_method={}", last_method);
         assert!(!generator.may_warn_about_small_input_size(), "failed on last_method={}", last_method);
         macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
             let trunc = $trunc;
@@ -999,14 +999,14 @@ fn large_data_triggers() {
         }
     }
     assert_eq!(
-        generator_orig.input_size,
+        generator_orig.0.input_size,
         192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024)
     );
     // Append 1 zero byte (now 192GiB-1MiB+1)
     let mut generator_base = generator_orig.clone();
     generator_base.update_by_byte(0);
     assert_eq!(
-        generator_base.input_size,
+        generator_base.0.input_size,
         192 * (1024 * 1024 * 1024) - 1 * (1024 * 1024) + 1
     );
     // Append 1MiB of zeroes:
@@ -1026,7 +1026,7 @@ fn large_data_triggers() {
     // Check all generators
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
-        assert!(generator.input_size > Generator::MAX_INPUT_SIZE, "failed on last_method={}", last_method);
+        assert!(generator.0.input_size > Generator::MAX_INPUT_SIZE, "failed on last_method={}", last_method);
         macro_rules! test {($trunc: expr, $bh1sz: expr, $bh2sz: expr) => {
             let trunc = $trunc;
             let bh1sz = $bh1sz;
