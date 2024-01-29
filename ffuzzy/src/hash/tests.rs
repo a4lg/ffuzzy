@@ -910,11 +910,10 @@ fn data_model_block_hash_contents_and_string_conversion() {
                                     let hash_alt: $ty = str::parse::<$ty>(bytes_str).unwrap();
                                     assert_eq!(hash, hash_alt, "failed ({}-3-1-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     assert!(hash.full_eq(&hash_alt), "failed ({}-3-1-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
-                                    // to_string and String::from matches.
-                                    let s1 = hash.to_string();
-                                    let s2 = alloc::string::String::from(hash);
-                                    assert_eq!(s1, s2, "failed ({}-3-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
-                                    let s = s1;
+                                    // to_string, String::from and Display matches.
+                                    let s = hash.to_string();
+                                    assert_eq!(s, alloc::string::String::from(hash), "failed ({}-3-2-1) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
+                                    assert_eq!(s, format!("{}", hash), "failed ({}-3-2-2) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     // String matches to the bytes expected.
                                     assert_eq!(s.len(), hash.len_in_str(), "failed ({}-3-3) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
                                     assert_eq!(bytes_expected, s.as_bytes(), "failed ({}-3-4) on bh1sz={}, bh2sz={}, bytes_str={:?}", test_num, bh1sz, bh2sz, bytes_str);
