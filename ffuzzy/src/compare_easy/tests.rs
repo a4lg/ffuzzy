@@ -56,7 +56,7 @@ fn parse_error_either_basic_and_impls() {
 
 #[test]
 fn parse_error_either_impls_display_and_debug_with_side() {
-    for (err, err_str_display, err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
+    for &(err, err_str_display, err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
         // Test Display
         assert_eq!(
             format!("{}", ParseErrorEither(ParseErrorSide::Left, err)),
@@ -85,7 +85,7 @@ fn parse_error_either_impls_display_and_debug_with_side() {
 #[cfg(any(feature = "std", feature = "nightly"))]
 #[test]
 fn parse_error_either_source_with_side() {
-    for (err, _err_str_display, _err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
+    for &(err, _err_str_display, _err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {
         // Test source error
         assert_eq!(
             *ParseErrorEither(ParseErrorSide::Left, err).source().unwrap().downcast_ref::<ParseError>().unwrap(),
