@@ -295,7 +295,7 @@ const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 /// Block hash context.
 ///
 /// All operations are performed in [`Generator`] except initialization.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct BlockHashContext {
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
