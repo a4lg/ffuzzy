@@ -44,6 +44,7 @@
 #![cfg_attr(test, allow(clippy::erasing_op))]
 // Tests: true || x should be allowed.
 #![cfg_attr(test, allow(clippy::overly_complex_bool_expr))]
+#![cfg_attr(test, allow(clippy::logic_bug))]
 // Tests: false || x should be allowed.
 #![cfg_attr(test, allow(clippy::nonminimal_bool))]
 // Tests: currently allowed on Rust 1.69 (stable as of this writing)
