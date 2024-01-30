@@ -67,7 +67,7 @@ fn hash_file_too_large() {
     fn test_body_ignore_os_errors() -> Result<(), std::io::Error> {
         use std::io::{Seek, SeekFrom, Write};
         use std::os::fd::AsRawFd;
-        let tmpfile = temp_file::TempFile::new()?;
+        let tmpfile = tempfile::NamedTempFile::new()?;
         let mut file = std::fs::OpenOptions::new().read(true).write(true).open(tmpfile.path())?;
         const SPARSE_INITIAL_SIZE: u64 = 1024 * 1024;
         file.seek(SeekFrom::Start(SPARSE_INITIAL_SIZE - 1))?;

@@ -28,7 +28,7 @@ itertools = "0.12.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.152"
-temp-file = "0.1.8"
+tempfile = "=3.6.0"  # Keep MSRV <= 1.56
 
 [build-dependencies]
 version_check = "0.9"
