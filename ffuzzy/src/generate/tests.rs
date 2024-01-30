@@ -9,7 +9,7 @@ use crate::generate::{
     PartialFNVHash, RollingHash, BlockHashContext,
     Generator, GeneratorError
 };
-use crate::hash::{FuzzyHashData, RawFuzzyHash};
+use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{
     block_hash, block_size,
     BlockHashSize as BHS, BlockHashSizes as BHSs,
@@ -37,7 +37,6 @@ fn partial_fnv_hash_initial_state() {
 #[test]
 fn partial_fnv_hash_table_contents() {
     use crate::generate::fnv_table::{FNV_HASH_PRIME, FNV_TABLE};
-    use crate::test_utils::assert_fits_in;
     assert_fits_in!(block_hash::ALPHABET_SIZE, u8);
     #[inline(always)]
     fn naive_impl(state: u8, ch: u8) -> u8 {
@@ -947,7 +946,6 @@ fn large_data_triggers_1() {
     // Check all generators (for comparison; without the last byte)
     for (i, &generator) in [&generator1, &generator2, &generator3].iter().enumerate() {
         let last_method = LAST_USED_METHODS[i];
-        use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
         assert_eq!(generator.0.input_size, 96 * (1024 * 1024 * 1024), "failed on last_method={}", last_method);
         let hash_expected_long: LongRawFuzzyHash = str::parse("1610612736:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii").unwrap();
         let hash_expected_short: RawFuzzyHash = str::parse("1610612736:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC").unwrap();
@@ -1034,7 +1032,6 @@ fn verify_with_small_precomputed_vectors() {
     use std::vec::Vec;
     #[cfg(not(feature = "alloc"))]
     use std::string::ToString;
-    use crate::hash::LongRawFuzzyHash;
 
     let index = BufReader::new(
         File::open("data/testsuite/generate-small.ssdeep.txt").unwrap()
