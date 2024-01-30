@@ -918,7 +918,7 @@ fn test_make_generator_with_prefix_zeroes() {
 
 #[test]
 fn large_data_triggers_1() {
-    const LAST_USED_METHODS: [&str; 3] = ["update", "update_by_iter", "update_by_byte"];
+    const LAST_USED_METHODS: &[&str] = &["update", "update_by_iter", "update_by_byte"];
     /*
         This test triggers "last hash" (FNV-based) output on the generator.
 
@@ -1011,7 +1011,7 @@ fn large_data_triggers_1() {
 
 #[test]
 fn large_data_triggers_2() {
-    const LAST_USED_METHODS: [&str; 3] = ["update", "update_by_iter", "update_by_byte"];
+    const LAST_USED_METHODS: &[&str] = &["update", "update_by_iter", "update_by_byte"];
     /*
         This test triggers "input too large error" by all-zero bytes.
 
