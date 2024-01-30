@@ -26,7 +26,7 @@ static_assertions = "1.1.0"
 collect_slice = "1.2.0"
 itertools = "0.12.1"
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(unix)'.dev-dependencies]
 libc = "0.2.152"
 tempfile = "=3.6.0"  # Keep MSRV <= 1.56
 
