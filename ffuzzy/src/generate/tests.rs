@@ -949,16 +949,8 @@ fn large_data_triggers_1() {
         let last_method = LAST_USED_METHODS[i];
         use crate::hash::{RawFuzzyHash, LongRawFuzzyHash};
         assert_eq!(generator.0.input_size, 96 * (1024 * 1024 * 1024), "failed on last_method={}", last_method);
-        let hash_expected_long: LongRawFuzzyHash = str::parse(
-            "1610612736\
-                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
-                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
-        ).unwrap();
-        let hash_expected_short: RawFuzzyHash = str::parse(
-            "1610612736\
-                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\
-                :iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC"
-        ).unwrap();
+        let hash_expected_long: LongRawFuzzyHash = str::parse("1610612736:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii").unwrap();
+        let hash_expected_short: RawFuzzyHash = str::parse("1610612736:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiC").unwrap();
         let hash_expected_short_as_long = hash_expected_short.to_long_form();
         assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>().unwrap(), hash_expected_long, "failed on last_method={}", last_method);
         assert_eq!(generator.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>(), Err(GeneratorError::OutputOverflow), "failed on last_method={}", last_method);
@@ -1057,9 +1049,7 @@ fn verify_with_small_precomputed_vectors() {
             continue;
         }
         let tokens: Vec<&str> = index_ln.split_whitespace().collect();
-        assert!(tokens.len() == 3,
-            "failed while processing the test index file with line {:?}",
-            index_ln);
+        assert!(tokens.len() == 3, "failed while processing the test index file with line {:?}", index_ln);
         // $1: filename
         let filename = tokens[0];
         // $2: flags (truncated or non-truncated, or check both)
@@ -1110,14 +1100,10 @@ fn verify_with_small_precomputed_vectors() {
                         fuzzy_generated.normalize_in_place();
                         fuzzy_generated_trunc.normalize_in_place();
                     }
-                    assert_eq!(*fuzzy_expected, fuzzy_generated,
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
-                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
-                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
-                    assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected, fuzzy_generated, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(), "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(), "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                 }
                 generator.reset();
                 generator.update(contents.as_slice());
@@ -1139,10 +1125,8 @@ fn verify_with_small_precomputed_vectors() {
             let is_long = fuzzy_expected.block_hash_2().len() > block_hash::HALF_SIZE;
             let mut fuzzy_expected_trunc: RawFuzzyHash = RawFuzzyHash::new();
             match fuzzy_expected.try_into_mut_short(&mut fuzzy_expected_trunc) {
-                Ok(_)  => assert!(!is_long,
-                    "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),
-                Err(_) => assert!(is_long,
-                    "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),  // Consider truncation error.
+                Ok(_)  => assert!(!is_long, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),
+                Err(_) => assert!( is_long, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str),  // Consider truncation error.
             }
             // Test three ways to generate fuzzy hashes
             {
@@ -1161,14 +1145,12 @@ fn verify_with_small_precomputed_vectors() {
                     let mut fuzzy_generated_trunc: RawFuzzyHash = match generator
                         .finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>() {
                             Ok(h) => {
-                                assert!(!is_long,
-                                    "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                                assert!(!is_long, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 h
                             },
                             Err(_) => {
                                 // Consider truncation error.
-                                assert!(is_long || (flags & TEST_WASLONG) != 0,
-                                    "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                                assert!(is_long || (flags & TEST_WASLONG) != 0, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                                 if is_long {
                                     RawFuzzyHash::new()
                                 }
@@ -1181,15 +1163,11 @@ fn verify_with_small_precomputed_vectors() {
                         fuzzy_generated.normalize_in_place();
                         fuzzy_generated_trunc.normalize_in_place();
                     }
-                    assert_eq!(*fuzzy_expected, fuzzy_generated,
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
-                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc,
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
-                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(),
-                        "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected, fuzzy_generated, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(*fuzzy_expected_trunc, fuzzy_generated_trunc, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                    assert_eq!(fuzzy_str, fuzzy_generated.to_string(), "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     if !is_long {
-                        assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(),
-                            "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
+                        assert_eq!(fuzzy_str, fuzzy_generated_trunc.to_string(), "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                     }
                 }
                 generator.reset();
