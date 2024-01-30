@@ -27,7 +27,9 @@ dependencies = [
  "cfg-if",
  "collect_slice",
  "itertools",
+ "libc",
  "static_assertions",
+ "temp-file",
  "version_check",
 ]
 
@@ -41,10 +43,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "libc"
+version = "0.2.152"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "temp-file"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f210bda61d003f311d95611d1b68361df8fe8e732c3609f945441bde881321d"
 
 [[package]]
 name = "version_check"

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // grcov-excl-br-start
 
 #![cfg(test)]
@@ -59,6 +59,50 @@ fn hash_file_not_exist() {
         panic!("the error must be an IOError");
         // grcov-excl-stop
     }
+}
+
+#[cfg(unix)]
+#[test]
+fn hash_file_too_large() {
+    fn test_body_ignore_os_errors() -> Result<(), std::io::Error> {
+        use std::io::{Seek, SeekFrom, Write};
+        use std::os::fd::AsRawFd;
+        let tmpfile = temp_file::TempFile::new()?;
+        let mut file = std::fs::OpenOptions::new().read(true).write(true).open(tmpfile.path())?;
+        const SPARSE_INITIAL_SIZE: u64 = 1024 * 1024;
+        file.seek(SeekFrom::Start(SPARSE_INITIAL_SIZE - 1))?;
+        file.write_all(&[1])?;
+        file.seek(SeekFrom::Start(0))?;
+        // Check if sparse file is supported
+        unsafe {
+            let fd = file.as_raw_fd();
+            let ret = libc::lseek(fd, 0, libc::SEEK_HOLE);
+            if ret == -1 {
+                // Either SEEK_HOLE is not supported or
+                // Solaris behavior of "no hole" but not limited to it.
+                return Ok(());
+            }
+            if ret == SPARSE_INITIAL_SIZE as i64 {
+                // This FS probably does not support sparse files
+                // (even if it does, the minimum hole size is too large to detect).
+                return Ok(());
+            }
+            let ret = libc::lseek(fd, 0, libc::SEEK_SET);
+            if ret != 0 {
+                // An attempt to keep in sync with the Rust's File object is failed.
+                return Ok(());
+            }
+            // Now: sparse files are considered supported.
+        }
+        // Make a file with the size Generator::MAX_INPUT_SIZE + 1.
+        file.seek(SeekFrom::Start(Generator::MAX_INPUT_SIZE))?;
+        file.write_all(&[1])?;
+        drop(file);
+        // hash_file should fail with the FixedSizeTooLarge generator error.
+        assert!(matches!(hash_file(tmpfile.path()), Err(GeneratorOrIOError::GeneratorError(GeneratorError::FixedSizeTooLarge))));
+        Ok(())
+    }
+    let _ = test_body_ignore_os_errors();
 }
 
 #[test]
