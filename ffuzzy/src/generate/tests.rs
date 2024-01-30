@@ -1021,9 +1021,9 @@ fn large_data_triggers_2() {
         SHA-256 of the generator input:
         e613117320077150ddb32b33c2e8aaeaa63e9590a656c5aba04a91fa47d1c1b5
     */
-    // Feed zero bytes until it reaches 192GiB-1.
+    // Feed zero bytes until it reaches 192GiB-1B.
     let generator_base = make_generator_with_prefix_zeroes(192 * 1024 * 1024 * 1024 - 1);
-    // Append two zeroes:
+    // Append two zero bytes:
     // Use update
     let mut generator1 = generator_base.clone();
     generator1.update(&[0, 0]);
