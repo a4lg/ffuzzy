@@ -864,8 +864,10 @@ fn length_mismatches() {
 }
 
 
-// After processing specified count of zero bytes from the initial state,
-// the resulting state is now back to the initial one.
+// After processing specified count of zero bytes from the initial state of
+// `PartialFNVHash`, the resulting state is now back to the original one.
+// Note that this will not apply to full FNV-1 hash (only applies to the
+// lowest 6 bits and with a ssdeep-specific initial state).
 const FNV_HASH_ZERO_DATA_PERIOD: u64 = 16;
 
 #[test]
