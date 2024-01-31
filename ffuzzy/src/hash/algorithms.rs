@@ -311,8 +311,8 @@ where
             }
             j += 1;
         }
+        pre_ret_1!();
+        pre_ret_2!();
+        ret!(BlockHashParseState::MetEndOfString);
     }
-    pre_ret_1!();
-    pre_ret_2!();
-    ret!(BlockHashParseState::MetEndOfString);
 }
