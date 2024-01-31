@@ -84,19 +84,22 @@ where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
     if verify {
-        let mut seq: usize = 0;
-        let mut prev = BASE64_INVALID;
-        for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
-            let curr: u8 = *ch;
-            if *ch == prev {
-                seq += 1;
-                if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                    return false;
+        optionally_unsafe! {
+            let mut seq: usize = 0;
+            let mut prev = BASE64_INVALID;
+            invariant!((blockhash_len as usize) <= N);
+            for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
+                let curr: u8 = *ch;
+                if *ch == prev {
+                    seq += 1;
+                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                        return false;
+                    }
                 }
-            }
-            else {
-                seq = 0;
-                prev = curr;
+                else {
+                    seq = 0;
+                    prev = curr;
+                }
             }
         }
     }
