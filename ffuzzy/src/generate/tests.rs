@@ -591,7 +591,7 @@ fn block_hash_context_impl_debug() {
 
 
 macro_rules! call_for_generator_finalization {
-    { $test: ident ($($tokens:tt)*) } => {
+    { $test: ident ($($tokens:tt)*) ; } => {
         $test::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<true,  {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>($($tokens)*);
@@ -680,7 +680,7 @@ fn empty_data() {
         assert!(hash.block_hash_1().is_empty(), "failed on typename={:?}, truncate={}", typename, truncate);
         assert!(hash.block_hash_2().is_empty(), "failed on typename={:?}, truncate={}", typename, truncate);
     }
-    call_for_generator_finalization! { test_body(&generator) }
+    call_for_generator_finalization! { test_body(&generator); }
 }
 
 #[test]
@@ -822,7 +822,7 @@ fn length_mismatches() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    call_for_generator_finalization! { test_generator_fixed_size_mismatch(&generator) }
+    call_for_generator_finalization! { test_generator_fixed_size_mismatch(&generator); }
 
     // Use update (and use the correct size)
     generator.reset();
@@ -842,7 +842,7 @@ fn length_mismatches() {
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs on finalization.
     assert_eq!(generator.finalize(), Err(GeneratorError::FixedSizeMismatch));
-    call_for_generator_finalization! { test_generator_fixed_size_mismatch(&generator) }
+    call_for_generator_finalization! { test_generator_fixed_size_mismatch(&generator); }
 
     // Use update_by_iter (and use the correct size)
     generator.reset();
@@ -981,7 +981,7 @@ fn large_data_triggers_1() {
             let hash_expected = str::parse::<FuzzyHashData<S1, S2, false>>("3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k").unwrap();
             assert_eq!(generator.finalize_raw::<TRUNC, S1, S2>(), Ok(hash_expected), "failed on typename={:?}, truncate={}, last_method={}", typename, truncate, last_method);
         }
-        call_for_generator_finalization! { test_body(&generator, last_method) }
+        call_for_generator_finalization! { test_body(&generator, last_method); }
     }
 }
 
@@ -1021,7 +1021,7 @@ fn large_data_triggers_2() {
             let typename = core::any::type_name::<FuzzyHashData<S1, S2, false>>();
             assert_eq!(generator.finalize_raw::<TRUNC, S1, S2>(), Err(GeneratorError::InputSizeTooLarge), "failed on typename={:?}, truncate={}, last_method={}", typename, truncate, last_method);
         }
-        call_for_generator_finalization! { test_body(&generator, last_method) }
+        call_for_generator_finalization! { test_body(&generator, last_method); }
     }
 }
 

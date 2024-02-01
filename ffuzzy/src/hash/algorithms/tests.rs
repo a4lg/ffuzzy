@@ -22,7 +22,7 @@ use crate::hash::test_utils::test_blockhash_content_all;
 
 
 macro_rules! call_for_block_hash_sizes {
-    { $test: ident ($($tokens:tt)*) } => {
+    { $test: ident ($($tokens:tt)*) ; } => {
         $test::<{block_hash::HALF_SIZE}>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}>($($tokens)*);
     };
@@ -41,7 +41,7 @@ fn test_normalize_block_hash_in_place() {
         assert_eq!(&buffer[..bh_norm.len()], bh_norm, "failed on bhsz={}, bh={:?}", bhsz, bh);
         assert!(buffer[bh_norm.len()..].iter().all(|&x| x == 0), "failed on bhsz={}, bh={:?}", bhsz, bh);
     }
-    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm) } });
+    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm); } });
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn test_is_block_hash_normalized() {
         let len = bh.len() as u8;
         assert_eq!(is_block_hash_normalized_internal(&buffer, len, true), bh == bh_norm, "failed on bhsz={}, bh={:?}", bhsz, bh);
     }
-    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm) } });
+    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm); } });
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn insert_block_hash_into_bytes_contents() {
         verify_block_hash(bh);
         verify_block_hash(bh_norm);
     }
-    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm) } });
+    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm); } });
 }
 
 #[test]
@@ -237,7 +237,7 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             }
         }
     }
-    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm) } });
+    test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm); } });
 }
 
 #[allow(clippy::type_complexity)]
@@ -410,5 +410,5 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
             test_overflow::<N, false>(overflow_size, &str_buffer, &expected_buffer);
         }
     }
-    call_for_block_hash_sizes! { test_body() }
+    call_for_block_hash_sizes! { test_body(); }
 }

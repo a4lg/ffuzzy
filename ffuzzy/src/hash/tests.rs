@@ -31,7 +31,7 @@ use crate::test_utils::test_auto_debug_for_enum;
 
 
 macro_rules! call_for_fuzzy_hash_type {
-    { $test: ident ($($tokens:tt)*) } => {
+    { $test: ident ($($tokens:tt)*) ; } => {
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE},  true>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, false>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE},  true>($($tokens)*);
@@ -40,7 +40,7 @@ macro_rules! call_for_fuzzy_hash_type {
 }
 
 macro_rules! call_for_fuzzy_hash_sizes {
-    { $test: ident ($($tokens:tt)*) } => {
+    { $test: ident ($($tokens:tt)*) ; } => {
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>($($tokens)*);
     };
@@ -57,8 +57,8 @@ fn check_call_for_fuzzy_hash_type_and_sizes() {
     fn test_body_for_sizes<const S1: usize, const S2: usize>(params: &mut HashSet<(usize, usize)>) {
         assert!(params.insert((S1, S2)));
     }
-    call_for_fuzzy_hash_type!  { test_body_for_type(&mut params_type) };
-    call_for_fuzzy_hash_sizes! { test_body_for_sizes(&mut params_sizes) };
+    call_for_fuzzy_hash_type!  { test_body_for_type(&mut params_type); }
+    call_for_fuzzy_hash_sizes! { test_body_for_sizes(&mut params_sizes); }
     // Make sure that all possible combinations are tested.
     for &s1 in &[block_hash::FULL_SIZE] {
         for &s2 in &[block_hash::HALF_SIZE, block_hash::FULL_SIZE] {
@@ -109,7 +109,7 @@ fn data_model_new() {
             assert!(h.full_eq(hash0), "failed ({}) on typename={:?}", test_num, typename);
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -256,7 +256,7 @@ fn data_model_init_and_basic() {
         }
     }
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm); }
     });
 }
 
@@ -423,7 +423,7 @@ fn data_model_block_hash_contents_basic() {
         }
     }
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm); }
     });
 }
 
@@ -726,7 +726,7 @@ fn data_model_block_hash_contents_and_normalization() {
         }
     }
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm); }
     });
 }
 
@@ -824,7 +824,7 @@ fn data_model_block_hash_contents_and_string_conversion() {
         }
     }
     test_blockhash_contents_all(&mut |bh1, bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1, bh2, bh1_norm, bh2_norm); }
     });
 }
 
@@ -896,7 +896,7 @@ fn data_model_block_size() {
             }
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1005,7 +1005,7 @@ fn data_model_corruption_common() {
             }
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 #[test]
@@ -1037,7 +1037,7 @@ fn data_model_corruption_normalization() {
             check_validness_and_debug(hash);
         }
     }
-    call_for_fuzzy_hash_sizes! { test_body() };
+    call_for_fuzzy_hash_sizes! { test_body(); }
 }
 
 #[test]
@@ -1072,7 +1072,7 @@ fn data_model_eq_and_full_eq() {
         assert!(!hash_corrupted_1.full_eq(&hash_corrupted_2), "failed on typename={:?}", typename);
         assert!(!hash_corrupted_2.full_eq(&hash_corrupted_1), "failed on typename={:?}", typename);
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1107,7 +1107,7 @@ fn data_model_normalized_windows() {
         }
     }
     test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1_norm, bh2_norm); }
     });
 }
 
@@ -1137,7 +1137,7 @@ fn data_model_normalized_numeric_windows() {
         }
     }
     test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {
-        call_for_fuzzy_hash_sizes! { test_body(bh1_norm, bh2_norm) };
+        call_for_fuzzy_hash_sizes! { test_body(bh1_norm, bh2_norm); }
     });
 }
 
@@ -1286,7 +1286,7 @@ fn parse_patterns() {
             assert_eq!(str::parse::<FuzzyHashData<S1, S2, NORM>>(hash_str).map(|_| ()), err, "failed on typename={:?}, hash_str={:?}", typename, hash_str);
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1487,7 +1487,7 @@ fn parsed_block_size() {
             assert_eq!(hash.block_size(), bs, "failed on typename={:?}, log_block_size={}", typename, log_block_size);
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1509,7 +1509,7 @@ fn parsed_data_example() {
         assert_eq!(hash.block_hash_1(), [0, 1, 2, 3], "failed on typename={:?}", typename);
         assert_eq!(hash.block_hash_2(), [26, 27, 28, 29, 30], "failed on typename={:?}", typename);
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1528,7 +1528,7 @@ fn normalization_examples() {
         assert_eq!(str::parse::<FuzzyHashData<S1, S2, NORM>>(NORM1).unwrap().to_string(), NORM1, "failed on typename={:?}", typename);
         assert_eq!(str::parse::<FuzzyHashData<S1, S2, NORM>>(NORM0).unwrap().to_string(), norm0, "failed on typename={:?}", typename);
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1542,7 +1542,7 @@ fn cover_hash() {
         assert!( hashes.insert(FuzzyHashData::<S1, S2, NORM>::new()), "failed on typename={:?}", typename);
         assert!(!hashes.insert(FuzzyHashData::<S1, S2, NORM>::new()), "failed on typename={:?}", typename);
     }
-    call_for_fuzzy_hash_type! { coverage_body() };
+    call_for_fuzzy_hash_type! { coverage_body(); }
 }
 
 
@@ -1594,7 +1594,7 @@ fn ord_and_sorting() {
         hashes.sort();
         assert_eq!(hashes, cloned, "failed on typename={:?}", typename);
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 #[test]
@@ -1656,7 +1656,7 @@ fn ord_by_block_size_examples() {
             assert_eq!(hashes[index].to_string(), STRS_SORTED_BLOCK_SIZE[index], "failed on typename={:?}, index={}", typename, index);
         }
     }
-    call_for_fuzzy_hash_type! { test_body() };
+    call_for_fuzzy_hash_type! { test_body(); }
 }
 
 
@@ -1749,7 +1749,7 @@ fn compare_fuzzy_hash_data_examples_eq() {
             assert_eq!(h_b.compare(h_a), 85, "failed on typename={:?}", typename);
         }
     }
-    call_for_fuzzy_hash_sizes! { test_body() };
+    call_for_fuzzy_hash_sizes! { test_body(); }
 }
 
 #[test]
@@ -1794,5 +1794,5 @@ fn compare_fuzzy_hash_data_examples_eq_near_but_not_eq() {
             assert_eq!(h_c.compare(h_b), 88, "failed on typename={:?}", typename);
         }
     }
-    call_for_fuzzy_hash_sizes! { test_body() };
+    call_for_fuzzy_hash_sizes! { test_body(); }
 }
