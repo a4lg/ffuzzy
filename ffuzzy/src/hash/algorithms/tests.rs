@@ -202,14 +202,14 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                         |_, _| {}
                     ),
                     expected_state,
-                    "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}, ch={:?}", norm, bhsz, bh, insert_offset, ch
+                    "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch
                 );
-                assert_eq!(&buffer, expected_buffer, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}, ch={:?}", norm, bhsz, bh, insert_offset, ch);
+                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
                 // len_out reflects normalization (if enabled), even on error.
-                assert_eq!(len_out as usize, expected_len, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}, ch={:?}", norm, bhsz, bh, insert_offset, ch);
+                assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
                 // input_offset is updated to the end of the string.
                 let expected_offset = insert_offset + bh.len() + (if is_err { 0 } else { 1 });
-                assert_eq!(input_offset, expected_offset, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}, ch={:?}", norm, bhsz, bh, insert_offset, ch);
+                assert_eq!(input_offset, expected_offset, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
             }
             for &(expected_state, ch, is_err) in &[
                 (BlockHashParseState::MetColon, b':', false),
