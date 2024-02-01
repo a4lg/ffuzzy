@@ -240,7 +240,7 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
 ///
 /// 1.  The offset in the *normalized* block hash
 ///     (the first character of consecutive characters that are shortened).
-/// 2.  The length of the original consecutive characters
+/// 2.  The length of the *original* consecutive characters
 ///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
 pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
