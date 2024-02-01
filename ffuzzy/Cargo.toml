@@ -27,7 +27,7 @@ collect_slice = "1.2.0"
 itertools = "0.12.1"
 
 [target.'cfg(unix)'.dev-dependencies]
-libc = "0.2.152"
+libc = "0.2.153"
 tempfile = "=3.6.0"  # Keep MSRV <= 1.56
 
 [build-dependencies]
