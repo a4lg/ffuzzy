@@ -313,6 +313,18 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             BlockHashParseState::MetEndOfString, 32, 3
         ),
         (
+            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"[..],
+            &vec![(0, 32)],
+            [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetColon, 33, 3
+        ),
+        (
+            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,"[..],
+            &vec![(0, 32)],
+            [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            BlockHashParseState::MetComma, 33, 3
+        ),
+        (
             // This sample may fail in the future!
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
             &vec![(0, 64)],
