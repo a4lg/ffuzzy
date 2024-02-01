@@ -140,6 +140,19 @@ fn parse_block_size_from_bytes_overflow_on_block_size() {
     assert_eq!(offset, usize::MAX); // offset is not touched on error
 }
 
+// Common function for better coverage report
+fn parse_block_hash_from_bytes_common<const N: usize, const NORM: bool>(
+    blockhash: &mut [u8; N],
+    blockhash_len: &mut u8,
+    bytes: &[u8],
+    i: &mut usize
+) -> BlockHashParseState
+where
+    BHS<N>: CBHS,
+{
+    parse_block_hash_from_bytes::<_, N, NORM>(blockhash, blockhash_len, bytes, i, |_, _| {})
+}
+
 #[test]
 fn parse_block_hash_from_bytes_states_and_normalization() {
     fn test_body<const N: usize>(bh: &[u8], bh_norm: &[u8]) where BHS<N>: CBHS {
@@ -162,12 +175,11 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                 let mut buffer = [u8::MAX; N];
                 let mut input_offset = insert_offset;
                 assert_eq!(
-                    parse_block_hash_from_bytes::<_, N, NORM>(
+                    parse_block_hash_from_bytes_common::<N, NORM>(
                         &mut buffer,
                         &mut len_out,
                         bh_str,
-                        &mut input_offset,
-                        |_, _| {}
+                        &mut input_offset
                     ),
                     BlockHashParseState::MetEndOfString,
                     "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset
@@ -194,12 +206,11 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                 let mut buffer = [u8::MAX; N];
                 let mut input_offset = insert_offset;
                 assert_eq!(
-                    parse_block_hash_from_bytes::<_, N, NORM>(
+                    parse_block_hash_from_bytes_common::<N, NORM>(
                         &mut buffer,
                         &mut len_out,
                         bh_str,
-                        &mut input_offset,
-                        |_, _| {}
+                        &mut input_offset
                     ),
                     expected_state,
                     "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch
@@ -384,12 +395,11 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                 let mut offset: usize = 0;
                 let mut buffer: [u8; N] = [u8::MAX; N];
                 assert_eq!(
-                    parse_block_hash_from_bytes::<_, N, NORM>(
+                    parse_block_hash_from_bytes_common::<N, NORM>(
                         &mut buffer,
                         &mut len,
                         &str_buffer[..corrupt_size],
-                        &mut offset,
-                        |_, _| {}
+                        &mut offset
                     ),
                     BlockHashParseState::OverflowError,
                     "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size
