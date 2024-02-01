@@ -170,14 +170,14 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
                         |_, _| {}
                     ),
                     BlockHashParseState::MetEndOfString,
-                    "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}", norm, bhsz, bh, insert_offset
+                    "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset
                 );
-                assert_eq!(&buffer, expected_buffer, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}", norm, bhsz, bh, insert_offset);
+                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
                 // len_out reflects normalization (if enabled), even on error.
-                assert_eq!(len_out as usize, expected_len, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}", norm, bhsz, bh, insert_offset);
+                assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
                 // input_offset is updated to the end of the string.
                 let expected_offset = insert_offset + bh.len();
-                assert_eq!(input_offset, expected_offset, "failed on norm={}, bhsz={}, bh={:?}, insert_offset={}", norm, bhsz, bh, insert_offset);
+                assert_eq!(input_offset, expected_offset, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
             }
             let bh_str = &str_buffer[..insert_offset + bh.len()];
             test_terminator_eos::<N,  true>(insert_offset, bh, bh_str, &expected_buffer_norm, bh_norm.len());
@@ -392,14 +392,14 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                         |_, _| {}
                     ),
                     BlockHashParseState::OverflowError,
-                    "failed on bhsz={}, norm={}, overflow_size={}", bhsz, overflow_size, norm
+                    "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size
                 );
                 // Corrupt offset is N.
-                assert_eq!(offset, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, overflow_size, norm);
+                assert_eq!(offset, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
                 // Candidate `len` is N.
-                assert_eq!(len as usize, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, overflow_size, norm);
+                assert_eq!(len as usize, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
                 // Buffer is filled with specific pattern.
-                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, overflow_size, norm);
+                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
             }
             test_overflow::<N,  true>(overflow_size, &str_buffer, &expected_buffer);
             test_overflow::<N, false>(overflow_size, &str_buffer, &expected_buffer);
