@@ -306,9 +306,12 @@ where
             }
             else {
                 pre_ret_1!();
-                match ch {
-                    b':' => { pre_ret_2!(); j += 1; ret!(BlockHashParseState::MetColon); }
-                    b',' => { pre_ret_2!(); j += 1; ret!(BlockHashParseState::MetComma); }
+                match *ch {
+                    b':' | b',' => {
+                        pre_ret_2!();
+                        j += 1;
+                        ret!(if *ch == b':' { BlockHashParseState::MetColon } else { BlockHashParseState::MetComma });
+                    }
                     _ => { ret!(BlockHashParseState::Base64Error); }
                 }
             }
