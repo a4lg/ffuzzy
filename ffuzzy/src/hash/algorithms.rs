@@ -158,13 +158,12 @@ where
 /// `i` (input/output) is updated to the last character index to continue
 /// parsing if succeeds.  If it fails, the value of `i` is preserved.
 #[inline]
-pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
-    -> Result<u32, ParseError>
+pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8])
+    -> Result<(u32, usize), ParseError>
 {
     let mut block_size = 0u32;
     let mut is_block_size_in_range = true;
-    let mut j = 0;
-    for ch in bytes {
+    for (index, ch) in bytes.iter().enumerate() {
         match *ch {
             b'0'..=b'9' => {
                 // Update block size (but check arithmetic overflow)
@@ -188,7 +187,7 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
             }
             b':' => {
                 // End of block size: ':' is expected and block size must not be empty.
-                if j == 0 {
+                if index == 0 {
                     return Err(ParseError(
                         ParseErrorKind::BlockSizeIsEmpty,
                         ParseErrorOrigin::BlockSize, 0
@@ -206,21 +205,23 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
                         ParseErrorOrigin::BlockSize, 0
                     ));
                 }
-                *i = j + 1;
-                return Ok(block_size);
+                optionally_unsafe! {
+                    invariant!(index < bytes.len());
+                    *bytes = &bytes[index + 1..];
+                    return Ok((block_size, index + 1));
+                }
             }
             _ => {
                 return Err(ParseError(
                     ParseErrorKind::UnexpectedCharacter,
-                    ParseErrorOrigin::BlockSize, j
+                    ParseErrorOrigin::BlockSize, index
                 ));
             }
         }
-        j += 1;
     }
     Err(ParseError(
         ParseErrorKind::UnexpectedEndOfString,
-        ParseErrorOrigin::BlockSize, j
+        ParseErrorOrigin::BlockSize, bytes.len()
     ))
 }
 
@@ -242,13 +243,13 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &[u8], i: &mut usize)
 ///     (the first character of consecutive characters that are shortened).
 /// 2.  The length of the *original* consecutive characters
 ///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
+#[allow(clippy::int_plus_one)]
 pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
-    bytes: &[u8],
-    i: &mut usize,
+    bytes: &mut &[u8],
     mut report_norm_seq: F
-) -> BlockHashParseState
+) -> (BlockHashParseState, usize)
 where
     F: FnMut(usize, usize),
     BlockHashSize<N>: ConstrainedBlockHashSize,
@@ -257,23 +258,25 @@ where
     let mut seq_start: usize = 0;
     let mut seq_start_in: usize = 0;
     let mut prev = BASE64_INVALID;
-    let mut j = *i;
     let mut len: usize = 0;
     // Mandatory before returning.
     macro_rules! pre_ret_1 {() => {
         *blockhash_len = len as u8;
     }}
     // Not mandatory if the parsing is guaranteed to fail.
-    macro_rules! pre_ret_2 {() => {
+    macro_rules! pre_ret_2 {($current_index: expr) => {
         if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
-            let len = j - seq_start_in;
+            let len = $current_index - seq_start_in;
             report_norm_seq(seq_start, len);
         }
     }}
-    macro_rules! ret {($expr: expr) => { *i = j; return $expr }}
+    macro_rules! ret {($index: expr, $expr: expr) => {
+        invariant!($index <= bytes.len());
+        *bytes = &bytes[$index..];
+        return ($expr, $index);
+    }}
     optionally_unsafe! {
-        invariant!(j <= bytes.len());
-        for ch in &bytes[j..] { // grcov-excl-br-line:ARRAY
+        for (index, ch) in bytes.iter().enumerate() {
             let bch = base64_index(*ch);
             if bch != BASE64_INVALID {
                 let curr = bch;
@@ -282,24 +285,23 @@ where
                         seq += 1;
                         if seq >= block_hash::MAX_SEQUENCE_SIZE {
                             seq = block_hash::MAX_SEQUENCE_SIZE;
-                            j += 1;
                             continue;
                         }
                     }
                     else {
                         if seq == block_hash::MAX_SEQUENCE_SIZE {
-                            let len = j - seq_start_in;
+                            let len = index - seq_start_in;
                             report_norm_seq(seq_start, len);
                         }
                         seq = 0;
                         seq_start = len;
-                        seq_start_in = j;
+                        seq_start_in = index;
                         prev = curr;
                     }
                 }
                 if unlikely(len >= N) {
                     pre_ret_1!();
-                    ret!(BlockHashParseState::OverflowError);
+                    ret!(index, BlockHashParseState::OverflowError);
                 }
                 blockhash[len] = curr; // grcov-excl-br-line:ARRAY
                 len += 1;
@@ -308,17 +310,15 @@ where
                 pre_ret_1!();
                 match *ch {
                     b':' | b',' => {
-                        pre_ret_2!();
-                        j += 1;
-                        ret!(if *ch == b':' { BlockHashParseState::MetColon } else { BlockHashParseState::MetComma });
+                        pre_ret_2!(index);
+                        ret!(index + 1, if *ch == b':' { BlockHashParseState::MetColon } else { BlockHashParseState::MetComma });
                     }
-                    _ => { ret!(BlockHashParseState::Base64Error); }
+                    _ => { ret!(index, BlockHashParseState::Base64Error); }
                 }
             }
-            j += 1;
         }
         pre_ret_1!();
-        pre_ret_2!();
-        ret!(BlockHashParseState::MetEndOfString);
+        pre_ret_2!(bytes.len());
+        ret!(bytes.len(), BlockHashParseState::MetEndOfString);
     }
 }

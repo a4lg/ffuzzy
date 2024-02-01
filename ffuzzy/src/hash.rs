@@ -360,51 +360,56 @@ macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
         $blockhash2: expr, $len_blockhash2: expr
     ) => {
         // Parse fuzzy hash
-        let mut i = 0;
-        match algorithms::parse_block_size_from_bytes($str, &mut i) {
-            Ok(bs) => {
+        let mut buf: &[u8] = $str;
+        let mut offset = match algorithms::parse_block_size_from_bytes(&mut buf) {
+            Ok((bs, offset)) => {
                 $log_blocksize = block_size::log_from_valid_internal(bs);
+                offset
             }
             Err(err) => { return Err(err); }
-        }
+        };
         $($proc_to_prepare_blockhash1)*
-        match algorithms::parse_block_hash_from_bytes::<_, S1, $norm>(
+        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S1, $norm>(
             &mut $blockhash1,
             &mut $len_blockhash1,
-            $str, &mut i, $proc_to_process_sequence_1
-        ) {
+            &mut buf, $proc_to_process_sequence_1
+        );
+        offset += parsed_len;
+        match result {
             // End of BH1: Only colon is acceptable as the separator between BH1:BH2.
             BlockHashParseState::MetColon => { }
             BlockHashParseState::MetComma => {
-                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, i - 1));
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, offset - 1));
             }
             BlockHashParseState::Base64Error => {
-                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, i));
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash1, offset));
             }
             BlockHashParseState::MetEndOfString => {
-                return Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, i));
+                return Err(ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, offset));
             }
             BlockHashParseState::OverflowError => {
-                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash1, i));
+                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash1, offset));
             }
         }
         $($proc_to_prepare_blockhash2)*
-        match algorithms::parse_block_hash_from_bytes::<_, S2, $norm>(
+        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S2, $norm>(
             &mut $blockhash2,
             &mut $len_blockhash2,
-            $str, &mut i, $proc_to_process_sequence_2
-        ) {
+            &mut buf, $proc_to_process_sequence_2
+        );
+        offset += parsed_len;
+        match result {
             // End of BH2: Optional comma or end-of-string is expected.
-            BlockHashParseState::MetComma       => { *$index = i - 1; }
-            BlockHashParseState::MetEndOfString => { *$index = i; }
+            BlockHashParseState::MetComma       => { *$index = offset - 1; }
+            BlockHashParseState::MetEndOfString => { *$index = offset; }
             BlockHashParseState::MetColon => {
-                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, i - 1));
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, offset - 1));
             }
             BlockHashParseState::Base64Error => {
-                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, i));
+                return Err(ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockHash2, offset));
             }
             BlockHashParseState::OverflowError => {
-                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, i));
+                return Err(ParseError(ParseErrorKind::BlockHashIsTooLong, ParseErrorOrigin::BlockHash2, offset));
             }
         }
     };

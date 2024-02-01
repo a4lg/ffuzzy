@@ -85,17 +85,17 @@ fn insert_block_hash_into_bytes_contents() {
 fn parse_block_size_from_bytes_patterns() {
     // Test macros
     fn test_okay(input_str: &[u8], expected_block_size: u32) {
-        let mut offset = usize::MAX;
         let bs_str_len = input_str.iter().position(|&x| x == b':').unwrap();
-        assert_eq!(parse_block_size_from_bytes(input_str, &mut offset), Ok(expected_block_size), "failed on input_str={:?}", input_str);
-        // offset is updated to point the index right after the first ':'.
-        assert_eq!(offset, bs_str_len + 1, "failed on input_str={:?}", input_str);
+        let mut buf = input_str;
+        assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((expected_block_size, bs_str_len + 1)), "failed on input_str={:?}", input_str);
+        // buf is updated to start right after the first ':'.
+        assert_eq!(buf, &input_str[bs_str_len + 1..], "failed on input_str={:?}", input_str);
     }
     fn test_fail(input_str: &[u8], expected_err: ParseError) {
-        let mut offset = usize::MAX;
-        assert_eq!(parse_block_size_from_bytes(input_str, &mut offset), Err(expected_err), "failed on input_str={:?}", input_str);
-        // offset is not touched on error.
-        assert_eq!(offset, usize::MAX, "failed on input_str={:?}", input_str);
+        let mut buf = input_str;
+        assert_eq!(parse_block_size_from_bytes(&mut buf), Err(expected_err), "failed on input_str={:?}", input_str);
+        // buf is not touched on error.
+        assert_eq!(buf, input_str, "failed on input_str={:?}", input_str);
     }
     // Valid block size part
     test_okay(b"3:", 3);
@@ -123,118 +123,113 @@ fn parse_block_size_from_bytes_patterns() {
 fn parse_block_size_from_bytes_overflow_on_block_size() {
     // Block size with u32::MAX
     assert!(!block_size::is_valid(u32::MAX)); // ssdeep-specific
-    let mut offset = usize::MAX;
     let invalid_str = format!("{}:", u32::MAX);
+    let mut buf = invalid_str.as_bytes();
     assert_eq!(
-        parse_block_size_from_bytes(invalid_str.as_bytes(), &mut offset),
+        parse_block_size_from_bytes(&mut buf),
         Err(ParseError(ParseErrorKind::BlockSizeIsInvalid, ParseErrorOrigin::BlockSize, 0))
     );
-    assert_eq!(offset, usize::MAX); // offset is not touched on error
+    assert_eq!(buf, invalid_str.as_bytes()); // buf is not touched on error
     // Block size with u32::MAX + 1
-    let mut offset = usize::MAX;
     let invalid_str = format!("{}:", (u32::MAX as u64) + 1);
+    let mut buf = invalid_str.as_bytes();
     assert_eq!(
-        parse_block_size_from_bytes(invalid_str.as_bytes(), &mut offset),
+        parse_block_size_from_bytes(&mut buf),
         Err(ParseError(ParseErrorKind::BlockSizeIsTooLarge, ParseErrorOrigin::BlockSize, 0))
     );
-    assert_eq!(offset, usize::MAX); // offset is not touched on error
+    assert_eq!(buf, invalid_str.as_bytes()); // buf is not touched on error
 }
 
 // Common function for better coverage report
 fn parse_block_hash_from_bytes_common<const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
-    bytes: &[u8],
-    i: &mut usize
-) -> BlockHashParseState
+    bytes: &mut &[u8],
+) -> (BlockHashParseState, usize)
 where
     BHS<N>: CBHS,
 {
-    parse_block_hash_from_bytes::<_, N, NORM>(blockhash, blockhash_len, bytes, i, |_, _| {})
+    parse_block_hash_from_bytes::<_, N, NORM>(blockhash, blockhash_len, bytes, |_, _| {})
 }
 
 #[test]
 fn parse_block_hash_from_bytes_states_and_normalization() {
     fn test_body<const N: usize>(bh: &[u8], bh_norm: &[u8]) where BHS<N>: CBHS {
         if bh.len() > N { return; }
-        for insert_offset in 0..=(N - bh.len()) {
-            let mut str_buffer = [0u8; block_hash::FULL_SIZE+1];
-            let mut expected_buffer = [u8::MAX; N];
-            let mut expected_buffer_norm = [u8::MAX; N];
-            expected_buffer[..bh.len()].copy_from_slice(bh);
-            expected_buffer_norm[..bh_norm.len()].copy_from_slice(bh_norm);
-            for (i, ch) in bh.iter().map(|&x| BASE64_TABLE_U8[x as usize]).enumerate() {
-                str_buffer[insert_offset + i] = ch;
+        let mut str_buffer = [0u8; block_hash::FULL_SIZE+1];
+        let mut expected_buffer = [u8::MAX; N];
+        let mut expected_buffer_norm = [u8::MAX; N];
+        expected_buffer[..bh.len()].copy_from_slice(bh);
+        expected_buffer_norm[..bh_norm.len()].copy_from_slice(bh_norm);
+        for (i, ch) in bh.iter().map(|&x| BASE64_TABLE_U8[x as usize]).enumerate() {
+            str_buffer[i] = ch;
+        }
+        // MetEndOfString
+        fn test_terminator_eos<const N: usize, const NORM: bool>(
+            bh: &[u8], bh_str: &[u8], expected_buffer: &[u8; N], expected_len: usize
+        ) where BHS<N>: CBHS {
+            let (bhsz, norm) = (N, NORM);
+            let mut len_out = u8::MAX;
+            let mut buf_out = [u8::MAX; N];
+            let mut buf_in = bh_str;
+            assert_eq!(
+                parse_block_hash_from_bytes_common::<N, NORM>(
+                    &mut buf_out,
+                    &mut len_out,
+                    &mut buf_in
+                ),
+                (BlockHashParseState::MetEndOfString, bh.len()),
+                "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh
+            );
+            assert_eq!(&buf_out, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
+            // len_out reflects normalization (if enabled), even on error.
+            assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
+            // buf_in is updated to the end of the string.
+            assert!(buf_in.is_empty(), "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
+        }
+        let bh_str = &str_buffer[..bh.len()];
+        test_terminator_eos::<N,  true>(bh, bh_str, &expected_buffer_norm, bh_norm.len());
+        test_terminator_eos::<N, false>(bh, bh_str, &expected_buffer, bh.len());
+        // MetColon, MetComma, Base64Error
+        #[allow(clippy::too_many_arguments)]
+        fn test_terminator_char<const N: usize, const NORM: bool>(
+            bh: &[u8], bh_str: &[u8],
+            ch: char, is_err: bool,
+            expected_buffer: &[u8; N], expected_len: usize, expected_state: BlockHashParseState
+        ) where BHS<N>: CBHS {
+            let (bhsz, norm) = (N, NORM);
+            let mut len_out = u8::MAX;
+            let mut buf_out = [u8::MAX; N];
+            let mut buf_in = bh_str;
+            let (state, parsed_len) = parse_block_hash_from_bytes_common::<N, NORM>(
+                &mut buf_out,
+                &mut len_out,
+                &mut buf_in
+            );
+            assert_eq!(state, expected_state, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
+            assert_eq!(&buf_out, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
+            // len_out reflects normalization (if enabled), even on error.
+            assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
+            // buf_in is updated to the end of the string or the error character.
+            let expected_remaining_len = if is_err { 1 } else { 0 };
+            assert_eq!(parsed_len - (1 - expected_remaining_len), bh.len(), "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
+            assert_eq!(buf_in.len(), expected_remaining_len, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
+            if !buf_in.is_empty() {
+                assert_eq!(buf_in[0] as char, ch, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             }
-            // MetEndOfString
-            fn test_terminator_eos<const N: usize, const NORM: bool>(
-                insert_offset: usize, bh: &[u8], bh_str: &[u8], expected_buffer: &[u8; N], expected_len: usize
-            ) where BHS<N>: CBHS {
-                let (bhsz, norm) = (N, NORM);
-                let mut len_out = u8::MAX;
-                let mut buffer = [u8::MAX; N];
-                let mut input_offset = insert_offset;
-                assert_eq!(
-                    parse_block_hash_from_bytes_common::<N, NORM>(
-                        &mut buffer,
-                        &mut len_out,
-                        bh_str,
-                        &mut input_offset
-                    ),
-                    BlockHashParseState::MetEndOfString,
-                    "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset
-                );
-                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
-                // len_out reflects normalization (if enabled), even on error.
-                assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
-                // input_offset is updated to the end of the string.
-                let expected_offset = insert_offset + bh.len();
-                assert_eq!(input_offset, expected_offset, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}", bhsz, norm, bh, insert_offset);
-            }
-            let bh_str = &str_buffer[..insert_offset + bh.len()];
-            test_terminator_eos::<N,  true>(insert_offset, bh, bh_str, &expected_buffer_norm, bh_norm.len());
-            test_terminator_eos::<N, false>(insert_offset, bh, bh_str, &expected_buffer, bh.len());
-            // MetColon, MetComma, Base64Error
-            #[allow(clippy::too_many_arguments)]
-            fn test_terminator_char<const N: usize, const NORM: bool>(
-                insert_offset: usize, bh: &[u8], bh_str: &[u8],
-                ch: char, is_err: bool,
-                expected_buffer: &[u8; N], expected_len: usize, expected_state: BlockHashParseState
-            ) where BHS<N>: CBHS {
-                let (bhsz, norm) = (N, NORM);
-                let mut len_out = u8::MAX;
-                let mut buffer = [u8::MAX; N];
-                let mut input_offset = insert_offset;
-                assert_eq!(
-                    parse_block_hash_from_bytes_common::<N, NORM>(
-                        &mut buffer,
-                        &mut len_out,
-                        bh_str,
-                        &mut input_offset
-                    ),
-                    expected_state,
-                    "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch
-                );
-                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
-                // len_out reflects normalization (if enabled), even on error.
-                assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
-                // input_offset is updated to the end of the string.
-                let expected_offset = insert_offset + bh.len() + (if is_err { 0 } else { 1 });
-                assert_eq!(input_offset, expected_offset, "failed on bhsz={}, norm={}, bh={:?}, insert_offset={}, ch={:?}", bhsz, norm, bh, insert_offset, ch);
-            }
-            for &(expected_state, ch, is_err) in &[
-                (BlockHashParseState::MetColon, b':', false),
-                (BlockHashParseState::MetComma, b',', false),
-                (BlockHashParseState::Base64Error, b'@', true),
-            ]
-            {
-                // Insert trailing character
-                str_buffer[insert_offset + bh.len()] = ch;
-                let ch = ch as char;
-                let bh_str = &str_buffer[..insert_offset + bh.len() + 1];
-                test_terminator_char::<N,  true>(insert_offset, bh, bh_str, ch, is_err, &expected_buffer_norm, bh_norm.len(), expected_state);
-                test_terminator_char::<N, false>(insert_offset, bh, bh_str, ch, is_err, &expected_buffer, bh.len(), expected_state);
-            }
+        }
+        for &(expected_state, ch, is_err) in &[
+            (BlockHashParseState::MetColon, b':', false),
+            (BlockHashParseState::MetComma, b',', false),
+            (BlockHashParseState::Base64Error, b'@', true),
+        ]
+        {
+            // Insert trailing character
+            str_buffer[bh.len()] = ch;
+            let ch = ch as char;
+            let bh_str = &str_buffer[..bh.len() + 1];
+            test_terminator_char::<N,  true>(bh, bh_str, ch, is_err, &expected_buffer_norm, bh_norm.len(), expected_state);
+            test_terminator_char::<N, false>(bh, bh_str, ch, is_err, &expected_buffer, bh.len(), expected_state);
         }
     }
     test_blockhash_content_all(&mut |bh, bh_norm| { call_for_block_hash_sizes! { test_body(bh, bh_norm); } });
@@ -348,14 +343,13 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
     for sample in samples {
         let &(bytes, expected_reported_seqs, expected_buffer, expected_state, expected_input_offset, expected_blockhash_len) = sample;
         let mut reported_seqs = Vec::new();
-        let mut buffer = [I; 32];
-        let mut input_offset = 0;
+        let mut buf_out = [I; 32];
         let mut blockhash_len = 0;
-        let state = parse_block_hash_from_bytes::<_, 32, true>(
-            &mut buffer,
+        let mut buf_in: &[u8] = bytes;
+        let (state, parsed_len) = parse_block_hash_from_bytes::<_, 32, true>(
+            &mut buf_out,
             &mut blockhash_len,
-            bytes,
-            &mut input_offset,
+            &mut buf_in,
             |start_pos_norm, seq_len| {
                 assert!(seq_len > block_hash::MAX_SEQUENCE_SIZE, "failed on bytes={:?}", bytes);
                 reported_seqs.push((start_pos_norm, seq_len));
@@ -371,8 +365,8 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             _ => { assert_eq!(&reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes); }
         }
         assert_eq!(state, expected_state, "failed on bytes={:?}", bytes);
-        assert_eq!(&buffer, &expected_buffer, "failed on bytes={:?}", bytes);
-        assert_eq!(input_offset, expected_input_offset, "failed on bytes={:?}", bytes);
+        assert_eq!(&buf_out, &expected_buffer, "failed on bytes={:?}", bytes);
+        assert_eq!(parsed_len, expected_input_offset, "failed on bytes={:?}", bytes); // TODO
         assert_eq!(blockhash_len, expected_blockhash_len, "failed on bytes={:?}", bytes);
     }
 }
@@ -399,24 +393,20 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                 let (bhsz, norm) = (N, NORM);
                 let corrupt_size = N.checked_add(overflow_size).unwrap();
                 let mut len = 0;
-                let mut offset: usize = 0;
-                let mut buffer: [u8; N] = [u8::MAX; N];
-                assert_eq!(
-                    parse_block_hash_from_bytes_common::<N, NORM>(
-                        &mut buffer,
-                        &mut len,
-                        &str_buffer[..corrupt_size],
-                        &mut offset
-                    ),
-                    BlockHashParseState::OverflowError,
-                    "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size
+                let mut buf_out: [u8; N] = [u8::MAX; N];
+                let mut buf_in = &str_buffer[..corrupt_size];
+                let (state, parsed_len) = parse_block_hash_from_bytes_common::<N, NORM>(
+                    &mut buf_out,
+                    &mut len,
+                    &mut buf_in
                 );
-                // Corrupt offset is N.
-                assert_eq!(offset, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
+                assert_eq!(state, BlockHashParseState::OverflowError, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
+                // Stopped parsed_len is N.
+                assert_eq!(parsed_len, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
                 // Candidate `len` is N.
                 assert_eq!(len as usize, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
                 // Buffer is filled with specific pattern.
-                assert_eq!(&buffer, expected_buffer, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
+                assert_eq!(&buf_out, expected_buffer, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
             }
             test_overflow::<N,  true>(overflow_size, &str_buffer, &expected_buffer);
             test_overflow::<N, false>(overflow_size, &str_buffer, &expected_buffer);
