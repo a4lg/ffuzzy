@@ -167,7 +167,10 @@ assert_eq!(hash1.compare(&hash2), 88);
     It provides easy-to-use high-level functions.
 *   `strict-parser`  
     It enables the strict parser which rejects the fuzzy hash strings that would
-    cause an error on the "raw" variant but not on the "normalized" variant.
+    cause an error on the "raw" variant but not on the "normalized" variant
+    (on the defualt parser).
+    This is disabled by default (because it slows the parser) but enabling it
+    will make the parser less confusing and more robust.
 *   `unsafe` (**fast but unsafe**)  
     This crate is optionally unsafe.  By default, this crate is built with 100%
     safe Rust.  Enabling this feature enables unsafe Rust code (although
