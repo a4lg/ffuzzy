@@ -13,7 +13,7 @@ edition = "2021"
 rust-version = "1.56"
 readme = "../README.md"
 workspace = ".."
-exclude = ["data/testsuite/generate/large_trigger_last_hash.bin.zstd"]
+exclude = []
 
 [lib]
 name = "ssdeep"

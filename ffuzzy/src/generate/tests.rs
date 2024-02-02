@@ -919,11 +919,10 @@ fn large_data_triggers_1() {
         SHA-256 of the generator input:
         08a6cdc1cdca3b173becd2c27f82588e36e41fe988f678100ca96a0952fe6de4
 
-        Equivalent Zstandard-compressed file is available at:
-        `ffuzzy/data/testsuite/generate/large_trigger_last_hash.bin.zstd`
-        (excluded from the package but in the source repository).
+        Equivalent Tar+Zstd compressed archived file (GNU format) is available at:
+        `ffuzzy/data/testsuite/generate/large_trigger_last_hash.bin.tar.zst`
 
-        Be careful!  This Zstandard-compressed file is a zip bomb!
+        Be careful!  This Zstandard-compressed file can be zip bomb!
     */
     let mut last_bytes: [u8; 7*64+1] = [0u8; 7*64+1];
     for i in 0..64 {
