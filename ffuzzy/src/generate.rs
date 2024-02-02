@@ -644,6 +644,11 @@ impl Generator {
 macro_rules! generator_update_template {
     ($self: expr, $buffer: expr, $proc_per_byte: block) => {
         optionally_unsafe! {
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "unsafe")] {
+                    let mut _bh = $self.bh_context.as_mut_ptr();
+                }
+            }
             #[cfg(not(feature = "unsafe"))]
             #[doc(hidden)]
             macro_rules! bhrange0_init {() => { 0 }}
@@ -655,10 +660,10 @@ macro_rules! generator_update_template {
             macro_rules! bh_ref_type {() => { &mut BlockHashContext }}
             #[cfg(feature = "unsafe")]
             #[doc(hidden)]
-            macro_rules! bhrange0_init {() => { $self.bh_context.as_mut_ptr().add($self.bhidx_start) }}
+            macro_rules! bhrange0_init {() => { _bh.add($self.bhidx_start) }}
             #[cfg(feature = "unsafe")]
             #[doc(hidden)]
-            macro_rules! bhrange1_init {() => { $self.bh_context.as_mut_ptr().add($self.bhidx_end) }}
+            macro_rules! bhrange1_init {() => { _bh.add($self.bhidx_end) }}
             #[cfg(feature = "unsafe")]
             #[doc(hidden)]
             macro_rules! bh_ref_type {() => { *mut BlockHashContext }}
