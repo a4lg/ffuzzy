@@ -1,6 +1,6 @@
 [package]
 name = "ffuzzy"
-version = "0.3.2-alpha.0"
+version = "0.3.2"
 description = "Library to generate / parse / compare ssdeep Context Triggered Piecewise Hashes (CTPH)"
 authors = ["Tsukasa OI", "Helmut Grohne", "Jesse Kornblum"]
 keywords = ["ssdeep", "fuzzy", "hash", "security", "clustering"]
