@@ -234,7 +234,9 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8])
 /// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
 ///
 /// Note that however, this function *may not* be called when we once know
-/// that the parsing the block hash results in a failure.
+/// that the parsing the block hash results in a failure and the last "length"
+/// might assume that the overflow won't occur (i.e. the sum of two arguments
+/// below may be capped to `N`, depending on the configuration).
 ///
 /// Arguments to `report_norm_seq` is as follows:
 ///
