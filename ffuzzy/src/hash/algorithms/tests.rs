@@ -259,13 +259,13 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG:"[..],
             &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetColon, 29, 18
+            BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG,"[..],
             &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetComma, 29, 18
+            BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG@"[..],
@@ -284,13 +284,13 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA:"[..],
             &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetColon, 29, 18
+            BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA,"[..],
             &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetComma, 29, 18
+            BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA@"[..],
@@ -315,13 +315,13 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"[..],
             &vec![(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetColon, 33, 3
+            BlockHashParseState::MetColon, 32 + 1, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,"[..],
             &vec![(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetComma, 33, 3
+            BlockHashParseState::MetComma, 32 + 1, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
