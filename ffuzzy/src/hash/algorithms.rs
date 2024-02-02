@@ -10,7 +10,6 @@ use crate::hash::block::{
 use crate::hash::parser_state::{
     BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin
 };
-use crate::intrinsics::unlikely;
 use crate::macros::{optionally_unsafe, invariant};
 
 
@@ -243,7 +242,6 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8])
 ///     (the first character of consecutive characters that are shortened).
 /// 2.  The length of the *original* consecutive characters
 ///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
-#[allow(clippy::int_plus_one)]
 pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
@@ -259,32 +257,32 @@ where
     let mut seq_start_in: usize = 0;
     let mut prev = BASE64_INVALID;
     let mut len: usize = 0;
-    // Mandatory before returning.
-    macro_rules! pre_ret_1 {() => {
-        *blockhash_len = len as u8;
-    }}
-    // Not mandatory if the parsing is guaranteed to fail.
-    macro_rules! pre_ret_2 {($current_index: expr) => {
-        if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
-            let len = $current_index - seq_start_in;
-            report_norm_seq(seq_start, len);
-        }
-    }}
-    macro_rules! ret {($index: expr, $expr: expr) => {
-        invariant!($index <= bytes.len());
-        *bytes = &bytes[$index..];
-        return ($expr, $index);
-    }}
+    let mut index: usize = 0;
+    let mut raw_ch: Option<u8>;
     optionally_unsafe! {
-        for (index, ch) in bytes.iter().enumerate() {
-            let bch = base64_index(*ch);
-            if bch != BASE64_INVALID {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "strict-parser")] {
+                let mut iter = bytes.iter().cloned().take(N);
+            }
+            else {
+                let mut iter = bytes.iter().cloned();
+            }
+        }
+        #[allow(unused_variables)]
+        let has_char = loop {
+            raw_ch = iter.next();
+            if let Some(ch) = raw_ch {
+                let bch = base64_index(ch);
+                if bch == BASE64_INVALID {
+                    break true;
+                }
                 let curr = bch;
                 if NORM {
                     if curr == prev {
                         seq += 1;
                         if seq >= block_hash::MAX_SEQUENCE_SIZE {
                             seq = block_hash::MAX_SEQUENCE_SIZE;
+                            index += 1;
                             continue;
                         }
                     }
@@ -299,26 +297,55 @@ where
                         prev = curr;
                     }
                 }
-                if unlikely(len >= N) {
-                    pre_ret_1!();
-                    ret!(index, BlockHashParseState::OverflowError);
+                #[cfg(not(feature = "strict-parser"))]
+                if crate::intrinsics::unlikely(len >= N) {
+                    *blockhash_len = len as u8;
+                    invariant!(index <= bytes.len());
+                    *bytes = &bytes[index..]; // grcov-excl-br-line:ARRAY
+                    return (BlockHashParseState::OverflowError, index);
                 }
                 blockhash[len] = curr; // grcov-excl-br-line:ARRAY
                 len += 1;
+                index += 1;
             }
             else {
-                pre_ret_1!();
-                match *ch {
-                    b':' | b',' => {
-                        pre_ret_2!(index);
-                        ret!(index + 1, if *ch == b':' { BlockHashParseState::MetColon } else { BlockHashParseState::MetComma });
-                    }
-                    _ => { ret!(index, BlockHashParseState::Base64Error); }
-                }
+                break false;
             }
+        };
+        *blockhash_len = len as u8;
+        #[cfg(feature = "strict-parser")]
+        if !has_char {
+            // Even if we reached to the end, that does not always mean that
+            // we reached to the end of the string.
+            // Try to fetch one more byte to decide what to do.
+            invariant!(index <= bytes.len());
+            raw_ch = bytes[index..].iter().cloned().next(); // grcov-excl-br-line:ARRAY
         }
-        pre_ret_1!();
-        pre_ret_2!(bytes.len());
-        ret!(bytes.len(), BlockHashParseState::MetEndOfString);
+        if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
+            let len = index - seq_start_in;
+            report_norm_seq(seq_start, len);
+        }
+        let result = match raw_ch {
+            Some(ch) => {
+                match ch {
+                    b':' => (BlockHashParseState::MetColon, index + 1),
+                    b',' => (BlockHashParseState::MetComma, index + 1),
+                    _ => {
+                        cfg_if::cfg_if! {
+                            if #[cfg(feature = "strict-parser")] {
+                                (if has_char { BlockHashParseState::Base64Error } else { BlockHashParseState::OverflowError }, index)
+                            }
+                            else {
+                                (BlockHashParseState::Base64Error, index)
+                            }
+                        }
+                    }
+                }
+            },
+            None => (BlockHashParseState::MetEndOfString, index)
+        };
+        invariant!(result.1 <= bytes.len());
+        *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
+        result
     }
 }

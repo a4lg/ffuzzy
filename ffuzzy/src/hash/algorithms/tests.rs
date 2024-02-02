@@ -225,6 +225,10 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
         ]
         {
             // Insert trailing character
+            let mut expected_state = expected_state;
+            if cfg!(feature = "strict-parser") && bh.len() + 1 > N && expected_state == BlockHashParseState::Base64Error {
+                expected_state = BlockHashParseState::OverflowError;
+            }
             str_buffer[bh.len()] = ch;
             let ch = ch as char;
             let bh_str = &str_buffer[..bh.len() + 1];
@@ -320,11 +324,12 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             BlockHashParseState::MetComma, 33, 3
         ),
         (
-            // This sample may fail in the future!
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
-            &vec![(0, 64)],
+            &vec![(0, if cfg!(feature = "strict-parser") { 32 } else { 64 })],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-            BlockHashParseState::MetEndOfString, 64, 3
+            if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::MetEndOfString },
+            if cfg!(feature = "strict-parser") { 32 } else { 64 },
+            3
         ),
         // Test Group 3: Complex
         (

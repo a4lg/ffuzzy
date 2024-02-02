@@ -1005,6 +1005,9 @@ where
     /// of the fuzzy hash and the file name field.
     ///
     /// If the parser fails, `index` is not updated.
+    ///
+    /// The behavior of this method is affected by the `strict-parser` feature.
+    /// For more information, see [The Strict Parser](FuzzyHashData#the-strict-parser).
     pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {
@@ -1013,6 +1016,9 @@ where
 
     /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
     /// of a string representation.
+    ///
+    /// The behavior of this method is affected by the `strict-parser` feature.
+    /// For more information, see [The Strict Parser](FuzzyHashData#the-strict-parser).
     pub fn from_bytes(str: &[u8]) -> Result<Self, ParseError> {
         Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }

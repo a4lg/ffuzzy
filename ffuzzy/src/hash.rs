@@ -190,6 +190,15 @@ pub(crate) mod test_utils;
 /// not normalized, raw fuzzy hashes.  So, making a distinction between normalized
 /// and raw forms are important.
 ///
+/// ### The Strict Parser
+///
+/// If the `strict-parser` feature is enabled, parsers for fuzzy hashing types
+/// will reject ones that would cause an error on the raw variant but not on the
+/// normalized variant (on the default parser i.e. if this feature is disabled).
+///
+/// Enabling this feature comes with a cost in performance but it will make the
+/// parser less confusing (if either of the variants accepts a string, another will).
+///
 /// ## Truncation
 ///
 /// ssdeep normally generates (as well as [`Generator`](crate::generate::Generator))
@@ -1004,6 +1013,9 @@ where
     }
 
     /// The internal implementation of [`from_bytes_with_last_index()`](Self::from_bytes_with_last_index()).
+    ///
+    /// The behavior of this method is affected by the `strict-parser` feature.
+    /// For more information, see [The Strict Parser](Self#the-strict-parser).
     #[inline(always)]
     fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
@@ -1027,6 +1039,9 @@ where
     /// of the fuzzy hash and the file name field.
     ///
     /// If the parser fails, `index` is not updated.
+    ///
+    /// The behavior of this method is affected by the `strict-parser` feature.
+    /// For more information, see [The Strict Parser](Self#the-strict-parser).
     pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
         -> Result<Self, ParseError>
     {
@@ -1035,6 +1050,9 @@ where
 
     /// Parse a fuzzy hash from given bytes (a slice of [`u8`])
     /// of a string representation.
+    ///
+    /// The behavior of this method is affected by the `strict-parser` feature.
+    /// For more information, see [The Strict Parser](Self#the-strict-parser).
     pub fn from_bytes(str: &[u8])
         -> Result<Self, ParseError>
     {
