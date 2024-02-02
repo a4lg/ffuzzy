@@ -726,8 +726,9 @@ macro_rules! generator_update_template {
         optionally_unsafe! {
             cfg_if::cfg_if! {
                 if #[cfg(feature = "unsafe")] {
-                    let mut bhrange0 = $self.bh_context.as_mut_ptr().add($self.bhidx_start);
-                    let mut bhrange1 = $self.bh_context.as_mut_ptr().add($self.bhidx_end);
+                    let bh = $self.bh_context.as_mut_ptr();
+                    let mut bhrange0 = bh.add($self.bhidx_start);
+                    let mut bhrange1 = bh.add($self.bhidx_end);
                     let mut bh: *mut BlockHashContext;
                     let mut bh_next: *mut BlockHashContext;
                 }
