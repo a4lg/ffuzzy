@@ -344,6 +344,37 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             [3, 0, 0, 0, 1, 2, 2, 2, 4, 4, 4, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 20, 11
         ),
+        // Test Group 4: No sequences
+        (
+            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH"[..],
+            &vec![],
+            [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+            BlockHashParseState::MetEndOfString, 32, 32
+        ),
+        (
+            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH:"[..],
+            &vec![],
+            [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+            BlockHashParseState::MetColon, 32 + 1, 32
+        ),
+        (
+            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH,"[..],
+            &vec![],
+            [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+            BlockHashParseState::MetComma, 32 + 1, 32
+        ),
+        (
+            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH@"[..],
+            &vec![],
+            [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+            if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::Base64Error }, 32, 32
+        ),
+        (
+            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGHI"[..],
+            &vec![],
+            [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
+            BlockHashParseState::OverflowError, 32, 32
+        ),
     ];
     for sample in samples {
         let &(bytes, expected_reported_seqs, expected_buffer, expected_state, expected_input_offset, expected_blockhash_len) = sample;
