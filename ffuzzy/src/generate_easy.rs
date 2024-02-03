@@ -46,6 +46,7 @@ mod tests {
     }
 
     // TODO: Once existence of an 128-bit machine is realistic, change #[cfg] below.
+    #[cfg(ffuzzy_tests_unsound)]
     #[cfg(target_pointer_width = "64")]
     #[test]
     fn hash_buf_input_too_large() {
@@ -54,6 +55,9 @@ mod tests {
         unsafe {
             // Supply (most likely invalid) too large buffer and expect an error happens
             // before an actual access happens (GeneratorError::FixedSizeTooLarge).
+            // Because this test contains an "unsound" operation detected by Miri
+            // (although no real invalid dereference occurs), this test case is
+            // isolated as "tests-unsound".
             let too_large_size = (Generator::MAX_INPUT_SIZE + 1) as usize;
             let buf = core::slice::from_raw_parts(core::ptr::NonNull::dangling().as_ptr(), too_large_size);
             assert_eq!(hash_buf(buf), Err(GeneratorError::FixedSizeTooLarge));

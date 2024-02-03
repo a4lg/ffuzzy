@@ -44,6 +44,7 @@ opt-reduce-fnv-table = []
 strict-parser = []
 tests-slow = []
 tests-very-slow = ["tests-slow"]
+tests-unsound = []
 nightly = []
 maint-lints = []
 
