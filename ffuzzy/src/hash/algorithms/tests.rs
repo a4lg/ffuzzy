@@ -167,6 +167,21 @@ fn parse_block_size_from_bytes_patterns() {
     }
 }
 
+#[test]
+fn parse_block_size_from_bytes_all_valid() {
+    for log_block_size in block_size::RANGE_LOG_VALID {
+        let bs = block_size::from_log_internal(log_block_size);
+        let input_str = format!("{}:@", bs);
+        let bytes = input_str.as_bytes();
+        let bs_str_len = bytes.iter().position(|&x| x == b':').unwrap();
+        let mut buf = bytes;
+        // Check if the block hash is parsed
+        assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((bs, bs_str_len + 1)), "failed on log_block_size={:?}", log_block_size);
+        // buf is updated to start right after the first ':'.
+        assert_eq!(buf, &bytes[bs_str_len + 1..], "failed on log_block_size={:?}", log_block_size);
+    }
+}
+
 // Common function for better coverage report
 fn parse_block_hash_from_bytes_common<const N: usize, const NORM: bool>(
     blockhash: &mut [u8; N],
