@@ -74,21 +74,26 @@ where
 
 /// Check whether a given block hash is normalized only if `verify` is true.
 #[inline(always)]
-fn is_block_hash_normalized_internal<const N: usize>(
+fn verify_block_hash_internal<const N: usize>(
     blockhash: &[u8; N],
     blockhash_len: u8,
-    verify: bool
+    verify_data_range_in: bool,
+    verify_data_range_out: bool,
+    verify_normalization: bool
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    if verify {
-        optionally_unsafe! {
+    optionally_unsafe! {
+        invariant!((blockhash_len as usize) <= N);
+        if verify_normalization {
             let mut seq: usize = 0;
             let mut prev = BASE64_INVALID;
-            invariant!((blockhash_len as usize) <= N);
             for ch in &blockhash[..blockhash_len as usize] { // grcov-excl-br-line:ARRAY
                 let curr: u8 = *ch;
+                if verify_data_range_in && curr >= block_hash::ALPHABET_SIZE as u8 {
+                    return false;
+                }
                 if *ch == prev {
                     seq += 1;
                     if seq >= block_hash::MAX_SEQUENCE_SIZE {
@@ -101,30 +106,41 @@ where
                 }
             }
         }
+        else if verify_data_range_in && blockhash[..blockhash_len as usize].iter().any(|&x| x >= block_hash::ALPHABET_SIZE as u8)
+        {
+            return false;
+        }
+        if verify_data_range_out && blockhash[blockhash_len as usize..].iter().any(|&x| x != 0) {
+            return false;
+        }
     }
     true
 }
 
 /// Check whether a given block hash is normalized (or don't, depending on the input normalization).
-pub(crate) fn is_block_hash_normalized_input<const N: usize, const EXPECT_NORM: bool>(
+pub(crate) fn verify_block_hash_input<const N: usize, const EXPECT_NORM: bool>(
     blockhash: &[u8; N],
     blockhash_len: u8,
+    verify_data_range_in: bool,
+    verify_data_range_out: bool
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    is_block_hash_normalized_internal(blockhash, blockhash_len, EXPECT_NORM)
+    verify_block_hash_internal(blockhash, blockhash_len, verify_data_range_in, verify_data_range_out, EXPECT_NORM)
 }
 
 /// Check whether a given block hash is normalized (or don't, depending on the type normalization).
-pub(crate) fn is_block_hash_normalized_current<const N: usize, const TYPE_NORM: bool>(
+pub(crate) fn verify_block_hash_current<const N: usize, const TYPE_NORM: bool>(
     blockhash: &[u8; N],
     blockhash_len: u8,
+    verify_data_range_in: bool,
+    verify_data_range_out: bool
 ) -> bool
 where
     BlockHashSize<N>: ConstrainedBlockHashSize
 {
-    is_block_hash_normalized_internal(blockhash, blockhash_len, !TYPE_NORM)
+    verify_block_hash_internal(blockhash, blockhash_len, verify_data_range_in, verify_data_range_out, !TYPE_NORM)
 }
 
 /// Push block hash contents at the end of a given [`u8`] slice.

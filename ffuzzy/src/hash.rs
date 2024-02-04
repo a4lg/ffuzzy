@@ -482,12 +482,8 @@ where
         debug_assert!(block_size::is_log_valid(log_block_size));
         debug_assert!(block_hash_1_len as usize <= S1);
         debug_assert!(block_hash_2_len as usize <= S2);
-        debug_assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        debug_assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        debug_assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
-        debug_assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
-        debug_assert!(algorithms::is_block_hash_normalized_input::<S1, NORM>(block_hash_1, block_hash_1_len));
-        debug_assert!(algorithms::is_block_hash_normalized_input::<S2, NORM>(block_hash_2, block_hash_2_len));
+        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(block_hash_1, block_hash_1_len, true, true));
+        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(block_hash_2, block_hash_2_len, true, true));
         self.blockhash1 = *block_hash_1;
         self.blockhash2 = *block_hash_2;
         self.len_blockhash1 = block_hash_1_len;
@@ -552,12 +548,8 @@ where
         assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1_len as usize <= S1);
         assert!(block_hash_2_len as usize <= S2);
-        assert!(block_hash_1[..block_hash_1_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        assert!(block_hash_2[..block_hash_2_len as usize].iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        assert!(block_hash_1[block_hash_1_len as usize..].iter().all(|&x| x == 0));
-        assert!(block_hash_2[block_hash_2_len as usize..].iter().all(|&x| x == 0));
-        assert!(algorithms::is_block_hash_normalized_input::<S1, NORM>(block_hash_1, block_hash_1_len));
-        assert!(algorithms::is_block_hash_normalized_input::<S2, NORM>(block_hash_2, block_hash_2_len));
+        assert!(algorithms::verify_block_hash_input::<S1, NORM>(block_hash_1, block_hash_1_len, true, true));
+        assert!(algorithms::verify_block_hash_input::<S2, NORM>(block_hash_2, block_hash_2_len, true, true));
         self.init_from_internals_raw_internal(
             log_block_size,
             block_hash_1,
@@ -650,8 +642,6 @@ where
     {
         let mut hash = Self::new();
         debug_assert!(block_size::is_log_valid(log_block_size));
-        debug_assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        debug_assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         optionally_unsafe! {
             invariant!(block_hash_1.len() <= S1);
             invariant!(block_hash_2.len() <= S2);
@@ -661,8 +651,8 @@ where
         hash.len_blockhash1 = block_hash_1.len() as u8;
         hash.len_blockhash2 = block_hash_2.len() as u8;
         hash.log_blocksize = log_block_size;
-        debug_assert!(algorithms::is_block_hash_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
-        debug_assert!(algorithms::is_block_hash_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
+        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1, true, false));
+        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2, true, false));
         hash
     }
 
@@ -715,15 +705,13 @@ where
         assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1.len() <= S1);
         assert!(block_hash_2.len() <= S2);
-        assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         let hash = Self::new_from_internals_near_raw_internal(
             log_block_size,
             block_hash_1,
             block_hash_2
         );
-        assert!(algorithms::is_block_hash_normalized_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1));
-        assert!(algorithms::is_block_hash_normalized_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2));
+        assert!(algorithms::verify_block_hash_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1, true, false));
+        assert!(algorithms::verify_block_hash_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2, true, false));
         hash
     }
 
@@ -1067,14 +1055,8 @@ where
     /// Note that this method is only for convenience purposes and checking
     /// whether a fuzzy hash is normalized does not usually improve the performance.
     pub fn is_normalized(&self) -> bool {
-        algorithms::is_block_hash_normalized_current::<S1, NORM>(
-            &self.blockhash1,
-            self.len_blockhash1
-        ) &&
-        algorithms::is_block_hash_normalized_current::<S2, NORM>(
-            &self.blockhash2,
-            self.len_blockhash2
-        )
+        algorithms::verify_block_hash_current::<S1, NORM>(&self.blockhash1, self.len_blockhash1, false, false) &&
+        algorithms::verify_block_hash_current::<S2, NORM>(&self.blockhash2, self.len_blockhash2, false, false)
     }
 
     /// Normalize the fuzzy hash in place (or don't, depending on the input normalization).
@@ -1163,16 +1145,8 @@ where
         block_size::is_log_valid(self.log_blocksize)
             && (self.len_blockhash1 as usize) <= S1
             && (self.len_blockhash2 as usize) <= S2
-            && self.blockhash1[..self.len_blockhash1 as usize]
-                .iter().all(|&x| { x < block_hash::ALPHABET_SIZE as u8 })
-            && self.blockhash1[self.len_blockhash1 as usize..]
-                .iter().all(|&x| { x == 0 })
-            && self.blockhash2[..self.len_blockhash2 as usize]
-                .iter().all(|&x| { x < block_hash::ALPHABET_SIZE as u8 })
-            && self.blockhash2[self.len_blockhash2 as usize..]
-                .iter().all(|&x| { x == 0 })
-            && algorithms::is_block_hash_normalized_input::<S1, NORM>(&self.blockhash1, self.len_blockhash1)
-            && algorithms::is_block_hash_normalized_input::<S2, NORM>(&self.blockhash2, self.len_blockhash2)
+            && algorithms::verify_block_hash_input::<S1, NORM>(&self.blockhash1, self.len_blockhash1, true, true)
+            && algorithms::verify_block_hash_input::<S2, NORM>(&self.blockhash2, self.len_blockhash2, true, true)
     }
 
     /// Performs full equality checking of the internal structure.
