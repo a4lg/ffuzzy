@@ -250,81 +250,81 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
     let samples: &[(&[u8], &[(usize, usize)], [u8; 32], BlockHashParseState, usize, u8)] = &[
         // Test Group 1A: Terminating behavior ending with a sequence
         (
-            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG"[..],
+            b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG",
             &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 28, 18
         ),
         (
-            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG:"[..],
+            b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG:",
             &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
-            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG,"[..],
+            b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG,",
             &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
-            &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG@"[..],
+            b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG@",
             &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::Base64Error, 28, 18
         ),
         // Test Group 1B: Terminating behavior *not* ending with a sequence.
         (
-            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA"[..],
+            b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA",
             &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 28, 18
         ),
         (
-            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA:"[..],
+            b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA:",
             &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
-            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA,"[..],
+            b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA,",
             &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
-            &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA@"[..],
+            b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA@",
             &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::Base64Error, 28, 18
         ),
         // Test Group 2: Single Sequence
         (
-            &b"AAA"[..],
+            b"AAA",
             &[],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 3, 3
         ),
         (
-            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
+            b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
             &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 32, 3
         ),
         (
-            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"[..],
+            b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:",
             &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 32 + 1, 3
         ),
         (
-            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,"[..],
+            b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,",
             &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 32 + 1, 3
         ),
         (
-            &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
+            b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
             &[(0, if cfg!(feature = "strict-parser") { 32 } else { 64 })],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::MetEndOfString },
@@ -333,44 +333,44 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
         ),
         // Test Group 3: Complex
         (
-            &b"AAAAAAABCCCCCCCC"[..],
+            b"AAAAAAABCCCCCCCC",
             &[(0, 7), (4, 8)],
             [0, 0, 0, 1, 2, 2, 2, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 16, 7
         ),
         (
-            &b"DAAAAAAABCCCCCCCCEEE"[..],
+            b"DAAAAAAABCCCCCCCCEEE",
             &[(1, 7), (5, 8)],
             [3, 0, 0, 0, 1, 2, 2, 2, 4, 4, 4, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 20, 11
         ),
         // Test Group 4: No sequences
         (
-            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH"[..],
+            b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH",
             &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetEndOfString, 32, 32
         ),
         (
-            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH:"[..],
+            b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH:",
             &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetColon, 32 + 1, 32
         ),
         (
-            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH,"[..],
+            b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH,",
             &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetComma, 32 + 1, 32
         ),
         (
-            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH@"[..],
+            b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH@",
             &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::Base64Error }, 32, 32
         ),
         (
-            &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGHI"[..],
+            b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGHI",
             &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::OverflowError, 32, 32
