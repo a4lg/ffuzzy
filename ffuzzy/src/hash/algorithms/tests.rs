@@ -83,61 +83,88 @@ fn insert_block_hash_into_bytes_contents() {
 
 #[test]
 fn parse_block_size_from_bytes_patterns() {
-    // Test macros
-    fn test_okay(input_str: &[u8], expected_block_size: u32) {
-        let bs_str_len = input_str.iter().position(|&x| x == b':').unwrap();
-        let mut buf = input_str;
+    // Prerequisites
+    assert!(block_size::is_valid(3));
+    assert!(block_size::is_valid(12));
+    assert!(block_size::is_valid(6144));
+    assert!(!block_size::is_valid(4));
+    assert!(!block_size::is_valid(4294967295) && 4294967295 == u32::MAX);
+    // Test okay cases
+    const OKAY_CASES: &[(&str, u32)] = &[
+        // Block hash only
+        ("3:",        3),
+        ("12:",      12),
+        ("6144:",  6144),
+        // Valid format
+        ("3::",       3),
+        ("12::",     12),
+        ("6144::", 6144),
+        // As long as the block size and the separator (':') is parsed,
+        // the rest should be ignored.
+        ("3:@",       3),
+        ("12:@",     12),
+        ("6144:@", 6144),
+    ];
+    for &(input_str, expected_block_size) in OKAY_CASES {
+        let bytes = input_str.as_bytes();
+        let bs_str_len = bytes.iter().position(|&x| x == b':').unwrap();
+        let mut buf = bytes;
+        // Check if the block hash is parsed
         assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((expected_block_size, bs_str_len + 1)), "failed on input_str={:?}", input_str);
         // buf is updated to start right after the first ':'.
-        assert_eq!(buf, &input_str[bs_str_len + 1..], "failed on input_str={:?}", input_str);
+        assert_eq!(buf, &bytes[bs_str_len + 1..], "failed on input_str={:?}", input_str);
     }
-    fn test_fail(input_str: &[u8], expected_err: ParseError) {
-        let mut buf = input_str;
+    // Test failure cases
+    struct ParseBlockSizeFailureCase<'a> { input: &'a str, kind: ParseErrorKind, offset: usize }
+    macro_rules! fail_cases { [ $(($str:literal, $kind:ident, $offset:expr $(,)?)),* $(,)?] => { &[
+        $(ParseBlockSizeFailureCase { input: $str, kind: ParseErrorKind::$kind, offset: $offset }),*
+    ] }}
+    const FAIL_CASES: &[ParseBlockSizeFailureCase] = fail_cases![
+        ("",    UnexpectedEndOfString, 0),
+        // Empty block size part
+        (":",   BlockSizeIsEmpty, 0),
+        // Block size part cannot be prefixed with either '+' or '-'.
+        ("+3:",  UnexpectedCharacter, 0),
+        ("-3:",  UnexpectedCharacter, 0),
+        // Block size prefixed with the digit zero (returns error on the first '0')
+        ("03",  BlockSizeStartsWithZero, 0),
+        ("03:", BlockSizeStartsWithZero, 0),
+        ("03,", BlockSizeStartsWithZero, 0),
+        ("03A", BlockSizeStartsWithZero, 0),
+        // Valid format block size part (but block size itself is not valid)
+        ("4:",  BlockSizeIsInvalid, 0),
+        // Block size part does not end with colon
+        ("3",   UnexpectedEndOfString, 1),
+        ("12",  UnexpectedEndOfString, 2),
+        ("@",   UnexpectedCharacter, 0),
+        (",",   UnexpectedCharacter, 0),
+        ("A",   UnexpectedCharacter, 0),
+        ("3@",  UnexpectedCharacter, 1),
+        ("3,",  UnexpectedCharacter, 1),
+        ("3A",  UnexpectedCharacter, 1),
+        ("12@", UnexpectedCharacter, 2),
+        ("12,", UnexpectedCharacter, 2),
+        ("12A", UnexpectedCharacter, 2),
+        // Cases related to overflow (reported after processing the block size part including ':')
+        ("4294967295",   UnexpectedEndOfString, 10),
+        ("4294967295:",  BlockSizeIsInvalid,     0),
+        ("4294967296",   UnexpectedEndOfString, 10),
+        ("4294967296@",  UnexpectedCharacter,   10),
+        ("4294967296:",  BlockSizeIsTooLarge,    0),
+        ("99999999999",  UnexpectedEndOfString, 11),
+        ("99999999999@", UnexpectedCharacter,   11),
+        ("99999999999:", BlockSizeIsTooLarge,    0),
+    ];
+    for case in FAIL_CASES {
+        let input_str = case.input;
+        let expected_err = ParseError(case.kind, ParseErrorOrigin::BlockSize, case.offset);
+        // Expected error does occur.
+        let bytes = input_str.as_bytes();
+        let mut buf = bytes;
         assert_eq!(parse_block_size_from_bytes(&mut buf), Err(expected_err), "failed on input_str={:?}", input_str);
         // buf is not touched on error.
-        assert_eq!(buf, input_str, "failed on input_str={:?}", input_str);
+        assert_eq!(buf, bytes, "failed on input_str={:?}", input_str);
     }
-    // Valid block size part
-    test_okay(b"3:", 3);
-    test_okay(b"6144:", 6144);
-    // Valid block size part (suffix after a colon is ignored)
-    test_okay(b"3:ABC", 3);
-    test_okay(b"6144:abc:de,f", 6144);
-    // Empty block size part
-    test_fail(b":",   ParseError(ParseErrorKind::BlockSizeIsEmpty,        ParseErrorOrigin::BlockSize, 0));
-    // Block size part starts with '0'
-    test_fail(b"03:", ParseError(ParseErrorKind::BlockSizeStartsWithZero, ParseErrorOrigin::BlockSize, 0));
-    // Valid format block size part (but block size itself is not valid)
-    test_fail(b"4:",  ParseError(ParseErrorKind::BlockSizeIsInvalid,      ParseErrorOrigin::BlockSize, 0));
-    // Block size part ends with end-of-string.
-    for invalid_str in [&b""[..], b"3", b"4", b"12", b"6144"] {
-        test_fail(invalid_str, ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize, invalid_str.len()));
-    }
-    // Block size part ends with invalid character
-    for invalid_str in [&b","[..], b"3,", b"4,", b"12,", b"6144,", b"A", b"3A"] {
-        test_fail(invalid_str, ParseError(ParseErrorKind::UnexpectedCharacter, ParseErrorOrigin::BlockSize, invalid_str.len() - 1));
-    }
-}
-
-#[test]
-fn parse_block_size_from_bytes_overflow_on_block_size() {
-    // Block size with u32::MAX
-    assert!(!block_size::is_valid(u32::MAX)); // ssdeep-specific
-    let invalid_str = format!("{}:", u32::MAX);
-    let mut buf = invalid_str.as_bytes();
-    assert_eq!(
-        parse_block_size_from_bytes(&mut buf),
-        Err(ParseError(ParseErrorKind::BlockSizeIsInvalid, ParseErrorOrigin::BlockSize, 0))
-    );
-    assert_eq!(buf, invalid_str.as_bytes()); // buf is not touched on error
-    // Block size with u32::MAX + 1
-    let invalid_str = format!("{}:", (u32::MAX as u64) + 1);
-    let mut buf = invalid_str.as_bytes();
-    assert_eq!(
-        parse_block_size_from_bytes(&mut buf),
-        Err(ParseError(ParseErrorKind::BlockSizeIsTooLarge, ParseErrorOrigin::BlockSize, 0))
-    );
-    assert_eq!(buf, invalid_str.as_bytes()); // buf is not touched on error
 }
 
 // Common function for better coverage report
