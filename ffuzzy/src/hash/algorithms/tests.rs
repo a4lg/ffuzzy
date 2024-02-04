@@ -247,85 +247,85 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
     assert_eq!(block_hash::MAX_SEQUENCE_SIZE, 3);
     // Shorthand for an invalid value
     const I: u8 = u8::MAX;
-    let samples: &[(&[u8], &Vec<(usize, usize)>, [u8; 32], BlockHashParseState, usize, u8)] = &[
+    let samples: &[(&[u8], &[(usize, usize)], [u8; 32], BlockHashParseState, usize, u8)] = &[
         // Test Group 1A: Terminating behavior ending with a sequence
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG"[..],
-            &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 28, 18
         ),
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG:"[..],
-            &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG,"[..],
-            &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
             &b"ABBCCCDDDDEEEEEFFFFFFGGGGGGG@"[..],
-            &vec![(6, 4), (9, 5), (12, 6), (15, 7)],
+            &[(6, 4), (9, 5), (12, 6), (15, 7)],
             [0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::Base64Error, 28, 18
         ),
         // Test Group 1B: Terminating behavior *not* ending with a sequence.
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA"[..],
-            &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 28, 18
         ),
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA:"[..],
-            &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 28 + 1, 18
         ),
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA,"[..],
-            &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 28 + 1, 18
         ),
         (
             &b"BBCCCDDDDEEEEEFFFFFFGGGGGGGA@"[..],
-            &vec![(5, 4), (8, 5), (11, 6), (14, 7)],
+            &[(5, 4), (8, 5), (11, 6), (14, 7)],
             [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::Base64Error, 28, 18
         ),
         // Test Group 2: Single Sequence
         (
             &b"AAA"[..],
-            &vec![],
+            &[],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 3, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
-            &vec![(0, 32)],
+            &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 32, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:"[..],
-            &vec![(0, 32)],
+            &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetColon, 32 + 1, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,"[..],
-            &vec![(0, 32)],
+            &[(0, 32)],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetComma, 32 + 1, 3
         ),
         (
             &b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"[..],
-            &vec![(0, if cfg!(feature = "strict-parser") { 32 } else { 64 })],
+            &[(0, if cfg!(feature = "strict-parser") { 32 } else { 64 })],
             [0, 0, 0, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::MetEndOfString },
             if cfg!(feature = "strict-parser") { 32 } else { 64 },
@@ -334,44 +334,44 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
         // Test Group 3: Complex
         (
             &b"AAAAAAABCCCCCCCC"[..],
-            &vec![(0, 7), (4, 8)],
+            &[(0, 7), (4, 8)],
             [0, 0, 0, 1, 2, 2, 2, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 16, 7
         ),
         (
             &b"DAAAAAAABCCCCCCCCEEE"[..],
-            &vec![(1, 7), (5, 8)],
+            &[(1, 7), (5, 8)],
             [3, 0, 0, 0, 1, 2, 2, 2, 4, 4, 4, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
             BlockHashParseState::MetEndOfString, 20, 11
         ),
         // Test Group 4: No sequences
         (
             &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH"[..],
-            &vec![],
+            &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetEndOfString, 32, 32
         ),
         (
             &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH:"[..],
-            &vec![],
+            &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetColon, 32 + 1, 32
         ),
         (
             &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH,"[..],
-            &vec![],
+            &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::MetComma, 32 + 1, 32
         ),
         (
             &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGH@"[..],
-            &vec![],
+            &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             if cfg!(feature = "strict-parser") { BlockHashParseState::OverflowError } else { BlockHashParseState::Base64Error }, 32, 32
         ),
         (
             &b"ABCDEFGHABCDEFGHABCDEFGHABCDEFGHI"[..],
-            &vec![],
+            &[],
             [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7],
             BlockHashParseState::OverflowError, 32, 32
         ),
@@ -395,10 +395,10 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
             BlockHashParseState::Base64Error | BlockHashParseState::OverflowError => {
                 // On error, the last run-length may not be reported but otherwise the same.
                 assert!(
-                    &reported_seqs == expected_reported_seqs || reported_seqs == expected_reported_seqs[..expected_reported_seqs.len() - 1],
+                    reported_seqs == expected_reported_seqs || reported_seqs == expected_reported_seqs[..expected_reported_seqs.len() - 1],
                     "failed on bytes={:?}", bytes);
             }
-            _ => { assert_eq!(&reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes); }
+            _ => { assert_eq!(reported_seqs, expected_reported_seqs, "failed on bytes={:?}", bytes); }
         }
         assert_eq!(state, expected_state, "failed on bytes={:?}", bytes);
         assert_eq!(&buf_out, &expected_buffer, "failed on bytes={:?}", bytes);
