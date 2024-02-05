@@ -50,6 +50,19 @@ pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(value: &T) {
 }
 
 
+/// Check whether two slices are completely the same, including the address
+/// they are pointing.
+///
+/// On some cases, comparing the slices aren't just enough because either of
+/// the operands may be a mutable counterpart of another.
+///
+/// Note that returning `true` implies `a == b` (but it also means that
+/// two slices share the pointer).
+pub(crate) fn eq_slice_buf<T>(a: &[T], b: &[T]) -> bool {
+    a.as_ptr() == b.as_ptr() && a.len() == b.len()
+}
+
+
 /// Test automatically generated [`Debug`](core::fmt::Debug)
 /// implementation of an enum with no variants with structs or tuples.
 #[doc(alias = "test_auto_debug_for_enum")]

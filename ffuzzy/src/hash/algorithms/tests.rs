@@ -19,6 +19,7 @@ use crate::hash::block::{
 };
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::test_utils::test_blockhash_content_all;
+use crate::test_utils::eq_slice_buf;
 
 
 macro_rules! call_for_block_hash_sizes {
@@ -112,7 +113,7 @@ fn parse_block_size_from_bytes_patterns() {
         // Check if the block hash is parsed
         assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((expected_block_size, bs_str_len + 1)), "failed on input_str={:?}", input_str);
         // buf is updated to start right after the first ':'.
-        assert_eq!(buf, &bytes[bs_str_len + 1..], "failed on input_str={:?}", input_str);
+        assert!(eq_slice_buf(buf, &bytes[bs_str_len + 1..]), "failed on input_str={:?}", input_str);
     }
     // Test failure cases
     struct ParseBlockSizeFailureCase<'a> { input: &'a str, kind: ParseErrorKind, offset: usize }
@@ -163,7 +164,7 @@ fn parse_block_size_from_bytes_patterns() {
         let mut buf = bytes;
         assert_eq!(parse_block_size_from_bytes(&mut buf), Err(expected_err), "failed on input_str={:?}", input_str);
         // buf is not touched on error.
-        assert_eq!(buf, bytes, "failed on input_str={:?}", input_str);
+        assert!(eq_slice_buf(buf, bytes), "failed on input_str={:?}", input_str);
     }
 }
 
@@ -178,7 +179,7 @@ fn parse_block_size_from_bytes_all_valid() {
         // Check if the block hash is parsed
         assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((bs, bs_str_len + 1)), "failed on log_block_size={:?}", log_block_size);
         // buf is updated to start right after the first ':'.
-        assert_eq!(buf, &bytes[bs_str_len + 1..], "failed on log_block_size={:?}", log_block_size);
+        assert!(eq_slice_buf(buf, &bytes[bs_str_len + 1..]), "failed on input_str={:?}", input_str);
     }
 }
 
@@ -226,7 +227,9 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             assert_eq!(&buf_out, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
             // len_out reflects normalization (if enabled), even on error.
             assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
-            // buf_in is updated to the end of the string.
+            // buf_in is updated to the end of the parsed buffer.
+            assert!(eq_slice_buf(buf_in, &bh_str[bh_str.len()..]), "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
+            // buf_in is now empty.
             assert!(buf_in.is_empty(), "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh);
         }
         let bh_str = &str_buffer[..bh.len()];
@@ -254,9 +257,9 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             // buf_in is updated to the end of the string or the error character.
             let expected_remaining_len = if is_err { 1 } else { 0 };
+            assert!(eq_slice_buf(buf_in, &bh_str[bh_str.len() - expected_remaining_len..]), "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             assert_eq!(parsed_len - (1 - expected_remaining_len), bh.len(), "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
-            assert_eq!(buf_in.len(), expected_remaining_len, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
-            if !buf_in.is_empty() {
+            if is_err {
                 assert_eq!(buf_in[0] as char, ch, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             }
         }
