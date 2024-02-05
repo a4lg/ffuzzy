@@ -216,11 +216,7 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             let mut buf_out = [u8::MAX; N];
             let mut buf_in = bh_str;
             assert_eq!(
-                parse_block_hash_from_bytes_common::<N, NORM>(
-                    &mut buf_out,
-                    &mut len_out,
-                    &mut buf_in
-                ),
+                parse_block_hash_from_bytes_common::<N, NORM>(&mut buf_out, &mut len_out, &mut buf_in),
                 (BlockHashParseState::MetEndOfString, bh.len()),
                 "failed on bhsz={}, norm={}, bh={:?}", bhsz, norm, bh
             );
@@ -244,11 +240,8 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             let mut len_out = u8::MAX;
             let mut buf_out = [u8::MAX; N];
             let mut buf_in = bh_str;
-            let (state, parsed_len) = parse_block_hash_from_bytes_common::<N, NORM>(
-                &mut buf_out,
-                &mut len_out,
-                &mut buf_in
-            );
+            let (state, parsed_len) =
+                parse_block_hash_from_bytes_common::<N, NORM>(&mut buf_out, &mut len_out, &mut buf_in);
             assert_eq!(state, expected_state, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             assert_eq!(&buf_out, expected_buffer, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             // len_out reflects normalization (if enabled), even on error.
@@ -426,9 +419,7 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
         let mut blockhash_len = 0;
         let mut buf_in: &[u8] = bytes;
         let (state, parsed_len) = parse_block_hash_from_bytes::<_, 32, true>(
-            &mut buf_out,
-            &mut blockhash_len,
-            &mut buf_in,
+            &mut buf_out, &mut blockhash_len, &mut buf_in,
             |start_pos_norm, seq_len| {
                 assert!(seq_len > block_hash::MAX_SEQUENCE_SIZE, "failed on bytes={:?}", bytes);
                 reported_seqs.push((start_pos_norm, seq_len));
@@ -474,11 +465,7 @@ fn parse_block_hash_from_bytes_overflow_noseq() {
                 let mut len = 0;
                 let mut buf_out: [u8; N] = [u8::MAX; N];
                 let mut buf_in = &str_buffer[..corrupt_size];
-                let (state, parsed_len) = parse_block_hash_from_bytes_common::<N, NORM>(
-                    &mut buf_out,
-                    &mut len,
-                    &mut buf_in
-                );
+                let (state, parsed_len) = parse_block_hash_from_bytes_common::<N, NORM>(&mut buf_out, &mut len, &mut buf_in);
                 assert_eq!(state, BlockHashParseState::OverflowError, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
                 // Stopped parsed_len is N.
                 assert_eq!(parsed_len, N, "failed on bhsz={}, norm={}, overflow_size={}", bhsz, norm, overflow_size);
