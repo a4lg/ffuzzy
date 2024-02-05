@@ -131,20 +131,12 @@ fn block_size_log_valid() {
         assert_eq!(log_block_size, block_size::log_from_valid_internal(bs), "failed on log_block_size={}", log_block_size);
         #[cfg(feature = "unchecked")]
         unsafe {
-            assert_eq!(
-                log_block_size,
-                block_size::log_from_valid_unchecked(bs),
-                "failed on log_block_size={}", log_block_size
-            );
+            assert_eq!(log_block_size, block_size::log_from_valid_unchecked(bs), "failed on log_block_size={}", log_block_size);
         }
         // Relations with block_size::MIN
         assert_eq!(bs % block_size::MIN, 0, "failed on log_block_size={}", log_block_size);
         assert!((bs / block_size::MIN).is_power_of_two(), "failed on log_block_size={}", log_block_size);
-        assert_eq!(
-            u8::try_from(crate::utils::u64_ilog2((bs / block_size::MIN) as u64)).unwrap(),
-            log_block_size,
-            "failed on log_block_size={}", log_block_size
-        );
+        assert_eq!(u8::try_from(crate::utils::u64_ilog2((bs / block_size::MIN) as u64)).unwrap(), log_block_size, "failed on log_block_size={}", log_block_size);
     }
 }
 
@@ -169,8 +161,7 @@ fn block_size_strings() {
         let bs_from_str: u32 = str::parse(block_size::BLOCK_SIZES_STR[index]).unwrap();
         assert_eq!(bs, bs_from_str, "failed on log_block_size={}", log_block_size);
         // The length must be bounded by MAX_BLOCK_SIZE_LEN_IN_CHARS.
-        assert!(block_size::BLOCK_SIZES_STR[index].len() <= block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS,
-            "failed on log_block_size={}", log_block_size);
+        assert!(block_size::BLOCK_SIZES_STR[index].len() <= block_size::MAX_BLOCK_SIZE_LEN_IN_CHARS, "failed on log_block_size={}", log_block_size);
         assert_eq!(block_size::BLOCK_SIZES_STR[index], bs.to_string(), "failed on log_block_size={}", log_block_size);
     }
 }
