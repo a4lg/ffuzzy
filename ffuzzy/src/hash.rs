@@ -1787,8 +1787,7 @@ impl<const NORM: bool>
 /// (libfuzzy), the result will be a non-truncated, long form.  If you want to
 /// handle such fuzzy hashes, use [`LongFuzzyHash`] (instead of [`FuzzyHash`])
 /// and/or [`LongRawFuzzyHash`] (instead of [`RawFuzzyHash`]).
-pub type FuzzyHash =
-    FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, true>;
+pub type FuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, true>;
 
 
 /// Regular (truncated) raw fuzzy hash type.
@@ -1818,8 +1817,7 @@ pub type FuzzyHash =
 /// (libfuzzy), the result will be a non-truncated, long form.  If you want to
 /// handle such fuzzy hashes, use [`LongFuzzyHash`] (instead of [`FuzzyHash`])
 /// and/or [`LongRawFuzzyHash`] (instead of [`RawFuzzyHash`]).
-pub type RawFuzzyHash =
-    FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, false>;
+pub type RawFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, false>;
 
 
 /// Long (non-truncated) normalized fuzzy hash type.
@@ -1830,8 +1828,7 @@ pub type RawFuzzyHash =
 /// Use [`FuzzyHash`] where applicable.
 ///
 /// See also: [`FuzzyHashData`]
-pub type LongFuzzyHash =
-    FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, true>;
+pub type LongFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, true>;
 
 
 /// Long (non-truncated) raw fuzzy hash type.
@@ -1842,8 +1839,7 @@ pub type LongFuzzyHash =
 /// Use [`RawFuzzyHash`] where applicable.
 ///
 /// See also: [`FuzzyHashData`]
-pub type LongRawFuzzyHash =
-    FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, false>;
+pub type LongRawFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, false>;
 
 
 
