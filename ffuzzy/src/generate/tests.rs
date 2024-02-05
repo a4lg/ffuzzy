@@ -49,13 +49,13 @@ fn partial_fnv_hash_table_contents() {
             assert_eq!(
                 FNV_TABLE[state as usize][ch as usize],
                 naive_impl(state, ch) % (block_hash::ALPHABET_SIZE as u8),
-                "failed (1) on state={}, ch={}", state, ch
+                "failed on state={}, ch={}", state, ch
             );
             // Of course, `FNV_TABLE` matches to masked `update_by_byte`.
             assert_eq!(
                 PartialFNVHash(state).update_by_byte(ch).value(),
                 naive_impl(state, ch) % (block_hash::ALPHABET_SIZE as u8),
-                "failed (2) on state={}, ch={}", state, ch
+                "failed on state={}, ch={}", state, ch
             );
         }
     }
