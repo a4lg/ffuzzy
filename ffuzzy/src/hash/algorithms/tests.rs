@@ -179,7 +179,7 @@ fn parse_block_size_from_bytes_all_valid() {
         // Check if the block hash is parsed
         assert_eq!(parse_block_size_from_bytes(&mut buf), Ok((bs, bs_str_len + 1)), "failed on log_block_size={:?}", log_block_size);
         // buf is updated to start right after the first ':'.
-        assert!(eq_slice_buf(buf, &bytes[bs_str_len + 1..]), "failed on input_str={:?}", input_str);
+        assert!(eq_slice_buf(buf, &bytes[bs_str_len + 1..]), "failed on log_block_size={:?}", log_block_size);
     }
 }
 
