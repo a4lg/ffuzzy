@@ -537,7 +537,7 @@ fn rolling_hash_rolling_inspect_internal_state() {
         }
         assert_eq!(hash.h3, h3_expected, "failed on pos={}", pos);
         // value: h1+h2+h3
-        assert_eq!(hash.value(), h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected),"failed on pos={}", pos);
+        assert_eq!(hash.value(), h1_expected.wrapping_add(h2_expected).wrapping_add(h3_expected), "failed on pos={}", pos);
     }
 }
 
