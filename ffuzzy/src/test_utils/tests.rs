@@ -7,6 +7,7 @@
 use crate::test_utils::{
     assert_fits_in,
     cover_auto_debug,
+    eq_slice_buf,
     test_auto_clone,
     test_auto_debug_for_enum,
     test_for_each_type,
@@ -31,6 +32,17 @@ fn auto_clone_counterexample() {
         fn clone(&self) -> Self { Self(0) }
     }
     test_auto_clone(&Counterexample(1));
+}
+
+#[test]
+fn test_eq_slice_buf_noteq() {
+    const A: &[u8] = b"@ABCDEF@";
+    const B: &[u8] = b"_ABCDEF_";
+    assert_eq!(&A[1..7], b"ABCDEF");
+    // Even the contents are the same (b"ABCDEF"),
+    // they don't point to the same memory location.
+    assert_eq!(&A[1..7], &B[1..7]);
+    assert!(!eq_slice_buf(&A[1..7], &B[1..7]));
 }
 
 
