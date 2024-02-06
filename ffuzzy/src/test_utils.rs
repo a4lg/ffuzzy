@@ -54,7 +54,7 @@ pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(value: &T) {
 /// they are pointing.
 ///
 /// On some cases, comparing the slices aren't just enough because either of
-/// the operands may be a mutable counterpart of another.
+/// the operands may originate from a subset of another.
 ///
 /// Note that returning `true` implies `a == b` (but it also means that
 /// two slices share the pointer).
