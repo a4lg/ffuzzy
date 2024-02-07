@@ -240,30 +240,12 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8])
     ))
 }
 
-/// Parse block hash part (1/2) of the fuzzy hash from bytes.
-///
-/// `i` (input/output) is updated to the last character index
-/// to continue parsing.
-///
-/// `report_norm_seq` is called when `NORM` (normalization) is true (enabled)
-/// and we have found a sequence longer than
-/// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
-///
-/// Note that however, this function *may not* be called when we once know
-/// that the parsing the block hash results in a failure and the last "length"
-/// might assume that the overflow won't occur (i.e. the sum of two arguments
-/// below may be capped to `N`, depending on the configuration).
-///
-/// Arguments to `report_norm_seq` is as follows:
-///
-/// 1.  The offset in the *normalized* block hash
-///     (the first character of consecutive characters that are shortened).
-/// 2.  The length of the *original* consecutive characters
-///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
-pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
+/// The internal implementation of [`parse_block_hash_from_bytes()`].
+fn parse_block_hash_from_bytes_internal<F, const N: usize>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
     bytes: &mut &[u8],
+    normalize: bool,
     mut report_norm_seq: F
 ) -> (BlockHashParseState, usize)
 where
@@ -295,7 +277,7 @@ where
                     break true;
                 }
                 let curr = bch;
-                if NORM {
+                if normalize {
                     if curr == prev {
                         seq += 1;
                         if seq >= block_hash::MAX_SEQUENCE_SIZE {
@@ -339,7 +321,7 @@ where
             invariant!(index <= bytes.len());
             raw_ch = bytes[index..].iter().cloned().next(); // grcov-excl-br-line:ARRAY
         }
-        if NORM && seq == block_hash::MAX_SEQUENCE_SIZE {
+        if normalize && seq == block_hash::MAX_SEQUENCE_SIZE {
             let len = index - seq_start_in;
             report_norm_seq(seq_start, len);
         }
@@ -366,4 +348,38 @@ where
         *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
         result
     }
+}
+
+/// Parse block hash part (1/2) of the fuzzy hash from bytes.
+///
+/// `i` (input/output) is updated to the last character index
+/// to continue parsing.
+///
+/// `report_norm_seq` is called when `NORM` (normalization) is true (enabled)
+/// and we have found a sequence longer than
+/// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
+///
+/// Note that however, this function *may not* be called when we once know
+/// that the parsing the block hash results in a failure and the last "length"
+/// might assume that the overflow won't occur (i.e. the sum of two arguments
+/// below may be capped to `N`, depending on the configuration).
+///
+/// Arguments to `report_norm_seq` is as follows:
+///
+/// 1.  The offset in the *normalized* block hash
+///     (the first character of consecutive characters that are shortened).
+/// 2.  The length of the *original* consecutive characters
+///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
+#[inline(always)]
+pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
+    blockhash: &mut [u8; N],
+    blockhash_len: &mut u8,
+    bytes: &mut &[u8],
+    report_norm_seq: F
+) -> (BlockHashParseState, usize)
+where
+    F: FnMut(usize, usize),
+    BlockHashSize<N>: ConstrainedBlockHashSize,
+{
+    parse_block_hash_from_bytes_internal(blockhash, blockhash_len, bytes, NORM, report_norm_seq)
 }
