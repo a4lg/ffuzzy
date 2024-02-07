@@ -352,8 +352,9 @@ where
 
 /// Parse block hash part (1/2) of the fuzzy hash from bytes.
 ///
-/// `i` (input/output) is updated to the last character index
-/// to continue parsing.
+/// `bytes` (input/output) is updated to point to the first character index
+/// to resume parsing the next part (i.e. block hash 1 → block hash 2,
+/// block hash 2 → file name) if succeeds.
 ///
 /// `report_norm_seq` is called when `NORM` (normalization) is true (enabled)
 /// and we have found a sequence longer than
