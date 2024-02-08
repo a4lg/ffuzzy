@@ -268,7 +268,7 @@ where
                 let mut iter = bytes.iter().cloned();
             }
         }
-        #[allow(unused_variables)]
+        #[cfg_attr(not(feature = "strict-parser"), allow(unused_variables))]
         let has_char = loop {
             raw_ch = iter.next();
             if let Some(ch) = raw_ch {
