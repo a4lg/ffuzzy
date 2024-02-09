@@ -23,8 +23,7 @@ pub fn hash_buf(buffer: &[u8]) -> Result<RawFuzzyHash, GeneratorError> {
     let mut generator = Generator::new();
     generator.set_fixed_input_size_in_usize(buffer.len())?;
     generator.update(buffer);
-    let hash = generator.finalize()?; // grcov-excl-br-line:UNREACHABLE ERROR
-    Ok(hash)
+    Ok(generator.finalize().unwrap()) // grcov-excl-br-line:UNREACHABLE ERROR
 }
 
 
