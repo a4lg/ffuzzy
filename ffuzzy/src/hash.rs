@@ -378,9 +378,10 @@ macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
             Err(err) => { return Err(err); }
         };
         $($proc_to_prepare_blockhash1)*
-        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S1, $norm>(
+        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S1>(
             &mut $blockhash1,
             &mut $len_blockhash1,
+            $norm,
             &mut buf, $proc_to_process_sequence_1
         );
         offset += parsed_len;
@@ -401,9 +402,10 @@ macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
             }
         }
         $($proc_to_prepare_blockhash2)*
-        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S2, $norm>(
+        let (result, parsed_len) = algorithms::parse_block_hash_from_bytes::<_, S2>(
             &mut $blockhash2,
             &mut $len_blockhash2,
+            $norm,
             &mut buf, $proc_to_process_sequence_2
         );
         offset += parsed_len;

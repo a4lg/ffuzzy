@@ -240,12 +240,34 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8])
     ))
 }
 
-/// The internal implementation of [`parse_block_hash_from_bytes()`].
-fn parse_block_hash_from_bytes_internal<F, const N: usize>(
+/// Parse block hash part (1/2) of the fuzzy hash from bytes.
+///
+/// `bytes` (input/output) is updated to start with the first character
+/// to resume parsing the next part (i.e. block hash 1 → block hash 2,
+/// block hash 2 → file name) if succeeds (the end of `bytes` is always
+/// unchanged).
+///
+/// `report_norm_seq` is called when `normalize` (normalization) is true
+/// (enabled) and we have found a sequence longer than
+/// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
+///
+/// Note that however, this function *may not* be called when we once know
+/// that the parsing the block hash results in a failure and the last "length"
+/// might assume that the overflow won't occur (i.e. the sum of two arguments
+/// below may be capped to `N`, depending on the configuration).
+///
+/// Arguments to `report_norm_seq` is as follows:
+///
+/// 1.  The offset in the *normalized* block hash
+///     (the first character of consecutive characters that are shortened).
+/// 2.  The length of the *original* consecutive characters
+///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
+#[inline(always)]
+pub(crate) fn parse_block_hash_from_bytes<F, const N: usize>(
     blockhash: &mut [u8; N],
     blockhash_len: &mut u8,
-    bytes: &mut &[u8],
     normalize: bool,
+    bytes: &mut &[u8],
     mut report_norm_seq: F
 ) -> (BlockHashParseState, usize)
 where
@@ -333,10 +355,10 @@ where
                     _ => {
                         cfg_if::cfg_if! {
                             if #[cfg(feature = "strict-parser")] {
-                                (if has_char { BlockHashParseState::Base64Error } else { BlockHashParseState::OverflowError }, index)
+                                (if has_char { BlockHashParseState::Base64Error } else { BlockHashParseState::OverflowError }, index) // grcov-excl-br-line:TODO
                             }
                             else {
-                                (BlockHashParseState::Base64Error, index)
+                                (BlockHashParseState::Base64Error, index) // grcov-excl-br-line:TODO
                             }
                         }
                     }
@@ -348,40 +370,4 @@ where
         *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
         result
     }
-}
-
-/// Parse block hash part (1/2) of the fuzzy hash from bytes.
-///
-/// `bytes` (input/output) is updated to start with the first character
-/// to resume parsing the next part (i.e. block hash 1 → block hash 2,
-/// block hash 2 → file name) if succeeds (the end of `bytes` is always
-/// unchanged).
-///
-/// `report_norm_seq` is called when `NORM` (normalization) is true (enabled)
-/// and we have found a sequence longer than
-/// [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE).
-///
-/// Note that however, this function *may not* be called when we once know
-/// that the parsing the block hash results in a failure and the last "length"
-/// might assume that the overflow won't occur (i.e. the sum of two arguments
-/// below may be capped to `N`, depending on the configuration).
-///
-/// Arguments to `report_norm_seq` is as follows:
-///
-/// 1.  The offset in the *normalized* block hash
-///     (the first character of consecutive characters that are shortened).
-/// 2.  The length of the *original* consecutive characters
-///     (that are shortened into [`MAX_SEQUENCE_SIZE`](block_hash::MAX_SEQUENCE_SIZE)).
-#[inline(always)]
-pub(crate) fn parse_block_hash_from_bytes<F, const N: usize, const NORM: bool>(
-    blockhash: &mut [u8; N],
-    blockhash_len: &mut u8,
-    bytes: &mut &[u8],
-    report_norm_seq: F
-) -> (BlockHashParseState, usize)
-where
-    F: FnMut(usize, usize),
-    BlockHashSize<N>: ConstrainedBlockHashSize,
-{
-    parse_block_hash_from_bytes_internal(blockhash, blockhash_len, bytes, NORM, report_norm_seq)
 }

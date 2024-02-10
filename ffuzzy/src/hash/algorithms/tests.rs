@@ -192,7 +192,7 @@ fn parse_block_hash_from_bytes_common<const N: usize, const NORM: bool>(
 where
     BHS<N>: CBHS,
 {
-    parse_block_hash_from_bytes::<_, N, NORM>(blockhash, blockhash_len, bytes, |_, _| {})
+    parse_block_hash_from_bytes::<_, N>(blockhash, blockhash_len, NORM, bytes, |_, _| {})
 }
 
 #[test]
@@ -418,8 +418,8 @@ fn parse_block_hash_from_bytes_states_and_normalization_reporting() {
         let mut buf_out = [I; 32];
         let mut blockhash_len = 0;
         let mut buf_in: &[u8] = bytes;
-        let (state, parsed_len) = parse_block_hash_from_bytes::<_, 32, true>(
-            &mut buf_out, &mut blockhash_len, &mut buf_in,
+        let (state, parsed_len) = parse_block_hash_from_bytes::<_, 32>(
+            &mut buf_out, &mut blockhash_len, true, &mut buf_in,
             |start_pos_norm, seq_len| {
                 assert!(seq_len > block_hash::MAX_SEQUENCE_SIZE, "failed on bytes={:?}", bytes);
                 reported_seqs.push((start_pos_norm, seq_len));
