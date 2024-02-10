@@ -840,7 +840,7 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
     use std::io::{BufRead, BufReader};
     use std::vec::Vec;
     use crate::hash::LongFuzzyHash;
-    let mut block_hashes: HashSet<Vec<u8>> = HashSet::new();
+    let mut block_hashes = HashSet::new();
     for filename in [
         "data/testsuite/compare/big_cluster.uniform_blocksize.4x128.txt",
         "data/testsuite/compare/malware_all.uniform_blocksize.16x32.txt",
@@ -880,7 +880,7 @@ fn verify_edit_distance_by_real_blockhash_vectors() {
     use std::vec::Vec;
     use crate::compare::position_array::{BlockHashPositionArray, BlockHashPositionArrayImpl};
     use crate::hash::LongFuzzyHash;
-    let mut block_hashes: HashSet<Vec<u8>> = HashSet::new();
+    let mut block_hashes = HashSet::new();
     for filename in [
         "data/testsuite/compare/big_cluster.uniform_blocksize.4x128.txt",
         "data/testsuite/compare/malware_all.uniform_blocksize.16x32.txt",
