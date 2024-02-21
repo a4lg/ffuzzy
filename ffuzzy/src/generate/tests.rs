@@ -881,8 +881,8 @@ fn large_data_triggers_1() {
         Be careful!  This Zstandard-compressed file can be zip bomb!
     */
     let mut last_bytes: [u8; 7*64+1] = [0u8; 7*64+1];
-    for i in 0..64 {
-        last_bytes[i*7..(i+1)*7].clone_from_slice(b"`]]]_CT");
+    for dest in last_bytes.chunks_exact_mut(7) {
+        dest.clone_from_slice(b"`]]]_CT");
     }
     last_bytes[7*64] = 1;
     let generator_base = make_generator_with_prefix_zeroes(96 * 1024 * 1024 * 1024 - 7 * 64);
