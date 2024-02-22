@@ -5,6 +5,7 @@
 
 #![cfg(test)]
 
+#[cfg(not(feature = "std"))]
 use std::vec::Vec;
 
 use crate::generate::{
