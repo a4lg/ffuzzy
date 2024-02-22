@@ -19,6 +19,8 @@
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
 // int_roundings feature depending on div_ceil availability
 #![cfg_attr(ffuzzy_div_ceil = "unstable", feature(int_roundings))]
+// In the code maintenance mode, disallow all warnings.
+#![cfg_attr(feature = "maint-code", deny(warnings))]
 // unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
 // feature or on the tests.  When only the "unchecked" feature is enabled
 // (and not testing), unsafe code requires explicit allow.
@@ -26,8 +28,6 @@
 #![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
-// In the code maintenance mode, disallow all warnings.
-#![cfg_attr(feature = "maint-code", deny(warnings))]
 // Unless in the maintenance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
 // Unless in the maintenance mode, allow old lint names.
