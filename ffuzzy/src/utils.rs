@@ -15,6 +15,7 @@ mod tests;
 /// It will be `const` once MSRV of 1.57 is acceptable.
 ///
 /// Consider removing it once MSRV of 1.67 is acceptable.
+#[allow(clippy::incompatible_msrv)]
 #[inline(always)]
 pub(crate) fn u64_ilog2(value: u64) -> u32 {
     cfg_if::cfg_if! {
