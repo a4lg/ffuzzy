@@ -46,6 +46,7 @@ tests-slow = []
 tests-very-slow = ["tests-slow"]
 tests-unsound = []
 nightly = []
+maint-code = []
 maint-lints = []
 
 [package.metadata.docs.rs]

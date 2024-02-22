@@ -26,6 +26,8 @@
 #![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
+// In the code maintenance mode, disallow all warnings.
+#![cfg_attr(feature = "maint-code", deny(warnings))]
 // Unless in the maintenance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
 // Unless in the maintenance mode, allow old lint names.
