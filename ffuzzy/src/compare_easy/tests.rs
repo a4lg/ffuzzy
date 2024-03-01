@@ -4,7 +4,7 @@
 
 #![cfg(test)]
 
-#[cfg(all(not(feature = "std"), feature = "nightly"))]
+#[cfg(all(not(feature = "std"), feature = "unstable"))]
 use core::error::Error;
 #[cfg(feature = "std")]
 use std::error::Error;
@@ -82,7 +82,7 @@ fn parse_error_either_impls_display_and_debug_with_side() {
     }
 }
 
-#[cfg(any(feature = "std", feature = "nightly"))]
+#[cfg(any(feature = "std", feature = "unstable"))]
 #[test]
 fn parse_error_either_source_with_side() {
     for &(err, _err_str_display, _err_str_debug) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {

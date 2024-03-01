@@ -64,7 +64,7 @@ impl std::error::Error for ParseErrorEither {
         Some(&self.1)
     }
 }
-#[cfg(all(not(feature = "std"), feature = "nightly"))]
+#[cfg(all(not(feature = "std"), feature = "unstable"))]
 impl core::error::Error for ParseErrorEither {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         Some(&self.1)

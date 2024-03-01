@@ -7,14 +7,14 @@
 // no_std
 #![cfg_attr(not(any(test, doc, feature = "std")), no_std)]
 // Allow using internal features when use of Nightly Rust features are allowed.
-#![cfg_attr(feature = "nightly", allow(internal_features))]
+#![cfg_attr(feature = "unstable", allow(internal_features))]
 // Regular nightly features
-#![cfg_attr(feature = "nightly", feature(doc_cfg))]
-#![cfg_attr(feature = "nightly", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "nightly", feature(core_intrinsics))]
-#![cfg_attr(feature = "nightly", feature(error_in_core))]
-#![cfg_attr(feature = "nightly", feature(coverage_attribute))]
-#![cfg_attr(feature = "nightly", feature(trusted_len))]
+#![cfg_attr(feature = "unstable", feature(doc_cfg))]
+#![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
+#![cfg_attr(feature = "unstable", feature(core_intrinsics))]
+#![cfg_attr(feature = "unstable", feature(error_in_core))]
+#![cfg_attr(feature = "unstable", feature(coverage_attribute))]
+#![cfg_attr(feature = "unstable", feature(trusted_len))]
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
 // int_roundings feature depending on div_ceil availability
@@ -161,7 +161,7 @@ mod const_asserts {
 
 // grcov-excl-br-start
 #[cfg(all(test, not(ffuzzy_tests_without_debug_assertions)))]
-#[cfg_attr(feature = "nightly", coverage(off))] // To avoid llvm-cov error
+#[cfg_attr(feature = "unstable", coverage(off))] // To avoid llvm-cov error
 #[test]
 fn test_prerequisites() {
     assert!(cfg!(debug_assertions), "\

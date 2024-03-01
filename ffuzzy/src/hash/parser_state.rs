@@ -117,7 +117,7 @@ impl core::fmt::Display for ParseError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
-#[cfg(all(not(feature = "std"), feature = "nightly"))]
+#[cfg(all(not(feature = "std"), feature = "unstable"))]
 impl core::error::Error for ParseError {}
 
 

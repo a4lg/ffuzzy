@@ -228,7 +228,7 @@ mod private {
 
                 // grcov-excl-br-start
                 // Consider removing it once MSRV of 1.73 is acceptable.
-                #[cfg_attr(feature = "nightly", coverage(off))]
+                #[cfg_attr(feature = "unstable", coverage(off))]
                 #[allow(dead_code)]
                 const fn div_ceil(a: usize, b: usize) -> usize {
                     cfg_if::cfg_if! {

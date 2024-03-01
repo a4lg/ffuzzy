@@ -515,7 +515,7 @@ pub mod block_hash {
         }
     }
 
-    #[cfg(all(feature = "unsafe", feature = "nightly"))]
+    #[cfg(all(feature = "unsafe", feature = "unstable"))]
     unsafe impl <'a> core::iter::TrustedLen for NumericWindows<'a> {}
 }
 

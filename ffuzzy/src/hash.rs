@@ -348,7 +348,7 @@ impl core::fmt::Display for FuzzyHashOperationError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for FuzzyHashOperationError {}
-#[cfg(all(not(feature = "std"), feature = "nightly"))]
+#[cfg(all(not(feature = "std"), feature = "unstable"))]
 impl core::error::Error for FuzzyHashOperationError {}
 
 
