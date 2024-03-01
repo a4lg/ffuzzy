@@ -180,7 +180,7 @@ assert_eq!(hash1.compare(&hash2), 88);
     validity of the input.  This is a subset of the `unsafe` feature that
     exposes `unsafe` functionalities but does not switch the program to use the
     unsafe Rust.
-*   `nightly`  
+*   `unstable`  
     This feature enables some features specific to the Nightly Rust.  Note that
     this feature heavily depends on the version of `rustc` and should not be
     considered stable (don't expect SemVer-compatible semantics).
