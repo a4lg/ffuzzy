@@ -6,10 +6,6 @@
 
 use core::cmp::Ordering;
 use std::collections::HashSet;
-#[cfg(not(feature = "std"))]
-use std::string::ToString;
-#[cfg(not(feature = "std"))]
-use std::vec::Vec;
 
 use crate::hash::FuzzyHashData;
 use crate::hash::block::block_size;

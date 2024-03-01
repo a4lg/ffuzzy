@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
-#[cfg(all(feature = "alloc", not(feature = "std")))]
+#[cfg(all(feature = "alloc", not(any(test, doc, feature = "std"))))]
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;

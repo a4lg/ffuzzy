@@ -6,10 +6,6 @@
 
 use core::any::type_name;
 use core::cmp::Ordering;
-#[cfg(not(feature = "std"))]
-use std::string::ToString;
-#[cfg(not(feature = "std"))]
-use std::vec::Vec;
 use std::collections::HashSet;
 use collect_slice::CollectSlice;
 

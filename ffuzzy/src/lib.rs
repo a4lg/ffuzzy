@@ -5,7 +5,7 @@
 #![doc = include_str!("docs/readme.md")]
 
 // no_std
-#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(not(any(test, doc, feature = "std")), no_std)]
 // Allow using internal features when use of Nightly Rust features are allowed.
 #![cfg_attr(feature = "nightly", allow(internal_features))]
 // Regular nightly features
@@ -56,11 +56,6 @@
 // alloc is required when the "alloc" feature is enabled or testing (including doctests).
 #[cfg(any(feature = "alloc", test, doc))]
 extern crate alloc;
-
-// std is required when we are testing (including doctests).
-#[cfg(any(test, doc))]
-#[macro_use]
-extern crate std;
 
 mod base64;
 mod compare;
