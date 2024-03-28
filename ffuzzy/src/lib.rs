@@ -20,15 +20,23 @@
 #![cfg_attr(ffuzzy_div_ceil = "unstable", feature(int_roundings))]
 // In the code maintenance mode, disallow all warnings.
 #![cfg_attr(feature = "maint-code", deny(warnings))]
-// unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
-// feature or on the tests.  When only the "unchecked" feature is enabled
-// (and not testing), unsafe code requires explicit allow.
+// unsafe code is *only* allowed on enabling either "unsafe"-like features or
+// the "unchecked" feature, or on the tests.  When neither full "unsafe" feature
+// is enabled or on the tests, unsafe code requires explicit allow.
 #![cfg_attr(
-    not(any(feature = "unsafe", feature = "unchecked", test)),
+    not(any(
+        feature = "unsafe",
+        feature = "unsafe-guarantee",
+        feature = "unchecked",
+        test
+    )),
     forbid(unsafe_code)
 )]
 #![cfg_attr(
-    all(feature = "unchecked", not(any(feature = "unsafe", test))),
+    all(
+        not(any(feature = "unsafe", test)),
+        any(feature = "unchecked", feature = "unsafe-guarantee")
+    ),
     deny(unsafe_code)
 )]
 // Non-test code requires documents
