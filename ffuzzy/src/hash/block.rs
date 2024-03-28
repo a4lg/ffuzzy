@@ -488,16 +488,13 @@ pub mod block_hash {
 
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {
-            if self.v.is_empty() {
-                None
-            }
-            else {
-                self.hash <<= Self::ILOG2_OF_ALPHABETS;
-                self.hash |= self.v[0] as u64; // grcov-excl-br-line:ARRAY
-                self.hash &= Self::MASK;
-                // Pop the first element and continue
-                self.v = &self.v[1..]; // grcov-excl-br-line:ARRAY
+            if let Some((&value, rest)) = self.v.split_first() {
+                self.hash =
+                    ((self.hash << Self::ILOG2_OF_ALPHABETS) | (value as u64)) & Self::MASK;
+                self.v = rest;
                 Some(self.hash)
+            } else {
+                None
             }
         }
 
