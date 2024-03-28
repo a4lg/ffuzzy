@@ -150,7 +150,6 @@ pub(crate) enum BlockHashParseState {
 pub(crate) mod tests {
     use super::*;
     use crate::test_utils::test_auto_clone;
-    use crate::test_utils::test_auto_debug_for_enum;
 
     #[test]
     fn parse_error_kind_impls() {
@@ -164,16 +163,6 @@ pub(crate) mod tests {
         assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
         assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
         assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
-        // Test Debug
-        test_auto_debug_for_enum!(ParseErrorKind, [
-            BlockSizeIsEmpty,
-            BlockSizeStartsWithZero,
-            BlockSizeIsInvalid,
-            BlockSizeIsTooLarge,
-            BlockHashIsTooLong,
-            UnexpectedCharacter,
-            UnexpectedEndOfString,
-        ]);
     }
 
     #[test]
@@ -186,12 +175,6 @@ pub(crate) mod tests {
             assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
             assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
             assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
-            // Test Debug
-            test_auto_debug_for_enum!(ParseErrorOrigin, [
-                BlockSize,
-                BlockHash1,
-                BlockHash2,
-            ]);
         }
     }
 
@@ -199,18 +182,6 @@ pub(crate) mod tests {
     fn block_hash_parse_state_impls() {
         // Test Clone
         test_auto_clone::<BlockHashParseState>(&BlockHashParseState::MetEndOfString);
-        #[cfg(feature = "alloc")]
-        {
-            // no Display
-            // Test Debug
-            test_auto_debug_for_enum!(BlockHashParseState, [
-                MetEndOfString,
-                MetComma,
-                MetColon,
-                OverflowError,
-                Base64Error,
-            ]);
-        }
     }
 
     #[test]

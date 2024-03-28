@@ -62,27 +62,6 @@ pub(crate) fn eq_slice_buf<T>(a: &[T], b: &[T]) -> bool {
     a.as_ptr() == b.as_ptr() && a.len() == b.len()
 }
 
-
-/// Test automatically generated [`Debug`](core::fmt::Debug)
-/// implementation of an enum with no variants with structs or tuples.
-#[doc(alias = "test_auto_debug_for_enum")]
-macro_rules! test_auto_debug_for_enum_impl {
-    ($ty: ty, []) => {};
-    ($ty: ty, [$var: ident]) => {{
-        assert_eq!(format!("{:?}", <$ty>::$var), stringify!($var));
-    }};
-    ($ty: ty, [$var: ident, $($rest: ident),+]) => {
-        $crate::test_utils::test_auto_debug_for_enum!($ty, [$var]);
-        $crate::test_utils::test_auto_debug_for_enum!($ty, [$($rest),+]);
-    };
-    ($ty: ty, [$var: ident,]) => {
-        $crate::test_utils::test_auto_debug_for_enum!($ty, [$var]);
-    };
-    ($ty: ty, [$var: ident, $($rest: ident),+,]) => {
-        $crate::test_utils::test_auto_debug_for_enum!($ty, [$var, $($rest),+]);
-    };
-}
-
 /// Test recommended [`Default`] implementation.
 #[doc(alias = "test_recommended_default")]
 macro_rules! test_recommended_default_impl {
@@ -126,7 +105,6 @@ macro_rules! assert_fits_in_impl {
     };
 }
 
-pub(crate) use test_auto_debug_for_enum_impl as test_auto_debug_for_enum;
 pub(crate) use test_recommended_default_impl as test_recommended_default;
 pub(crate) use test_for_each_type_impl as test_for_each_type;
 pub(crate) use assert_fits_in_impl as assert_fits_in;

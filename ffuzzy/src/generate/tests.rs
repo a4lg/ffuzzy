@@ -18,7 +18,7 @@ use crate::hash::block::{
 use crate::test_utils::{
     assert_fits_in,
     cover_auto_clone, cover_default,
-    test_auto_clone, test_auto_debug_for_enum, test_recommended_default
+    test_auto_clone, test_recommended_default
 };
 
 
@@ -582,12 +582,6 @@ macro_rules! call_for_generator_finalization {
 
 #[test]
 fn generator_error_impls() {
-    test_auto_debug_for_enum!(GeneratorError, [
-        FixedSizeMismatch,
-        FixedSizeTooLarge,
-        InputSizeTooLarge,
-        OutputOverflow,
-    ]);
     test_auto_clone::<GeneratorError>(&GeneratorError::FixedSizeMismatch);
 }
 

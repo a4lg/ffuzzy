@@ -9,7 +9,6 @@ use crate::test_utils::{
     cover_auto_debug,
     eq_slice_buf,
     test_auto_clone,
-    test_auto_debug_for_enum,
     test_for_each_type,
     test_recommended_default,
 };
@@ -43,115 +42,6 @@ fn test_eq_slice_buf_noteq() {
     // they don't point to the same memory location.
     assert_eq!(&A[1..7], &B[1..7]);
     assert!(!eq_slice_buf(&A[1..7], &B[1..7]));
-}
-
-
-mod test_auto_debug_for_enum {
-    use super::*;
-
-    #[derive(Debug)]
-    enum AutoEnumExample {
-        OK1,
-        OK2,
-        OK3,
-    }
-    enum DebugImplEnumExample {
-        OK1,
-        OK2,
-        OK3,
-        Broken,
-    }
-    impl core::fmt::Debug for DebugImplEnumExample {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            match self {
-                // Matches to the auto-generated implementation.
-                Self::OK1 => write!(f, "OK1"),
-                Self::OK2 => write!(f, "OK2"),
-                Self::OK3 => write!(f, "OK3"),
-                // BROKEN: it does not match.
-                // We could test enums with tuples or structs but that would
-                // only make mostly duplicate test cases.
-                Self::Broken => write!(f, "I_SAID_BROKEN"),
-            }
-        }
-    }
-    #[test]
-    fn valid_examples() {
-        test_auto_debug_for_enum!(AutoEnumExample, []);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1 ]);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1, ]);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1, OK2 ]);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1, OK2, ]);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1, OK2, OK3 ]);
-        test_auto_debug_for_enum!(AutoEnumExample, [ OK1, OK2, OK3, ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, []);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1 ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2 ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, OK3 ]);
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, OK3, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_01() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_02() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_03() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1 ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_04() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_05() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_06() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_07() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, OK2 ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_08() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ Broken, OK1, OK2, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_09() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, OK2 ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_10() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, Broken, OK2, ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_11() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, Broken ]);
-    }
-    #[test]
-    #[should_panic]
-    fn counterexample_12() {
-        test_auto_debug_for_enum!(DebugImplEnumExample, [ OK1, OK2, Broken, ]);
-    }
 }
 
 

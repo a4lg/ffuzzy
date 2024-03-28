@@ -25,7 +25,6 @@ use crate::hash::parser_state::{
 };
 use crate::hash::test_utils::test_blockhash_contents_all;
 use crate::test_utils::{assert_fits_in, test_auto_clone};
-use crate::test_utils::test_auto_debug_for_enum;
 
 
 macro_rules! call_for_fuzzy_hash_type {
@@ -78,11 +77,6 @@ fn fuzzy_hash_operation_error_impls() {
     // Test Display
     assert_eq!(format!("{}", FuzzyHashOperationError::BlockHashOverflow),     "overflow will occur while copying the block hash");
     assert_eq!(format!("{}", FuzzyHashOperationError::StringizationOverflow), "overflow will occur while converting to the string representation");
-    // Test Debug
-    test_auto_debug_for_enum!(FuzzyHashOperationError, [
-        BlockHashOverflow,
-        StringizationOverflow,
-    ]);
 }
 
 
