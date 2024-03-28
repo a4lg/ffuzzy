@@ -1542,14 +1542,11 @@ where
     #[inline(always)]
     fn compare_optimized_internal(&self, other: &Self, check_equality: bool) -> u32 {
         let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
-        if !rel.is_near() {
-            return 0;
-        }
-        if check_equality && rel == BlockSizeRelation::NearEq && self == other {
-            return 100;
-        }
         match rel {
             BlockSizeRelation::NearEq => {
+                if check_equality && self == other {
+                    return 100;
+                }
                 let target = FuzzyHashCompareTarget::from(self);
                 target.compare_unequal_near_eq_internal(other)
             },
@@ -1563,7 +1560,7 @@ where
                 target.init_from_partial(self.block_hash_1());
                 target.score_strings_internal(other.block_hash_2(), self.log_blocksize)
             },
-            BlockSizeRelation::Far => unreachable!(), // grcov-excl-line:UNREACHABLE
+            BlockSizeRelation::Far => 0
         }
     }
 
