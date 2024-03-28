@@ -502,8 +502,7 @@ pub struct Generator(GeneratorInnerData);
 /// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
 #[non_exhaustive]
-#[derive(Debug)] // grcov-excl-br-line:DEBUG_ON_ENUM
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GeneratorError {
     /// [The fixed size](Generator::set_fixed_input_size()) has a mismatch with
     /// either the previously set value or the final input size.

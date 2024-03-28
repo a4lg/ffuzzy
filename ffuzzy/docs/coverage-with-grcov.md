@@ -7,10 +7,10 @@ To use `grcov`, following options (from the surrounding workspace) are expected:
 
 ```sh
 --keep-only     'ffuzzy/src/*' \
---excl-line     '// grcov-excl-line'     \
+--excl-line     '// grcov-excl-line|#\[derive'     \
 --excl-start    '// grcov-excl-start'    \
 --excl-stop     '// grcov-excl-stop'     \
---excl-br-line  '// grcov-excl-br-line|(^| )(assert|debug_assert|invariant)!\(.*;([ ]*//.*)?$'  \
+--excl-br-line  '// grcov-excl-br-line||#\[derive|(^| )(assert|debug_assert|invariant)!\(.*;([ ]*//.*)?$'  \
 --excl-br-start '// grcov-(excl-br|generator)-start' \
 --excl-br-stop  '// grcov-(excl-br|generator)-stop'  \
 ```
