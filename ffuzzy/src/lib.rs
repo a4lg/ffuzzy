@@ -3,7 +3,6 @@
 
 // Separate from README.md to use rustdoc-specific features in docs/readme.md.
 #![doc = include_str!("docs/readme.md")]
-
 // no_std
 #![cfg_attr(not(any(test, doc, feature = "std")), no_std)]
 // Allow using internal features when use of Nightly Rust features are allowed.
@@ -24,15 +23,20 @@
 // unsafe code is *only* allowed on enabling either "unsafe" or "unchecked"
 // feature or on the tests.  When only the "unchecked" feature is enabled
 // (and not testing), unsafe code requires explicit allow.
-#![cfg_attr(not(any(feature = "unsafe", feature = "unchecked", test)), forbid(unsafe_code))]
-#![cfg_attr(all(feature = "unchecked", not(any(feature = "unsafe", test))), deny(unsafe_code))]
+#![cfg_attr(
+    not(any(feature = "unsafe", feature = "unchecked", test)),
+    forbid(unsafe_code)
+)]
+#![cfg_attr(
+    all(feature = "unchecked", not(any(feature = "unsafe", test))),
+    deny(unsafe_code)
+)]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
 // Unless in the maintenance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
 // Unless in the maintenance mode, allow old lint names.
 #![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
-
 // Tests: allow unused unsafe blocks (invariant! does will not need unsafe
 // on tests but others may need this macro).
 #![cfg_attr(test, allow(unused_unsafe))]
@@ -82,23 +86,13 @@ pub use generate::{Generator, GeneratorError};
 pub use generate_easy::hash_buf;
 #[cfg(all(feature = "easy-functions", feature = "std"))]
 pub use generate_easy_std::{hash_file, hash_stream, GeneratorOrIOError};
+pub use hash::block::{block_hash, block_size, BlockSizeRelation};
+pub use hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
 pub use hash::{
-    FuzzyHashData,
-    FuzzyHash, RawFuzzyHash, LongFuzzyHash, LongRawFuzzyHash,
-    FuzzyHashOperationError
+    FuzzyHash, FuzzyHashData, FuzzyHashOperationError, LongFuzzyHash, LongRawFuzzyHash,
+    RawFuzzyHash,
 };
-pub use hash::block::{
-    block_size,
-    block_hash,
-    BlockSizeRelation
-};
-pub use hash::parser_state::{
-    ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin
-};
-pub use hash_dual::{
-    FuzzyHashDualData,
-    DualFuzzyHash, LongDualFuzzyHash
-};
+pub use hash_dual::{DualFuzzyHash, FuzzyHashDualData, LongDualFuzzyHash};
 
 /// Module containing internal hash functions.
 pub mod internal_hashes {
@@ -108,11 +102,10 @@ pub mod internal_hashes {
 /// Module containing internal efficient block hash implementation.
 pub mod internal_comparison {
     pub use super::compare::position_array::{
-        BlockHashPositionArray,
-        BlockHashPositionArrayData,
+        block_hash_position_array_element, BlockHashPositionArray, BlockHashPositionArrayData,
         BlockHashPositionArrayImpl,
-        block_hash_position_array_element,
     };
+
     #[cfg(feature = "unchecked")]
     pub use super::compare::position_array::BlockHashPositionArrayImplUnchecked;
 }
@@ -120,8 +113,7 @@ pub mod internal_comparison {
 /// Module containing certain constraints about fuzzy hash data.
 pub mod constraints {
     pub use super::hash::block::{
-        BlockHashSize, ConstrainedBlockHashSize,
-        BlockHashSizes, ConstrainedBlockHashSizes
+        BlockHashSize, BlockHashSizes, ConstrainedBlockHashSize, ConstrainedBlockHashSizes,
     };
 }
 
@@ -136,10 +128,6 @@ pub mod constraints {
 /// (not even an optional "comma" character separating the file name part)
 /// because [`LongRawFuzzyHash::len_in_str()`] does not.
 pub const MAX_LEN_IN_STR: usize = LongRawFuzzyHash::MAX_LEN_IN_STR;
-
-
-
-
 
 /// Constant assertions related to the base requirements.
 #[doc(hidden)]
