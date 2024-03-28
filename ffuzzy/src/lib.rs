@@ -159,14 +159,4 @@ mod const_asserts {
     const_assert!(MAX_LEN_IN_STR >= LongRawFuzzyHash::MAX_LEN_IN_STR);
 }
 
-// grcov-excl-br-start
-#[cfg(all(test, not(ffuzzy_tests_without_debug_assertions)))]
-#[cfg_attr(feature = "unstable", coverage(off))] // To avoid llvm-cov error
-#[test]
-fn test_prerequisites() {
-    assert!(cfg!(debug_assertions), "\
-        The tests in this crate requires debug assertions to be enabled (by default).  \
-        To test this crate without debug assertions, add rustc flags \"--cfg ffuzzy_tests_without_debug_assertions\".\
-    ");
-}
-// grcov-excl-br-end
+mod tests;

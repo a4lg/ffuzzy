@@ -77,17 +77,7 @@ macro_rules! invariant_impl {
     };
 }
 
-
 pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 pub(crate) use invariant_impl as invariant;
 
-
-#[forbid(unsafe_code)]
-#[cfg(all(test, not(ffuzzy_tests_without_debug_assertions)))]
-#[test]
-#[should_panic]
-fn violation_invariant() {
-    // On tests, an invariant is just a debug_assert,
-    // that should work outside an unsafe block.
-    invariant!(false);
-}
+mod tests;
