@@ -4,11 +4,6 @@
 
 #![cfg(any(test, doc))]
 
-
-#[cfg(test)]
-mod tests;
-
-
 /// Check whether two slices are completely the same, including the address
 /// they are pointing.
 ///
@@ -21,14 +16,15 @@ pub(crate) fn eq_slice_buf<T>(a: &[T], b: &[T]) -> bool {
     a.as_ptr() == b.as_ptr() && a.len() == b.len()
 }
 
-/// Test recommended [`Default`] implementation.
-#[doc(alias = "test_recommended_default")]
-macro_rules! test_recommended_default_impl {
-    ($ty: ty) => {{
-        let value1 = <$ty>::new();
-        let value2 = <$ty>::default();
-        assert_eq!(value1, value2);
-    }};
+/// Test whether the expression fits in the specified type.
+#[doc(alias = "assert_fits_in")]
+macro_rules! assert_fits_in_impl {
+    ($expr: expr, $ty: ty) => {
+        assert!(<$ty>::try_from($expr).is_ok(), "{} does not fit into {}", stringify!($expr), stringify!($ty))
+    };
+    ($expr: expr, $ty: ty, $($arg:tt)+) => {
+        assert!(<$ty>::try_from($expr).is_ok(), $($arg)+)
+    };
 }
 
 /// Test for each type.
@@ -53,17 +49,18 @@ macro_rules! test_for_each_type_impl {
     };
 }
 
-/// Test whether the expression fits in the specified type.
-#[doc(alias = "assert_fits_in")]
-macro_rules! assert_fits_in_impl {
-    ($expr: expr, $ty: ty) => {
-        assert!(<$ty>::try_from($expr).is_ok(), "{} does not fit into {}", stringify!($expr), stringify!($ty))
-    };
-    ($expr: expr, $ty: ty, $($arg:tt)+) => {
-        assert!(<$ty>::try_from($expr).is_ok(), $($arg)+)
-    };
+/// Test recommended [`Default`] implementation.
+#[doc(alias = "test_recommended_default")]
+macro_rules! test_recommended_default_impl {
+    ($ty: ty) => {{
+        let value1 = <$ty>::new();
+        let value2 = <$ty>::default();
+        assert_eq!(value1, value2);
+    }};
 }
 
-pub(crate) use test_recommended_default_impl as test_recommended_default;
-pub(crate) use test_for_each_type_impl as test_for_each_type;
 pub(crate) use assert_fits_in_impl as assert_fits_in;
+pub(crate) use test_for_each_type_impl as test_for_each_type;
+pub(crate) use test_recommended_default_impl as test_recommended_default;
+
+mod tests;

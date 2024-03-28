@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Tests: [`crate::test_utils`].
+
 #![cfg(test)]
 
-use crate::test_utils::{
-    assert_fits_in,
-    eq_slice_buf,
-    test_for_each_type,
-    test_recommended_default,
-};
+use super::{assert_fits_in, eq_slice_buf, test_for_each_type, test_recommended_default};
 
 #[test]
 fn test_eq_slice_buf_noteq() {
@@ -21,16 +18,19 @@ fn test_eq_slice_buf_noteq() {
     assert!(!eq_slice_buf(&A[1..7], &B[1..7]));
 }
 
-
 #[test]
 fn recommended_default_example() {
     #[derive(PartialEq, Eq, Debug)]
     struct Example(u8);
     impl Example {
-        fn new() -> Self { Self(0) }
+        fn new() -> Self {
+            Self(0)
+        }
     }
     impl Default for Example {
-        fn default() -> Self { Self::new() }
+        fn default() -> Self {
+            Self::new()
+        }
     }
     test_recommended_default!(Example);
 }
@@ -41,15 +41,18 @@ fn recommended_default_counterexample() {
     #[derive(PartialEq, Eq, Debug)]
     struct Counterexample(u8);
     impl Counterexample {
-        fn new() -> Self { Self(0) }
+        fn new() -> Self {
+            Self(0)
+        }
     }
     impl Default for Counterexample {
         // BROKEN: intentionally different from the result of `new()`.
-        fn default() -> Self { Self(1) }
+        fn default() -> Self {
+            Self(1)
+        }
     }
     test_recommended_default!(Counterexample);
 }
-
 
 mod test_for_each_type {
     use super::*;
@@ -70,76 +73,76 @@ mod test_for_each_type {
     #[test]
     fn valid_examples() {
         test_for_each_type!(test, []);
-        test_for_each_type!(test, [ OkayType ]);
-        test_for_each_type!(test, [ OkayType, ]);
-        test_for_each_type!(test, [ OkayType, OkayType ]);
-        test_for_each_type!(test, [ OkayType, OkayType, ]);
-        test_for_each_type!(test, [ OkayType, OkayType, OkayType ]);
-        test_for_each_type!(test, [ OkayType, OkayType, OkayType, ]);
+        test_for_each_type!(test, [OkayType]);
+        test_for_each_type!(test, [OkayType,]);
+        test_for_each_type!(test, [OkayType, OkayType]);
+        test_for_each_type!(test, [OkayType, OkayType,]);
+        test_for_each_type!(test, [OkayType, OkayType, OkayType]);
+        test_for_each_type!(test, [OkayType, OkayType, OkayType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_01() {
-        test_for_each_type!(test, [ FailType ]);
+        test_for_each_type!(test, [FailType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_02() {
-        test_for_each_type!(test, [ FailType, ]);
+        test_for_each_type!(test, [FailType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_03() {
-        test_for_each_type!(test, [ FailType, OkayType ]);
+        test_for_each_type!(test, [FailType, OkayType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_04() {
-        test_for_each_type!(test, [ FailType, OkayType, ]);
+        test_for_each_type!(test, [FailType, OkayType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_05() {
-        test_for_each_type!(test, [ OkayType, FailType ]);
+        test_for_each_type!(test, [OkayType, FailType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_06() {
-        test_for_each_type!(test, [ OkayType, FailType, ]);
+        test_for_each_type!(test, [OkayType, FailType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_07() {
-        test_for_each_type!(test, [ FailType, OkayType, OkayType ]);
+        test_for_each_type!(test, [FailType, OkayType, OkayType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_08() {
-        test_for_each_type!(test, [ FailType, OkayType, OkayType, ]);
+        test_for_each_type!(test, [FailType, OkayType, OkayType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_09() {
-        test_for_each_type!(test, [ OkayType, FailType, OkayType ]);
+        test_for_each_type!(test, [OkayType, FailType, OkayType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_10() {
-        test_for_each_type!(test, [ OkayType, FailType, OkayType, ]);
+        test_for_each_type!(test, [OkayType, FailType, OkayType,]);
     }
     #[test]
     #[should_panic]
     fn counterexample_11() {
-        test_for_each_type!(test, [ OkayType, OkayType, FailType ]);
+        test_for_each_type!(test, [OkayType, OkayType, FailType]);
     }
     #[test]
     #[should_panic]
     fn counterexample_12() {
-        test_for_each_type!(test, [ OkayType, OkayType, FailType, ]);
+        test_for_each_type!(test, [OkayType, OkayType, FailType,]);
     }
 }
 
-
+#[rustfmt::skip]
 #[test]
 fn assert_fits_in_examples() {
     // u8: 0..=255
