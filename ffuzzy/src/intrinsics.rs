@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023
 
-
 /// Hints to the compiler that branch condition is likely to be true.
 ///
 /// This is a thin wrapper to [`core::intrinsics::likely()`] and requires
