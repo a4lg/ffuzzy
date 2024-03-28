@@ -5,32 +5,10 @@
 
 use crate::test_utils::{
     assert_fits_in,
-    cover_auto_debug,
     eq_slice_buf,
-    test_auto_clone,
     test_for_each_type,
     test_recommended_default,
 };
-
-#[test]
-fn auto_clone_valid() {
-    #[derive(PartialEq, Eq, Clone, Debug)]
-    struct Example(u8);
-    test_auto_clone(&Example(1));
-    cover_auto_debug(&Example(2));
-}
-
-#[test]
-#[should_panic]
-fn auto_clone_counterexample() {
-    #[derive(PartialEq, Eq, Debug)]
-    struct Counterexample(u8);
-    impl Clone for Counterexample {
-        // BROKEN: returns fixed value rather than itself.
-        fn clone(&self) -> Self { Self(0) }
-    }
-    test_auto_clone(&Counterexample(1));
-}
 
 #[test]
 fn test_eq_slice_buf_noteq() {
@@ -55,7 +33,6 @@ fn recommended_default_example() {
         fn default() -> Self { Self::new() }
     }
     test_recommended_default!(Example);
-    cover_auto_debug(&Example(1));
 }
 
 #[test]

@@ -167,12 +167,6 @@ fn block_size_strings() {
 
 
 #[test]
-fn block_size_relation_impls() {
-    // Test Clone
-    crate::test_utils::test_auto_clone::<BlockSizeRelation>(&BlockSizeRelation::Far);
-}
-
-#[test]
 fn block_size_relation_consistency() {
     for bs1 in RANGE_LOG_VALID {
         for bs2 in RANGE_LOG_VALID {

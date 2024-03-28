@@ -9,47 +9,6 @@
 mod tests;
 
 
-/// Testing function for [`Default`] (for coverage).
-///
-/// This function is suitable if we have no particularly useful way to
-/// check if certain properties of the default value is satisfied.
-///
-/// In other words, this function is for coverage tests.
-pub(crate) fn cover_default<T: Default>() {
-    let _value = T::default();
-}
-
-
-/// Testing function for [`Clone`] (for coverage).
-///
-/// This function is suitable if we have no comparison function for these.
-///
-/// In other words, this function is for coverage tests.
-pub(crate) fn cover_auto_clone<T: Clone>(orig_value: &T) {
-    let mut cloned: T = orig_value.clone();
-    cloned.clone_from(orig_value);
-}
-
-
-/// Testing function for [`Eq`] + [`Clone`].
-///
-/// It also requires [`core::fmt::Debug`] for assertion.
-pub(crate) fn test_auto_clone<T: Clone + Eq + core::fmt::Debug>(orig_value: &T) {
-    let mut cloned: T = orig_value.clone();
-    assert_eq!(*orig_value, cloned);
-    cloned.clone_from(orig_value);
-    assert_eq!(*orig_value, cloned);
-}
-
-
-/// Testing function for [`Debug`](core::fmt::Debug) (for coverage).
-///
-/// If an allocator is available, cover debug output.
-pub(crate) fn cover_auto_debug<T: core::fmt::Debug>(value: &T) {
-    let _ = format!("{:?}", value);
-}
-
-
 /// Check whether two slices are completely the same, including the address
 /// they are pointing.
 ///

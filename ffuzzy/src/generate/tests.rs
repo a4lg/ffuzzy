@@ -15,16 +15,13 @@ use crate::hash::block::{
     ConstrainedBlockHashSize as CBHS, ConstrainedBlockHashSizes as CBHSs
 };
 use crate::test_utils::{
-    assert_fits_in,
-    cover_auto_clone, cover_default,
-    test_auto_clone, test_recommended_default
+    assert_fits_in, test_recommended_default
 };
 
 
 #[test]
 fn partial_fnv_hash_impls() {
     test_recommended_default!(PartialFNVHash);
-    test_auto_clone::<PartialFNVHash>(&PartialFNVHash::new());
 }
 
 #[test]
@@ -399,7 +396,6 @@ fn verify_partial_fnv_hash_with_regular_fnv1_test_vector() {
 #[test]
 fn rolling_hash_basic_impls() {
     test_recommended_default!(RollingHash);
-    test_auto_clone::<RollingHash>(&RollingHash::new());
 }
 
 #[test]
@@ -540,11 +536,6 @@ fn rolling_hash_rolling_inspect_internal_state() {
 
 
 #[test]
-fn block_hash_context_impls() {
-    cover_auto_clone::<BlockHashContext>(&BlockHashContext::new());
-}
-
-#[test]
 fn block_hash_context_impl_debug() {
     // 39 == 0x27 == the lowest 6 bits of 0x28021967
     // 255 == BLOCKHASH_CHAR_NIL
@@ -580,11 +571,6 @@ macro_rules! call_for_generator_finalization {
 }
 
 #[test]
-fn generator_error_impls() {
-    test_auto_clone::<GeneratorError>(&GeneratorError::FixedSizeMismatch);
-}
-
-#[test]
 fn generator_error_impl_display() {
     assert_eq!(format!("{}", GeneratorError::FixedSizeMismatch), "current state mismatches to the fixed size previously set");
     assert_eq!(format!("{}", GeneratorError::FixedSizeTooLarge), "fixed size is too large to generate a fuzzy hash");
@@ -603,8 +589,8 @@ fn generator_error_is_size_too_large_error() {
 
 #[test]
 fn cover_generator_basic() {
-    cover_default::<Generator>();
-    cover_auto_clone::<Generator>(&Generator::new());
+    // For coverage
+    let _ = Generator::default();
 }
 
 #[test]

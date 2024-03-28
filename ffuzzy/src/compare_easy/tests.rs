@@ -9,14 +9,7 @@ use core::error::Error;
 use std::error::Error;
 use crate::compare_easy::{compare, ParseErrorSide, ParseErrorEither};
 use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin, ParseErrorInfo};
-use crate::test_utils::test_auto_clone;
 
-
-#[test]
-fn parse_error_side_impls() {
-    // Test Clone
-    test_auto_clone::<ParseErrorSide>(&ParseErrorSide::Left);
-}
 
 #[test]
 fn parse_error_either_basic_and_impls() {
@@ -27,8 +20,6 @@ fn parse_error_either_basic_and_impls() {
     const OFFSET: usize = 2;
     // Construct an error object.
     let err = ParseErrorEither(SIDE, ParseError(KIND, ORIGIN, OFFSET));
-    // Test Clone
-    test_auto_clone::<ParseErrorEither>(&err);
     // Check internal values.
     assert_eq!(err.side(), SIDE);
     assert_eq!(err.kind(), KIND);

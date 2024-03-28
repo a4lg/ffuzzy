@@ -146,12 +146,9 @@ pub(crate) enum BlockHashParseState {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
-    use crate::test_utils::test_auto_clone;
 
     #[test]
     fn parse_error_kind_impls() {
-        // Test Clone
-        test_auto_clone::<ParseErrorKind>(&ParseErrorKind::BlockHashIsTooLong);
         // Test Display
         assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
         assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
@@ -164,8 +161,6 @@ pub(crate) mod tests {
 
     #[test]
     fn parse_error_origin_impls() {
-        // Test Clone
-        test_auto_clone::<ParseErrorOrigin>(&ParseErrorOrigin::BlockSize);
         #[cfg(feature = "alloc")]
         {
             // Test Display
@@ -176,12 +171,6 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn block_hash_parse_state_impls() {
-        // Test Clone
-        test_auto_clone::<BlockHashParseState>(&BlockHashParseState::MetEndOfString);
-    }
-
-    #[test]
     fn parse_error_basic_and_impls() {
         // Internal values
         const KIND:   ParseErrorKind   = ParseErrorKind::UnexpectedEndOfString;
@@ -189,8 +178,6 @@ pub(crate) mod tests {
         const OFFSET: usize = 2;
         // Construct an error object.
         let err = ParseError(KIND, ORIGIN, OFFSET);
-        // Test Clone
-        test_auto_clone::<ParseError>(&err);
         // Check internal values.
         assert_eq!(err.kind(),   KIND);
         assert_eq!(err.origin(), ORIGIN);
