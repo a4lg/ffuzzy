@@ -1,6 +1,6 @@
 #! /bin/sh
 # SPDX-License-Identifier: MIT
-# SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+# SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 if test ! -f rfc4648.txt
 then
     echo "ERROR: rfc4648.txt not found." 1>&2
@@ -11,4 +11,4 @@ fi
 cat rfc4648.txt \
     | awk -f process-rfc4648-test-1.awk \
     | sort -n -k 1 \
-    | awk '{printf("        assert_base64!(%2d, b'"'"'%s'"'"');\n", $1, $2);}'
+    | awk '{printf("    assert_base64!(%d, b'"'"'%s'"'"');\n", $1, $2);}'
