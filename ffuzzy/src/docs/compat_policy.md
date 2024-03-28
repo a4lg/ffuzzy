@@ -32,6 +32,8 @@ The input data which is *not* obligated to support in this project includes:
              fits in after the normalization process  
              (this is currently supported by the `ffuzzy` crate as of
               the current version but we can remove the support anytime)
+        *   The optional feature `strict-parser` now explicitly rejects
+            such fuzzy hashes.
 *   Data which is an output of ssdeep *but* feeding the data
     back to ssdeep causes serious errors / problems
     *   e.g. a CSV file output from ssdeep but input file names contain special
