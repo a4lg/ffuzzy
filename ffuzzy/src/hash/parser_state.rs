@@ -123,7 +123,6 @@ impl core::error::Error for ParseError {}
 ///
 /// Note that while some of them always represent one of error conditions,
 /// some are valid depending on the context.
-#[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum BlockHashParseState {
     /// The end of the string is encountered.
