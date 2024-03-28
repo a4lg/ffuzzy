@@ -5,8 +5,6 @@
 
 #![cfg(test)]
 
-// grcov-excl-br-start
-
 #[cfg(not(ffuzzy_tests_without_debug_assertions))]
 #[cfg_attr(feature = "unstable", coverage(off))] // To avoid llvm-cov error
 #[test]
@@ -16,5 +14,3 @@ fn test_prerequisites() {
         To test this crate without debug assertions, add rustc flags \"--cfg ffuzzy_tests_without_debug_assertions\".\
     ");
 }
-
-// grcov-excl-br-end

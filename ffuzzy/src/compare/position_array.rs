@@ -873,7 +873,7 @@ mod const_asserts {
     use static_assertions::const_assert;
 
     // Prerequisite for 64-bit position array
-    // grcov-excl-br-start
+    // grcov-excl-tests-start
     #[cfg(test)]
     #[test]
     fn position_array_fits_in_64_bits() {
@@ -881,7 +881,7 @@ mod const_asserts {
             .map(|x| x <= u64::BITS)
             .is_ok());
     }
-    // grcov-excl-br-end
+    // grcov-excl-tests-end
 
     // Prerequisite for 64-bit position array
     const_assert!(block_hash::FULL_SIZE <= 64);

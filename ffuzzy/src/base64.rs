@@ -68,7 +68,7 @@ pub(crate) fn base64_index(ch: u8) -> u8 {
 
 
 
-// grcov-excl-br-start
+// grcov-excl-tests-start
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -212,4 +212,4 @@ mod tests {
         }
     }
 }
-// grcov-excl-br-end
+// grcov-excl-tests-end

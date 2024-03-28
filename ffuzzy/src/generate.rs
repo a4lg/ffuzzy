@@ -1231,7 +1231,7 @@ mod const_asserts {
 
     // RollingHash::h3 is a rolling component and an input byte
     // are vanished after processing more RollingHash::WINDOW_SIZE bytes.
-    // grcov-excl-br-start
+    // grcov-excl-tests-start
     #[cfg(test)]
     #[test]
     fn rolling_hash_h3_shift_amount() {
@@ -1241,7 +1241,7 @@ mod const_asserts {
             .map(|x| x >= u32::BITS)
             .unwrap_or(false));
     }
-    // grcov-excl-br-end
+    // grcov-excl-tests-end
 
     // BLOCKHASH_CHAR_NIL must be outside any valid characters.
     const_assert!(block_hash::ALPHABET_SIZE <= BLOCKHASH_CHAR_NIL as usize);

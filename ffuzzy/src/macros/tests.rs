@@ -5,8 +5,6 @@
 
 #![cfg(test)]
 
-// grcov-excl-br-start
-
 #[forbid(unsafe_code)]
 #[cfg(not(ffuzzy_tests_without_debug_assertions))]
 #[test]
@@ -16,5 +14,3 @@ fn violation_invariant() {
     // that should work outside an unsafe block.
     super::invariant!(false);
 }
-
-// grcov-excl-br-end

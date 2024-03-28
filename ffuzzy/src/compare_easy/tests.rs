@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
-// grcov-excl-br-start
 
 #![cfg(test)]
 

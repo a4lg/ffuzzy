@@ -7,12 +7,13 @@ To use `grcov`, following options (from the surrounding workspace) are expected:
 
 ```sh
 --keep-only     'ffuzzy/src/*' \
---excl-line     '// grcov-excl-line|#\[derive'     \
---excl-start    '// grcov-excl-start'    \
---excl-stop     '// grcov-excl-stop'     \
+--excl-line     '// grcov-excl-line|#\[derive' \
+--excl-start    '// grcov-excl(|-tests)-start' \
+--excl-stop     '// grcov-excl(|-tests)-stop'  \
 --excl-br-line  '// grcov-excl-br-line||#\[derive|(^| )(assert|debug_assert|invariant)!\(.*;([ ]*//.*)?$'  \
---excl-br-start '// grcov-(excl-br|generator)-start' \
---excl-br-stop  '// grcov-(excl-br|generator)-stop'  \
+--excl-br-start '// grcov-(excl-(br|tests)|generator)-start' \
+--excl-br-stop  '// grcov-(excl-(br|tests)|generator)-stop'  \
+--ignore        '*/tests.rs' \
 ```
 
 It excludes generator update function from branch coverage report (due to its
@@ -20,8 +21,8 @@ heavy uses of macros).  If you need to test coverage inside those, remove
 `grcov-generator-{start,stop}` lines or replace the last two lines with those.
 
 ```sh
---excl-br-start '// grcov-excl-br-start' \
---excl-br-stop  '// grcov-excl-br-stop'  \
+--excl-br-start '// grcov-excl-(br|tests)-start' \
+--excl-br-stop  '// grcov-excl-(br|tests)-stop'  \
 ```
 
 ## Known Issues

@@ -1650,18 +1650,18 @@ mod const_asserts {
     const_assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
 
     // Regular tests (dynamic)
-    // grcov-excl-br-start
+    // grcov-excl-tests-start
     #[cfg(test)]
     #[test]
     fn log_block_size_capping_border_is_correct() {
         assert!(!is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER - 1));
         assert!( is_log_block_size_needs_no_capping(FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER));
     }
-    // grcov-excl-br-end
+    // grcov-excl-tests-end
 
     // Test whether no arithmetic overflow occurs on
     // the similarity score computation.
-    // grcov-excl-br-start
+    // grcov-excl-tests-start
     #[cfg(test)]
     #[test]
     fn score_arithmetic_causes_no_overflow() {
@@ -1680,5 +1680,5 @@ mod const_asserts {
             .and_then(|x| x.checked_mul(100))
             .is_some());
     }
-    // grcov-excl-br-end
+    // grcov-excl-tests-end
 }

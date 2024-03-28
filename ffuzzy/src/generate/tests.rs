@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // SPDX-FileCopyrightText: FNV-1 test vectors are based on a PD work by Landon Curt Noll, authored in 2013.
-// grcov-excl-br-start
 
 #![cfg(test)]
 
