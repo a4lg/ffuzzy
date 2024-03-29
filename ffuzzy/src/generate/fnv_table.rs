@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: Copyright (C) 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+
+//! FNV table and base FNV-1 hash definition for the generator.
+
 use crate::hash::block::block_hash;
 
 const OLD_HASH_INIT: u32 = 0x28021967;
