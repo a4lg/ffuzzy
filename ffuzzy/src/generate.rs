@@ -1218,9 +1218,6 @@ mod const_asserts {
     // (note that this size is exclusive, unlike inclusive MIN_RECOMMENDED_INPUT_SIZE)
     const_assert_eq!(Generator::MIN_RECOMMENDED_INPUT_SIZE - 1, 4096);
 
-    // Compare with generated table
-    const_assert_eq!(block_hash::ALPHABET_SIZE, crate::generate::fnv_table::_ALPHABET_SIZE);
-
     // ALPHABET_SIZE and FNV_HASH_INIT properties (for PartialFNVHash)
     const_assert!(0 < block_hash::ALPHABET_SIZE && block_hash::ALPHABET_SIZE <= 256);
     const_assert!(block_hash::ALPHABET_SIZE.is_power_of_two());
