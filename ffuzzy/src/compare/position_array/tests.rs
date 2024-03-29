@@ -158,6 +158,21 @@ fn position_array_impls() {
 }
 
 #[test]
+fn position_array_glob() {
+    const BLOCK_HASH_STR: &str = "F123456F89";
+    // Check block hash string with a glob pattern.
+    let glob = glob::Pattern::new("F[!F][!F][!F][!F][!F][!F]F*").unwrap();
+    assert!(glob.matches(BLOCK_HASH_STR));
+    assert_eq!(BLOCK_HASH_STR.chars().filter(|&ch| ch == 'F').count(), 2);
+    // Check position array representation.
+    let hash_str = format!("3:{}:", BLOCK_HASH_STR);
+    let hash = crate::RawFuzzyHash::from_bytes(hash_str.as_bytes()).unwrap();
+    let mut pa = BlockHashPositionArray::new();
+    pa.init_from(hash.block_hash_1());
+    assert_eq!(pa.representation()[5], 0x81);
+}
+
+#[test]
 fn position_array_usage() {
     let mut pa = BlockHashPositionArray::new();
     // Test "[BLOCKHASH]:AAABCDEFG:HIJKLMMM" (normalized)
@@ -280,7 +295,6 @@ fn position_array_impl_debug() {
         }}", EXPECTED_DEBUG_REPR_RAW_2)
     );  // 480 == 32 + 64 + 128 + 256
 }
-
 
 cfg_if::cfg_if! {
     if #[cfg(not(feature = "unchecked"))] {

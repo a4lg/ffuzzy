@@ -101,12 +101,12 @@ pub mod block_hash_position_array_element {
 ///
 /// For instance, if `representation()[5] == 0x81`, it means the block hash
 /// contains the alphabet index `5` in the positions `0` and `7`
-/// (block hash glob: `E??????E*` except that wildcards don't allow `E`).
+/// (block hash glob: `F??????F*` except that wildcards don't allow `F`).
 ///
 /// This is because the bit 0 (`0x01`) at the index 5 means that position 0 has
-/// the alphabet with index `5` (`E`).  Likewise, the bit 7 (`0x80`) at the
-/// index 5 corresponds to the fact that position 7 has the alphabet with
-/// index `5` (`E`).
+/// the alphabet with index `5` (`F`; the 6th alphabet).  Likewise, the bit 7
+/// (`0x80`) at the index 5 corresponds to the fact that position 7 has the
+/// alphabet with index `5` (`F`).
 ///
 /// This representation makes it possible to make some dynamic programming
 /// algorithms bit-parallel.  In other words, some table updates of
