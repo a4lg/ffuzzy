@@ -27,13 +27,13 @@ use crate::utils::u64_lsb_ones;
 fn test_has_sequences() {
     // All zero
     assert!(block_hash_position_array_element::has_sequences(0, 0));
-    for len in 1u32..=100 {
+    for len in 1..=100 {
         assert!(!block_hash_position_array_element::has_sequences(0, len),
             "failed on len={}", len);
     }
     // All one
     assert!(block_hash_position_array_element::has_sequences(u64::MAX, 0));
-    for len in 1u32..=64 {
+    for len in 1..=64 {
         assert!(block_hash_position_array_element::has_sequences(u64::MAX, len),
             "failed on len={}", len);
     }
@@ -49,20 +49,20 @@ fn test_has_sequences() {
         assert_eq!(0, stripe & stripe.rotate_left(1),
             "failed on stripe=0b{:064b}", stripe);
     }
-    for len in 0u32..=1 {
+    for len in 0..=1 {
         assert!(block_hash_position_array_element::has_sequences(STRIPE_1, len),
             "failed on len={}", len);
         assert!(block_hash_position_array_element::has_sequences(STRIPE_2, len),
             "failed on len={}", len);
     }
-    for len in 2u32..=100 {
+    for len in 2..=100 {
         assert!(!block_hash_position_array_element::has_sequences(STRIPE_1, len),
             "failed on len={}", len);
         assert!(!block_hash_position_array_element::has_sequences(STRIPE_2, len),
             "failed on len={}", len);
     }
     // Test pattern: specific length (≧ 2) sequences
-    for len in 2u32..=64 {
+    for len in 2..=64 {
         let base = u64_lsb_ones(len);
         let mut aggr_bits: u64 = 0;
         for shift in 0..=(u64::BITS - len) {
@@ -70,7 +70,7 @@ fn test_has_sequences() {
             aggr_bits |= seq;
             assert_eq!(seq >> shift, base,
                 "failed on len={}, shift={}", len, shift);
-            for test_len in 1u32..=100 {
+            for test_len in 1..=100 {
                 // Subpattern 1: pure bits
                 let target = seq;
                 assert_eq!(
