@@ -21,8 +21,8 @@
 // In the code maintenance mode, disallow all warnings.
 #![cfg_attr(feature = "maint-code", deny(warnings))]
 // unsafe code is *only* allowed on enabling either "unsafe"-like features or
-// the "unchecked" feature, or on the tests.  When neither full "unsafe" feature
-// is enabled or on the tests, unsafe code requires explicit allow.
+// the "unchecked" feature, or on the tests.  When full "unsafe" feature is
+// enabled or on the tests, unsafe code requires explicit allow.
 #![cfg_attr(
     not(any(
         feature = "unsafe",
