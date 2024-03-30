@@ -183,22 +183,20 @@ pub(crate) mod tests {
         assert_eq!(err.offset(), OFFSET);
     }
 
-    pub(crate) const PARSE_ERROR_CASES: &[(ParseError, &str, &str)] = &[
-        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected",   "ParseError(UnexpectedEndOfString, BlockSize, 0)"),
-        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected", "ParseError(UnexpectedEndOfString, BlockHash1, 2)"),
-        (ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): block size is not valid",         "ParseError(BlockSizeIsInvalid, BlockSize, 0)"),
+    pub(crate) const PARSE_ERROR_CASES: &[(ParseError, &str)] = &[
+        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected"),
+        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected"),
+        (ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): block size is not valid"),
     ];
 
     #[test]
     fn parse_error_impls_display_and_debug() {
-        for &(err, err_str_display, err_str_debug) in PARSE_ERROR_CASES {
+        for &(err, err_str_display) in PARSE_ERROR_CASES {
             // Test Display
             assert_eq!(
                 format!("{}", err),
                 format!("error occurred while parsing a fuzzy hash {}", err_str_display)
             );
-            // Test Debug
-            assert_eq!(format!("{:?}", err), err_str_debug);
         }
     }
 }

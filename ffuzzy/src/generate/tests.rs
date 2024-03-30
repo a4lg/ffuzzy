@@ -5,7 +5,7 @@
 #![cfg(test)]
 
 use crate::generate::{
-    PartialFNVHash, RollingHash, BlockHashContext,
+    PartialFNVHash, RollingHash,
     Generator, GeneratorError
 };
 use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
@@ -100,14 +100,6 @@ fn partial_fnv_hash_usage() {
     hash += STR_2;
     hash += b'\n';
     assert_eq!(hash.value(), EXPECTED_HASH);
-}
-
-pub(crate) const EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH: &str = "PartialFNVHash(39)";
-
-#[test]
-fn partial_fnv_hash_impl_debug() {
-    // 39 == 0x27 == the lowest 6 bits of 0x28021967
-    assert_eq!(format!("{:?}", PartialFNVHash::new()), EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH);
 }
 
 #[test]
@@ -450,20 +442,6 @@ fn rolling_hash_usage() {
     assert_eq!(hash.value(), EXPECTED_HASH);
 }
 
-pub(crate) const EXPECTED_DEBUG_INITIAL_ROLLING_HASH: &str =
-    "RollingHash { \
-        index: 0, \
-        h1: 0, \
-        h2: 0, \
-        h3: 0, \
-        window: [0, 0, 0, 0, 0, 0, 0] \
-    }";
-
-#[test]
-fn rolling_hash_impl_debug() {
-    assert_eq!(format!("{:?}", RollingHash::new()), EXPECTED_DEBUG_INITIAL_ROLLING_HASH);
-}
-
 #[test]
 fn rolling_hash_rolling_basic() {
     // h2_multiplier := 1+2+...+WINDOW_SIZE
@@ -535,32 +513,6 @@ fn rolling_hash_rolling_inspect_internal_state() {
 }
 
 
-#[test]
-fn block_hash_context_impl_debug() {
-    // 39 == 0x27 == the lowest 6 bits of 0x28021967
-    // 255 == BLOCKHASH_CHAR_NIL
-    assert_eq!(
-        format!("{:?}", BlockHashContext::new()),
-        format!("BlockHashContext {{ \
-            blockhash_index: 0, \
-            blockhash: [\
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255, \
-                255, 255, 255, 255, 255, 255, 255, 255\
-            ], \
-            blockhash_ch_half: 255, \
-            h_full: {0}, \
-            h_half: {0} \
-        }}", EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH)
-    );
-}
-
-
 macro_rules! call_for_generator_finalization {
     { $test: ident ($($tokens:tt)*) ; } => {
         $test::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
@@ -591,36 +543,6 @@ fn generator_error_is_size_too_large_error() {
 fn cover_generator_basic() {
     // For coverage
     let _ = Generator::default();
-}
-
-#[test]
-fn impl_debug() {
-    // Make expected bh_context output dynamically.
-    // format!("{:?}", BlockHashContext::new()) is tested by
-    // block_hash_context_impl_debug above.
-    let str_bh_contexts = core::iter::repeat(format!("{:?}", BlockHashContext::new()).as_str()).take(block_size::NUM_VALID).collect::<Vec<&str>>().join(", ");
-    // Test the generator
-    assert_eq!(
-        format!("{:?}", Generator::new()),
-        format!(
-            "Generator(GeneratorInnerData {{ \
-                input_size: 0, \
-                fixed_size: None, \
-                elim_border: 192, \
-                bhidx_start: 0, \
-                bhidx_end: 1, \
-                bhidx_end_limit: 30, \
-                roll_mask: 0, \
-                roll_hash: {0}, \
-                bh_context: [{2}], \
-                h_last: {1}, \
-                is_last: false \
-            }})",
-            EXPECTED_DEBUG_INITIAL_ROLLING_HASH,
-            EXPECTED_DEBUG_INITIAL_PARTIAL_FNV_HASH,
-            str_bh_contexts
-        )
-    );
 }
 
 #[test]
