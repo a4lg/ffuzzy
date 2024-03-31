@@ -311,7 +311,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         optionally_unsafe! {
             for &ch in other.iter() {
                 invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                let e: u64 = representation[ch as usize];
+                let e: u64 = representation[ch as usize]; // grcov-excl-br-line:ARRAY
                 let p: u64 = e & v;
                 v = (v.wrapping_add(p)) | (v.wrapping_sub(p));
             }
