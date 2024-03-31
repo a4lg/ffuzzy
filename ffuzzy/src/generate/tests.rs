@@ -818,7 +818,7 @@ fn large_data_triggers_1() {
     let mut generator2 = generator_base.clone();
     generator2.update_by_iter(last_bytes.iter().cloned());
     // Use update_by_byte
-    let mut generator3 = generator_base.clone();
+    let mut generator3 = generator_base;
     for &ch in last_bytes.iter() {
         generator3.update_by_byte(ch);
     }
@@ -860,7 +860,7 @@ fn large_data_triggers_2() {
     let mut generator2 = generator_base.clone();
     generator2.update_by_iter([0, 0].iter().cloned());
     // Use update_by_byte
-    let mut generator3 = generator_base.clone();
+    let mut generator3 = generator_base;
     generator3.update_by_byte(0);
     generator3.update_by_byte(0);
     // Check all generators
