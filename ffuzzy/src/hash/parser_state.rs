@@ -30,7 +30,7 @@ pub enum ParseErrorKind {
 
 impl core::fmt::Display for ParseErrorKind {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str(match self {
+        f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             ParseErrorKind::BlockHashIsTooLong      => "block hash is too long",
             ParseErrorKind::BlockSizeIsEmpty        => "block size field is empty",
             ParseErrorKind::BlockSizeStartsWithZero => "block size starts with '0'",
@@ -66,7 +66,7 @@ pub enum ParseErrorOrigin {
 
 impl core::fmt::Display for ParseErrorOrigin {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str(match self {
+        f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             ParseErrorOrigin::BlockSize  => "block size",
             ParseErrorOrigin::BlockHash1 => "block hash 1",
             ParseErrorOrigin::BlockHash2 => "block hash 2",
@@ -74,6 +74,8 @@ impl core::fmt::Display for ParseErrorOrigin {
     }
 }
 
+
+// grcov-excl-br-start:STRUCT_MEMBER
 
 /// The error type for parse operations of
 /// [`FuzzyHashData`](crate::hash::FuzzyHashData).
@@ -83,6 +85,8 @@ pub struct ParseError(
     pub(crate) ParseErrorOrigin,
     pub(crate) usize
 );
+
+// grcov-excl-br-end
 
 /// The trait implementing a [`FuzzyHashData`](crate::hash::FuzzyHashData)
 /// parse error.
