@@ -794,10 +794,14 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 /// *   [`BlockHashPositionArrayImpl`]
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
+    // grcov-excl-br-start:STRUCT_MEMBER
+
     /// The block hash position array representation.
     representation: [u64; block_hash::ALPHABET_SIZE],
     /// The length of this block hash.
     len: u8,
+
+    // grcov-excl-br-end
 }
 
 impl BlockHashPositionArray {

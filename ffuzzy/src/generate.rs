@@ -145,6 +145,8 @@ const ROLLING_WINDOW: usize = 7;
 /// supported ≧4GiB files and implemented a true rolling hash function.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RollingHash {
+    // grcov-excl-br-start:STRUCT_MEMBER
+
     /// Current rolling window index.
     ///
     /// **Performance Analysis:**
@@ -183,6 +185,8 @@ pub struct RollingHash {
 
     /// The last [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes of the processed data.
     window: [u8; ROLLING_WINDOW],
+
+    // grcov-excl-br-end
 }
 
 impl RollingHash {
@@ -297,6 +301,8 @@ const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 /// All operations are performed in [`Generator`] except initialization.
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct BlockHashContext {
+    // grcov-excl-br-start:STRUCT_MEMBER
+
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
     /// Block hash contents.
@@ -307,6 +313,8 @@ struct BlockHashContext {
     h_full: PartialFNVHash,
     /// Block hash updater (a FNV-1 hasher) for truncated block hash.
     h_half: PartialFNVHash,
+
+    // grcov-excl-br-end
 }
 
 impl BlockHashContext {
@@ -344,6 +352,8 @@ impl BlockHashContext {
 /// [`PartialEq`] inside this crate but not outside.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct GeneratorInnerData {
+    // grcov-excl-br-start:STRUCT_MEMBER
+
     /// Processed input size.
     ///
     /// This value may be inaccurate if the generator has fed more than the
@@ -398,6 +408,8 @@ pub(crate) struct GeneratorInnerData {
 
     /// Whether to update [`h_last`](Self::h_last).
     is_last: bool,
+
+    // grcov-excl-br-end
 }
 
 /// Fuzzy hash generator.
@@ -538,7 +550,7 @@ impl GeneratorError {
 
 impl core::fmt::Display for GeneratorError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str(match self {
+        f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             GeneratorError::FixedSizeMismatch => "current state mismatches to the fixed size previously set",
             GeneratorError::FixedSizeTooLarge => "fixed size is too large to generate a fuzzy hash",
             GeneratorError::InputSizeTooLarge => "input size is too large to generate a fuzzy hash",

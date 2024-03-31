@@ -1102,7 +1102,7 @@ impl FuzzyHashCompareTarget {
     {
         let other = other.as_ref();
         debug_assert!(!self.is_equiv(other));
-        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) { // grcov-excl-br-line:MATCH_ENUM
             BlockSizeRelation::Far => 0,
             BlockSizeRelation::NearEq => self.compare_unequal_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.compare_unequal_near_lt_internal(other),
@@ -1176,7 +1176,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) { // grcov-excl-br-line:MATCH_ENUM
             BlockSizeRelation::Far => 0,
             BlockSizeRelation::NearEq => self.compare_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.compare_unequal_near_lt_internal(other),
@@ -1449,7 +1449,7 @@ impl FuzzyHashCompareTarget {
         BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
     {
         let other = other.as_ref();
-        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) {
+        match block_size::compare_sizes(self.log_blocksize, other.log_blocksize) { // grcov-excl-br-line:MATCH_ENUM
             BlockSizeRelation::Far => false,
             BlockSizeRelation::NearEq => self.is_comparison_candidate_near_eq_internal(other),
             BlockSizeRelation::NearLt => self.is_comparison_candidate_near_lt_internal(other),
@@ -1542,7 +1542,7 @@ where
     #[inline(always)]
     fn compare_optimized_internal(&self, other: &Self, check_equality: bool) -> u32 {
         let rel = block_size::compare_sizes(self.log_blocksize, other.log_blocksize);
-        match rel {
+        match rel { // grcov-excl-br-line:MATCH_ENUM
             BlockSizeRelation::NearEq => {
                 if check_equality && self == other {
                     return 100;
