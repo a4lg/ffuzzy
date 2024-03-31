@@ -834,7 +834,7 @@ fn large_data_triggers_1() {
             let hash_expected = str::parse::<FuzzyHashData<S1, S2, false>>("3221225472:iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiH:k").unwrap();
             assert_eq!(generator.finalize_raw::<TRUNC, S1, S2>(), Ok(hash_expected), "failed on typename={:?}, truncate={}, last_method={}", typename, truncate, last_method);
         }
-        call_for_generator_finalization! { test_body(&generator, last_method); }
+        call_for_generator_finalization! { test_body(generator, last_method); }
     }
 }
 
@@ -873,7 +873,7 @@ fn large_data_triggers_2() {
             let (typename, truncate) = (core::any::type_name::<FuzzyHashData<S1, S2, false>>(), TRUNC);
             assert_eq!(generator.finalize_raw::<TRUNC, S1, S2>(), Err(GeneratorError::InputSizeTooLarge), "failed on typename={:?}, truncate={}, last_method={}", typename, truncate, last_method);
         }
-        call_for_generator_finalization! { test_body(&generator, last_method); }
+        call_for_generator_finalization! { test_body(generator, last_method); }
     }
 }
 
