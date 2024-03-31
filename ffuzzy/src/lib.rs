@@ -61,9 +61,6 @@
 #![cfg_attr(test, allow(clippy::logic_bug))]
 // Tests: false || x should be allowed.
 #![cfg_attr(test, allow(clippy::nonminimal_bool))]
-// Tests: currently allowed on Rust 1.69 (stable as of this writing)
-//        but not on MSRV (Rust 1.56).
-#![cfg_attr(test, allow(clippy::or_fun_call))]
 
 // alloc is required when the "alloc" feature is enabled or testing (including doctests).
 #[cfg(any(feature = "alloc", test, doc))]

@@ -443,9 +443,9 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
             let bytes_raw  = bobj_raw.as_bytes();
             let bytes_str = core::str::from_utf8(bytes_raw).unwrap();
             // Make fuzzy hashes
-            let opt_hash_s_n: Option<FuzzyHash> = FuzzyHash::from_bytes(bytes_raw).ok().or(FuzzyHash::from_bytes(bytes_norm).ok());
+            let opt_hash_s_n: Option<FuzzyHash> = FuzzyHash::from_bytes(bytes_raw).ok().or_else(|| FuzzyHash::from_bytes(bytes_norm).ok());
             let opt_hash_s_r: Option<RawFuzzyHash> = RawFuzzyHash::from_bytes(bytes_raw).ok();
-            let opt_hash_l_n: Option<LongFuzzyHash> = LongFuzzyHash::from_bytes(bytes_raw).ok().or(LongFuzzyHash::from_bytes(bytes_norm).ok());
+            let opt_hash_l_n: Option<LongFuzzyHash> = LongFuzzyHash::from_bytes(bytes_raw).ok().or_else(|| LongFuzzyHash::from_bytes(bytes_norm).ok());
             let opt_hash_l_r: Option<LongRawFuzzyHash> = LongRawFuzzyHash::from_bytes(bytes_raw).ok();
             macro_rules! test_lossless_conversion {
                 ($hash_target: ident, $hash_cvt: ident) => {
