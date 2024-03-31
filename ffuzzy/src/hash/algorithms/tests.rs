@@ -246,7 +246,7 @@ fn parse_block_hash_from_bytes_states_and_normalization() {
             // len_out reflects normalization (if enabled), even on error.
             assert_eq!(len_out as usize, expected_len, "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             // buf_in is updated to the end of the string or the error character.
-            let expected_remaining_len = if is_err { 1 } else { 0 };
+            let expected_remaining_len = is_err as usize;
             assert!(eq_slice_buf(buf_in, &bh_str[bh_str.len() - expected_remaining_len..]), "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             assert_eq!(parsed_len - (1 - expected_remaining_len), bh.len(), "failed on bhsz={}, norm={}, bh={:?}, ch={:?}", bhsz, norm, bh, ch);
             if is_err {
