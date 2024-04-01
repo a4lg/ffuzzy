@@ -2,14 +2,9 @@
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 use crate::compare::FuzzyHashCompareTarget;
-use crate::hash::block::{block_size, block_hash};
-use crate::macros::{optionally_unsafe, invariant};
+use crate::hash::block::{block_hash, block_size};
+use crate::macros::{invariant, optionally_unsafe};
 use crate::utils::u64_lsb_ones;
-
-
-#[cfg(test)]
-pub(crate) mod tests;
-
 
 /// A module containing utilities for an element of block hash position array.
 pub mod block_hash_position_array_element {
@@ -31,53 +26,62 @@ pub mod block_hash_position_array_element {
         if len == u64::BITS {
             return pa_elem == u64::MAX;
         }
-        if len >  u64::BITS {
+        if len > u64::BITS {
             return false;
         }
         let cont_01 = pa_elem;
-        let cont_02 = cont_01 & (cont_01 >>  1);
-        let cont_04 = cont_02 & (cont_02 >>  2);
-        let cont_08 = cont_04 & (cont_04 >>  4);
-        let cont_16 = cont_08 & (cont_08 >>  8);
+        let cont_02 = cont_01 & (cont_01 >> 1);
+        let cont_04 = cont_02 & (cont_02 >> 2);
+        let cont_08 = cont_04 & (cont_04 >> 4);
+        let cont_16 = cont_08 & (cont_08 >> 8);
         let cont_32 = cont_16 & (cont_16 >> 16);
         let mut len = len;
         let mut shift;
-        let mut mask =
-            if len < 4 {
-                // MSB == 2
-                len &= !2;
-                shift = 2;
-                cont_02
-            }
-            else if len < 8 {
-                // MSB == 4
-                len &= !4;
-                shift = 4;
-                cont_04
-            }
-            else if len < 16 {
-                // MSB == 8
-                len &= !8;
-                shift = 8;
-                cont_08
-            }
-            else if len < 32 {
-                // MSB == 16
-                len &= !16;
-                shift = 16;
-                cont_16
-            }
-            else /* if len < 64 */ {
-                // MSB == 32
-                len &= !32;
-                shift = 32;
-                cont_32
-            };
-        if (len & 16) != 0 { mask &= cont_16 >> shift; shift += 16; }
-        if (len &  8) != 0 { mask &= cont_08 >> shift; shift +=  8; }
-        if (len &  4) != 0 { mask &= cont_04 >> shift; shift +=  4; }
-        if (len &  2) != 0 { mask &= cont_02 >> shift; shift +=  2; }
-        if (len &  1) != 0 { mask &= cont_01 >> shift; }
+        let mut mask = if len < 4 {
+            // MSB == 2
+            len &= !2;
+            shift = 2;
+            cont_02
+        } else if len < 8 {
+            // MSB == 4
+            len &= !4;
+            shift = 4;
+            cont_04
+        } else if len < 16 {
+            // MSB == 8
+            len &= !8;
+            shift = 8;
+            cont_08
+        } else if len < 32 {
+            // MSB == 16
+            len &= !16;
+            shift = 16;
+            cont_16
+        } else {
+            // MSB == 32
+            len &= !32;
+            shift = 32;
+            cont_32
+        };
+        if (len & 16) != 0 {
+            mask &= cont_16 >> shift;
+            shift += 16;
+        }
+        if (len & 8) != 0 {
+            mask &= cont_08 >> shift;
+            shift += 8;
+        }
+        if (len & 4) != 0 {
+            mask &= cont_04 >> shift;
+            shift += 4;
+        }
+        if (len & 2) != 0 {
+            mask &= cont_02 >> shift;
+            shift += 2;
+        }
+        if (len & 1) != 0 {
+            mask &= cont_01 >> shift;
+        }
         mask != 0
     }
 
@@ -89,7 +93,6 @@ pub mod block_hash_position_array_element {
         has_sequences(pa_elem, LEN)
     }
 }
-
 
 /// Represents abstract representation of the block hash position array.
 ///
@@ -153,7 +156,9 @@ pub trait BlockHashPositionArrayData {
     fn len(&self) -> u8;
     /// Returns whether the block hash is empty.
     #[inline(always)]
-    fn is_empty(&self) -> bool { self.len() == 0 }
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// Performs full validity checking of a position array object.
     ///
@@ -201,7 +206,7 @@ pub trait BlockHashPositionArrayData {
         }
         for &pos in self.representation() {
             if block_hash_position_array_element::has_sequences_const::<
-                { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 }
+                { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 },
             >(pos)
             {
                 // A long repeating character sequence is found.
@@ -211,7 +216,6 @@ pub trait BlockHashPositionArrayData {
         true
     }
 }
-
 
 /// Represents abstract representation of the block hash position array
 /// (mutable portions).
@@ -225,7 +229,6 @@ pub(crate) trait BlockHashPositionArrayDataMut: BlockHashPositionArrayData {
     /// Return the raw mutable representation of the block hash position array.
     fn len_mut(&mut self) -> &mut u8;
 }
-
 
 /// The implementation of the block hash position array (unchecked; immutable).
 ///
@@ -268,7 +271,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(self.is_valid());
         let len = self.len();
         let representation = self.representation();
-        if (len as usize)  < block_hash::MIN_LCS_FOR_COMPARISON
+        if (len as usize) < block_hash::MIN_LCS_FOR_COMPARISON
             || other.len() < block_hash::MIN_LCS_FOR_COMPARISON
         {
             return false;
@@ -333,7 +336,7 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         FuzzyHashCompareTarget::raw_score_by_edit_distance_internal(
             len,
             other.len() as u8,
-            self.edit_distance_internal(other)
+            self.edit_distance_internal(other),
         )
     }
 
@@ -358,17 +361,13 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         let score_cap = FuzzyHashCompareTarget::score_cap_on_block_hash_comparison_internal(
             log_block_size,
             len,
-            other.len() as u8
+            other.len() as u8,
         );
         u32::min(score, score_cap)
     }
 }
 
-impl<T> BlockHashPositionArrayImplInternal for T
-where
-    T: BlockHashPositionArrayData
-{}
-
+impl<T> BlockHashPositionArrayImplInternal for T where T: BlockHashPositionArrayData {}
 
 /// The implementation of the block hash position array (unchecked; immutable).
 ///
@@ -488,7 +487,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
 #[allow(unsafe_code)]
 unsafe impl<T> BlockHashPositionArrayImplUnchecked for T
 where
-    T: BlockHashPositionArrayImplInternal
+    T: BlockHashPositionArrayImplInternal,
 {
     #[inline(always)]
     unsafe fn is_equiv_unchecked(&self, other: &[u8]) -> bool {
@@ -515,7 +514,6 @@ where
         self.score_strings_internal(other, log_block_size)
     }
 }
-
 
 /// The implementation of [the block hash position array](BlockHashPositionArrayData)
 /// (safe; immutable).
@@ -616,18 +614,22 @@ pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
 
 impl<T> BlockHashPositionArrayImpl for T
 where
-    T: BlockHashPositionArrayImplInternal
+    T: BlockHashPositionArrayImplInternal,
 {
     fn is_equiv(&self, other: &[u8]) -> bool {
         assert!(self.is_valid());
         assert!(other.len() <= 64);
-        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(other
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.is_equiv_internal(other)
     }
 
     fn has_common_substring(&self, other: &[u8]) -> bool {
         assert!(self.is_valid());
-        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(other
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.has_common_substring_internal(other)
     }
 
@@ -635,7 +637,9 @@ where
         assert!(self.is_valid());
         assert!((self.len() as usize) <= block_hash::FULL_SIZE);
         assert!(other.len() <= block_hash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(other
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.edit_distance_internal(other)
     }
 
@@ -643,7 +647,9 @@ where
         assert!(self.is_valid_and_normalized());
         assert!((self.len() as usize) <= block_hash::FULL_SIZE);
         assert!(other.len() <= block_hash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(other
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.score_strings_raw_internal(other)
     }
 
@@ -651,15 +657,18 @@ where
         assert!(self.is_valid_and_normalized());
         assert!((self.len() as usize) <= block_hash::FULL_SIZE);
         assert!(other.len() <= block_hash::FULL_SIZE);
-        assert!(other.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(other
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         assert!((log_block_size as usize) <= block_size::NUM_VALID);
         self.score_strings_internal(other, log_block_size)
     }
 }
 
-
 /// The implementation of the block hash position array (unchecked; mutable).
-pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDataMut {
+pub(crate) trait BlockHashPositionArrayImplMutInternal:
+    BlockHashPositionArrayDataMut
+{
     /// Clears the current representation of the block hash
     /// without resetting the length.
     #[inline(always)]
@@ -701,7 +710,6 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal: BlockHashPositionArrayDa
     }
 }
 
-
 /// The implementation of the block hash position array (safe; mutable).
 pub(crate) trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
     /// Clear and initialize (encode) the object from a given slice.
@@ -716,28 +724,31 @@ pub(crate) trait BlockHashPositionArrayImplMut: BlockHashPositionArrayDataMut {
 
 impl<T> BlockHashPositionArrayImplMut for T
 where
-    T: BlockHashPositionArrayImplMutInternal
+    T: BlockHashPositionArrayImplMutInternal,
 {
     fn init_from(&mut self, blockhash: &[u8]) {
         assert!(blockhash.len() <= 64);
-        assert!(blockhash.iter().all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
+        assert!(blockhash
+            .iter()
+            .all(|&x| (x as usize) < block_hash::ALPHABET_SIZE));
         self.clear_representation_only();
         self.init_from_partial(blockhash);
     }
 }
 
-
 /// A position array based on existing immutable references.
 pub struct BlockHashPositionArrayRef<'a>(pub &'a [u64; block_hash::ALPHABET_SIZE], pub &'a u8);
 /// A position array based on existing mutable references.
-pub(crate) struct BlockHashPositionArrayMutRef<'a>(pub(crate) &'a mut [u64; block_hash::ALPHABET_SIZE], pub(crate) &'a mut u8);
+pub(crate) struct BlockHashPositionArrayMutRef<'a>(
+    pub(crate) &'a mut [u64; block_hash::ALPHABET_SIZE],
+    pub(crate) &'a mut u8,
+);
 
 impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayRef<'a> {
     #[inline(always)]
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
-
     #[inline(always)]
     fn len(&self) -> u8 {
         *self.1
@@ -749,7 +760,6 @@ impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'a> {
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
-
     #[inline(always)]
     fn len(&self) -> u8 {
         *self.1
@@ -761,16 +771,13 @@ impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
     fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         self.0
     }
-
     #[inline(always)]
     fn len_mut(&mut self) -> &mut u8 {
         self.1
     }
 }
 
-impl<'a> BlockHashPositionArrayImplMutInternal
-    for BlockHashPositionArrayMutRef<'a>
-{
+impl<'a> BlockHashPositionArrayImplMutInternal for BlockHashPositionArrayMutRef<'a> {
     #[inline(always)]
     fn set_len_internal(&mut self, len: u8) {
         debug_assert!(len <= 64);
@@ -778,6 +785,7 @@ impl<'a> BlockHashPositionArrayImplMutInternal
     }
 }
 
+// grcov-excl-br-start:STRUCT_MEMBER
 
 /// A simple struct representing a position array of a block hash.
 ///
@@ -794,22 +802,20 @@ impl<'a> BlockHashPositionArrayImplMutInternal
 /// *   [`BlockHashPositionArrayImpl`]
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
-    // grcov-excl-br-start:STRUCT_MEMBER
-
     /// The block hash position array representation.
     representation: [u64; block_hash::ALPHABET_SIZE],
     /// The length of this block hash.
     len: u8,
-
-    // grcov-excl-br-end
 }
+
+// grcov-excl-br-end
 
 impl BlockHashPositionArray {
     /// Creates a new position array object with empty contents.
     pub fn new() -> Self {
         BlockHashPositionArray {
             representation: [0u64; block_hash::ALPHABET_SIZE],
-            len: 0
+            len: 0,
         }
     }
 
@@ -837,7 +843,6 @@ impl BlockHashPositionArrayData for BlockHashPositionArray {
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         &self.representation
     }
-
     fn len(&self) -> u8 {
         self.len
     }
@@ -847,7 +852,6 @@ impl BlockHashPositionArrayDataMut for BlockHashPositionArray {
     fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         &mut self.representation
     }
-
     fn len_mut(&mut self) -> &mut u8 {
         &mut self.len
     }
@@ -866,27 +870,11 @@ impl Default for BlockHashPositionArray {
     }
 }
 
-
-
-
-
 /// Constant assertions related to this module
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
-    use static_assertions::const_assert;
-
     // Prerequisite for 64-bit position array
-    // grcov-excl-tests-start
-    #[cfg(test)]
-    #[test]
-    fn position_array_fits_in_64_bits() {
-        assert!(u32::try_from(block_hash::FULL_SIZE)
-            .map(|x| x <= u64::BITS)
-            .is_ok());
-    }
-    // grcov-excl-tests-end
-
-    // Prerequisite for 64-bit position array
-    const_assert!(block_hash::FULL_SIZE <= 64);
+    static_assertions::const_assert!(super::block_hash::FULL_SIZE <= 64);
 }
+
+pub(crate) mod tests;

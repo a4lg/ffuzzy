@@ -24,6 +24,14 @@ use crate::utils::u64_lsb_ones;
 
 
 #[test]
+fn prerequisite_64bit() {
+    // Prerequisite for 64-bit position array
+    assert!(u32::try_from(block_hash::FULL_SIZE)
+        .map(|x| x <= u64::BITS)
+        .is_ok());
+}
+
+#[test]
 fn test_has_sequences() {
     // All zero
     assert!(block_hash_position_array_element::has_sequences(0, 0));
