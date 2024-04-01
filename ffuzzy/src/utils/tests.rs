@@ -3,8 +3,7 @@
 
 #![cfg(test)]
 
-use crate::utils::{u64_ilog2, u64_lsb_ones};
-
+use super::{u64_ilog2, u64_lsb_ones};
 
 #[test]
 fn u64_ilog2_examples() {
@@ -24,8 +23,8 @@ fn u64_ilog2_near_borders() {
     for n in 1..=(u64::BITS - 1) {
         let border = 1u64 << n;
         assert_eq!(u64_ilog2(border - 1), n - 1, "failed on n={}", n);
-        assert_eq!(u64_ilog2(border    ), n,     "failed on n={}", n);
-        assert_eq!(u64_ilog2(border + 1), n,     "failed on n={}", n);
+        assert_eq!(u64_ilog2(border), n, "failed on n={}", n);
+        assert_eq!(u64_ilog2(border + 1), n, "failed on n={}", n);
     }
 }
 
@@ -40,6 +39,7 @@ fn u64_lsb_ones_from_binary_string() {
     }
 }
 
+#[rustfmt::skip]
 #[test]
 fn u64_lsb_ones_table() {
     let mut expected_idx = 0;
