@@ -28,6 +28,7 @@ fn main() {
                 table[debruijn_index(i, debruijn_mul) as usize] = i as u8;
             }
             println!("const LOG_DEBRUIJN_CONSTANT: u32 = 0x{:08x};", debruijn_mul);
+            println!("#[rustfmt::skip]");
             println!("const LOG_DEBRUIJN_TABLE: [u8; 32] = [");
             for j in 0..table.len() {
                 if j % 8 == 0 {

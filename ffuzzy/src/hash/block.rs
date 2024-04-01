@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Block size handlings and block hash parameters / utilities.
+
 use core::cmp::Ordering;
 
-use crate::macros::{optionally_unsafe, invariant};
-
-
-#[cfg(test)]
-mod tests;
-
+use crate::macros::{invariant, optionally_unsafe};
 
 /// A type to represent relation between two block sizes.
 ///
@@ -66,7 +63,6 @@ impl BlockSizeRelation {
         !matches!(self, BlockSizeRelation::Far)
     }
 }
-
 
 /// Utility related to block size part of the fuzzy hash.
 ///
@@ -209,6 +205,7 @@ pub mod block_size {
     /// The element `[0x1f]` is unused (and assigned an invalid number `0xff`).
     ///
     /// See [`LOG_DEBRUIJN_CONSTANT`] for internal notes.
+    #[rustfmt::skip]
     const LOG_DEBRUIJN_TABLE: [u8; 32] = [
         0x00, 0x01, 0x02, 0x06, 0x03, 0x0b, 0x07, 0x10,
         0x04, 0x0e, 0x0c, 0x18, 0x08, 0x15, 0x11, 0x1a,
@@ -220,7 +217,8 @@ pub mod block_size {
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         debug_assert!(is_valid(block_size));
-        let value = LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
+        let value =
+            LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
         optionally_unsafe! {
             invariant!((value as usize) < NUM_VALID);
         }
@@ -333,7 +331,6 @@ pub mod block_size {
     }
 }
 
-
 /// Utilities related to block hash part of the fuzzy hash.
 ///
 /// See also: ["Block Hashes" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-hashes)
@@ -404,7 +401,6 @@ pub mod block_hash {
     /// See also: ["Fuzzy Hash Comparison" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-comparison)
     pub const MIN_LCS_FOR_COMPARISON: usize = 7;
 
-
     /// Numeric windows of a block hash, each value representing unique value
     /// corresponding a substring of length [`MIN_LCS_FOR_COMPARISON`].
     ///
@@ -445,8 +441,7 @@ pub mod block_hash {
         pub(crate) const ILOG2_OF_ALPHABETS: u32 = 6;
 
         /// The width of a substring (in a numeric form) in bits.
-        pub const BITS: u32 =
-            (MIN_LCS_FOR_COMPARISON as u32) * Self::ILOG2_OF_ALPHABETS;
+        pub const BITS: u32 = (MIN_LCS_FOR_COMPARISON as u32) * Self::ILOG2_OF_ALPHABETS;
 
         /// The mask value corresponding [`BITS`](Self::BITS).
         pub const MASK: u64 = (1u64 << Self::BITS).wrapping_sub(1);
@@ -456,8 +451,7 @@ pub mod block_hash {
         pub(crate) fn new(block_hash: &'a [u8]) -> Self {
             if block_hash.len() < MIN_LCS_FOR_COMPARISON {
                 Self { v: &[], hash: 0 }
-            }
-            else {
+            } else {
                 // grcov-excl-br-start
                 Self {
                     v: &block_hash[MIN_LCS_FOR_COMPARISON - 1..],
@@ -476,14 +470,13 @@ pub mod block_hash {
         }
     }
 
-    impl <'a> Iterator for NumericWindows<'a> {
+    impl<'a> Iterator for NumericWindows<'a> {
         type Item = u64;
 
         #[inline]
         fn next(&mut self) -> Option<Self::Item> {
             if let Some((&value, rest)) = self.v.split_first() {
-                self.hash =
-                    ((self.hash << Self::ILOG2_OF_ALPHABETS) | (value as u64)) & Self::MASK;
+                self.hash = ((self.hash << Self::ILOG2_OF_ALPHABETS) | (value as u64)) & Self::MASK;
                 self.v = rest;
                 Some(self.hash)
             } else {
@@ -497,7 +490,7 @@ pub mod block_hash {
         }
     }
 
-    impl <'a> ExactSizeIterator for NumericWindows<'a> {
+    impl<'a> ExactSizeIterator for NumericWindows<'a> {
         #[inline]
         fn len(&self) -> usize {
             self.v.len()
@@ -506,9 +499,8 @@ pub mod block_hash {
 
     #[allow(unsafe_code)]
     #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
-    unsafe impl <'a> core::iter::TrustedLen for NumericWindows<'a> {}
+    unsafe impl<'a> core::iter::TrustedLen for NumericWindows<'a> {}
 }
-
 
 /// A generic type to constrain given block hash size using [`ConstrainedBlockHashSize`].
 pub struct BlockHashSize<const N: usize> {}
@@ -527,8 +519,8 @@ mod private {
     ///
     /// This is a sealed trait.
     pub trait SealedBlockHashSize {}
-    impl SealedBlockHashSize for BlockHashSize<{block_hash::FULL_SIZE}> {}
-    impl SealedBlockHashSize for BlockHashSize<{block_hash::HALF_SIZE}> {}
+    impl SealedBlockHashSize for BlockHashSize<{ block_hash::FULL_SIZE }> {}
+    impl SealedBlockHashSize for BlockHashSize<{ block_hash::HALF_SIZE }> {}
 
     /// A trait to constrain block hash sizes.
     ///
@@ -539,8 +531,8 @@ mod private {
     ///
     /// This is a sealed trait.
     pub trait SealedBlockHashSizes {}
-    impl SealedBlockHashSizes for BlockHashSizes<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}> {}
-    impl SealedBlockHashSizes for BlockHashSizes<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}> {}
+    impl SealedBlockHashSizes for BlockHashSizes<{ block_hash::FULL_SIZE }, { block_hash::FULL_SIZE }> {}
+    impl SealedBlockHashSizes for BlockHashSizes<{ block_hash::FULL_SIZE }, { block_hash::HALF_SIZE }> {}
 }
 
 /// A trait to constrain block hash size.
@@ -558,7 +550,7 @@ pub trait ConstrainedBlockHashSize: private::SealedBlockHashSize {
 }
 impl<const SZ_BH: usize> ConstrainedBlockHashSize for BlockHashSize<SZ_BH>
 where
-    BlockHashSize<SZ_BH>: private::SealedBlockHashSize
+    BlockHashSize<SZ_BH>: private::SealedBlockHashSize,
 {
     const SIZE: usize = SZ_BH;
 }
@@ -578,23 +570,18 @@ pub trait ConstrainedBlockHashSizes: private::SealedBlockHashSizes {
     /// The maximum size of the block hash 2.
     const MAX_BLOCK_HASH_SIZE_2: usize;
 }
-impl<const S1: usize, const S2: usize> ConstrainedBlockHashSizes
-    for BlockHashSizes<S1, S2>
+impl<const S1: usize, const S2: usize> ConstrainedBlockHashSizes for BlockHashSizes<S1, S2>
 where
-    BlockHashSizes<S1, S2>: private::SealedBlockHashSizes
+    BlockHashSizes<S1, S2>: private::SealedBlockHashSizes,
 {
     const MAX_BLOCK_HASH_SIZE_1: usize = S1;
     const MAX_BLOCK_HASH_SIZE_2: usize = S2;
 }
 
-
-
-
-
 /// Constant assertions related to this module.
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
+    use super::{block_hash, block_size};
     use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
 
     // We must restrict alphabet size to number of Base64 alphabets.
@@ -629,3 +616,5 @@ mod const_asserts {
     // For block_hash::NumericWindow
     const_assert!(block_hash::MIN_LCS_FOR_COMPARISON > 0);
 }
+
+mod tests;
