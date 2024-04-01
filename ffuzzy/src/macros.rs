@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
 
+//! Internal macros (mainly to share safe/unsafe code).
+
 /// "Optionally" unsafe block.
 ///
 /// When this crate is built with the `unsafe` feature, this macro is

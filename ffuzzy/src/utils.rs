@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
 
+//! Various internal utilities.
+
 /// Computes the base-2 logarithm (floored) of an [`u64`] value.
 ///
 /// This is the wrapper with fallbacks for stable [`u64::ilog2()`].
