@@ -10,7 +10,7 @@ To use `grcov`, following options (from the surrounding workspace) are expected:
 --excl-line     '// grcov-excl-line|#\[derive' \
 --excl-start    '// grcov-excl(|-tests)-start' \
 --excl-stop     '// grcov-excl(|-tests)-stop'  \
---excl-br-line  '// grcov-excl-br-line||#\[derive|(^| )(assert|debug_assert|invariant)!\(.*;([ ]*//.*)?$'  \
+--excl-br-line  '// grcov-excl-br-line||#\[derive|(^| )(assert|debug_assert|invariant)!\('  \
 --excl-br-start '// grcov-(excl-(br|tests)|generator)-start' \
 --excl-br-stop  '// grcov-(excl-(br|tests)|generator)-stop'  \
 --ignore        '*/tests.rs' \
