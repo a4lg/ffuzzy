@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
 // SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
 
-
 /// "Optionally" unsafe block.
 ///
 /// When this crate is built with the `unsafe` feature, this macro is
@@ -37,7 +36,7 @@ macro_rules! optionally_unsafe_impl {
         }
     };
 }
-
+pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 
 /// Declare an invariant for optimization.
 ///
@@ -76,8 +75,6 @@ macro_rules! invariant_impl {
         }
     };
 }
-
-pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 pub(crate) use invariant_impl as invariant;
 
 mod tests;
