@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Internal parser state and its handling.
 
 /// An enumeration representing a cause of
 /// a [fuzzy hash](crate::hash::FuzzyHashData) parse error.
@@ -29,6 +30,7 @@ pub enum ParseErrorKind {
 }
 
 impl core::fmt::Display for ParseErrorKind {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             ParseErrorKind::BlockHashIsTooLong      => "block hash is too long",
@@ -41,7 +43,6 @@ impl core::fmt::Display for ParseErrorKind {
         })
     }
 }
-
 
 /// A part which (possibly) caused a
 /// [fuzzy hash](crate::hash::FuzzyHashData) parse error.
@@ -65,6 +66,7 @@ pub enum ParseErrorOrigin {
 }
 
 impl core::fmt::Display for ParseErrorOrigin {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             ParseErrorOrigin::BlockSize  => "block size",
@@ -74,7 +76,6 @@ impl core::fmt::Display for ParseErrorOrigin {
     }
 }
 
-
 // grcov-excl-br-start:STRUCT_MEMBER
 
 /// The error type for parse operations of
@@ -83,7 +84,7 @@ impl core::fmt::Display for ParseErrorOrigin {
 pub struct ParseError(
     pub(crate) ParseErrorKind,
     pub(crate) ParseErrorOrigin,
-    pub(crate) usize
+    pub(crate) usize,
 );
 
 // grcov-excl-br-end
@@ -102,14 +103,22 @@ pub trait ParseErrorInfo {
 }
 
 impl ParseErrorInfo for ParseError {
-    fn kind(&self) -> ParseErrorKind { self.0 }
-    fn origin(&self) -> ParseErrorOrigin { self.1 }
-    fn offset(&self) -> usize { self.2 }
+    fn kind(&self) -> ParseErrorKind {
+        self.0
+    }
+    fn origin(&self) -> ParseErrorOrigin {
+        self.1
+    }
+    fn offset(&self) -> usize {
+        self.2
+    }
 }
 
 impl core::fmt::Display for ParseError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "error occurred while parsing a fuzzy hash ({1}, at byte offset {2}): {0}",
+        write!(
+            f,
+            "error occurred while parsing a fuzzy hash ({1}, at byte offset {2}): {0}",
             self.kind(),
             self.origin(),
             self.offset()
@@ -121,7 +130,6 @@ impl core::fmt::Display for ParseError {
 impl std::error::Error for ParseError {}
 #[cfg(all(not(feature = "std"), feature = "unstable"))]
 impl core::error::Error for ParseError {}
-
 
 /// A type which represents a state after parsing a block hash.
 ///
@@ -141,67 +149,4 @@ pub(crate) enum BlockHashParseState {
     Base64Error,
 }
 
-
-
-
-
-// grcov-excl-br-start
-#[cfg(test)]
-pub(crate) mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_error_kind_impls() {
-        // Test Display
-        assert_eq!(format!("{}", ParseErrorKind::BlockHashIsTooLong),      "block hash is too long");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsEmpty),        "block size field is empty");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeStartsWithZero), "block size starts with '0'");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsInvalid),      "block size is not valid");
-        assert_eq!(format!("{}", ParseErrorKind::BlockSizeIsTooLarge),     "block size is too large");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedCharacter),     "an unexpected character is encountered");
-        assert_eq!(format!("{}", ParseErrorKind::UnexpectedEndOfString),   "end-of-string is not expected");
-    }
-
-    #[test]
-    fn parse_error_origin_impls() {
-        #[cfg(feature = "alloc")]
-        {
-            // Test Display
-            assert_eq!(format!("{}", ParseErrorOrigin::BlockSize),  "block size");
-            assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
-            assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
-        }
-    }
-
-    #[test]
-    fn parse_error_basic_and_impls() {
-        // Internal values
-        const KIND:   ParseErrorKind   = ParseErrorKind::UnexpectedEndOfString;
-        const ORIGIN: ParseErrorOrigin = ParseErrorOrigin::BlockHash1;
-        const OFFSET: usize = 2;
-        // Construct an error object.
-        let err = ParseError(KIND, ORIGIN, OFFSET);
-        // Check internal values.
-        assert_eq!(err.kind(),   KIND);
-        assert_eq!(err.origin(), ORIGIN);
-        assert_eq!(err.offset(), OFFSET);
-    }
-
-    pub(crate) const PARSE_ERROR_CASES: &[(ParseError, &str)] = &[
-        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): end-of-string is not expected"),
-        (ParseError(ParseErrorKind::UnexpectedEndOfString, ParseErrorOrigin::BlockHash1, 2), "(block hash 1, at byte offset 2): end-of-string is not expected"),
-        (ParseError(ParseErrorKind::BlockSizeIsInvalid,    ParseErrorOrigin::BlockSize,  0), "(block size, at byte offset 0): block size is not valid"),
-    ];
-
-    #[test]
-    fn parse_error_impls_display_and_debug() {
-        for &(err, err_str_display) in PARSE_ERROR_CASES {
-            // Test Display
-            assert_eq!(
-                format!("{}", err),
-                format!("error occurred while parsing a fuzzy hash {}", err_str_display)
-            );
-        }
-    }
-}
-// grcov-excl-br-stop
+pub(crate) mod tests;
