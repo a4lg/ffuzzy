@@ -1,20 +1,17 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Tests: [`crate::generate_easy_std`].
+
 #![cfg(test)]
 
+use super::{hash_file, hash_stream, hash_stream_common, GeneratorOrIOError};
+
 use std::error::Error;
-use std::io::Read;
 use std::fs::File;
+use std::io::Read;
 
 use crate::generate::{Generator, GeneratorError};
-use crate::generate_easy_std::{
-    GeneratorOrIOError,
-    hash_file,
-    hash_stream,
-    hash_stream_common,
-};
-
 
 #[test]
 fn hash_file_usage() {
@@ -34,10 +31,7 @@ fn hash_file_not_exist() {
         // Recover the original GeneratorOrIoError::IOError.
         let orig_error = GeneratorOrIOError::IOError(err);
         // Display: GeneratorOrIoError displays the same message as the underlying error.
-        assert_eq!(
-            format!("{}", orig_error),
-            str_display_bare
-        );
+        assert_eq!(format!("{}", orig_error), str_display_bare);
         // Debug: default implementation for IOError
         assert_eq!(
             format!("{:?}", orig_error),
@@ -45,15 +39,28 @@ fn hash_file_not_exist() {
         );
         // Display+Debug: GeneratorOrIoError::source() returns the underlying std::io::Error object.
         assert_eq!(
-            format!("{}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            format!(
+                "{}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<std::io::Error>()
+                    .unwrap()
+            ),
             str_display_bare
         );
         assert_eq!(
-            format!("{:?}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            format!(
+                "{:?}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<std::io::Error>()
+                    .unwrap()
+            ),
             str_debug_bare
         );
-    }
-    else {
+    } else {
         // grcov-excl-start
         panic!("the error must be an IOError");
         // grcov-excl-stop
@@ -67,7 +74,10 @@ fn hash_file_too_large() {
         use std::io::{Seek, SeekFrom, Write};
         use std::os::fd::AsRawFd;
         let tmpfile = tempfile::NamedTempFile::new()?;
-        let mut file = std::fs::OpenOptions::new().read(true).write(true).open(tmpfile.path())?;
+        let mut file = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(tmpfile.path())?;
         const SPARSE_INITIAL_SIZE: u64 = 1024 * 1024;
         file.seek(SeekFrom::Start(SPARSE_INITIAL_SIZE - 1))?;
         file.write_all(&[1])?;
@@ -98,7 +108,12 @@ fn hash_file_too_large() {
         file.write_all(&[1])?;
         drop(file);
         // hash_file should fail with the FixedSizeTooLarge generator error.
-        assert!(matches!(hash_file(tmpfile.path()), Err(GeneratorOrIOError::GeneratorError(GeneratorError::FixedSizeTooLarge))));
+        assert!(matches!(
+            hash_file(tmpfile.path()),
+            Err(GeneratorOrIOError::GeneratorError(
+                GeneratorError::FixedSizeTooLarge
+            ))
+        ));
         Ok(())
     }
     let _ = test_body_ignore_os_errors();
@@ -128,10 +143,7 @@ fn hash_stream_common_size_inconsistency() {
         // Recover the original GeneratorOrIoError::GeneratorError.
         let orig_error = GeneratorOrIOError::GeneratorError(err);
         // Display: GeneratorOrIoError displays the same message as the underlying error.
-        assert_eq!(
-            format!("{}", orig_error),
-            str_display_bare
-        );
+        assert_eq!(format!("{}", orig_error), str_display_bare);
         // Debug: default implementation for GeneratorError
         assert_eq!(
             format!("{:?}", orig_error),
@@ -139,15 +151,28 @@ fn hash_stream_common_size_inconsistency() {
         );
         // Display+Debug: GeneratorOrIoError::source() returns the underlying GeneratorError object.
         assert_eq!(
-            format!("{}", orig_error.source().unwrap().downcast_ref::<GeneratorError>().unwrap()),
+            format!(
+                "{}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<GeneratorError>()
+                    .unwrap()
+            ),
             str_display_bare
         );
         assert_eq!(
-            format!("{:?}", orig_error.source().unwrap().downcast_ref::<GeneratorError>().unwrap()),
+            format!(
+                "{:?}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<GeneratorError>()
+                    .unwrap()
+            ),
             str_debug_bare
         );
-    }
-    else {
+    } else {
         // grcov-excl-start
         panic!("the error must be a GeneratorError");
         // grcov-excl-stop
@@ -174,10 +199,7 @@ fn hash_stream_common_io_fail() {
         // Recover the original GeneratorOrIoError::IOError.
         let orig_error = GeneratorOrIOError::IOError(err);
         // Display: GeneratorOrIoError displays the same message as the underlying error.
-        assert_eq!(
-            format!("{}", orig_error),
-            str_display_bare
-        );
+        assert_eq!(format!("{}", orig_error), str_display_bare);
         // Debug: default implementation for IOError
         assert_eq!(
             format!("{:?}", orig_error),
@@ -185,15 +207,28 @@ fn hash_stream_common_io_fail() {
         );
         // Display+Debug: GeneratorOrIoError::source() returns the underlying std::io::Error object.
         assert_eq!(
-            format!("{}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            format!(
+                "{}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<std::io::Error>()
+                    .unwrap()
+            ),
             str_display_bare
         );
         assert_eq!(
-            format!("{:?}", orig_error.source().unwrap().downcast_ref::<std::io::Error>().unwrap()),
+            format!(
+                "{:?}",
+                orig_error
+                    .source()
+                    .unwrap()
+                    .downcast_ref::<std::io::Error>()
+                    .unwrap()
+            ),
             str_debug_bare
         );
-    }
-    else {
+    } else {
         // grcov-excl-start
         panic!("the error must be an IOError");
         // grcov-excl-stop

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Easy generator functions depending on the standard I/O.
+
 #![cfg(all(feature = "std", feature = "easy-functions"))]
 
 use std::fs::File;
@@ -9,12 +11,7 @@ use std::path::Path;
 
 use crate::generate::{Generator, GeneratorError};
 use crate::hash::RawFuzzyHash;
-use crate::macros::{optionally_unsafe, invariant};
-
-
-#[cfg(test)]
-mod tests;
-
+use crate::macros::{invariant, optionally_unsafe};
 
 /// The error type describing either a generator error or an I/O error.
 ///
@@ -61,7 +58,6 @@ impl std::error::Error for GeneratorOrIOError {
     }
 }
 
-
 /// Constant temporary buffer size for "easy" functions.
 const BUFFER_SIZE: usize = 32768;
 
@@ -79,8 +75,7 @@ const BUFFER_SIZE: usize = 32768;
 fn hash_stream_common<R: Read>(
     generator: &mut Generator,
     reader: &mut R,
-) -> Result<RawFuzzyHash, GeneratorOrIOError>
-{
+) -> Result<RawFuzzyHash, GeneratorOrIOError> {
     let mut buffer = [0u8; BUFFER_SIZE];
     loop {
         let len = reader.read(&mut buffer)?; // grcov-excl-br-line:IO
@@ -94,7 +89,6 @@ fn hash_stream_common<R: Read>(
     }
     Ok(generator.finalize()?)
 }
-
 
 /// Generates a fuzzy hash from a given reader stream.
 ///
@@ -112,9 +106,7 @@ fn hash_stream_common<R: Read>(
 ///     Ok(())
 /// }
 /// ```
-pub fn hash_stream<R: Read>(reader: &mut R)
-    -> Result<RawFuzzyHash, GeneratorOrIOError>
-{
+pub fn hash_stream<R: Read>(reader: &mut R) -> Result<RawFuzzyHash, GeneratorOrIOError> {
     let mut generator = Generator::new();
     hash_stream_common(&mut generator, reader)
 }
@@ -147,11 +139,11 @@ pub fn hash_stream<R: Read>(reader: &mut R)
 ///
 /// If the file size could change while generating a fuzzy hash,
 /// use [`hash_stream()`] instead.
-pub fn hash_file<P: AsRef<Path>>(path: P)
-    -> Result<RawFuzzyHash, GeneratorOrIOError>
-{
+pub fn hash_file<P: AsRef<Path>>(path: P) -> Result<RawFuzzyHash, GeneratorOrIOError> {
     let mut file = File::open(path)?;
     let mut generator = Generator::new();
     generator.set_fixed_input_size(file.metadata()?.len())?; // grcov-excl-br-line:IO
     hash_stream_common(&mut generator, &mut file)
 }
+
+mod tests;
