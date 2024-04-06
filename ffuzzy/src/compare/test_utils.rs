@@ -2,6 +2,9 @@
 // SPDX-FileCopyrightText: Copyright (C) 2014 kikairoya <kikairoya@gmail.com>
 // SPDX-FileCopyrightText: Copyright (C) 2014 Jesse Kornblum <research@jessekornblum.com>
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+
+//! Test utilities for [`crate::compare`](mod@crate::compare).
+
 #![cfg(any(all(test, feature = "tests-slow"), doc))]
 
 /// Computes the edit distance between two given strings.

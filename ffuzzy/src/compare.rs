@@ -18,7 +18,6 @@ use crate::macros::{optionally_unsafe, invariant};
 
 /// Module that contains position array-related traits and implementations.
 pub mod position_array;
-/// Test-only utilities.
 #[cfg(any(test, doc))]
 mod test_utils;
 #[cfg(test)]
