@@ -1,17 +1,12 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Easy comparison functions and related error reporting utilities.
+
 #![cfg(feature = "easy-functions")]
 
+use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::LongFuzzyHash;
-use crate::hash::parser_state::{
-    ParseError, ParseErrorKind, ParseErrorOrigin, ParseErrorInfo
-};
-
-
-#[cfg(test)]
-mod tests;
-
 
 /// The operand (side) which caused a parse error.
 ///
@@ -34,23 +29,33 @@ pub struct ParseErrorEither(ParseErrorSide, ParseError); // grcov-excl-br-line:S
 
 impl ParseErrorEither {
     /// Returns which operand caused a parse error.
-    pub fn side(&self) -> ParseErrorSide { self.0 }
+    pub fn side(&self) -> ParseErrorSide {
+        self.0
+    }
 }
 
 impl ParseErrorInfo for ParseErrorEither {
-    fn kind(&self)   -> ParseErrorKind { self.1.kind() }
-    fn origin(&self) -> ParseErrorOrigin { self.1.origin() }
-    fn offset(&self) -> usize { self.1.offset() }
+    fn kind(&self) -> ParseErrorKind {
+        self.1.kind()
+    }
+    fn origin(&self) -> ParseErrorOrigin {
+        self.1.origin()
+    }
+    fn offset(&self) -> usize {
+        self.1.offset()
+    }
 }
 
 impl core::fmt::Display for ParseErrorEither {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "error occurred while parsing fuzzy hash {3} ({1}, at byte offset {2}): {0}",
+        write!(
+            f,
+            "error occurred while parsing fuzzy hash {3} ({1}, at byte offset {2}): {0}",
             self.kind(),
             self.origin(),
             self.offset(),
             match self.side() {
-                ParseErrorSide::Left  => 1,
+                ParseErrorSide::Left => 1,
                 ParseErrorSide::Right => 2,
             }
         )
@@ -89,12 +94,18 @@ impl core::error::Error for ParseErrorEither {
 /// ```
 pub fn compare(lhs: &str, rhs: &str) -> Result<u32, ParseErrorEither> {
     let lhs: LongFuzzyHash = match str::parse(lhs) {
-        Ok(value) => { value }
-        Err(err)  => { return Err(ParseErrorEither(ParseErrorSide::Left, err)); }
+        Ok(value) => value,
+        Err(err) => {
+            return Err(ParseErrorEither(ParseErrorSide::Left, err));
+        }
     };
     let rhs: LongFuzzyHash = match str::parse(rhs) {
-        Ok(value) => { value }
-        Err(err)  => { return Err(ParseErrorEither(ParseErrorSide::Right, err)); }
+        Ok(value) => value,
+        Err(err) => {
+            return Err(ParseErrorEither(ParseErrorSide::Right, err));
+        }
     };
     Ok(lhs.compare(rhs.as_ref()))
 }
+
+mod tests;
