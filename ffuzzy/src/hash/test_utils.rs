@@ -1,21 +1,28 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
-// grcov-excl-br-start
+// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// grcov-excl-tests-start
+
+#![cfg(any(test, doc))]
 
 use crate::hash::block::block_hash;
-
 
 fn test_blockhash_content_no_sequences(variant: bool, test_func: &mut impl FnMut(&[u8], &[u8])) {
     for len in 0..=block_hash::FULL_SIZE {
         let mut bh = [0u8; block_hash::FULL_SIZE];
         for (i, ch) in bh[..len].iter_mut().enumerate() {
-            *ch = (if !variant { i } else { block_hash::ALPHABET_SIZE - 1 - i }) as u8;
+            *ch = (if !variant {
+                i
+            } else {
+                block_hash::ALPHABET_SIZE - 1 - i
+            }) as u8;
         }
         test_func(&bh[0..len], &bh[0..len]);
     }
 }
 
-pub(crate) fn test_blockhash_contents_no_sequences(test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8])) {
+pub(crate) fn test_blockhash_contents_no_sequences(
+    test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8]),
+) {
     // Generated block hashes:
     // 1.  "A", "AB", "ABC",... "ABCDEFG..."... (forward from the first Base64 alphabet)
     // 2.  "/", "/+", "/+9",... "/+98765..."... (backward from the last Base64 alphabet)
@@ -48,7 +55,11 @@ fn test_blockhash_contents_one_sequence(test_func: &mut impl FnMut(&[u8], &[u8],
     });
 }
 
-fn test_blockhash_content_division(len: usize, variant: bool, test_func: &mut impl FnMut(&[u8], &[u8])) {
+fn test_blockhash_content_division(
+    len: usize,
+    variant: bool,
+    test_func: &mut impl FnMut(&[u8], &[u8]),
+) {
     assert!(len <= block_hash::FULL_SIZE);
     let sz = len as u32;
     for div in 1..=sz {
@@ -59,16 +70,23 @@ fn test_blockhash_content_division(len: usize, variant: bool, test_func: &mut im
             let i0 = (i * sz / div) as usize;
             let i1 = ((i + 1) * sz / div) as usize;
             let seq_len_norm = usize::min(i1 - i0, block_hash::MAX_SEQUENCE_SIZE);
-            let fill_ch = (if !variant { i } else { (block_hash::ALPHABET_SIZE as u32) - 1 - i }) as u8;
+            let fill_ch = (if !variant {
+                i
+            } else {
+                (block_hash::ALPHABET_SIZE as u32) - 1 - i
+            }) as u8;
             bh[i0..i1].fill(fill_ch);
-            bh_norm[bh_len_norm..bh_len_norm+seq_len_norm].fill(fill_ch);
+            bh_norm[bh_len_norm..bh_len_norm + seq_len_norm].fill(fill_ch);
             bh_len_norm += seq_len_norm;
         }
         test_func(&bh[0..len], &bh_norm[0..bh_len_norm]);
     }
 }
 
-fn test_blockhash_contents_division(max_bh2: usize, test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8])) {
+fn test_blockhash_contents_division(
+    max_bh2: usize,
+    test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8]),
+) {
     // Generated block hashes:
     // 1.  "AAA...AAA", "AAA...BBB", "AAA...BBB...CCC",... "ABC...9+/"
     //     (divide the block hash quasi-equally to N sequences)
@@ -81,7 +99,6 @@ fn test_blockhash_contents_division(max_bh2: usize, test_func: &mut impl FnMut(&
         });
     });
 }
-
 
 pub(crate) fn test_blockhash_contents_all(test_func: &mut impl FnMut(&[u8], &[u8], &[u8], &[u8])) {
     test_blockhash_contents_no_sequences(test_func);

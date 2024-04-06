@@ -22,10 +22,6 @@ use crate::macros::{optionally_unsafe, invariant};
 pub(crate) mod algorithms;
 pub mod block;
 pub mod parser_state;
-#[cfg(test)]
-pub(crate) mod tests;
-#[cfg(any(test, doc))]
-pub(crate) mod test_utils;
 
 
 /// An efficient fixed size fuzzy hash representation.
@@ -1894,3 +1890,6 @@ mod const_asserts {
     const_assert!(FuzzyHash::MAX_LEN_IN_STR < LongFuzzyHash::MAX_LEN_IN_STR);
     const_assert!(RawFuzzyHash::MAX_LEN_IN_STR < LongRawFuzzyHash::MAX_LEN_IN_STR);
 }
+
+pub(crate) mod test_utils;
+pub(crate) mod tests;
