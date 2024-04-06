@@ -2,12 +2,12 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 // SPDX-FileCopyrightText: FNV-1 test vectors are based on a PD work by Landon Curt Noll, authored in 2013.
 
+//! Tests: [`crate::generate`].
+
 #![cfg(test)]
 
-use crate::generate::{
-    PartialFNVHash, RollingHash,
-    Generator, GeneratorError
-};
+use super::{PartialFNVHash, RollingHash, Generator, GeneratorError};
+
 use crate::hash::{FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash};
 use crate::hash::block::{
     block_hash, block_size,

@@ -4,30 +4,24 @@
 // SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
+//! Fuzzy hash generator and related states and hashes.
+
 use core::ops::AddAssign;
 
 use crate::generate::fnv_table::FNV_HASH_INIT;
-#[cfg(not(feature = "opt-reduce-fnv-table"))]
-use crate::generate::fnv_table::FNV_TABLE;
 #[cfg(feature = "opt-reduce-fnv-table")]
 use crate::generate::fnv_table::FNV_HASH_PRIME;
-use crate::hash::{
-    FuzzyHashData, RawFuzzyHash, LongRawFuzzyHash,
-    fuzzy_raw_type
-};
+#[cfg(not(feature = "opt-reduce-fnv-table"))]
+use crate::generate::fnv_table::FNV_TABLE;
 use crate::hash::block::{
-    block_size, block_hash,
-    BlockHashSize, ConstrainedBlockHashSize,
-    BlockHashSizes, ConstrainedBlockHashSizes
+    block_hash, block_size, BlockHashSize, BlockHashSizes, ConstrainedBlockHashSize,
+    ConstrainedBlockHashSizes,
 };
+use crate::hash::{fuzzy_raw_type, FuzzyHashData, LongRawFuzzyHash, RawFuzzyHash};
 use crate::intrinsics::{likely, unlikely};
-use crate::macros::{optionally_unsafe, invariant};
-
+use crate::macros::{invariant, optionally_unsafe};
 
 mod fnv_table;
-#[cfg(test)]
-mod tests;
-
 
 /// Hasher which computes the lowest 6 bits of a 32-bit FNV-1 variant.
 ///
@@ -44,7 +38,9 @@ pub struct PartialFNVHash(u8);
 impl PartialFNVHash {
     /// Creates a new [`PartialFNVHash`] with the initial value.
     #[inline]
-    pub fn new() -> Self { PartialFNVHash(FNV_HASH_INIT) }
+    pub fn new() -> Self {
+        PartialFNVHash(FNV_HASH_INIT)
+    }
 
     /// Updates the hash value by processing a byte.
     #[inline]
@@ -66,7 +62,7 @@ impl PartialFNVHash {
     }
 
     /// Updates the hash value by processing an iterator of [`u8`].
-    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self{
+    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self {
         for ch in iter {
             self.update_by_byte(ch);
         }
@@ -131,9 +127,10 @@ impl AddAssign<u8> for PartialFNVHash {
     }
 }
 
-
 /// See [`RollingHash::WINDOW_SIZE`].
 const ROLLING_WINDOW: usize = 7;
+
+// grcov-excl-br-start:STRUCT_MEMBER
 
 /// Hasher which computes a variant of 32-bit rolling hash as used in ssdeep.
 ///
@@ -145,8 +142,6 @@ const ROLLING_WINDOW: usize = 7;
 /// supported ≧4GiB files and implemented a true rolling hash function.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RollingHash {
-    // grcov-excl-br-start:STRUCT_MEMBER
-
     /// Current rolling window index.
     ///
     /// **Performance Analysis:**
@@ -185,9 +180,9 @@ pub struct RollingHash {
 
     /// The last [`WINDOW_SIZE`](Self::WINDOW_SIZE) bytes of the processed data.
     window: [u8; ROLLING_WINDOW],
-
-    // grcov-excl-br-end
 }
+
+// grcov-excl-br-end
 
 impl RollingHash {
     /// The window size of the rolling hash.
@@ -203,7 +198,7 @@ impl RollingHash {
     /// Creates a new [`RollingHash`] with the initial value.
     pub fn new() -> Self {
         RollingHash {
-            index:  0,
+            index: 0,
             h1: 0,
             h2: 0,
             h3: 0,
@@ -218,10 +213,13 @@ impl RollingHash {
             invariant!((self.index as usize) < Self::WINDOW_SIZE);
         }
         self.h2 = self.h2.wrapping_sub(self.h1);
-        self.h2 = self.h2.wrapping_add(
-            u32::wrapping_mul(ROLLING_WINDOW as u32, ch as u32));
+        self.h2 = self
+            .h2
+            .wrapping_add(u32::wrapping_mul(ROLLING_WINDOW as u32, ch as u32));
         self.h1 = self.h1.wrapping_add(ch as u32);
-        self.h1 = self.h1.wrapping_sub(self.window[self.index as usize] as u32); // grcov-excl-br-line:ARRAY
+        self.h1 = self
+            .h1
+            .wrapping_sub(self.window[self.index as usize] as u32); // grcov-excl-br-line:ARRAY
         self.window[self.index as usize] = ch; // grcov-excl-br-line:ARRAY
         self.index += 1;
         if self.index as usize == ROLLING_WINDOW {
@@ -233,7 +231,7 @@ impl RollingHash {
     }
 
     /// Updates the hash value by processing an iterator of [`u8`].
-    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self{
+    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self {
         for ch in iter {
             self.update_by_byte(ch);
         }
@@ -292,17 +290,16 @@ impl AddAssign<u8> for RollingHash {
     }
 }
 
-
 /// The invalid character for a "not filled" marker.
 const BLOCKHASH_CHAR_NIL: u8 = 0xff;
+
+// grcov-excl-br-start:STRUCT_MEMBER
 
 /// Block hash context.
 ///
 /// All operations are performed in [`Generator`] except initialization.
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct BlockHashContext {
-    // grcov-excl-br-start:STRUCT_MEMBER
-
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
     /// Block hash contents.
@@ -313,9 +310,9 @@ struct BlockHashContext {
     h_full: PartialFNVHash,
     /// Block hash updater (a FNV-1 hasher) for truncated block hash.
     h_half: PartialFNVHash,
-
-    // grcov-excl-br-end
 }
+
+// grcov-excl-br-end
 
 impl BlockHashContext {
     /// Creates a new [`BlockHashContext`] with the initial value.
@@ -327,7 +324,7 @@ impl BlockHashContext {
             blockhash: [BLOCKHASH_CHAR_NIL; block_hash::FULL_SIZE],
             blockhash_ch_half: BLOCKHASH_CHAR_NIL,
             h_full: PartialFNVHash::new(),
-            h_half: PartialFNVHash::new()
+            h_half: PartialFNVHash::new(),
         }
     }
 
@@ -345,6 +342,7 @@ impl BlockHashContext {
     }
 }
 
+// grcov-excl-br-start:STRUCT_MEMBER
 
 /// The all internal data inside the [`Generator`] object.
 ///
@@ -352,8 +350,6 @@ impl BlockHashContext {
 /// [`PartialEq`] inside this crate but not outside.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct GeneratorInnerData {
-    // grcov-excl-br-start:STRUCT_MEMBER
-
     /// Processed input size.
     ///
     /// This value may be inaccurate if the generator has fed more than the
@@ -408,9 +404,9 @@ pub(crate) struct GeneratorInnerData {
 
     /// Whether to update [`h_last`](Self::h_last).
     is_last: bool,
-
-    // grcov-excl-br-end
 }
+
+// grcov-excl-br-end
 
 /// Fuzzy hash generator.
 ///
@@ -544,11 +540,15 @@ impl GeneratorError {
     /// It returns [`true`] on either [`FixedSizeTooLarge`](Self::FixedSizeTooLarge)
     /// or [`InputSizeTooLarge`](Self::InputSizeTooLarge) variants.
     pub fn is_size_too_large_error(&self) -> bool {
-        matches!(self, GeneratorError::FixedSizeTooLarge | GeneratorError::InputSizeTooLarge)
+        matches!(
+            self,
+            GeneratorError::FixedSizeTooLarge | GeneratorError::InputSizeTooLarge
+        )
     }
 }
 
 impl core::fmt::Display for GeneratorError {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self { // grcov-excl-br-line:MATCH_ENUM
             GeneratorError::FixedSizeMismatch => "current state mismatches to the fixed size previously set",
@@ -598,13 +598,13 @@ impl Generator {
             fixed_size: None,
             elim_border: Self::guessed_preferred_max_input_size_at(0),
             bhidx_start: 0,
-            bhidx_end:   1,
+            bhidx_end: 1,
             bhidx_end_limit: block_size::NUM_VALID - 1,
             roll_mask: 0,
             roll_hash: RollingHash::new(),
             bh_context: [BlockHashContext::new(); block_size::NUM_VALID],
-            h_last:  PartialFNVHash::new(),
-            is_last: false
+            h_last: PartialFNVHash::new(),
+            is_last: false,
         })
     }
 
@@ -617,7 +617,7 @@ impl Generator {
         self.0.fixed_size = None;
         self.0.elim_border = Self::guessed_preferred_max_input_size_at(0);
         self.0.bhidx_start = 0;
-        self.0.bhidx_end   = 1;
+        self.0.bhidx_end = 1;
         self.0.bhidx_end_limit = block_size::NUM_VALID - 1;
         self.0.roll_mask = 0;
         self.0.roll_hash = RollingHash::new();
@@ -629,7 +629,9 @@ impl Generator {
 
     /// Retrieves the input size fed to the generator object.
     #[inline(always)]
-    pub fn input_size(&self) -> u64 { self.0.input_size }
+    pub fn input_size(&self) -> u64 {
+        self.0.input_size
+    }
 
     /// Checks whether a ssdeep-compatible client may raise a warning due to
     /// its small input size (less meaningful fuzzy hashes will be generated
@@ -694,7 +696,7 @@ impl Generator {
         self.0.fixed_size = Some(size);
         self.0.bhidx_end_limit = usize::min(
             block_size::NUM_VALID - 1,
-            Self::get_log_block_size_from_input_size(size, 0) + 1
+            Self::get_log_block_size_from_input_size(size, 0) + 1,
         );
         Ok(())
     }
@@ -720,8 +722,7 @@ impl Generator {
         // grcov-excl-br-start
         if let Ok(size) = u64::try_from(size) {
             self.set_fixed_input_size(size)
-        }
-        else {
+        } else {
             // grcov-excl-start: Only reproduces in 128-bit usize environments.
             Err(GeneratorError::FixedSizeTooLarge)
             // grcov-excl-stop
@@ -907,16 +908,15 @@ macro_rules! generator_update_template {
 
 impl Generator {
     /// Process data, updating the internal state.
+    #[rustfmt::skip]
     pub fn update(&mut self, buffer: &[u8]) -> &mut Self {
-        self.0.input_size =
-            if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
-                self.0.input_size.saturating_add(size)
-            }
-            else {
-                // grcov-excl-start: Only reproduces in 128-bit usize environments.
-                Self::MAX_INPUT_SIZE + 1
-                // grcov-excl-stop
-            };
+        self.0.input_size = if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
+            self.0.input_size.saturating_add(size)
+        } else {
+            // grcov-excl-start: Only reproduces in 128-bit usize environments.
+            Self::MAX_INPUT_SIZE + 1
+            // grcov-excl-stop
+        };
         // grcov-generator-start
         generator_update_template!(self.0, buffer.iter().cloned(), {});
         // grcov-generator-stop
@@ -924,7 +924,7 @@ impl Generator {
     }
 
     /// Process data (an iterator), updating the internal state.
-    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self{
+    pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self {
         // grcov-generator-start
         generator_update_template!(self.0, iter, {
             self.0.input_size = self.0.input_size.saturating_add(1);
@@ -962,6 +962,7 @@ impl Generator {
     /// 2.  Block hash 1
     ///
     /// For the block hash 2 part, the block hash for double block size is used.
+    #[rustfmt::skip]
     fn guess_output_log_block_size(&self) -> usize {
         let mut log_block_size =
             Self::get_log_block_size_from_input_size(self.0.input_size, self.0.bhidx_start);
@@ -982,13 +983,16 @@ impl Generator {
 
     /// The internal implementation of [`Self::finalize_raw()`].
     #[allow(clippy::branches_sharing_code)]
+    #[rustfmt::skip]
     #[inline(always)]
-    fn finalize_raw_internal<const S1: usize, const S2: usize>(&self, truncate: bool)
-        -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
+    fn finalize_raw_internal<const S1: usize, const S2: usize>(
+        &self,
+        truncate: bool,
+    ) -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
         BlockHashSize<S2>: ConstrainedBlockHashSize,
-        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     {
         if let Some(input_size) = self.0.fixed_size {
             if input_size != self.0.input_size {
@@ -1021,8 +1025,7 @@ impl Generator {
             if roll_value != 0 {
                 if sz == block_hash::FULL_SIZE {
                     fuzzy.blockhash1[block_hash::FULL_SIZE - 1] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
-                }
-                else {
+                } else {
                     optionally_unsafe! {
                         invariant!(sz < block_hash::FULL_SIZE);
                     }
@@ -1044,9 +1047,14 @@ impl Generator {
                     debug_assert!(sz >= block_hash::HALF_SIZE); // invariant
                     sz = block_hash::HALF_SIZE;
                     fuzzy.blockhash2[0..(sz - 1)].clone_from_slice(&bh_1.blockhash[0..(sz - 1)]); // grcov-excl-br-line:ARRAY
-                    fuzzy.blockhash2[sz - 1] = if roll_value != 0 { bh_1.h_half.value() } else { bh_1.blockhash_ch_half }; // grcov-excl-br-line:ARRAY
-                }
-                else {
+                    fuzzy.blockhash2[sz - 1] = { // grcov-excl-br-line:ARRAY
+                        if roll_value != 0 {
+                            bh_1.h_half.value()
+                        } else {
+                            bh_1.blockhash_ch_half
+                        }
+                    };
+                } else {
                     optionally_unsafe! {
                         invariant!(sz <= fuzzy.blockhash2.len());
                         invariant!(sz <= bh_1.blockhash.len());
@@ -1061,8 +1069,7 @@ impl Generator {
                     }
                 }
                 fuzzy.len_blockhash2 = sz as u8;
-            }
-            else {
+            } else {
                 let mut sz = bh_1.blockhash_index;
                 if bh_1.blockhash[block_hash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
                     sz += 1;
@@ -1098,12 +1105,10 @@ impl Generator {
                         }
                         fuzzy.blockhash2[sz] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                         fuzzy.len_blockhash2 += 1;
-                    }
-                    else {
+                    } else {
                         if sz == block_hash::FULL_SIZE {
                             fuzzy.blockhash2[block_hash::FULL_SIZE - 1] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
-                        }
-                        else {
+                        } else {
                             optionally_unsafe! {
                                 invariant!(sz < block_hash::FULL_SIZE);
                             }
@@ -1113,23 +1118,20 @@ impl Generator {
                     }
                 }
             }
-        }
-        else if roll_value != 0 {
+        } else if roll_value != 0 {
             debug_assert!(log_block_size == 0 || log_block_size == block_size::NUM_VALID - 1);
             if log_block_size == 0 {
                 // No pieces are matched but at least one byte is processed.
                 fuzzy.blockhash2[0] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
                 fuzzy.len_blockhash2 = 1;
-            }
-            else {
+            } else {
                 // We need to handle block hash 2 for the largest valid block
                 // size specially because effective block size of the block hash
                 // 2 is not valid (and no regular pieces are available).
                 fuzzy.blockhash2[0] = self.0.h_last.value(); // grcov-excl-br-line:ARRAY
                 fuzzy.len_blockhash2 = 1;
             }
-        }
-        else {
+        } else {
             // We are not confident enough that we have processed a byte.
             // Note: there's an easy way to trigger this condition:
             //       feed seven zero bytes at the end.
@@ -1148,12 +1150,13 @@ impl Generator {
     /// continue feeding more data and updating the internal state without
     /// problems.  Still, it's hard to find such use cases so that using
     /// [`Generator`] like this is useful.
-    pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(&self)
-        -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
+    pub fn finalize_raw<const TRUNC: bool, const S1: usize, const S2: usize>(
+        &self,
+    ) -> Result<fuzzy_raw_type!(S1, S2), GeneratorError>
     where
         BlockHashSize<S1>: ConstrainedBlockHashSize,
         BlockHashSize<S2>: ConstrainedBlockHashSize,
-        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+        BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     {
         self.finalize_raw_internal::<S1, S2>(TRUNC)
     }
@@ -1167,7 +1170,7 @@ impl Generator {
     /// with default flags.
     #[inline]
     pub fn finalize(&self) -> Result<RawFuzzyHash, GeneratorError> {
-        self.finalize_raw::<true, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>()
+        self.finalize_raw::<true, { block_hash::FULL_SIZE }, { block_hash::HALF_SIZE }>()
     }
 
     /// Retrieves the resulting fuzzy hash, *not* truncating the second block hash.
@@ -1178,7 +1181,7 @@ impl Generator {
     /// with the flag `FUZZY_FLAG_NOTRUNC`.
     #[inline]
     pub fn finalize_without_truncation(&self) -> Result<LongRawFuzzyHash, GeneratorError> {
-        self.finalize_raw::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>()
+        self.finalize_raw::<false, { block_hash::FULL_SIZE }, { block_hash::FULL_SIZE }>()
     }
 }
 
@@ -1211,9 +1214,6 @@ impl AddAssign<u8> for Generator {
         self.update_by_byte(byte);
     }
 }
-
-
-
 
 /// Constant assertions related to this module.
 #[doc(hidden)]
@@ -1266,3 +1266,5 @@ mod const_asserts {
     // (additionally) take care of an arithmetic overflow.
     const_assert_ne!(u32::MAX % block_size::MIN, block_size::MIN - 1);
 }
+
+mod tests;
