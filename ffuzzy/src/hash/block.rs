@@ -425,7 +425,14 @@ pub mod block_hash {
     /// 7 equals [`MIN_LCS_FOR_COMPARISON`] and
     /// 6 equals the base-2 logarithm of [`ALPHABET_SIZE`].
     pub struct NumericWindows<'a> {
+        /// Remaining block hash portion to compute numeric windows.
         v: &'a [u8],
+        /// The "last" value of the numeric windows iterator
+        /// (an incomplete value when no values are generated yet).
+        ///
+        /// The [`Self::next()`] value can be retrieved by
+        /// [shifting this value](Self::ILOG2_OF_ALPHABETS),
+        /// [masking](Self::MASK) and then adding the first byte of [`Self::v`].
         hash: u64,
     }
 
@@ -507,6 +514,7 @@ pub struct BlockHashSize<const N: usize> {}
 /// A generic type to constrain given two block hash sizes using [`ConstrainedBlockHashSizes`].
 pub struct BlockHashSizes<const S1: usize, const S2: usize> {}
 
+/// Private module to declare sealed block hash constraints.
 mod private {
     use super::{block_hash, BlockHashSize, BlockHashSizes};
 

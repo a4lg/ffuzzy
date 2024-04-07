@@ -195,6 +195,7 @@ mod rle_encoding {
 /// This type should not be considered stable.
 pub struct ReconstructionBlockSize<const SZ_BH: usize, const SZ_R: usize> {}
 
+/// Private module to declare sealed reconstruction block constraints.
 mod private {
     use super::*;
     use crate::hash::block::block_hash;
@@ -322,6 +323,7 @@ mod private {
 pub trait ConstrainedReconstructionBlockSize: private::SealedReconstructionBlockSize {}
 impl<T> ConstrainedReconstructionBlockSize for T where T: private::SealedReconstructionBlockSize {}
 
+/// RLE block handling (algorithms).
 mod algorithms {
     use super::*;
 
@@ -1196,18 +1198,22 @@ where
         struct DebugBuilderForRLEBlockEntry(u8);
         /// The type to print a valid RLE block.
         struct DebugBuilderForValidRLEBlock<'a, const N: usize> {
+            /// The RLE block to print.
             block: &'a [u8; N],
         }
         /// The type to print an invalid RLE block.
         struct DebugBuilderForInvalidRLEBlock<'a, const N: usize> {
+            /// The RLE block to print.
             block: &'a [u8; N],
         }
         impl<'a, const N: usize> DebugBuilderForValidRLEBlock<'a, N> {
+            /// Creates the new object from an RLE block.
             pub fn new(rle_block: &'a [u8; N]) -> Self {
                 Self { block: rle_block }
             }
         }
         impl<'a, const N: usize> DebugBuilderForInvalidRLEBlock<'a, N> {
+            /// Creates the new object from an RLE block.
             pub fn new(rle_block: &'a [u8; N]) -> Self {
                 Self { block: rle_block }
             }
