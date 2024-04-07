@@ -3,26 +3,24 @@
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
+//! Basic fuzzy hash structure.
+
 #[cfg(all(feature = "alloc", not(any(test, doc, feature = "std"))))]
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;
 use crate::hash::block::{
-    block_size, block_hash,
-    BlockSizeRelation,
-    BlockHashSize, ConstrainedBlockHashSize,
-    BlockHashSizes, ConstrainedBlockHashSizes
+    block_hash, block_size, BlockHashSize, BlockHashSizes, BlockSizeRelation,
+    ConstrainedBlockHashSize, ConstrainedBlockHashSizes,
 };
 use crate::hash::parser_state::{
-    ParseError, ParseErrorKind, ParseErrorOrigin, BlockHashParseState
+    BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin,
 };
-use crate::macros::{optionally_unsafe, invariant};
-
+use crate::macros::{invariant, optionally_unsafe};
 
 pub(crate) mod algorithms;
 pub mod block;
 pub mod parser_state;
-
 
 /// An efficient fixed size fuzzy hash representation.
 ///
@@ -286,7 +284,7 @@ pub struct FuzzyHashData<const S1: usize, const S2: usize, const NORM: bool>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     /// Block hash 1.
     ///
@@ -315,7 +313,6 @@ where
     pub(crate) log_blocksize: u8,
 }
 
-
 /// An enumeration representing a cause of a generic fuzzy hash error.
 ///
 /// # Compatibility Note
@@ -335,8 +332,12 @@ pub enum FuzzyHashOperationError {
 impl core::fmt::Display for FuzzyHashOperationError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
-            FuzzyHashOperationError::BlockHashOverflow     => "overflow will occur while copying the block hash",
-            FuzzyHashOperationError::StringizationOverflow => "overflow will occur while converting to the string representation",
+            FuzzyHashOperationError::BlockHashOverflow => {
+                "overflow will occur while copying the block hash"
+            }
+            FuzzyHashOperationError::StringizationOverflow => {
+                "overflow will occur while converting to the string representation"
+            }
         })
     }
 }
@@ -345,7 +346,6 @@ impl core::fmt::Display for FuzzyHashOperationError {
 impl std::error::Error for FuzzyHashOperationError {}
 #[cfg(all(not(feature = "std"), feature = "unstable"))]
 impl core::error::Error for FuzzyHashOperationError {}
-
 
 /// Template to generate `from_bytes_with_last_index_internal()`
 /// internal functions.
@@ -421,9 +421,7 @@ macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
     };
 }
 
-pub(crate) use hash_from_bytes_with_last_index_internal_template_impl
-    as hash_from_bytes_with_last_index_internal_template;
-
+pub(crate) use hash_from_bytes_with_last_index_internal_template_impl as hash_from_bytes_with_last_index_internal_template;
 
 /// Implementation for all variants of fuzzy hashes.
 ///
@@ -432,7 +430,7 @@ impl<const S1: usize, const S2: usize, const NORM: bool> FuzzyHashData<S1, S2, N
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     /// The maximum size of the block hash 1.
     ///
@@ -474,13 +472,25 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
+        block_hash_2_len: u8,
     ) {
         debug_assert!(block_size::is_log_valid(log_block_size));
         debug_assert!(block_hash_1_len as usize <= S1);
         debug_assert!(block_hash_2_len as usize <= S2);
-        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(block_hash_1, block_hash_1_len, true, true));
-        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(block_hash_2, block_hash_2_len, true, true));
+        // grcov-excl-br-start:DEBUG_ASSERT
+        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(
+            block_hash_1,
+            block_hash_1_len,
+            true,
+            true
+        ));
+        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(
+            block_hash_2,
+            block_hash_2_len,
+            true,
+            true
+        ));
+        // grcov-excl-br-stop
         self.blockhash1 = *block_hash_1;
         self.blockhash2 = *block_hash_2;
         self.len_blockhash1 = block_hash_1_len;
@@ -512,9 +522,15 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
+        block_hash_2_len: u8,
     ) {
-        self.init_from_internals_raw_internal(log_block_size, block_hash_1, block_hash_2, block_hash_1_len, block_hash_2_len)
+        self.init_from_internals_raw_internal(
+            log_block_size,
+            block_hash_1,
+            block_hash_2,
+            block_hash_1_len,
+            block_hash_2_len,
+        )
     }
 
     /// Initialize the fuzzy hash object with internal contents (raw).
@@ -540,19 +556,31 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
+        block_hash_2_len: u8,
     ) {
         assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1_len as usize <= S1);
         assert!(block_hash_2_len as usize <= S2);
-        assert!(algorithms::verify_block_hash_input::<S1, NORM>(block_hash_1, block_hash_1_len, true, true));
-        assert!(algorithms::verify_block_hash_input::<S2, NORM>(block_hash_2, block_hash_2_len, true, true));
+        // grcov-excl-br-start:ASSERT
+        assert!(algorithms::verify_block_hash_input::<S1, NORM>(
+            block_hash_1,
+            block_hash_1_len,
+            true,
+            true
+        ));
+        assert!(algorithms::verify_block_hash_input::<S2, NORM>(
+            block_hash_2,
+            block_hash_2_len,
+            true,
+            true
+        ));
+        // grcov-excl-br-stop
         self.init_from_internals_raw_internal(
             log_block_size,
             block_hash_1,
             block_hash_2,
             block_hash_1_len,
-            block_hash_2_len
+            block_hash_2_len,
         );
     }
 
@@ -563,11 +591,16 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
-    ) -> Self
-    {
+        block_hash_2_len: u8,
+    ) -> Self {
         let mut hash = Self::new();
-        hash.init_from_internals_raw_internal(log_block_size, block_hash_1, block_hash_2, block_hash_1_len, block_hash_2_len);
+        hash.init_from_internals_raw_internal(
+            log_block_size,
+            block_hash_1,
+            block_hash_2,
+            block_hash_1_len,
+            block_hash_2_len,
+        );
         hash
     }
 
@@ -594,10 +627,15 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
-    ) -> Self
-    {
-        Self::new_from_internals_raw_internal(log_block_size, block_hash_1, block_hash_2, block_hash_1_len, block_hash_2_len)
+        block_hash_2_len: u8,
+    ) -> Self {
+        Self::new_from_internals_raw_internal(
+            log_block_size,
+            block_hash_1,
+            block_hash_2,
+            block_hash_1_len,
+            block_hash_2_len,
+        )
     }
 
     /// Creates a new fuzzy hash object with internal contents (raw).
@@ -622,11 +660,16 @@ where
         block_hash_1: &[u8; S1],
         block_hash_2: &[u8; S2],
         block_hash_1_len: u8,
-        block_hash_2_len: u8
-    ) -> Self
-    {
+        block_hash_2_len: u8,
+    ) -> Self {
         let mut hash = Self::new();
-        hash.init_from_internals_raw(log_block_size, block_hash_1, block_hash_2, block_hash_1_len, block_hash_2_len);
+        hash.init_from_internals_raw(
+            log_block_size,
+            block_hash_1,
+            block_hash_2,
+            block_hash_1_len,
+            block_hash_2_len,
+        );
         hash
     }
 
@@ -634,9 +677,8 @@ where
     fn new_from_internals_near_raw_internal(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         let mut hash = Self::new();
         debug_assert!(block_size::is_log_valid(log_block_size));
         optionally_unsafe! {
@@ -648,8 +690,20 @@ where
         hash.len_blockhash1 = block_hash_1.len() as u8;
         hash.len_blockhash2 = block_hash_2.len() as u8;
         hash.log_blocksize = log_block_size;
-        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1, true, false));
-        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2, true, false));
+        // grcov-excl-br-start:DEBUG_ASSERT
+        debug_assert!(algorithms::verify_block_hash_input::<S1, NORM>(
+            &hash.blockhash1,
+            hash.len_blockhash1,
+            true,
+            false
+        ));
+        debug_assert!(algorithms::verify_block_hash_input::<S2, NORM>(
+            &hash.blockhash2,
+            hash.len_blockhash2,
+            true,
+            false
+        ));
+        // grcov-excl-br-stop
         hash
     }
 
@@ -672,9 +726,8 @@ where
     pub unsafe fn new_from_internals_near_raw_unchecked(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         Self::new_from_internals_near_raw_internal(log_block_size, block_hash_1, block_hash_2)
     }
 
@@ -696,19 +749,27 @@ where
     pub fn new_from_internals_near_raw(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1.len() <= S1);
         assert!(block_hash_2.len() <= S2);
-        let hash = Self::new_from_internals_near_raw_internal(
-            log_block_size,
-            block_hash_1,
-            block_hash_2
-        );
-        assert!(algorithms::verify_block_hash_input::<S1, NORM>(&hash.blockhash1, hash.len_blockhash1, true, false));
-        assert!(algorithms::verify_block_hash_input::<S2, NORM>(&hash.blockhash2, hash.len_blockhash2, true, false));
+        let hash =
+            Self::new_from_internals_near_raw_internal(log_block_size, block_hash_1, block_hash_2);
+        // grcov-excl-br-start:ASSERT
+        assert!(algorithms::verify_block_hash_input::<S1, NORM>(
+            &hash.blockhash1,
+            hash.len_blockhash1,
+            true,
+            false
+        ));
+        assert!(algorithms::verify_block_hash_input::<S2, NORM>(
+            &hash.blockhash2,
+            hash.len_blockhash2,
+            true,
+            false
+        ));
+        // grcov-excl-br-stop
         hash
     }
 
@@ -718,13 +779,13 @@ where
     fn new_from_internals_internal(
         block_size: u32,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         debug_assert!(block_size::is_valid(block_size));
         Self::new_from_internals_near_raw_internal(
             block_size::log_from_valid_internal(block_size),
-            block_hash_1, block_hash_2
+            block_hash_1,
+            block_hash_2,
         )
     }
 
@@ -746,12 +807,12 @@ where
     pub unsafe fn new_from_internals_unchecked(
         block_size: u32,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         Self::new_from_internals_near_raw_unchecked(
             block_size::log_from_valid_internal(block_size),
-            block_hash_1, block_hash_2
+            block_hash_1,
+            block_hash_2,
         )
     }
 
@@ -769,16 +830,12 @@ where
     /// *   On the normalized variant, contents of `block_hash_1` and
     ///     `block_hash_2` must be normalized.
     #[inline]
-    pub fn new_from_internals(
-        block_size: u32,
-        block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+    pub fn new_from_internals(block_size: u32, block_hash_1: &[u8], block_hash_2: &[u8]) -> Self {
         assert!(block_size::is_valid(block_size));
         Self::new_from_internals_near_raw(
             block_size::log_from_valid_internal(block_size),
-            block_hash_1, block_hash_2
+            block_hash_1,
+            block_hash_2,
         )
     }
 
@@ -786,7 +843,9 @@ where
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](Self#block-size)
     #[inline(always)]
-    pub fn log_block_size(&self) -> u8 { self.log_blocksize }
+    pub fn log_block_size(&self) -> u8 {
+        self.log_blocksize
+    }
 
     /// The block size of the fuzzy hash.
     #[inline]
@@ -954,9 +1013,7 @@ where
     ///
     /// Additional [`usize`] in the version 0.3.0 will simplify handling the
     /// result and the semantics are now similar to e.g. [`std::io::Read::read()`].
-    pub fn store_into_bytes(&self, buffer: &mut [u8])
-        -> Result<usize, FuzzyHashOperationError>
-    {
+    pub fn store_into_bytes(&self, buffer: &mut [u8]) -> Result<usize, FuzzyHashOperationError> {
         let len_in_str = self.len_in_str();
         if buffer.len() < len_in_str {
             return Err(FuzzyHashOperationError::StringizationOverflow);
@@ -974,7 +1031,7 @@ where
             algorithms::insert_block_hash_into_bytes(
                 &mut buffer[i..],
                 &self.blockhash1,
-                self.len_blockhash1
+                self.len_blockhash1,
             );
             i += self.len_blockhash1 as usize;
             invariant!(i < buffer.len());
@@ -983,7 +1040,7 @@ where
             algorithms::insert_block_hash_into_bytes(
                 &mut buffer[i..],
                 &self.blockhash2,
-                self.len_blockhash2
+                self.len_blockhash2,
             );
             // grcov-excl-start
             // grcov-excl-br-start
@@ -1002,9 +1059,10 @@ where
     /// The behavior of this method is affected by the `strict-parser` feature.
     /// For more information, see [The Strict Parser](Self#the-strict-parser).
     #[inline(always)]
-    fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
-        -> Result<Self, ParseError>
-    {
+    fn from_bytes_with_last_index_internal(
+        str: &[u8],
+        index: &mut usize,
+    ) -> Result<Self, ParseError> {
         let mut fuzzy = Self::new();
         hash_from_bytes_with_last_index_internal_template! {
             str, index, NORM,
@@ -1027,9 +1085,7 @@ where
     ///
     /// The behavior of this method is affected by the `strict-parser` feature.
     /// For more information, see [The Strict Parser](Self#the-strict-parser).
-    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
-        -> Result<Self, ParseError>
-    {
+    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize) -> Result<Self, ParseError> {
         Self::from_bytes_with_last_index_internal(str, index)
     }
 
@@ -1038,9 +1094,7 @@ where
     ///
     /// The behavior of this method is affected by the `strict-parser` feature.
     /// For more information, see [The Strict Parser](Self#the-strict-parser).
-    pub fn from_bytes(str: &[u8])
-        -> Result<Self, ParseError>
-    {
+    pub fn from_bytes(str: &[u8]) -> Result<Self, ParseError> {
         Self::from_bytes_with_last_index_internal(str, &mut 0usize)
     }
 
@@ -1052,8 +1106,17 @@ where
     /// Note that this method is only for convenience purposes and checking
     /// whether a fuzzy hash is normalized does not usually improve the performance.
     pub fn is_normalized(&self) -> bool {
-        algorithms::verify_block_hash_current::<S1, NORM>(&self.blockhash1, self.len_blockhash1, false, false) &&
-        algorithms::verify_block_hash_current::<S2, NORM>(&self.blockhash2, self.len_blockhash2, false, false)
+        algorithms::verify_block_hash_current::<S1, NORM>(
+            &self.blockhash1,
+            self.len_blockhash1,
+            false,
+            false,
+        ) && algorithms::verify_block_hash_current::<S2, NORM>(
+            &self.blockhash2,
+            self.len_blockhash2,
+            false,
+            false,
+        )
     }
 
     /// Normalize the fuzzy hash in place (or don't, depending on the input normalization).
@@ -1068,11 +1131,11 @@ where
         // that is resolved *here*.
         algorithms::normalize_block_hash_in_place::<S1, IN_NORM>(
             &mut self.blockhash1,
-            &mut self.len_blockhash1
+            &mut self.len_blockhash1,
         );
         algorithms::normalize_block_hash_in_place::<S2, IN_NORM>(
             &mut self.blockhash2,
-            &mut self.len_blockhash2
+            &mut self.len_blockhash2,
         );
         debug_assert!(self.is_valid());
     }
@@ -1101,7 +1164,7 @@ where
             blockhash2: self.blockhash2,
             len_blockhash1: self.len_blockhash1,
             len_blockhash2: self.len_blockhash2,
-            log_blocksize: self.log_blocksize
+            log_blocksize: self.log_blocksize,
         };
         // Make it valid here.
         dest.normalize_in_place_internal::<NORM>();
@@ -1142,8 +1205,18 @@ where
         block_size::is_log_valid(self.log_blocksize)
             && (self.len_blockhash1 as usize) <= S1
             && (self.len_blockhash2 as usize) <= S2
-            && algorithms::verify_block_hash_input::<S1, NORM>(&self.blockhash1, self.len_blockhash1, true, true)
-            && algorithms::verify_block_hash_input::<S2, NORM>(&self.blockhash2, self.len_blockhash2, true, true)
+            && algorithms::verify_block_hash_input::<S1, NORM>(
+                &self.blockhash1,
+                self.len_blockhash1,
+                true,
+                true,
+            )
+            && algorithms::verify_block_hash_input::<S2, NORM>(
+                &self.blockhash2,
+                self.len_blockhash2,
+                true,
+                true,
+            )
     }
 
     /// Performs full equality checking of the internal structure.
@@ -1173,101 +1246,64 @@ where
     pub fn full_eq(&self, other: &Self) -> bool {
         // This is the auto-generated code by rust-analyzer as the default
         // PartialEq implementation of FuzzyHashData struct.
-        self.blockhash1 == other.blockhash1 &&
-        self.blockhash2 == other.blockhash2 &&
-        self.len_blockhash1 == other.len_blockhash1 &&
-        self.len_blockhash2 == other.len_blockhash2 &&
-        self.log_blocksize == other.log_blocksize
+        self.blockhash1 == other.blockhash1
+            && self.blockhash2 == other.blockhash2
+            && self.len_blockhash1 == other.len_blockhash1
+            && self.len_blockhash2 == other.len_blockhash2
+            && self.log_blocksize == other.log_blocksize
     }
 
     /// Compare two *base-2 logarithm* forms of the block size values from
     /// given two fuzzy hashes to determine their block size relation.
     #[inline]
-    pub fn compare_block_sizes(
-        lhs: impl AsRef<Self>,
-        rhs: impl AsRef<Self>
-    ) -> BlockSizeRelation
-    {
-        block_size::compare_sizes(
-            lhs.as_ref().log_blocksize,
-            rhs.as_ref().log_blocksize
-        )
+    pub fn compare_block_sizes(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> BlockSizeRelation {
+        block_size::compare_sizes(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
     /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a near relation.
     #[inline]
-    pub fn is_block_sizes_near(
-        lhs: impl AsRef<Self>,
-        rhs: impl AsRef<Self>
-    ) -> bool
-    {
-        block_size::is_near(
-            lhs.as_ref().log_blocksize,
-            rhs.as_ref().log_blocksize
-        )
+    pub fn is_block_sizes_near(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
+        block_size::is_near(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
     /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearEq`]
     /// relation.
     #[inline]
-    pub fn is_block_sizes_near_eq(
-        lhs: impl AsRef<Self>,
-        rhs: impl AsRef<Self>
-    ) -> bool
-    {
-        block_size::is_near_eq(
-            lhs.as_ref().log_blocksize,
-            rhs.as_ref().log_blocksize
-        )
+    pub fn is_block_sizes_near_eq(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
+        block_size::is_near_eq(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
     /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearLt`]
     /// relation.
     #[inline]
-    pub fn is_block_sizes_near_lt(
-        lhs: impl AsRef<Self>,
-        rhs: impl AsRef<Self>
-    ) -> bool
-    {
-        block_size::is_near_lt(
-            lhs.as_ref().log_blocksize,
-            rhs.as_ref().log_blocksize
-        )
+    pub fn is_block_sizes_near_lt(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
+        block_size::is_near_lt(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
     /// Checks whether two *base-2 logarithm* forms of the block size values
     /// from given two fuzzy hashes form a [`BlockSizeRelation::NearGt`]
     /// relation.
     #[inline]
-    pub fn is_block_sizes_near_gt(
-        lhs: impl AsRef<Self>,
-        rhs: impl AsRef<Self>
-    ) -> bool
-    {
-        block_size::is_near_gt(
-            lhs.as_ref().log_blocksize,
-            rhs.as_ref().log_blocksize
-        )
+    pub fn is_block_sizes_near_gt(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
+        block_size::is_near_gt(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
     /// Compare two fuzzy hashes only by their block sizes.
     #[inline]
     pub fn cmp_by_block_size(&self, other: &Self) -> core::cmp::Ordering {
-        u8::cmp(
-            &self.log_blocksize,
-            &other.log_blocksize)
+        u8::cmp(&self.log_blocksize, &other.log_blocksize)
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    AsRef<FuzzyHashData<S1, S2, NORM>> for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> AsRef<FuzzyHashData<S1, S2, NORM>>
+    for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline(always)]
     fn as_ref(&self) -> &FuzzyHashData<S1, S2, NORM> {
@@ -1275,24 +1311,22 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    Default for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> Default for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    PartialEq for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> PartialEq for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
@@ -1309,26 +1343,28 @@ where
             invariant!((other.len_blockhash2 as usize) <= other.blockhash2.len());
         }
         // grcov-excl-br-start:ARRAY
-        self.blockhash1[0..self.len_blockhash1 as usize] == other.blockhash1[0..other.len_blockhash1 as usize] &&
-        self.blockhash2[0..self.len_blockhash2 as usize] == other.blockhash2[0..other.len_blockhash2 as usize]
+        self.blockhash1[0..self.len_blockhash1 as usize]
+            == other.blockhash1[0..other.len_blockhash1 as usize]
+            && self.blockhash2[0..self.len_blockhash2 as usize]
+                == other.blockhash2[0..other.len_blockhash2 as usize]
         // grcov-excl-br-stop
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    Eq for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> Eq for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
-{}
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
+{
+}
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    core::hash::Hash for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> core::hash::Hash
+    for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
@@ -1346,12 +1382,11 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    Ord for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> Ord for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
@@ -1360,23 +1395,23 @@ where
             &self.blockhash1,
             self.len_blockhash1,
             &self.blockhash2,
-            self.len_blockhash2
-        ).cmp(&(
-            other.log_blocksize,
-            &other.blockhash1,
-            other.len_blockhash1,
-            &other.blockhash2,
-            other.len_blockhash2
-        ))
+            self.len_blockhash2,
+        )
+            .cmp(&(
+                other.log_blocksize,
+                &other.blockhash1,
+                other.len_blockhash1,
+                &other.blockhash2,
+                other.len_blockhash2,
+            ))
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    PartialOrd for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> PartialOrd for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
@@ -1390,19 +1425,19 @@ impl<const S1: usize, const S2: usize, const NORM: bool>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     fn from(value: FuzzyHashData<S1, S2, NORM>) -> Self {
         value.to_string()
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    core::fmt::Display for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> core::fmt::Display
+    for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     /// Formats the value using a given formatter.
     ///
@@ -1428,28 +1463,36 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    core::fmt::Debug for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> core::fmt::Debug
+    for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         // It's for debug purposes and do the full checking.
         if self.is_valid() {
             // Table lookup is safe.  All entries are `0 <= x < 64`.
-            let buffer1 = self.blockhash1.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
-            let buffer2 = self.blockhash2.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
+            let buffer1 = self.blockhash1.map(|x| BASE64_TABLE_U8[x as usize]); // grcov-excl-br-line:ARRAY
+            let buffer2 = self.blockhash2.map(|x| BASE64_TABLE_U8[x as usize]); // grcov-excl-br-line:ARRAY
             f.debug_struct("FuzzyHashData")
                 .field("LONG", &Self::IS_LONG_FORM)
                 .field("NORM", &Self::IS_NORMALIZED_FORM)
-                .field("block_size", &block_size::from_log_internal(self.log_blocksize))
-                .field("blockhash1", &core::str::from_utf8(&buffer1[..self.len_blockhash1 as usize]).unwrap()) // grcov-excl-br-line:ARRAY
-                .field("blockhash2", &core::str::from_utf8(&buffer2[..self.len_blockhash2 as usize]).unwrap()) // grcov-excl-br-line:ARRAY
+                .field(
+                    "block_size",
+                    &block_size::from_log_internal(self.log_blocksize),
+                )
+                .field(
+                    "blockhash1",
+                    &core::str::from_utf8(&buffer1[..self.len_blockhash1 as usize]).unwrap(),
+                )
+                .field(
+                    "blockhash2",
+                    &core::str::from_utf8(&buffer2[..self.len_blockhash2 as usize]).unwrap(),
+                )
                 .finish()
-        }
-        else {
+        } else {
             f.debug_struct("FuzzyHashData")
                 .field("ILL_FORMED", &true)
                 .field("LONG", &Self::IS_LONG_FORM)
@@ -1464,34 +1507,34 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const NORM: bool>
-    core::str::FromStr for FuzzyHashData<S1, S2, NORM>
+impl<const S1: usize, const S2: usize, const NORM: bool> core::str::FromStr
+    for FuzzyHashData<S1, S2, NORM>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     type Err = ParseError;
     #[inline(always)]
-    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_bytes(s.as_bytes()) }
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::from_bytes(s.as_bytes())
+    }
 }
-
 
 /// Type macro for a normalized fuzzy hash type.
 #[doc(alias = "fuzzy_norm_type")]
-macro_rules!  norm_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, true> }}
+macro_rules! norm_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, true> }}
 /// Type macro for a non-normalized (raw) fuzzy hash type.
 #[doc(alias = "fuzzy_raw_type")]
-macro_rules!   raw_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, false> }}
+macro_rules! raw_type {($s1: expr, $s2: expr) => { FuzzyHashData<$s1, $s2, false> }}
 
 pub(crate) use norm_type as fuzzy_norm_type;
-pub(crate) use raw_type  as fuzzy_raw_type;
+pub(crate) use raw_type as fuzzy_raw_type;
 
 /// Type macro for a short fuzzy hash type.
 macro_rules! short_type {($norm: expr) => {FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, $norm> }}
 /// Type macro for a long fuzzy hash type.
-macro_rules!  long_type {($norm: expr) => {FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, $norm> }}
-
+macro_rules! long_type {($norm: expr) => {FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, $norm> }}
 
 /// Implementation of normalized fuzzy hashes.
 ///
@@ -1501,7 +1544,7 @@ impl<const S1: usize, const S2: usize> norm_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     /// Windows representing normalized substrings
     /// suitable for filtering block hashes to match (block hash 1).
@@ -1559,7 +1602,8 @@ where
     /// ```
     #[inline]
     pub fn block_hash_1_windows(&self) -> core::slice::Windows<'_, u8> {
-        self.block_hash_1().windows(block_hash::MIN_LCS_FOR_COMPARISON)
+        self.block_hash_1()
+            .windows(block_hash::MIN_LCS_FOR_COMPARISON)
     }
 
     /// Windows representing normalized substrings,
@@ -1581,7 +1625,8 @@ where
     /// See also: [`block_hash_1_windows()`](Self::block_hash_1_windows()).
     #[inline]
     pub fn block_hash_2_windows(&self) -> core::slice::Windows<'_, u8> {
-        self.block_hash_2().windows(block_hash::MIN_LCS_FOR_COMPARISON)
+        self.block_hash_2()
+            .windows(block_hash::MIN_LCS_FOR_COMPARISON)
     }
 
     /// Windows representing normalized substrings,
@@ -1599,7 +1644,9 @@ where
 
     /// Converts the fuzzy hash from a raw form, normalizing it.
     #[inline]
-    pub fn from_raw_form(source: &raw_type!(S1, S2)) -> Self { source.normalize() }
+    pub fn from_raw_form(source: &raw_type!(S1, S2)) -> Self {
+        source.normalize()
+    }
 
     /// Converts the fuzzy hash to a raw form.
     #[inline]
@@ -1609,7 +1656,7 @@ where
             blockhash2: self.blockhash2,
             len_blockhash1: self.len_blockhash1,
             len_blockhash2: self.len_blockhash2,
-            log_blocksize: self.log_blocksize
+            log_blocksize: self.log_blocksize,
         }
     }
 
@@ -1624,7 +1671,6 @@ where
     }
 }
 
-
 /// Implementation of non-normalized fuzzy hashes (in raw form).
 ///
 /// Methods below are available on non-normalized fuzzy hashes
@@ -1633,30 +1679,30 @@ impl<const S1: usize, const S2: usize> raw_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     /// Converts the fuzzy hash from a normalized form.
     #[inline]
-    pub fn from_normalized(source: &norm_type!(S1, S2)) -> Self { source.to_raw_form() }
+    pub fn from_normalized(source: &norm_type!(S1, S2)) -> Self {
+        source.to_raw_form()
+    }
 }
-
 
 /// Implementation of short fuzzy hashes.
 ///
 /// Methods below are available on short (truncated) fuzzy hashes
 /// ([`FuzzyHash`] or [`RawFuzzyHash`]).
-impl <const NORM: bool> short_type!(NORM) {
+impl<const NORM: bool> short_type!(NORM) {
     /// Converts the fuzzy hash to a long form.
     #[inline]
     pub fn to_long_form(&self) -> long_type!(NORM) {
-        let mut dest =
-            FuzzyHashData {
-                blockhash1: self.blockhash1,
-                blockhash2: [0; block_hash::FULL_SIZE],
-                len_blockhash1: self.len_blockhash1,
-                len_blockhash2: self.len_blockhash2,
-                log_blocksize: self.log_blocksize
-            };
+        let mut dest = FuzzyHashData {
+            blockhash1: self.blockhash1,
+            blockhash2: [0; block_hash::FULL_SIZE],
+            len_blockhash1: self.len_blockhash1,
+            len_blockhash2: self.len_blockhash2,
+            log_blocksize: self.log_blocksize,
+        };
         dest.blockhash2[0..block_hash::HALF_SIZE].copy_from_slice(&self.blockhash2);
         dest
     }
@@ -1673,26 +1719,29 @@ impl <const NORM: bool> short_type!(NORM) {
     }
 }
 
-
 /// Implementation of long fuzzy hashes.
 ///
 /// Methods below are available on long (non-truncated) fuzzy hashes
 /// ([`LongFuzzyHash`] or [`LongRawFuzzyHash`]).
-impl <const NORM: bool> long_type!(NORM) {
+impl<const NORM: bool> long_type!(NORM) {
     /// Converts the fuzzy hash from a short, truncated form.
     #[inline]
-    pub fn from_short_form(source: &short_type!(NORM)) -> Self { source.to_long_form() }
+    pub fn from_short_form(source: &short_type!(NORM)) -> Self {
+        source.to_long_form()
+    }
 
     /// Tries to copy the fuzzy hash to another (output is a short form).
     #[inline]
-    pub fn try_into_mut_short(&self, dest: &mut short_type!(NORM))
-        -> Result<(), FuzzyHashOperationError>
-    {
+    pub fn try_into_mut_short(
+        &self,
+        dest: &mut short_type!(NORM),
+    ) -> Result<(), FuzzyHashOperationError> {
         if self.len_blockhash2 as usize > block_hash::HALF_SIZE {
             return Err(FuzzyHashOperationError::BlockHashOverflow);
         }
         dest.blockhash1 = self.blockhash1;
-        dest.blockhash2.copy_from_slice(&self.blockhash2[0..block_hash::HALF_SIZE]);
+        dest.blockhash2
+            .copy_from_slice(&self.blockhash2[0..block_hash::HALF_SIZE]);
         dest.len_blockhash1 = self.len_blockhash1;
         dest.len_blockhash2 = self.len_blockhash2;
         dest.log_blocksize = self.log_blocksize;
@@ -1700,34 +1749,35 @@ impl <const NORM: bool> long_type!(NORM) {
     }
 }
 
-
-impl<const S1: usize, const S2: usize>
-    core::convert::From<norm_type!(S1, S2)> for raw_type!(S1, S2)
+impl<const S1: usize, const S2: usize> core::convert::From<norm_type!(S1, S2)> for raw_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
-    fn from(value: norm_type!(S1, S2)) -> Self { value.to_raw_form() }
+    fn from(value: norm_type!(S1, S2)) -> Self {
+        value.to_raw_form()
+    }
 }
 
-impl<const S1: usize, const S2: usize>
-    core::convert::From<raw_type!(S1, S2)> for norm_type!(S1, S2)
+impl<const S1: usize, const S2: usize> core::convert::From<raw_type!(S1, S2)> for norm_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
-    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes
+    BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
 {
     #[inline]
-    fn from(value: raw_type!(S1, S2)) -> Self { value.normalize() }
+    fn from(value: raw_type!(S1, S2)) -> Self {
+        value.normalize()
+    }
 }
 
-impl<const NORM: bool>
-    core::convert::From<short_type!(NORM)> for long_type!(NORM)
-{
+impl<const NORM: bool> core::convert::From<short_type!(NORM)> for long_type!(NORM) {
     #[inline]
-    fn from(value: short_type!(NORM)) -> Self { value.to_long_form() }
+    fn from(value: short_type!(NORM)) -> Self {
+        value.to_long_form()
+    }
 }
 
 impl core::convert::From<short_type!(true)> for long_type!(false) {
@@ -1744,9 +1794,7 @@ impl core::convert::From<short_type!(true)> for long_type!(false) {
     }
 }
 
-impl<const NORM: bool>
-    core::convert::TryFrom<long_type!(NORM)> for short_type!(NORM)
-{
+impl<const NORM: bool> core::convert::TryFrom<long_type!(NORM)> for short_type!(NORM) {
     type Error = FuzzyHashOperationError;
     fn try_from(value: long_type!(NORM)) -> Result<Self, Self::Error> {
         let mut dest: Self = Self::new();
@@ -1754,7 +1802,6 @@ impl<const NORM: bool>
         Ok(dest)
     }
 }
-
 
 /// Regular (truncated) normalized fuzzy hash type.
 ///
@@ -1784,8 +1831,7 @@ impl<const NORM: bool>
 /// (libfuzzy), the result will be a non-truncated, long form.  If you want to
 /// handle such fuzzy hashes, use [`LongFuzzyHash`] (instead of [`FuzzyHash`])
 /// and/or [`LongRawFuzzyHash`] (instead of [`RawFuzzyHash`]).
-pub type FuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, true>;
-
+pub type FuzzyHash = FuzzyHashData<{ block_hash::FULL_SIZE }, { block_hash::HALF_SIZE }, true>;
 
 /// Regular (truncated) raw fuzzy hash type.
 ///
@@ -1814,8 +1860,7 @@ pub type FuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SI
 /// (libfuzzy), the result will be a non-truncated, long form.  If you want to
 /// handle such fuzzy hashes, use [`LongFuzzyHash`] (instead of [`FuzzyHash`])
 /// and/or [`LongRawFuzzyHash`] (instead of [`RawFuzzyHash`]).
-pub type RawFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, false>;
-
+pub type RawFuzzyHash = FuzzyHashData<{ block_hash::FULL_SIZE }, { block_hash::HALF_SIZE }, false>;
 
 /// Long (non-truncated) normalized fuzzy hash type.
 ///
@@ -1825,8 +1870,7 @@ pub type RawFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::HALF
 /// Use [`FuzzyHash`] where applicable.
 ///
 /// See also: [`FuzzyHashData`]
-pub type LongFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, true>;
-
+pub type LongFuzzyHash = FuzzyHashData<{ block_hash::FULL_SIZE }, { block_hash::FULL_SIZE }, true>;
 
 /// Long (non-truncated) raw fuzzy hash type.
 ///
@@ -1836,11 +1880,8 @@ pub type LongFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FUL
 /// Use [`RawFuzzyHash`] where applicable.
 ///
 /// See also: [`FuzzyHashData`]
-pub type LongRawFuzzyHash = FuzzyHashData<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}, false>;
-
-
-
-
+pub type LongRawFuzzyHash =
+    FuzzyHashData<{ block_hash::FULL_SIZE }, { block_hash::FULL_SIZE }, false>;
 
 /// Constant assertions related to the parent module.
 #[doc(hidden)]
@@ -1865,25 +1906,58 @@ mod const_asserts {
     const_assert_eq!(LongFuzzyHash::IS_NORMALIZED_FORM, true);
     const_assert_eq!(LongFuzzyHash::IS_LONG_FORM, true);
     // LongRawFuzzyHash
-    const_assert_eq!(LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1, block_hash::FULL_SIZE);
-    const_assert_eq!(LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2, block_hash::FULL_SIZE);
+    const_assert_eq!(
+        LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1,
+        block_hash::FULL_SIZE
+    );
+    const_assert_eq!(
+        LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2,
+        block_hash::FULL_SIZE
+    );
     const_assert_eq!(LongRawFuzzyHash::IS_NORMALIZED_FORM, false);
     const_assert_eq!(LongRawFuzzyHash::IS_LONG_FORM, true);
 
     // Test for Relative Sizes
     // Short forms (sizes should match)
-    const_assert_eq!(FuzzyHash::MAX_BLOCK_HASH_SIZE_1, RawFuzzyHash::MAX_BLOCK_HASH_SIZE_1);
-    const_assert_eq!(FuzzyHash::MAX_BLOCK_HASH_SIZE_2, RawFuzzyHash::MAX_BLOCK_HASH_SIZE_2);
+    const_assert_eq!(
+        FuzzyHash::MAX_BLOCK_HASH_SIZE_1,
+        RawFuzzyHash::MAX_BLOCK_HASH_SIZE_1
+    );
+    const_assert_eq!(
+        FuzzyHash::MAX_BLOCK_HASH_SIZE_2,
+        RawFuzzyHash::MAX_BLOCK_HASH_SIZE_2
+    );
     const_assert_eq!(FuzzyHash::MAX_LEN_IN_STR, RawFuzzyHash::MAX_LEN_IN_STR);
-    const_assert_eq!(core::mem::size_of::<FuzzyHash>(), core::mem::size_of::<RawFuzzyHash>());
+    const_assert_eq!(
+        core::mem::size_of::<FuzzyHash>(),
+        core::mem::size_of::<RawFuzzyHash>()
+    );
     // Long forms (sizes should match)
-    const_assert_eq!(LongFuzzyHash::MAX_BLOCK_HASH_SIZE_1, LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1);
-    const_assert_eq!(LongFuzzyHash::MAX_BLOCK_HASH_SIZE_2, LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2);
-    const_assert_eq!(LongFuzzyHash::MAX_LEN_IN_STR, LongRawFuzzyHash::MAX_LEN_IN_STR);
-    const_assert_eq!(core::mem::size_of::<LongFuzzyHash>(), core::mem::size_of::<LongRawFuzzyHash>());
+    const_assert_eq!(
+        LongFuzzyHash::MAX_BLOCK_HASH_SIZE_1,
+        LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1
+    );
+    const_assert_eq!(
+        LongFuzzyHash::MAX_BLOCK_HASH_SIZE_2,
+        LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2
+    );
+    const_assert_eq!(
+        LongFuzzyHash::MAX_LEN_IN_STR,
+        LongRawFuzzyHash::MAX_LEN_IN_STR
+    );
+    const_assert_eq!(
+        core::mem::size_of::<LongFuzzyHash>(),
+        core::mem::size_of::<LongRawFuzzyHash>()
+    );
     // Short-long forms: Block hash 1 (sizes should match)
-    const_assert_eq!(FuzzyHash::MAX_BLOCK_HASH_SIZE_1, LongFuzzyHash::MAX_BLOCK_HASH_SIZE_1);
-    const_assert_eq!(RawFuzzyHash::MAX_BLOCK_HASH_SIZE_1, LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1);
+    const_assert_eq!(
+        FuzzyHash::MAX_BLOCK_HASH_SIZE_1,
+        LongFuzzyHash::MAX_BLOCK_HASH_SIZE_1
+    );
+    const_assert_eq!(
+        RawFuzzyHash::MAX_BLOCK_HASH_SIZE_1,
+        LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_1
+    );
     // Short-long forms: Others (long form should be larger)
     const_assert!(FuzzyHash::MAX_BLOCK_HASH_SIZE_2 < LongFuzzyHash::MAX_BLOCK_HASH_SIZE_2);
     const_assert!(RawFuzzyHash::MAX_BLOCK_HASH_SIZE_2 < LongRawFuzzyHash::MAX_BLOCK_HASH_SIZE_2);
