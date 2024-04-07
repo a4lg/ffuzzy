@@ -1,27 +1,22 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
+//! Dual fuzzy hashes effectively containing both normalized and raw data.
+
 #[cfg(all(feature = "alloc", not(any(test, doc, feature = "std"))))]
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;
-use crate::hash::{FuzzyHashData, fuzzy_norm_type, fuzzy_raw_type};
 use crate::hash::block::{
-    block_size, block_hash,
-    BlockHashSize, ConstrainedBlockHashSize,
-    BlockHashSizes, ConstrainedBlockHashSizes
+    block_hash, block_size, BlockHashSize, BlockHashSizes, ConstrainedBlockHashSize,
+    ConstrainedBlockHashSizes,
 };
 use crate::hash::parser_state::{
-    ParseError, ParseErrorKind, ParseErrorOrigin,
-    BlockHashParseState
+    BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin,
 };
+use crate::hash::{fuzzy_norm_type, fuzzy_raw_type, FuzzyHashData};
 use crate::intrinsics::unlikely;
-use crate::macros::{optionally_unsafe, invariant};
-
-
-#[cfg(test)]
-mod tests;
-
+use crate::macros::{invariant, optionally_unsafe};
 
 /// An RLE Encoding as used in [`FuzzyHashDualData`].
 ///
@@ -144,8 +139,8 @@ mod rle_encoding {
     #[allow(clippy::int_plus_one)]
     mod const_asserts {
         use super::*;
-        use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
         use crate::hash::block::block_hash;
+        use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
 
         // Basic Constraints
         const_assert_ne!(BITS_POSITION, 0);
@@ -178,14 +173,15 @@ mod rle_encoding {
         (value & MASK_POSITION, (value >> BITS_POSITION) + 1)
     }
 
+    // grcov-excl-tests-start
     #[cfg(test)]
     #[test]
     fn decode_terminator() {
         let (pos, _) = decode(TERMINATOR);
         assert_eq!(pos, 0);
     }
+    // grcov-excl-tests-stop
 }
-
 
 /// A generic type to constrain given block hash size using [`ConstrainedBlockHashSize`].
 ///
@@ -326,7 +322,6 @@ mod private {
 pub trait ConstrainedReconstructionBlockSize: private::SealedReconstructionBlockSize {}
 impl<T> ConstrainedReconstructionBlockSize for T where T: private::SealedReconstructionBlockSize {}
 
-
 mod algorithms {
     use super::*;
 
@@ -341,25 +336,33 @@ mod algorithms {
         rle_block: &mut [u8; SZ_RLE],
         rle_offset: usize,
         pos: usize,
-        len: usize
+        len: usize,
     ) -> usize {
         debug_assert!(len > block_hash::MAX_SEQUENCE_SIZE);
+        let extend_len_minus_one = len - block_hash::MAX_SEQUENCE_SIZE - 1;
+        let seq_fill_size = extend_len_minus_one / rle_encoding::MAX_RUN_LENGTH;
+        let start = rle_offset;
         optionally_unsafe! {
-            let extend_len_minus_one = len - block_hash::MAX_SEQUENCE_SIZE - 1;
-            let seq_fill_size = extend_len_minus_one / rle_encoding::MAX_RUN_LENGTH;
-            let start = rle_offset;
             invariant!(start <= rle_block.len());
             invariant!(start + seq_fill_size <= rle_block.len());
             invariant!(start <= start + seq_fill_size);
-            rle_block[start..start + seq_fill_size]
-                .fill(rle_encoding::encode(pos as u8, rle_encoding::MAX_RUN_LENGTH as u8)); // grcov-excl-br-line:ARRAY
-            invariant!(start + seq_fill_size < rle_block.len());
-            rle_block[start + seq_fill_size] = rle_encoding::encode(
-                pos as u8,
-                (extend_len_minus_one % rle_encoding::MAX_RUN_LENGTH) as u8 + 1
-            ); // grcov-excl-br-line:ARRAY
-            start + seq_fill_size + 1
         }
+        // grcov-excl-br-start:ARRAY
+        rle_block[start..start + seq_fill_size].fill(rle_encoding::encode(
+            pos as u8,
+            rle_encoding::MAX_RUN_LENGTH as u8,
+        ));
+        // grcov-excl-br-stop
+        optionally_unsafe! {
+            invariant!(start + seq_fill_size < rle_block.len());
+        }
+        // grcov-excl-br-start:ARRAY
+        rle_block[start + seq_fill_size] = rle_encoding::encode(
+            pos as u8,
+            (extend_len_minus_one % rle_encoding::MAX_RUN_LENGTH) as u8 + 1,
+        );
+        // grcov-excl-br-stop
+        start + seq_fill_size + 1
     }
 
     /// Compress a raw block hash with normalizing and generating RLE encodings.
@@ -371,11 +374,10 @@ mod algorithms {
         blockhash_out: &mut [u8; SZ_BH],
         rle_block_out: &mut [u8; SZ_RLE],
         blockhash_len_out: &mut u8,
-        blockhash_in: &[u8]
-    )
-    where
+        blockhash_in: &[u8],
+    ) where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize,
     {
         debug_assert!(blockhash_in.len() <= SZ_BH);
         optionally_unsafe! {
@@ -422,11 +424,10 @@ mod algorithms {
         blockhash_len_out: &mut u8,
         blockhash_in: &[u8; SZ_BH],
         blockhash_len_in: u8,
-        rle_block_in: &[u8; SZ_RLE]
-    )
-    where
+        rle_block_in: &[u8; SZ_RLE],
+    ) where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize,
     {
         optionally_unsafe! {
             let mut offset_src = 0usize;
@@ -480,11 +481,11 @@ mod algorithms {
     pub(crate) fn is_valid_rle_block_for_block_hash<const SZ_BH: usize, const SZ_RLE: usize>(
         blockhash: &[u8; SZ_BH],
         rle_block: &[u8; SZ_RLE],
-        blockhash_len: u8
+        blockhash_len: u8,
     ) -> bool
     where
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
-        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize
+        ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize,
     {
         let mut expanded_len = blockhash_len as u32;
         let mut terminator_expected = false;
@@ -504,7 +505,9 @@ mod algorithms {
             let (pos, len) = rle_encoding::decode(*rle);
             // Check position
             if unlikely(
-                pos < block_hash::MAX_SEQUENCE_SIZE as u8 - 1 || pos >= blockhash_len || pos < prev_pos
+                pos < block_hash::MAX_SEQUENCE_SIZE as u8 - 1
+                    || pos >= blockhash_len
+                    || pos < prev_pos,
             ) {
                 return false;
             }
@@ -513,8 +516,7 @@ mod algorithms {
                 if unlikely(prev_len != rle_encoding::MAX_RUN_LENGTH as u8) {
                     return false;
                 }
-            }
-            else {
+            } else {
                 // For new sequence, check if corresponding block hash makes
                 // identical character sequence.
                 let end = pos as usize;
@@ -529,10 +531,10 @@ mod algorithms {
                 }
                 let ch = blockhash[start]; // grcov-excl-br-line:ARRAY
                 if unlikely(
-                    blockhash[start+1..=end] // grcov-excl-br-line:ARRAY
-                        .iter().any(|x| *x != ch)
-                )
-                {
+                    blockhash[start + 1..=end] // grcov-excl-br-line:ARRAY
+                        .iter()
+                        .any(|x| *x != ch),
+                ) {
                     return false;
                 }
             }
@@ -547,7 +549,6 @@ mod algorithms {
         true
     }
 }
-
 
 /// An efficient compressed fuzzy hash representation, containing both
 /// normalized and raw block hash contents.
@@ -638,7 +639,7 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     /// RLE block 1 for reverse normalization of
     /// [block hash 1](crate::hash::FuzzyHashData::blockhash1).
@@ -654,16 +655,17 @@ where
 
     /// A normalized fuzzy hash object for comparison and the base storage
     /// before RLE-based decompression.
-    norm_hash: fuzzy_norm_type!(S1, S2)
+    norm_hash: fuzzy_norm_type!(S1, S2),
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
+    FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     /// The maximum size of the block hash 1.
     ///
@@ -709,7 +711,7 @@ where
         Self {
             rle_block1: [rle_encoding::TERMINATOR; C1],
             rle_block2: [rle_encoding::TERMINATOR; C2],
-            norm_hash: FuzzyHashData::new()
+            norm_hash: FuzzyHashData::new(),
         }
     }
 
@@ -720,13 +722,13 @@ where
             &mut self.norm_hash.blockhash1,
             &mut self.rle_block1,
             &mut self.norm_hash.len_blockhash1,
-            hash.block_hash_1()
+            hash.block_hash_1(),
         );
         algorithms::compress_block_hash_with_rle(
             &mut self.norm_hash.blockhash2,
             &mut self.rle_block2,
             &mut self.norm_hash.len_blockhash2,
-            hash.block_hash_2()
+            hash.block_hash_2(),
         );
     }
 
@@ -734,12 +736,15 @@ where
     fn new_from_internals_near_raw_internal(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         debug_assert!(block_size::is_log_valid(log_block_size));
-        debug_assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        debug_assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        debug_assert!(block_hash_1
+            .iter()
+            .all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        debug_assert!(block_hash_2
+            .iter()
+            .all(|&x| x < block_hash::ALPHABET_SIZE as u8));
         optionally_unsafe! {
             invariant!(block_hash_1.len() <= S1);
             invariant!(block_hash_2.len() <= S2);
@@ -750,13 +755,13 @@ where
             &mut hash.norm_hash.blockhash1,
             &mut hash.rle_block1,
             &mut hash.norm_hash.len_blockhash1,
-            block_hash_1
+            block_hash_1,
         );
         algorithms::compress_block_hash_with_rle(
             &mut hash.norm_hash.blockhash2,
             &mut hash.rle_block2,
             &mut hash.norm_hash.len_blockhash2,
-            block_hash_2
+            block_hash_2,
         );
         hash
     }
@@ -778,9 +783,8 @@ where
     pub unsafe fn new_from_internals_near_raw_unchecked(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         Self::new_from_internals_near_raw_internal(log_block_size, block_hash_1, block_hash_2)
     }
 
@@ -800,19 +804,18 @@ where
     pub fn new_from_internals_near_raw(
         log_block_size: u8,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         assert!(block_size::is_log_valid(log_block_size));
         assert!(block_hash_1.len() <= S1);
         assert!(block_hash_2.len() <= S2);
-        assert!(block_hash_1.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        assert!(block_hash_2.iter().all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        Self::new_from_internals_near_raw_internal(
-            log_block_size,
-            block_hash_1,
-            block_hash_2
-        )
+        assert!(block_hash_1
+            .iter()
+            .all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        assert!(block_hash_2
+            .iter()
+            .all(|&x| x < block_hash::ALPHABET_SIZE as u8));
+        Self::new_from_internals_near_raw_internal(log_block_size, block_hash_1, block_hash_2)
     }
 
     /// The internal implementation of [`Self::new_from_internals_unchecked()`].
@@ -821,13 +824,13 @@ where
     fn new_from_internals_internal(
         block_size: u32,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         debug_assert!(block_size::is_valid(block_size));
         Self::new_from_internals_near_raw_internal(
             block_size::log_from_valid_internal(block_size),
-            block_hash_1, block_hash_2
+            block_hash_1,
+            block_hash_2,
         )
     }
 
@@ -847,9 +850,8 @@ where
     pub unsafe fn new_from_internals_unchecked(
         block_size: u32,
         block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+        block_hash_2: &[u8],
+    ) -> Self {
         Self::new_from_internals_internal(block_size, block_hash_1, block_hash_2)
     }
 
@@ -865,16 +867,12 @@ where
     ///     Base64 indices.
     /// *   `block_size` must hold a valid block size.
     #[inline]
-    pub fn new_from_internals(
-        block_size: u32,
-        block_hash_1: &[u8],
-        block_hash_2: &[u8]
-    ) -> Self
-    {
+    pub fn new_from_internals(block_size: u32, block_hash_1: &[u8], block_hash_2: &[u8]) -> Self {
         assert!(block_size::is_valid(block_size));
         Self::new_from_internals_near_raw(
             block_size::log_from_valid_internal(block_size),
-            block_hash_1, block_hash_2
+            block_hash_1,
+            block_hash_2,
         )
     }
 
@@ -882,7 +880,9 @@ where
     ///
     /// See also: ["Block Size" section of `FuzzyHashData`](crate::hash::FuzzyHashData#block-size)
     #[inline(always)]
-    pub fn log_block_size(&self) -> u8 { self.norm_hash.log_blocksize }
+    pub fn log_block_size(&self) -> u8 {
+        self.norm_hash.log_blocksize
+    }
 
     /// The block size of the fuzzy hash.
     #[inline]
@@ -911,7 +911,7 @@ where
         Self {
             rle_block1: [rle_encoding::TERMINATOR; C1],
             rle_block2: [rle_encoding::TERMINATOR; C2],
-            norm_hash: *hash
+            norm_hash: *hash,
         }
     }
 
@@ -924,14 +924,14 @@ where
             &mut hash.len_blockhash1,
             &self.norm_hash.blockhash1,
             self.norm_hash.len_blockhash1,
-            &self.rle_block1
+            &self.rle_block1,
         );
         algorithms::expand_block_hash_using_rle(
             &mut hash.blockhash2,
             &mut hash.len_blockhash2,
             &self.norm_hash.blockhash2,
             self.norm_hash.len_blockhash2,
-            &self.rle_block2
+            &self.rle_block2,
         );
     }
 
@@ -975,11 +975,12 @@ where
 
     /// The internal implementation of [`from_bytes_with_last_index()`](Self::from_bytes_with_last_index()).
     #[inline(always)]
-    fn from_bytes_with_last_index_internal(str: &[u8], index: &mut usize)
-        -> Result<Self, ParseError>
-    {
-        use crate::hash_dual::algorithms::update_rle_block;
+    fn from_bytes_with_last_index_internal(
+        str: &[u8],
+        index: &mut usize,
+    ) -> Result<Self, ParseError> {
         use crate::hash::{algorithms, hash_from_bytes_with_last_index_internal_template};
+        use crate::hash_dual::algorithms::update_rle_block;
         let mut fuzzy = Self::new();
         hash_from_bytes_with_last_index_internal_template! {
             str, index, true,
@@ -1008,9 +1009,7 @@ where
     ///
     /// The behavior of this method is affected by the `strict-parser` feature.
     /// For more information, see [The Strict Parser](FuzzyHashData#the-strict-parser).
-    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize)
-        -> Result<Self, ParseError>
-    {
+    pub fn from_bytes_with_last_index(str: &[u8], index: &mut usize) -> Result<Self, ParseError> {
         Self::from_bytes_with_last_index_internal(str, index)
     }
 
@@ -1037,8 +1036,8 @@ where
 
     /// Returns whether the dual fuzzy hash is normalized.
     pub fn is_normalized(&self) -> bool {
-        self.rle_block1[0] == rle_encoding::TERMINATOR &&
-        self.rle_block2[0] == rle_encoding::TERMINATOR
+        self.rle_block1[0] == rle_encoding::TERMINATOR
+            && self.rle_block2[0] == rle_encoding::TERMINATOR
     }
 
     /// Performs full validity checking of the internal structure.
@@ -1062,16 +1061,16 @@ where
     /// In other words, it won't cause panic by itself if *any* data is
     /// contained in this object.
     pub fn is_valid(&self) -> bool {
-        self.norm_hash.is_valid() &&
-            algorithms::is_valid_rle_block_for_block_hash(
+        self.norm_hash.is_valid()
+            && algorithms::is_valid_rle_block_for_block_hash(
                 &self.norm_hash.blockhash1,
                 &self.rle_block1,
-                self.norm_hash.len_blockhash1
-            ) &&
-            algorithms::is_valid_rle_block_for_block_hash(
+                self.norm_hash.len_blockhash1,
+            )
+            && algorithms::is_valid_rle_block_for_block_hash(
                 &self.norm_hash.blockhash2,
                 &self.rle_block2,
-                self.norm_hash.len_blockhash2
+                self.norm_hash.len_blockhash2,
             )
     }
 }
@@ -1083,7 +1082,7 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline(always)]
     fn as_ref(&self) -> &fuzzy_norm_type!(S1, S2) {
@@ -1091,55 +1090,55 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    Default for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> Default
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    PartialEq for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> PartialEq
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.norm_hash == other.norm_hash &&
-        self.rle_block1 == other.rle_block1 &&
-        self.rle_block2 == other.rle_block2
+        self.norm_hash == other.norm_hash
+            && self.rle_block1 == other.rle_block1
+            && self.rle_block2 == other.rle_block2
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    Eq for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> Eq
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::hash::Hash for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> core::hash::Hash
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline]
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
@@ -1149,37 +1148,33 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    Ord for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> Ord
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline]
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        (
-            self.norm_hash,
-            self.rle_block1,
-            self.rle_block2
-        ).cmp(&(
+        (self.norm_hash, self.rle_block1, self.rle_block2).cmp(&(
             other.norm_hash,
             other.rle_block1,
-            other.rle_block2
+            other.rle_block2,
         ))
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    PartialOrd for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> PartialOrd
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
@@ -1187,25 +1182,25 @@ where
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::fmt::Debug for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> core::fmt::Debug
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         /// The type to print an RLE encoded byte.
         struct DebugBuilderForRLEBlockEntry(u8);
         /// The type to print a valid RLE block.
         struct DebugBuilderForValidRLEBlock<'a, const N: usize> {
-            block: &'a [u8; N]
+            block: &'a [u8; N],
         }
         /// The type to print an invalid RLE block.
         struct DebugBuilderForInvalidRLEBlock<'a, const N: usize> {
-            block: &'a [u8; N]
+            block: &'a [u8; N],
         }
         impl<'a, const N: usize> DebugBuilderForValidRLEBlock<'a, N> {
             pub fn new(rle_block: &'a [u8; N]) -> Self {
@@ -1221,28 +1216,26 @@ where
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 if self.0 != rle_encoding::TERMINATOR {
                     let (pos, len) = rle_encoding::decode(self.0);
-                    f.debug_tuple("RLE")
-                        .field(&pos).field(&len)
-                        .finish()
-                }
-                else {
+                    f.debug_tuple("RLE").field(&pos).field(&len).finish()
+                } else {
                     f.debug_tuple("RLENull").finish()
                 }
             }
         }
-        impl<'a, const N: usize>
-            core::fmt::Debug for DebugBuilderForValidRLEBlock<'a, N>
-        {
+        impl<'a, const N: usize> core::fmt::Debug for DebugBuilderForValidRLEBlock<'a, N> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.debug_list()
-                    .entries(self.block.iter().cloned().filter(|x| *x != rle_encoding::TERMINATOR)
-                    .map(DebugBuilderForRLEBlockEntry))
+                    .entries(
+                        self.block
+                            .iter()
+                            .cloned()
+                            .filter(|x| *x != rle_encoding::TERMINATOR)
+                            .map(DebugBuilderForRLEBlockEntry),
+                    )
                     .finish()
             }
         }
-        impl<'a, const N: usize>
-            core::fmt::Debug for DebugBuilderForInvalidRLEBlock<'a, N>
-        {
+        impl<'a, const N: usize> core::fmt::Debug for DebugBuilderForInvalidRLEBlock<'a, N> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 // Don't filter zeroes when invalid,
                 // unlike DebugBuilderForValidRLEBlock above.
@@ -1255,18 +1248,40 @@ where
         // It's for debug purposes and do the full checking.
         if self.is_valid() {
             // Table lookup is safe.  All entries are `0 <= x < 64`.
-            let buffer1 = self.norm_hash.blockhash1.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
-            let buffer2 = self.norm_hash.blockhash2.map(|x| { BASE64_TABLE_U8[x as usize] }); // grcov-excl-br-line:ARRAY
+            let buffer1 = self
+                .norm_hash
+                .blockhash1
+                .map(|x| BASE64_TABLE_U8[x as usize]); // grcov-excl-br-line:ARRAY
+            let buffer2 = self
+                .norm_hash
+                .blockhash2
+                .map(|x| BASE64_TABLE_U8[x as usize]); // grcov-excl-br-line:ARRAY
             f.debug_struct("FuzzyHashDualData")
                 .field("LONG", &(S2 == block_hash::FULL_SIZE))
-                .field("block_size", &block_size::from_log_internal(self.norm_hash.log_blocksize))
-                .field("blockhash1", &core::str::from_utf8(&buffer1[..self.norm_hash.len_blockhash1 as usize]).unwrap())
-                .field("blockhash2", &core::str::from_utf8(&buffer2[..self.norm_hash.len_blockhash2 as usize]).unwrap())
-                .field("rle_block1", &(DebugBuilderForValidRLEBlock::new(&self.rle_block1)))
-                .field("rle_block2", &(DebugBuilderForValidRLEBlock::new(&self.rle_block2)))
+                .field(
+                    "block_size",
+                    &block_size::from_log_internal(self.norm_hash.log_blocksize),
+                )
+                .field(
+                    "blockhash1",
+                    &core::str::from_utf8(&buffer1[..self.norm_hash.len_blockhash1 as usize])
+                        .unwrap(),
+                )
+                .field(
+                    "blockhash2",
+                    &core::str::from_utf8(&buffer2[..self.norm_hash.len_blockhash2 as usize])
+                        .unwrap(),
+                )
+                .field(
+                    "rle_block1",
+                    &(DebugBuilderForValidRLEBlock::new(&self.rle_block1)),
+                )
+                .field(
+                    "rle_block2",
+                    &(DebugBuilderForValidRLEBlock::new(&self.rle_block2)),
+                )
                 .finish()
-        }
-        else {
+        } else {
             f.debug_struct("FuzzyHashDualData")
                 .field("ILL_FORMED", &true)
                 .field("LONG", &(S2 == block_hash::FULL_SIZE))
@@ -1275,35 +1290,41 @@ where
                 .field("len_blockhash2", &self.norm_hash.len_blockhash2)
                 .field("blockhash1", &self.norm_hash.blockhash1)
                 .field("blockhash2", &self.norm_hash.blockhash2)
-                .field("rle_block1", &(DebugBuilderForInvalidRLEBlock::new(&self.rle_block1)))
-                .field("rle_block2", &(DebugBuilderForInvalidRLEBlock::new(&self.rle_block2)))
+                .field(
+                    "rle_block1",
+                    &(DebugBuilderForInvalidRLEBlock::new(&self.rle_block1)),
+                )
+                .field(
+                    "rle_block2",
+                    &(DebugBuilderForInvalidRLEBlock::new(&self.rle_block2)),
+                )
                 .finish()
         }
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::fmt::Display for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> core::fmt::Display
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{{{}|{}}}", self.norm_hash, self.to_raw_form())
     }
 }
 
-impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize>
-    core::str::FromStr for FuzzyHashDualData<S1, S2, C1, C2>
+impl<const S1: usize, const S2: usize, const C1: usize, const C2: usize> core::str::FromStr
+    for FuzzyHashDualData<S1, S2, C1, C2>
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     type Err = ParseError;
     #[inline(always)]
@@ -1319,7 +1340,7 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline]
     fn from(value: fuzzy_norm_type!(S1, S2)) -> Self {
@@ -1334,14 +1355,13 @@ where
     BlockHashSize<S2>: ConstrainedBlockHashSize,
     BlockHashSizes<S1, S2>: ConstrainedBlockHashSizes,
     ReconstructionBlockSize<S1, C1>: ConstrainedReconstructionBlockSize,
-    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize
+    ReconstructionBlockSize<S2, C2>: ConstrainedReconstructionBlockSize,
 {
     #[inline]
     fn from(value: fuzzy_raw_type!(S1, S2)) -> Self {
         Self::from_raw_form(&value)
     }
 }
-
 
 /// Regular (truncated) dual fuzzy hash type which contains both normalized
 /// and raw contents.
@@ -1353,10 +1373,10 @@ where
 ///
 /// See also: [`FuzzyHashDualData`]
 pub type DualFuzzyHash = FuzzyHashDualData<
-    {block_hash::FULL_SIZE},
-    {block_hash::HALF_SIZE},
-    {block_hash::FULL_SIZE / 4},
-    {block_hash::HALF_SIZE / 4}
+    { block_hash::FULL_SIZE },
+    { block_hash::HALF_SIZE },
+    { block_hash::FULL_SIZE / 4 },
+    { block_hash::HALF_SIZE / 4 },
 >;
 
 /// Long (non-truncated) dual fuzzy hash type which contains both normalized
@@ -1369,8 +1389,10 @@ pub type DualFuzzyHash = FuzzyHashDualData<
 ///
 /// See also: [`FuzzyHashDualData`]
 pub type LongDualFuzzyHash = FuzzyHashDualData<
-    {block_hash::FULL_SIZE},
-    {block_hash::FULL_SIZE},
-    {block_hash::FULL_SIZE / 4},
-    {block_hash::FULL_SIZE / 4}
+    { block_hash::FULL_SIZE },
+    { block_hash::FULL_SIZE },
+    { block_hash::FULL_SIZE / 4 },
+    { block_hash::FULL_SIZE / 4 },
 >;
+
+mod tests;
