@@ -149,7 +149,6 @@ fn compare_errors() {
     for &(hash_str_invalid_l, err_l) in ERROR_CASES {
         for &(hash_str_invalid_r, err_r) in ERROR_CASES {
             let err = compare(hash_str_invalid_l, hash_str_invalid_r);
-            // grcov-excl-start: Not very relevant to the true coverage.
             assert!(
                 err == Err(ParseErrorEither(ParseErrorSide::Left, err_l))
                     || err == Err(ParseErrorEither(ParseErrorSide::Right, err_r)),
@@ -157,7 +156,6 @@ fn compare_errors() {
                 hash_str_invalid_l,
                 hash_str_invalid_r
             );
-            // grcov-excl-end
         }
     }
 }

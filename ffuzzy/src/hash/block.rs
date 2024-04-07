@@ -465,7 +465,7 @@ pub mod block_hash {
                         })
                         .fold(0u64, |x, y| x | y),
                 }
-                // grcov-excl-br-end
+                // grcov-excl-br-stop
             }
         }
     }

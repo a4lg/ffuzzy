@@ -87,7 +87,7 @@ pub struct ParseError(
     pub(crate) usize,
 );
 
-// grcov-excl-br-end
+// grcov-excl-br-stop
 
 /// The trait implementing a [`FuzzyHashData`](crate::hash::FuzzyHashData)
 /// parse error.

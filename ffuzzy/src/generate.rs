@@ -182,7 +182,7 @@ pub struct RollingHash {
     window: [u8; ROLLING_WINDOW],
 }
 
-// grcov-excl-br-end
+// grcov-excl-br-stop
 
 impl RollingHash {
     /// The window size of the rolling hash.
@@ -312,7 +312,7 @@ struct BlockHashContext {
     h_half: PartialFNVHash,
 }
 
-// grcov-excl-br-end
+// grcov-excl-br-stop
 
 impl BlockHashContext {
     /// Creates a new [`BlockHashContext`] with the initial value.
@@ -406,7 +406,7 @@ pub(crate) struct GeneratorInnerData {
     is_last: bool,
 }
 
-// grcov-excl-br-end
+// grcov-excl-br-stop
 
 /// Fuzzy hash generator.
 ///
@@ -1250,7 +1250,7 @@ mod const_asserts {
             .map(|x| x >= u32::BITS)
             .unwrap_or(false));
     }
-    // grcov-excl-tests-end
+    // grcov-excl-tests-stop
 
     // BLOCKHASH_CHAR_NIL must be outside any valid characters.
     const_assert!(block_hash::ALPHABET_SIZE <= BLOCKHASH_CHAR_NIL as usize);

@@ -371,7 +371,7 @@ where
                                     },
                                     index,
                                 )
-                                // grcov-excl-br-end
+                                // grcov-excl-br-stop
                             } else {
                                 (BlockHashParseState::Base64Error, index)
                             }

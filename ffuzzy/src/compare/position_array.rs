@@ -810,7 +810,7 @@ pub struct BlockHashPositionArray {
     len: u8,
 }
 
-// grcov-excl-br-end
+// grcov-excl-br-stop
 
 impl BlockHashPositionArray {
     /// Creates a new position array object with empty contents.
