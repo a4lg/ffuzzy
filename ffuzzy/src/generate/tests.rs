@@ -28,7 +28,9 @@ fn partial_fnv_hash_initial_state() {
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
 #[test]
 fn partial_fnv_hash_table_contents() {
-    use crate::generate::fnv_table::{FNV_HASH_PRIME, FNV_TABLE};
+    const FNV_HASH_PRIME: u32 = PartialFNVHash::FNV_HASH_PRIME;
+    const FNV_TABLE: [[u8; block_hash::ALPHABET_SIZE]; block_hash::ALPHABET_SIZE] =
+        PartialFNVHash::FNV_TABLE;
     assert_fits_in!(block_hash::ALPHABET_SIZE, u8);
     #[inline(always)]
     fn naive_impl(state: u8, ch: u8) -> u8 {
