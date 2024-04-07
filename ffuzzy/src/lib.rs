@@ -41,6 +41,7 @@
 )]
 // Non-test code requires documents
 #![cfg_attr(not(test), warn(missing_docs))]
+#![cfg_attr(not(test), warn(clippy::missing_docs_in_private_items))]
 // Unless in the maintenance mode, allow unknown lints.
 #![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
 // Unless in the maintenance mode, allow old lint names.
