@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
+//! Module that contains position array-related traits and implementations.
+
 use crate::compare::FuzzyHashCompareTarget;
 use crate::hash::block::{block_hash, block_size};
 use crate::macros::{invariant, optionally_unsafe};
