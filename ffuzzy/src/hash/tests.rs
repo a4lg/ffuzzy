@@ -8,7 +8,7 @@
 use core::any::type_name;
 use core::cmp::Ordering;
 use std::collections::HashSet;
-use collect_slice::CollectSlice;
+use itertools::Itertools;
 
 use crate::base64::BASE64_INVALID;
 use crate::hash::{
@@ -936,7 +936,7 @@ fn data_model_corruption_common() {
             let mut hash = hash;
             hash.len_blockhash1 = len_blockhash;
             // Fill with valid values first
-            (0..len_blockhash).collect_slice(&mut hash.blockhash1);
+            hash.blockhash1.iter_mut().set_from(0..len_blockhash);
             // Validness depends on the block hash length we set
             assert_eq!(hash.is_valid(), len_blockhash <= FuzzyHashData::<S1, S2, NORM>::MAX_BLOCK_HASH_SIZE_1 as u8, "failed on typename={:?}", typename);
             check_validness_and_debug(hash);
@@ -946,7 +946,7 @@ fn data_model_corruption_common() {
             let mut hash = hash;
             hash.len_blockhash2 = len_blockhash;
             // Fill with valid values first
-            (0..len_blockhash).collect_slice(&mut hash.blockhash2);
+            hash.blockhash2.iter_mut().set_from(0..len_blockhash);
             // Validness depends on the block hash length we set
             assert_eq!(hash.is_valid(), len_blockhash <= FuzzyHashData::<S1, S2, NORM>::MAX_BLOCK_HASH_SIZE_2 as u8, "failed on typename={:?}", typename);
             check_validness_and_debug(hash);
@@ -956,7 +956,7 @@ fn data_model_corruption_common() {
             let mut hash = hash;
             hash.len_blockhash1 = block_hash_len as u8;
             // Fill with valid values first
-            (0..).collect_slice(&mut hash.blockhash1[..block_hash_len]);
+            hash.blockhash1[..block_hash_len].iter_mut().set_from(0..);
             assert!(hash.is_valid(), "failed on typename={:?}", typename);
             // Put an invalid character in the block hash.
             for corrupted_index in 0..block_hash_len {
@@ -978,7 +978,7 @@ fn data_model_corruption_common() {
             let mut hash = hash;
             hash.len_blockhash2 = block_hash_len as u8;
             // Fill with valid values first
-            (0..).collect_slice(&mut hash.blockhash2[..block_hash_len]);
+            hash.blockhash2[..block_hash_len].iter_mut().set_from(0..);
             assert!(hash.is_valid(), "failed on typename={:?}", typename);
             // Put an invalid character in the block hash.
             for corrupted_index in 0..block_hash_len {
