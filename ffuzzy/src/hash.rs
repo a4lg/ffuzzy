@@ -809,11 +809,13 @@ where
         block_hash_1: &[u8],
         block_hash_2: &[u8],
     ) -> Self {
-        Self::new_from_internals_near_raw_unchecked(
-            block_size::log_from_valid_internal(block_size),
-            block_hash_1,
-            block_hash_2,
-        )
+        unsafe {
+            Self::new_from_internals_near_raw_unchecked(
+                block_size::log_from_valid_internal(block_size),
+                block_hash_1,
+                block_hash_2,
+            )
+        }
     }
 
     /// Creates a new fuzzy hash object with internal contents.
