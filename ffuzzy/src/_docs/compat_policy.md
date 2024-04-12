@@ -8,9 +8,15 @@ back by ssdeep / libfuzzy is what we need to support on this project.
 In specific, the main version to keep compatibility is ssdeep / libfuzzy,
 version 2.14.1.
 
-## Input
+## Input (raw bytes to the fuzzy hash generator)
 
-The input data which *must* be supported by this project must qualify:
+The input data for the fuzzy hash generator which *must* be supported by this
+project exactly matches to ssdeep / libfuzzy.
+
+## Input (fuzzy hashes and related information)
+
+The input data (except that to the fuzzy hash generator) which *must* be
+supported by this project must qualify:
 
 1.  The input data is a valid output of ssdeep / libfuzzy functions
 2.  Feeding the data back to ssdeep / libfuzzy does not cause the problems
