@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 // Separate from README.md to use rustdoc-specific features in docs/readme.md.
-#![doc = include_str!("docs/readme.md")]
+#![doc = include_str!("_docs/readme.md")]
 // no_std
 #![cfg_attr(not(any(test, doc, feature = "std")), no_std)]
 // Allow using internal features when use of Nightly Rust features are allowed.
@@ -82,7 +82,7 @@ mod utils;
 
 #[cfg(doc)]
 #[allow(missing_docs)]
-pub mod docs;
+pub mod _docs;
 
 pub use compare::FuzzyHashCompareTarget;
 #[cfg(feature = "easy-functions")]

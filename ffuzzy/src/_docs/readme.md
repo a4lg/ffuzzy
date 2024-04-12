@@ -247,5 +247,5 @@ source code for details).
 
 ## Internal References (For Developers)
 
-*   [Compatibility Policy](crate::docs::compat_policy)
-*   [Implementation Notes](crate::docs::internals::impl_notes)
+*   [Compatibility Policy](crate::_docs::compat_policy)
+*   [Implementation Notes](crate::_docs::internals::impl_notes)
