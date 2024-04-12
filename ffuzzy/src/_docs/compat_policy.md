@@ -18,7 +18,7 @@ project exactly matches to ssdeep / libfuzzy.
 The input data (except that to the fuzzy hash generator) which *must* be
 supported by this project must qualify:
 
-1.  The input data is a valid output of ssdeep / libfuzzy functions
+1.  The input data is a valid output of ssdeep / libfuzzy functions, and
 2.  Feeding the data back to ssdeep / libfuzzy does not cause the problems
 
 On the other hand, this project may support an input data which does not
