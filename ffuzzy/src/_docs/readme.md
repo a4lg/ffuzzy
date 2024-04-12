@@ -248,4 +248,5 @@ source code for details).
 ## Internal References (For Developers)
 
 *   [Compatibility Policy](crate::_docs::compat_policy)
+*   [Compatibility Note about SemVer Violation](crate::_docs::compat_semver_violation)
 *   [Implementation Notes](crate::_docs::internals::impl_notes)
