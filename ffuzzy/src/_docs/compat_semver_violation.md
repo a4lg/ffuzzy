@@ -3,8 +3,8 @@
 This page lists all yanked versions because of SemVer-related issues:
 
 1.  Violates SemVer compatibility (+ Cargo rule about 0.y.z) itself, or
-2.  Not yanking the version would result in SemVer violation on subsequent
-    versions in the same version line.
+2.  Not yanking the release would result in SemVer violation on subsequent
+    releases in the same version line.
 
 ## Violated Releases
 
