@@ -507,6 +507,8 @@ pub mod block_hash {
     #[allow(unsafe_code)]
     #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
     unsafe impl<'a> core::iter::TrustedLen for NumericWindows<'a> {}
+
+    impl<'a> core::iter::FusedIterator for NumericWindows<'a> {}
 }
 
 /// A generic type to constrain given block hash size using [`ConstrainedBlockHashSize`].
