@@ -444,12 +444,12 @@ mod algorithms {
                 invariant!(dst <= dst + len);
                 blockhash_out[dst..dst+len].clone_from_slice(&blockhash_in[src..src+len]); // grcov-excl-br-line:ARRAY
             };
-            for rle in rle_block_in {
+            for &rle in rle_block_in {
                 // Decode position and length
-                let (pos, len) = rle_encoding::decode(*rle);
+                let (pos, len) = rle_encoding::decode(rle);
                 if pos == 0 {
                     // Met the terminator
-                    debug_assert!(*rle == rle_encoding::TERMINATOR);
+                    debug_assert!(rle == rle_encoding::TERMINATOR);
                     break;
                 }
                 let pos = pos as usize;
@@ -493,18 +493,18 @@ mod algorithms {
         let mut terminator_expected = false;
         let mut prev_pos = 0u8;
         let mut prev_len = 0u8;
-        for rle in rle_block {
-            if unlikely(*rle != rle_encoding::TERMINATOR && terminator_expected) {
+        for &rle in rle_block {
+            if unlikely(rle != rle_encoding::TERMINATOR && terminator_expected) {
                 // Non-zero byte after null-terminated encoding.
                 return false;
             }
-            if *rle == rle_encoding::TERMINATOR {
+            if rle == rle_encoding::TERMINATOR {
                 // Null terminator or later.
                 terminator_expected = true;
                 continue;
             }
             // Decode position and length
-            let (pos, len) = rle_encoding::decode(*rle);
+            let (pos, len) = rle_encoding::decode(rle);
             // Check position
             if unlikely(
                 pos < block_hash::MAX_SEQUENCE_SIZE as u8 - 1
