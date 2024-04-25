@@ -44,7 +44,7 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 ///
 /// When the feature `unsafe` is disabled, it only places [`debug_assert!()`].
 /// If both `unsafe` and `unstable` are enabled, [`core::hint::assert_unchecked()`]
-/// is used (which requires the `core_intrinsics` Rust unstable feature).
+/// is used (which requires the `hint_assert_unchecked` Rust unstable feature).
 /// If only the `unsafe` feature is enabled,
 /// [`core::hint::unreachable_unchecked()`] is used.
 ///
