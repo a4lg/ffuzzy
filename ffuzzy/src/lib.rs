@@ -8,12 +8,12 @@
 // Allow using internal features when use of Nightly Rust features are allowed.
 #![cfg_attr(feature = "unstable", allow(internal_features))]
 // Regular nightly features
+#![cfg_attr(feature = "unstable", feature(core_intrinsics))]
+#![cfg_attr(feature = "unstable", feature(coverage_attribute))]
 #![cfg_attr(feature = "unstable", feature(doc_cfg))]
 #![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "unstable", feature(core_intrinsics))]
-#![cfg_attr(feature = "unstable", feature(hint_assert_unchecked))]
 #![cfg_attr(feature = "unstable", feature(error_in_core))]
-#![cfg_attr(feature = "unstable", feature(coverage_attribute))]
+#![cfg_attr(feature = "unstable", feature(hint_assert_unchecked))]
 #![cfg_attr(feature = "unstable", feature(trusted_len))]
 // int_log feature depending on ilog2 availability
 #![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
