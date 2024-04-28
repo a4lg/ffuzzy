@@ -1344,12 +1344,11 @@ where
             invariant!((other.len_blockhash1 as usize) <= other.blockhash1.len());
             invariant!((other.len_blockhash2 as usize) <= other.blockhash2.len());
         }
-        // grcov-excl-br-start:ARRAY
-        self.blockhash1[0..self.len_blockhash1 as usize]
-            == other.blockhash1[0..other.len_blockhash1 as usize]
-            && self.blockhash2[0..self.len_blockhash2 as usize]
-                == other.blockhash2[0..other.len_blockhash2 as usize]
-        // grcov-excl-br-stop
+        let bh1_a = &self.blockhash1[0..self.len_blockhash1 as usize]; // grcov-excl-br-line:ARRAY
+        let bh2_a = &self.blockhash2[0..self.len_blockhash2 as usize]; // grcov-excl-br-line:ARRAY
+        let bh1_b = &other.blockhash1[0..other.len_blockhash1 as usize]; // grcov-excl-br-line:ARRAY
+        let bh2_b = &other.blockhash2[0..other.len_blockhash2 as usize]; // grcov-excl-br-line:ARRAY
+        bh1_a == bh1_b && bh2_a == bh2_b
     }
 }
 
