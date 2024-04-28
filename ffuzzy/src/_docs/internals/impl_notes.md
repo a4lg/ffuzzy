@@ -17,7 +17,7 @@ generating an invariant itself is an unsafe operation, most code looks
 like safe Rust.
 
 To not to miss `unsafe` invariant uses, `invariant!` macro must be placed
-inside a `optionally_unsafe!` macro block (which is going to be an `unsafe`
+inside an `optionally_unsafe!` macro block (which is going to be an `unsafe`
 block or a regular block depending on the configuration).
 
 Invariants can suppress another type of runtime check (not just array
