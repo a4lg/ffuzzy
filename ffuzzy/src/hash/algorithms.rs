@@ -27,30 +27,33 @@ pub(crate) fn normalize_block_hash_in_place_internal<const N: usize>(
         let old_blockhash_len = *blockhash_len;
         let mut len: usize = 0;
         optionally_unsafe! {
-            for i in 0..old_blockhash_len as usize {
-                invariant!(i < N);
-                let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
-                if curr == prev {
-                    seq += 1;
-                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                        seq = block_hash::MAX_SEQUENCE_SIZE;
-                        continue;
-                    }
-                } else {
-                    seq = 0;
-                    prev = curr;
+            invariant!(old_blockhash_len as usize <= N);
+        }
+        for i in 0..old_blockhash_len as usize {
+            let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
+            if curr == prev {
+                seq += 1;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                    seq = block_hash::MAX_SEQUENCE_SIZE;
+                    continue;
                 }
-                invariant!(len < N);
-                blockhash[len] = curr; // grcov-excl-br-line:ARRAY
-                len += 1;
+            } else {
+                seq = 0;
+                prev = curr;
             }
-            *blockhash_len = len as u8;
-            // Clear old (possibly) non-zero hash buffer (for default Eq)
+            optionally_unsafe! {
+                invariant!(len < N);
+            }
+            blockhash[len] = curr; // grcov-excl-br-line:ARRAY
+            len += 1;
+        }
+        *blockhash_len = len as u8;
+        // Clear old (possibly) non-zero hash buffer (for default Eq)
+        optionally_unsafe! {
             invariant!(len as u8 <= old_blockhash_len);
             invariant!(len <= N);
-            invariant!((old_blockhash_len as usize) <= N);
-            blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
         }
+        blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
     }
 }
 
@@ -78,36 +81,36 @@ where
 {
     optionally_unsafe! {
         invariant!((blockhash_len as usize) <= N);
-        let blockhash_out = &blockhash[blockhash_len as usize..]; // grcov-excl-br-line:ARRAY
-        let blockhash = &blockhash[..blockhash_len as usize]; // grcov-excl-br-line:ARRAY
-        if verify_normalization {
-            let mut seq: usize = 0;
-            let mut prev = BASE64_INVALID;
-            for ch in blockhash {
-                let curr: u8 = *ch;
-                if verify_data_range_in && curr >= block_hash::ALPHABET_SIZE as u8 {
+    }
+    let blockhash_out = &blockhash[blockhash_len as usize..]; // grcov-excl-br-line:ARRAY
+    let blockhash = &blockhash[..blockhash_len as usize]; // grcov-excl-br-line:ARRAY
+    if verify_normalization {
+        let mut seq: usize = 0;
+        let mut prev = BASE64_INVALID;
+        for ch in blockhash {
+            let curr: u8 = *ch;
+            if verify_data_range_in && curr >= block_hash::ALPHABET_SIZE as u8 {
+                return false;
+            }
+            if *ch == prev {
+                seq += 1;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
                     return false;
                 }
-                if *ch == prev {
-                    seq += 1;
-                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                        return false;
-                    }
-                } else {
-                    seq = 0;
-                    prev = curr;
-                }
+            } else {
+                seq = 0;
+                prev = curr;
             }
-        } else if verify_data_range_in
-            && blockhash
-                .iter()
-                .any(|&x| x >= block_hash::ALPHABET_SIZE as u8)
-        {
-            return false;
         }
-        if verify_data_range_out && blockhash_out.iter().any(|&x| x != 0) {
-            return false;
-        }
+    } else if verify_data_range_in
+        && blockhash
+            .iter()
+            .any(|&x| x >= block_hash::ALPHABET_SIZE as u8)
+    {
+        return false;
+    }
+    if verify_data_range_out && blockhash_out.iter().any(|&x| x != 0) {
+        return false;
     }
     true
 }
@@ -161,12 +164,14 @@ where
 {
     optionally_unsafe! {
         invariant!((len as usize) <= N);
-        let hash = &hash[0..len as usize]; // grcov-excl-br-line:ARRAY
-        for (i, idx) in hash.iter().enumerate() {
+    }
+    let hash = &hash[0..len as usize]; // grcov-excl-br-line:ARRAY
+    for (i, idx) in hash.iter().enumerate() {
+        optionally_unsafe! {
             invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
             invariant!(i < buf.len());
-            buf[i] = BASE64_TABLE_U8[*idx as usize]; // grcov-excl-br-line:ARRAY
         }
+        buf[i] = BASE64_TABLE_U8[*idx as usize]; // grcov-excl-br-line:ARRAY
     }
 }
 
@@ -291,100 +296,104 @@ where
     let mut len: usize = 0;
     let mut index: usize = 0;
     let mut raw_ch: Option<u8>;
-    optionally_unsafe! {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "strict-parser")] {
-                let mut iter = bytes.iter().cloned().take(N);
-            } else {
-                let mut iter = bytes.iter().cloned();
-            }
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "strict-parser")] {
+            let mut iter = bytes.iter().cloned().take(N);
+        } else {
+            let mut iter = bytes.iter().cloned();
         }
-        #[cfg_attr(not(feature = "strict-parser"), allow(unused_variables))]
-        let has_char = loop {
-            raw_ch = iter.next();
-            if let Some(ch) = raw_ch {
-                let bch = base64_index(ch);
-                if bch == BASE64_INVALID {
-                    break true;
-                }
-                let curr = bch;
-                if normalize {
-                    if curr == prev {
-                        seq += 1;
-                        if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                            seq = block_hash::MAX_SEQUENCE_SIZE;
-                            index += 1;
-                            continue;
-                        }
-                    } else {
-                        if seq == block_hash::MAX_SEQUENCE_SIZE {
-                            let len = index - seq_start_in;
-                            report_norm_seq(seq_start, len);
-                        }
-                        seq = 0;
-                        seq_start = len;
-                        seq_start_in = index;
-                        prev = curr;
-                    }
-                }
-                #[cfg(not(feature = "strict-parser"))]
-                if crate::intrinsics::unlikely(len >= N) {
-                    *blockhash_len = len as u8;
-                    invariant!(index <= bytes.len());
-                    *bytes = &bytes[index..]; // grcov-excl-br-line:ARRAY
-                    return (BlockHashParseState::OverflowError, index);
-                }
-                blockhash[len] = curr; // grcov-excl-br-line:ARRAY
-                len += 1;
-                index += 1;
-            } else {
-                break false;
-            }
-        };
-        *blockhash_len = len as u8;
-        #[cfg(feature = "strict-parser")]
-        if !has_char {
-            // Even if we reached to the end, that does not always mean that
-            // we reached to the end of the string.
-            // Try to fetch one more byte to decide what to do.
-            invariant!(index <= bytes.len());
-            raw_ch = bytes[index..].iter().cloned().next(); // grcov-excl-br-line:ARRAY
-        }
-        if normalize && seq == block_hash::MAX_SEQUENCE_SIZE {
-            let len = index - seq_start_in;
-            report_norm_seq(seq_start, len);
-        }
-        let result = match raw_ch {
-            Some(ch) => {
-                match ch {
-                    b':' => (BlockHashParseState::MetColon, index + 1),
-                    b',' => (BlockHashParseState::MetComma, index + 1),
-                    _ => {
-                        cfg_if::cfg_if! {
-                            if #[cfg(feature = "strict-parser")] {
-                                // grcov-excl-br-start
-                                (
-                                    if has_char {
-                                        BlockHashParseState::Base64Error
-                                    } else {
-                                        BlockHashParseState::OverflowError
-                                    },
-                                    index,
-                                )
-                                // grcov-excl-br-stop
-                            } else {
-                                (BlockHashParseState::Base64Error, index)
-                            }
-                        }
-                    }
-                }
-            }
-            None => (BlockHashParseState::MetEndOfString, index),
-        };
-        invariant!(result.1 <= bytes.len());
-        *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
-        result
     }
+    #[cfg_attr(not(feature = "strict-parser"), allow(unused_variables))]
+    let has_char = loop {
+        raw_ch = iter.next();
+        if let Some(ch) = raw_ch {
+            let bch = base64_index(ch);
+            if bch == BASE64_INVALID {
+                break true;
+            }
+            let curr = bch;
+            if normalize {
+                if curr == prev {
+                    seq += 1;
+                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                        seq = block_hash::MAX_SEQUENCE_SIZE;
+                        index += 1;
+                        continue;
+                    }
+                } else {
+                    if seq == block_hash::MAX_SEQUENCE_SIZE {
+                        let len = index - seq_start_in;
+                        report_norm_seq(seq_start, len);
+                    }
+                    seq = 0;
+                    seq_start = len;
+                    seq_start_in = index;
+                    prev = curr;
+                }
+            }
+            #[cfg(not(feature = "strict-parser"))]
+            if crate::intrinsics::unlikely(len >= N) {
+                *blockhash_len = len as u8;
+                optionally_unsafe! {
+                    invariant!(index <= bytes.len());
+                }
+                *bytes = &bytes[index..]; // grcov-excl-br-line:ARRAY
+                return (BlockHashParseState::OverflowError, index);
+            }
+            blockhash[len] = curr; // grcov-excl-br-line:ARRAY
+            len += 1;
+            index += 1;
+        } else {
+            break false;
+        }
+    };
+    *blockhash_len = len as u8;
+    #[cfg(feature = "strict-parser")]
+    if !has_char {
+        // Even if we reached to the end, that does not always mean that
+        // we reached to the end of the string.
+        // Try to fetch one more byte to decide what to do.
+        optionally_unsafe! {
+            invariant!(index <= bytes.len());
+        }
+        raw_ch = bytes[index..].iter().cloned().next(); // grcov-excl-br-line:ARRAY
+    }
+    if normalize && seq == block_hash::MAX_SEQUENCE_SIZE {
+        let len = index - seq_start_in;
+        report_norm_seq(seq_start, len);
+    }
+    let result = match raw_ch {
+        Some(ch) => {
+            match ch {
+                b':' => (BlockHashParseState::MetColon, index + 1),
+                b',' => (BlockHashParseState::MetComma, index + 1),
+                _ => {
+                    cfg_if::cfg_if! {
+                        if #[cfg(feature = "strict-parser")] {
+                            // grcov-excl-br-start
+                            (
+                                if has_char {
+                                    BlockHashParseState::Base64Error
+                                } else {
+                                    BlockHashParseState::OverflowError
+                                },
+                                index,
+                            )
+                            // grcov-excl-br-stop
+                        } else {
+                            (BlockHashParseState::Base64Error, index)
+                        }
+                    }
+                }
+            }
+        }
+        None => (BlockHashParseState::MetEndOfString, index),
+    };
+    optionally_unsafe! {
+        invariant!(result.1 <= bytes.len());
+    }
+    *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
+    result
 }
 
 mod tests;
