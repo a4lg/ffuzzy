@@ -12,4 +12,4 @@ This page lists all yanked versions because of SemVer-related issues:
     It incorrectly added unused `tests-unsound` feature and will result in
     SemVer violation on v0.3.x line if we didn't yank this version.
     Instead, the next release (version 0.3.4) removed that feature and
-    yanked this release.
+    yanked this release (version 0.3.3).
