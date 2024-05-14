@@ -22,7 +22,7 @@ pub mod block_hash_position_array_element {
         match len {
             0 => true,
             1 => pa_elem != 0,
-            2..u64::BITS => {
+            2..=u64::BITS if len < u64::BITS => { // TODO on MSRV 1.80
                 let cont_01 = pa_elem;
                 let cont_02 = cont_01 & (cont_01 >> 1);
                 let cont_04 = cont_02 & (cont_02 >> 2);
