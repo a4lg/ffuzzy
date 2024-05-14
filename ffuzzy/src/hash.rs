@@ -1069,8 +1069,8 @@ where
         hash_from_bytes_with_last_index_internal_template! {
             str, index, NORM,
             fuzzy.log_blocksize,
-            {}, |_, _| {}, fuzzy.blockhash1, fuzzy.len_blockhash1,
-            {}, |_, _| {}, fuzzy.blockhash2, fuzzy.len_blockhash2
+            {}, #[inline(always)] |_, _| {}, fuzzy.blockhash1, fuzzy.len_blockhash1,
+            {}, #[inline(always)] |_, _| {}, fuzzy.blockhash2, fuzzy.len_blockhash2
         }
         Ok(fuzzy)
     }

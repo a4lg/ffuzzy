@@ -190,10 +190,10 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8]) -> Result<(u32, usi
             b'0'..=b'9' => {
                 // Update block size (but check arithmetic overflow)
                 if is_block_size_in_range {
-                    match block_size
-                        .checked_mul(10)
-                        .and_then(|x| x.checked_add((*ch - b'0') as u32))
-                    {
+                    match block_size.checked_mul(10).and_then(
+                        #[inline(always)]
+                        |x| x.checked_add((*ch - b'0') as u32),
+                    ) {
                         Some(bs) => {
                             block_size = bs;
                             if block_size == 0 {

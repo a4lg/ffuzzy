@@ -470,7 +470,11 @@ pub mod block_hash {
                                 << (Self::ILOG2_OF_ALPHABETS
                                     * (MIN_LCS_FOR_COMPARISON - 2 - i) as u32)
                         })
-                        .fold(0u64, |x, y| x | y),
+                        .fold(
+                            0u64,
+                            #[inline(always)]
+                            |x, y| x | y,
+                        ),
                 }
                 // grcov-excl-br-stop
             }
