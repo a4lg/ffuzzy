@@ -19,72 +19,68 @@ pub mod block_hash_position_array_element {
     /// `len`.  [`has_sequences_const()`] forces to do that.
     #[inline(always)]
     pub const fn has_sequences(pa_elem: u64, len: u32) -> bool {
-        if len == 0 {
-            return true;
+        match len {
+            0 => true,
+            1 => pa_elem != 0,
+            2..u64::BITS => {
+                let cont_01 = pa_elem;
+                let cont_02 = cont_01 & (cont_01 >> 1);
+                let cont_04 = cont_02 & (cont_02 >> 2);
+                let cont_08 = cont_04 & (cont_04 >> 4);
+                let cont_16 = cont_08 & (cont_08 >> 8);
+                let cont_32 = cont_16 & (cont_16 >> 16);
+                let mut len = len;
+                let mut shift;
+                let mut mask = if len < 4 {
+                    // MSB == 2
+                    len &= !2;
+                    shift = 2;
+                    cont_02
+                } else if len < 8 {
+                    // MSB == 4
+                    len &= !4;
+                    shift = 4;
+                    cont_04
+                } else if len < 16 {
+                    // MSB == 8
+                    len &= !8;
+                    shift = 8;
+                    cont_08
+                } else if len < 32 {
+                    // MSB == 16
+                    len &= !16;
+                    shift = 16;
+                    cont_16
+                } else {
+                    // MSB == 32
+                    len &= !32;
+                    shift = 32;
+                    cont_32
+                };
+                if (len & 16) != 0 {
+                    mask &= cont_16 >> shift;
+                    shift += 16;
+                }
+                if (len & 8) != 0 {
+                    mask &= cont_08 >> shift;
+                    shift += 8;
+                }
+                if (len & 4) != 0 {
+                    mask &= cont_04 >> shift;
+                    shift += 4;
+                }
+                if (len & 2) != 0 {
+                    mask &= cont_02 >> shift;
+                    shift += 2;
+                }
+                if (len & 1) != 0 {
+                    mask &= cont_01 >> shift;
+                }
+                mask != 0
+            }
+            u64::BITS => pa_elem == u64::MAX,
+            _ => false,
         }
-        if len == 1 {
-            return pa_elem != 0;
-        }
-        if len == u64::BITS {
-            return pa_elem == u64::MAX;
-        }
-        if len > u64::BITS {
-            return false;
-        }
-        let cont_01 = pa_elem;
-        let cont_02 = cont_01 & (cont_01 >> 1);
-        let cont_04 = cont_02 & (cont_02 >> 2);
-        let cont_08 = cont_04 & (cont_04 >> 4);
-        let cont_16 = cont_08 & (cont_08 >> 8);
-        let cont_32 = cont_16 & (cont_16 >> 16);
-        let mut len = len;
-        let mut shift;
-        let mut mask = if len < 4 {
-            // MSB == 2
-            len &= !2;
-            shift = 2;
-            cont_02
-        } else if len < 8 {
-            // MSB == 4
-            len &= !4;
-            shift = 4;
-            cont_04
-        } else if len < 16 {
-            // MSB == 8
-            len &= !8;
-            shift = 8;
-            cont_08
-        } else if len < 32 {
-            // MSB == 16
-            len &= !16;
-            shift = 16;
-            cont_16
-        } else {
-            // MSB == 32
-            len &= !32;
-            shift = 32;
-            cont_32
-        };
-        if (len & 16) != 0 {
-            mask &= cont_16 >> shift;
-            shift += 16;
-        }
-        if (len & 8) != 0 {
-            mask &= cont_08 >> shift;
-            shift += 8;
-        }
-        if (len & 4) != 0 {
-            mask &= cont_04 >> shift;
-            shift += 4;
-        }
-        if (len & 2) != 0 {
-            mask &= cont_02 >> shift;
-            shift += 2;
-        }
-        if (len & 1) != 0 {
-            mask &= cont_01 >> shift;
-        }
-        mask != 0
     }
 
     /// The generic variant of [`has_sequences()`](has_sequences()).
