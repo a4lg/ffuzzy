@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "ffuzzy"
-version = "0.3.8-alpha.0"
+version = "0.3.9-alpha.0"
 dependencies = [
  "cfg-if",
  "glob",
