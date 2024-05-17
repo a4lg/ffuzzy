@@ -22,13 +22,10 @@ fn parse_error_kind_impls() {
 
 #[test]
 fn parse_error_origin_impls() {
-    #[cfg(feature = "alloc")]
-    {
-        // Test Display
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockSize), "block size");
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
-        assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
-    }
+    // Test Display
+    assert_eq!(format!("{}", ParseErrorOrigin::BlockSize), "block size");
+    assert_eq!(format!("{}", ParseErrorOrigin::BlockHash1), "block hash 1");
+    assert_eq!(format!("{}", ParseErrorOrigin::BlockHash2), "block hash 2");
 }
 
 #[test]
