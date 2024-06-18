@@ -12,7 +12,6 @@
 #![cfg_attr(feature = "unstable", feature(coverage_attribute))]
 #![cfg_attr(feature = "unstable", feature(doc_cfg))]
 #![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "unstable", feature(error_in_core))]
 #![cfg_attr(feature = "unstable", feature(hint_assert_unchecked))]
 #![cfg_attr(feature = "unstable", feature(trusted_len))]
 // int_log feature depending on ilog2 availability
