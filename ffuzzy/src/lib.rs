@@ -14,10 +14,6 @@
 #![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
 #![cfg_attr(feature = "unstable", feature(hint_assert_unchecked))]
 #![cfg_attr(feature = "unstable", feature(trusted_len))]
-// int_log feature depending on ilog2 availability
-#![cfg_attr(ffuzzy_ilog2 = "unstable", feature(int_log))]
-// int_roundings feature depending on div_ceil availability
-#![cfg_attr(ffuzzy_div_ceil = "unstable", feature(int_roundings))]
 // In the code maintenance mode, disallow all warnings.
 #![cfg_attr(feature = "maint-code", deny(warnings))]
 // unsafe code is *only* allowed on enabling either "unsafe"-like features or
