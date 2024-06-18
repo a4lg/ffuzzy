@@ -173,10 +173,10 @@ pub trait BlockHashPositionArrayData {
         }
         let expected_total: u64 = u64_lsb_ones(len as u32);
         let mut total: u64 = 0;
-        self.representation().iter().all(
+        let has_no_multi_occupation = self.representation().iter().all(
             #[inline(always)]
             |&pos| {
-                // Invalid if multiple alphabets are occupy the same position.
+                // Invalid if multiple alphabets occupy the same position.
                 let is_valid = (total & pos) == 0;
                 total |= pos;
                 is_valid
@@ -184,7 +184,7 @@ pub trait BlockHashPositionArrayData {
         );
         // All characters in the string must be placed in the position array
         // and no characters may be placed outside the string.
-        total == expected_total
+        has_no_multi_occupation && total == expected_total
     }
 
     /// Performs full validity checking and the normalization test
