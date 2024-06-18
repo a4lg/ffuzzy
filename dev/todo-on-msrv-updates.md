@@ -36,3 +36,8 @@ version (MSRV), which we only expect stable features.
 ## 1.80.0 (Nightly)
 
 *   Start to use exclusive range patterns.
+
+## 1.81.0 (Nightly)
+
+*   Replace `std::error::Error` (or `core::error::Error` on `unstable`)
+    to `core::error::Error` (now `std` trait is a re-report of `core`).
