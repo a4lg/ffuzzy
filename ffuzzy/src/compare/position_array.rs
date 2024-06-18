@@ -173,19 +173,18 @@ pub trait BlockHashPositionArrayData {
         }
         let expected_total: u64 = u64_lsb_ones(len as u32);
         let mut total: u64 = 0;
-        for &pos in self.representation() {
-            if (total & pos) != 0 {
-                // Two or more alphabets are placed in the same position.
-                return false;
-            }
-            total |= pos;
-        }
-        if total != expected_total {
-            // Not all characters are placed in the position array
-            // or a character is placed outside "the string".
-            return false;
-        }
-        true
+        self.representation().iter().all(
+            #[inline(always)]
+            |&pos| {
+                // Invalid if multiple alphabets are occupy the same position.
+                let is_valid = (total & pos) == 0;
+                total |= pos;
+                is_valid
+            },
+        );
+        // All characters in the string must be placed in the position array
+        // and no characters may be placed outside the string.
+        total == expected_total
     }
 
     /// Performs full validity checking and the normalization test
@@ -200,19 +199,15 @@ pub trait BlockHashPositionArrayData {
     ///
     /// See also: ["Normalization" section of `FuzzyHashData`](crate::hash::FuzzyHashData#normalization)
     fn is_valid_and_normalized(&self) -> bool {
-        if !self.is_valid() {
-            return false;
-        }
-        for &pos in self.representation() {
-            if block_hash_position_array_element::has_sequences_const::<
-                { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 },
-            >(pos)
-            {
-                // A long repeating character sequence is found.
-                return false;
-            }
-        }
-        true
+        self.is_valid()
+            && self.representation().iter().all(
+                #[inline(always)]
+                |&pos| {
+                    !block_hash_position_array_element::has_sequences_const::<
+                        { block_hash::MAX_SEQUENCE_SIZE as u32 + 1 },
+                    >(pos)
+                },
+            )
     }
 }
 
@@ -249,19 +244,17 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(other.len() <= 64);
         let len = self.len();
         let representation = self.representation();
-        if (len as usize) != other.len() {
-            return false;
-        }
         optionally_unsafe! {
-            for (i, &ch) in other.iter().enumerate() {
-                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                let value = representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                if value & (1u64 << i) == 0 {
-                    return false;
-                }
-            }
+            (len as usize) == other.len()
+                && other.iter().enumerate().all(
+                    #[inline(always)]
+                    |(i, &ch)| {
+                        invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
+                        let value = representation[ch as usize]; // grcov-excl-br-line:ARRAY
+                        value & (1u64 << i) != 0
+                    },
+                )
         }
-        true
     }
 
     /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::has_common_substring_unchecked()`].
