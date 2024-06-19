@@ -197,6 +197,13 @@ pub mod block_size {
     /// *   `block_size::NUM_VALID == 31`
     const LOG_DEBRUIJN_CONSTANT: u32 = 0x017713ca;
 
+    /// The function to convert a block size into an index of
+    /// a variant of de Bruijn sequence.
+    #[inline(always)]
+    const fn debruijn_index(block_size: u32) -> usize {
+        (block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize
+    }
+
     /// The custom table for a variant of de Bruijn sequence to convert
     /// all valid block size values into the *base-2 logarithm* form.
     ///
@@ -212,11 +219,10 @@ pub mod block_size {
     ];
 
     /// The internal implementation of [`log_from_valid_unchecked()`].
-    #[rustfmt::skip]
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         debug_assert!(is_valid(block_size));
-        LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize] // grcov-excl-br-line:ARRAY
+        LOG_DEBRUIJN_TABLE[debruijn_index(block_size)] // grcov-excl-br-line:ARRAY
     }
 
     /// Computes the *base-2 logarithm* form of a valid block size
