@@ -5,8 +5,6 @@
 
 use core::cmp::Ordering;
 
-use crate::macros::{invariant, optionally_unsafe};
-
 /// A type to represent relation between two block sizes.
 ///
 /// Because the core comparison method can only compare two block hashes
