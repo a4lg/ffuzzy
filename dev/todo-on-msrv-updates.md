@@ -33,7 +33,7 @@ version (MSRV), which we only expect stable features.
 *   Remove `crate::hash_dual::private::const_asserts::div_ceil` and
     replace to `usize::div_ceil`.
 
-## 1.80.0 (Nightly)
+## 1.80.0 (Beta)
 
 *   Start to use exclusive range patterns.
 
