@@ -1107,24 +1107,31 @@ fn data_model_normalized_numeric_windows() {
     fn test_body<const S1: usize, const S2: usize>(bh1: &[u8], bh2: &[u8])
         where BHS<S1>: CBHS, BHS<S2>: CBHS, BHSs<S1, S2>: CBHSs
     {
+        const LOG_BLOCK_SIZE: u8 = 5;
         let typename = type_name::<FuzzyHashData<S1, S2, true>>();
         if bh2.len() > S2 { return; }
-        let hash = FuzzyHashData::<S1, S2, true>::new_from_internals_near_raw(0, bh1, bh2);
+        let hash = FuzzyHashData::<S1, S2, true>::new_from_internals_near_raw(LOG_BLOCK_SIZE, bh1, bh2);
         // For each block hash, windows will return nothing as long as
         // the block hash is shorter than block_hash::MIN_LCS_FOR_COMPARISON.
         assert_eq!(hash.block_hash_1_numeric_windows().next().is_none(), hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON, "failed on typename={:?}, bh1={:?}, bh2={:?}", typename, bh1, bh2);
         assert_eq!(hash.block_hash_2_numeric_windows().next().is_none(), hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON, "failed on typename={:?}, bh1={:?}, bh2={:?}", typename, bh1, bh2);
+        assert_eq!(hash.block_hash_1_index_windows().next().is_none(), hash.block_hash_1_len() < block_hash::MIN_LCS_FOR_COMPARISON, "failed on typename={:?}, bh1={:?}, bh2={:?}", typename, bh1, bh2);
+        assert_eq!(hash.block_hash_2_index_windows().next().is_none(), hash.block_hash_2_len() < block_hash::MIN_LCS_FOR_COMPARISON, "failed on typename={:?}, bh1={:?}, bh2={:?}", typename, bh1, bh2);
         // Block hash 1 / 2
-        for (offset, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_1_windows(), hash.block_hash_1_numeric_windows()).enumerate() {
-            // Because NumericWindows reuses the previous numeric window to generate
+        for (offset, (window, (window_as_num, index_as_num))) in itertools::zip_eq(hash.block_hash_1_windows(), itertools::zip_eq(hash.block_hash_1_numeric_windows(), hash.block_hash_1_index_windows())).enumerate() {
+            // Because {Numeric,Index}Windows reuse the previous numeric window to generate
             // the next one, we need to compare the result (window_as_num) with
             // the value created from scratch (calculated_window_as_num).
             let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+            let calculated_index_as_num = calculated_window_as_num | ((LOG_BLOCK_SIZE as u64) << block_hash::NumericWindows::BITS);
             assert_eq!(calculated_window_as_num, window_as_num, "failed on typename={:?}, bh1={:?}, bh2={:?}, offset={}", typename, bh1, bh2, offset);
+            assert_eq!(calculated_index_as_num, index_as_num, "failed on typename={:?}, bh1={:?}, bh2={:?}, offset={}", typename, bh1, bh2, offset);
         }
-        for (offset, (window, window_as_num)) in itertools::zip_eq(hash.block_hash_2_windows(), hash.block_hash_2_numeric_windows()).enumerate() {
+        for (offset, (window, (window_as_num, index_as_num))) in itertools::zip_eq(hash.block_hash_2_windows(), itertools::zip_eq(hash.block_hash_2_numeric_windows(), hash.block_hash_2_index_windows())).enumerate() {
             let calculated_window_as_num = window.iter().fold(0u64, |x, &ch| (x << block_hash::NumericWindows::ILOG2_OF_ALPHABETS) + ch as u64);
+            let calculated_index_as_num = calculated_window_as_num | (((LOG_BLOCK_SIZE + 1) as u64) << block_hash::NumericWindows::BITS);
             assert_eq!(calculated_window_as_num, window_as_num, "failed on typename={:?}, bh1={:?}, bh2={:?}, offset={}", typename, bh1, bh2, offset);
+            assert_eq!(calculated_index_as_num, index_as_num, "failed on typename={:?}, bh1={:?}, bh2={:?}, offset={}", typename, bh1, bh2, offset);
         }
     }
     test_blockhash_contents_all(&mut |_bh1, _bh2, bh1_norm, bh2_norm| {

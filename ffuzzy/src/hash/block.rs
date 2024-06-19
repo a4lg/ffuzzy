@@ -429,6 +429,26 @@ pub mod block_hash {
         hash: u64,
     }
 
+    /// Numeric windows of a block hash, each value representing unique value
+    /// corresponding a substring of length [`MIN_LCS_FOR_COMPARISON`] *and*
+    /// the block size.
+    ///
+    /// This is similar to that of [`NumericWindows`] but each numeric value
+    /// *also* contains the *base-2 logarithm* form of the block size
+    /// (at highest bits).
+    ///
+    /// This numeric form has an one-to-one correspondence with the original
+    /// substring plus the block size.  In the current ssdeep-compatible
+    /// configuration, each value is a 47-bit unsigned integer, generated from
+    /// low 42-bit value from [`NumericWindows`] and high 5-bit value from
+    /// the block size.
+    pub struct IndexWindows<'a> {
+        /// Inner [`NumericWindows`] object.
+        inner: NumericWindows<'a>,
+        /// The *base-2 logarithm* form of the block size.
+        log_block_size: u8,
+    }
+
     impl<'a> NumericWindows<'a> {
         /*
             TODO:
@@ -474,6 +494,26 @@ pub mod block_hash {
         }
     }
 
+    impl<'a> IndexWindows<'a> {
+        /// The actual number of bits consumed by the block size.
+        pub(crate) const BLOCK_SIZE_BITS: u32 = 5;
+
+        /// The width of a substring (in a numeric form) in bits.
+        pub const BITS: u32 = NumericWindows::BITS + Self::BLOCK_SIZE_BITS;
+
+        /// The mask value corresponding [`BITS`](Self::BITS).
+        pub const MASK: u64 = (1u64 << Self::BITS).wrapping_sub(1);
+
+        /// Creates a new object from an existing block hash and the block size.
+        #[inline]
+        pub(crate) fn new(block_hash: &'a [u8], log_block_size: u8) -> Self {
+            Self {
+                inner: NumericWindows::new(block_hash),
+                log_block_size,
+            }
+        }
+    }
+
     impl<'a> Iterator for NumericWindows<'a> {
         type Item = u64;
 
@@ -494,6 +534,23 @@ pub mod block_hash {
         }
     }
 
+    impl<'a> Iterator for IndexWindows<'a> {
+        type Item = u64;
+
+        #[inline(always)]
+        fn next(&mut self) -> Option<Self::Item> {
+            self.inner.next().map(
+                #[inline(always)]
+                |x| (x | ((self.log_block_size as u64) << NumericWindows::BITS)),
+            )
+        }
+
+        #[inline(always)]
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            self.inner.size_hint()
+        }
+    }
+
     impl<'a> ExactSizeIterator for NumericWindows<'a> {
         #[inline]
         fn len(&self) -> usize {
@@ -501,11 +558,22 @@ pub mod block_hash {
         }
     }
 
+    impl<'a> ExactSizeIterator for IndexWindows<'a> {
+        #[inline]
+        fn len(&self) -> usize {
+            self.inner.len()
+        }
+    }
+
     #[allow(unsafe_code)]
     #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
     unsafe impl<'a> core::iter::TrustedLen for NumericWindows<'a> {}
+    #[allow(unsafe_code)]
+    #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
+    unsafe impl<'a> core::iter::TrustedLen for IndexWindows<'a> {}
 
     impl<'a> core::iter::FusedIterator for NumericWindows<'a> {}
+    impl<'a> core::iter::FusedIterator for IndexWindows<'a> {}
 }
 
 /// A generic type to constrain given block hash size using [`ConstrainedBlockHashSize`].

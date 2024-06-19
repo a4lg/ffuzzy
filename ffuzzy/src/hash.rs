@@ -1620,6 +1620,67 @@ where
         block::block_hash::NumericWindows::new(self.block_hash_1())
     }
 
+    /// Windows representing normalized substrings with effective block size,
+    /// converted to unique numeric value (block hash 1).
+    ///
+    /// This is very similar to
+    /// [`block_hash_1_numeric_windows()`](Self::block_hash_1_numeric_windows())
+    /// except that each window contains block hash 1's effective block size
+    /// (*base-2 logarithm* form of the block size of the hash).
+    ///
+    /// See also: [`block_hash::IndexWindows`].
+    ///
+    /// # Example (pseudo code)
+    ///
+    /// ```
+    /// use ssdeep::FuzzyHash;
+    ///
+    /// // Fuzzy hash index in the database
+    /// struct FuzzyHashIndex(u64);
+    ///
+    /// // It generates the index of corresponding fuzzy hash.
+    /// # fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex { FuzzyHashIndex(0) }
+    /// # /*
+    /// fn get_idx_of_fuzzy_hash(hash: &FuzzyHash) -> FuzzyHashIndex { /* ... */ }
+    /// # */
+    ///
+    /// // It stores a fuzzy hash with keys (with duplicates) like this:
+    /// //     db_entries(log_block_size, substring).add(hash_index)
+    /// // ... to enable later filtering.
+    /// fn insert_to_database(key: u64, value: &FuzzyHashIndex) { /* ... */ }
+    ///
+    /// # let hash_str = "196608:DfiQF5UWAC2qctjBemsqz7yHlHr4bMCE2J8Y:jBp/Fqz7mlHZCE2J8Y";
+    /// // let hash_str = ...;
+    /// let hash: FuzzyHash = str::parse(hash_str).unwrap();
+    /// let idx: FuzzyHashIndex = get_idx_of_fuzzy_hash(&hash);
+    /// for window in hash.block_hash_1_index_windows() {
+    ///     insert_to_database(window, &idx);
+    /// }
+    /// for window in hash.block_hash_2_index_windows() {
+    ///     insert_to_database(window, &idx);
+    /// }
+    /// ```
+    ///
+    /// # Effectively Deprecated from the Start
+    ///
+    /// This is a preview of a feature in the next major release.
+    /// Because block hash handling functions are bloating, the next version
+    /// will introduce basic block hash proxy object.
+    ///
+    /// For instance, `hash.block_hash_1_index_windows()` will turn into
+    /// something like: `hash.block_hash_1().index_windows()`.
+    ///
+    /// The only reason this function is *not* marked deprecated is,
+    /// every block hash functions will change in the next major release
+    /// and deprecating all of them gives the developer wrong impressions
+    /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
+    #[inline]
+    pub fn block_hash_1_index_windows(
+        &self,
+    ) -> block::block_hash::IndexWindows {
+        block::block_hash::IndexWindows::new(self.block_hash_1(), self.log_blocksize)
+    }
+
     /// Windows representing substrings
     /// suitable for filtering block hashes to match (block hash 2).
     ///
@@ -1641,6 +1702,42 @@ where
     #[inline]
     pub fn block_hash_2_numeric_windows(&self) -> block::block_hash::NumericWindows {
         block::block_hash::NumericWindows::new(self.block_hash_2())
+    }
+
+    /// Windows representing normalized substrings with effective block size,
+    /// converted to unique numeric value (block hash 2).
+    ///
+    /// This is very similar to
+    /// [`block_hash_2_numeric_windows()`](Self::block_hash_2_numeric_windows())
+    /// except that each window contains block hash 2's effective block size
+    /// (one larger than *base-2 logarithm* form of the block size of the hash)
+    /// at the top.
+    ///
+    /// See also:
+    /// *   [`block_hash::IndexWindows`]
+    /// *   [`block_hash_1_numeric_windows()`](Self::block_hash_1_numeric_windows())
+    ///
+    /// # Effectively Deprecated from the Start
+    ///
+    /// This is a preview of a feature in the next major release.
+    /// Because block hash handling functions are bloating, the next version
+    /// will introduce basic block hash proxy object.
+    ///
+    /// For instance, `hash.block_hash_2_index_windows()` will turn into
+    /// something like: `hash.block_hash_2().index_windows()`.
+    ///
+    /// The only reason this function is *not* marked deprecated is,
+    /// every block hash functions will change in the next major release
+    /// and deprecating all of them gives the developer wrong impressions
+    /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
+    #[inline]
+    pub fn block_hash_2_index_windows(
+        &self,
+    ) -> block::block_hash::IndexWindows {
+        block::block_hash::IndexWindows::new(
+            self.block_hash_2(),
+            self.log_blocksize.wrapping_add(1),
+        )
     }
 
     /// Converts the fuzzy hash from a raw form, normalizing it.
