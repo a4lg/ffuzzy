@@ -8,8 +8,8 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     // Method: {Integer}::ilog2
-    //  log2: 1.55-1.64 (not implemented)
-    // ilog2: 1.65-1.66 (not implemented)
+    //  log2: 1.55-1.64 (not used; instead using our own fallback)
+    // ilog2: 1.65-1.66 (not used; instead using our own fallback)
     // ilog2: 1.67-     (stable)
     println!(
         "cargo:rustc-check-cfg=cfg(\
@@ -27,8 +27,8 @@ fn main() {
     }
 
     // Method: {Integer}::div_ceil
-    // unstable_div_ceil: 1.56-1.58 (not implemented)
-    //          div_ceil: 1.59-1.72 (not implemented)
+    // unstable_div_ceil: 1.56-1.58 (not used; instead using our own fallback)
+    //          div_ceil: 1.59-1.72 (not used; instead using our own fallback)
     //          div_ceil: 1.73-     (stable)
     println!(
         "cargo:rustc-check-cfg=cfg(\
