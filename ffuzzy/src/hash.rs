@@ -1966,5 +1966,7 @@ mod const_asserts {
     const_assert!(RawFuzzyHash::MAX_LEN_IN_STR < LongRawFuzzyHash::MAX_LEN_IN_STR);
 }
 
+/// Test utilities for [`crate::hash`].
+#[cfg(any(test, doc))]
 pub(crate) mod test_utils;
 pub(crate) mod tests;
