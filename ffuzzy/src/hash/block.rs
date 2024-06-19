@@ -217,12 +217,7 @@ pub mod block_size {
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         debug_assert!(is_valid(block_size));
-        let value =
-            LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize]; // grcov-excl-br-line:ARRAY
-        optionally_unsafe! {
-            invariant!((value as usize) < NUM_VALID);
-        }
-        value
+        LOG_DEBRUIJN_TABLE[(block_size.wrapping_mul(LOG_DEBRUIJN_CONSTANT) >> 27) as usize] // grcov-excl-br-line:ARRAY
     }
 
     /// Computes the *base-2 logarithm* form of a valid block size
