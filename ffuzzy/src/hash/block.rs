@@ -212,6 +212,7 @@ pub mod block_size {
     ];
 
     /// The internal implementation of [`log_from_valid_unchecked()`].
+    #[rustfmt::skip]
     #[inline(always)]
     pub(crate) fn log_from_valid_internal(block_size: u32) -> u8 {
         debug_assert!(is_valid(block_size));
