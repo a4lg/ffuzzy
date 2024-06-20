@@ -446,6 +446,12 @@ pub mod block_hash {
     /// corresponding a substring of length [`MIN_LCS_FOR_COMPARISON`] *and*
     /// the block size.
     ///
+    /// An object with this type is created by either of those methods
+    /// (*normalized forms only*):
+    ///
+    /// *   [`FuzzyHashData::block_hash_1_index_windows()`](crate::hash::FuzzyHashData::block_hash_1_index_windows())
+    /// *   [`FuzzyHashData::block_hash_2_index_windows()`](crate::hash::FuzzyHashData::block_hash_2_index_windows())
+    ///
     /// This is similar to that of [`NumericWindows`] but each numeric value
     /// *also* contains the *base-2 logarithm* form of the block size
     /// (at highest bits).

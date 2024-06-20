@@ -1641,7 +1641,7 @@ where
     /// # */
     ///
     /// // It stores a fuzzy hash with keys (with duplicates) like this:
-    /// //     db_entries(log_block_size, substring).add(hash_index)
+    /// //     db_entries(concat(log_block_size, substring)).add(hash_index)
     /// // ... to enable later filtering.
     /// fn insert_to_database(key: u64, value: &FuzzyHashIndex) { /* ... */ }
     ///
@@ -1657,6 +1657,9 @@ where
     /// }
     /// ```
     ///
+    /// Compared to numeric windows, the effective block size is embedded in
+    /// the index windows.  That makes writing ssdeep database easier.
+    ///
     /// # Effectively Deprecated from the Start
     ///
     /// This is a preview of a feature in the next major release.
@@ -1667,7 +1670,7 @@ where
     /// something like: `hash.block_hash_1().index_windows()`.
     ///
     /// The only reason this function is *not* marked deprecated is,
-    /// every block hash functions will change in the next major release
+    /// all block hash functions will change in the next major release
     /// and deprecating all of them gives the developer wrong impressions
     /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
     #[inline]
@@ -1721,7 +1724,7 @@ where
     /// something like: `hash.block_hash_2().index_windows()`.
     ///
     /// The only reason this function is *not* marked deprecated is,
-    /// every block hash functions will change in the next major release
+    /// all block hash functions will change in the next major release
     /// and deprecating all of them gives the developer wrong impressions
     /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
     #[inline]
