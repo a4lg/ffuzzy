@@ -681,6 +681,8 @@ where
     ) -> Self {
         let mut hash = Self::new();
         debug_assert!(block_size::is_log_valid(log_block_size));
+        debug_assert!(block_hash_1.len() <= S1);
+        debug_assert!(block_hash_2.len() <= S2);
         optionally_unsafe! {
             invariant!(block_hash_1.len() <= S1);
             invariant!(block_hash_2.len() <= S2);
