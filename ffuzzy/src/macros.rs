@@ -76,4 +76,22 @@ macro_rules! invariant_impl {
 }
 pub(crate) use invariant_impl as invariant;
 
+/// Implements [`Error`](std::error::Error) trait either in `std` or `core`.
+///
+/// This macro is used to implement appropriate [`Error`](std::error::Error)
+/// trait, either in `core` or `std`, depending on the configuration.
+macro_rules! impl_error_impl {
+    ($type:ty { $($tokens:tt)* }) => {
+        #[cfg(feature = "std")]
+        impl std::error::Error for $type {
+            $($tokens)*
+        }
+        #[cfg(all(not(feature = "std"), ffuzzy_error_in_core = "stable"))]
+        impl core::error::Error for $type {
+            $($tokens)*
+        }
+    }
+}
+pub(crate) use impl_error_impl as impl_error;
+
 mod tests;

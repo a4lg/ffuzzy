@@ -342,10 +342,7 @@ impl core::fmt::Display for FuzzyHashOperationError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for FuzzyHashOperationError {}
-#[cfg(all(not(feature = "std"), feature = "unstable"))]
-impl core::error::Error for FuzzyHashOperationError {}
+crate::macros::impl_error!(FuzzyHashOperationError {});
 
 /// Template to generate `from_bytes_with_last_index_internal()`
 /// internal functions.

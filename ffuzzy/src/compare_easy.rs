@@ -5,6 +5,11 @@
 
 #![cfg(feature = "easy-functions")]
 
+#[cfg(all(not(feature = "std"), ffuzzy_error_in_core = "stable"))]
+use core::error::Error;
+#[cfg(feature = "std")]
+use std::error::Error;
+
 use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::LongFuzzyHash;
 
@@ -62,18 +67,11 @@ impl core::fmt::Display for ParseErrorEither {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for ParseErrorEither {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+crate::macros::impl_error!(ParseErrorEither {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         Some(&self.1)
     }
-}
-#[cfg(all(not(feature = "std"), feature = "unstable"))]
-impl core::error::Error for ParseErrorEither {
-    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
-        Some(&self.1)
-    }
-}
+});
 
 /// Compare two fuzzy hashes.
 ///

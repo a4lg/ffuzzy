@@ -8,7 +8,7 @@
 use crate::compare_easy::{compare, ParseErrorEither, ParseErrorSide};
 use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
 
-#[cfg(all(not(feature = "std"), feature = "unstable"))]
+#[cfg(all(not(feature = "std"), ffuzzy_error_in_core = "stable"))]
 use core::error::Error;
 #[cfg(feature = "std")]
 use std::error::Error;
@@ -54,7 +54,7 @@ fn parse_error_either_impls_display_and_debug_with_side() {
     }
 }
 
-#[cfg(any(feature = "std", feature = "unstable"))]
+#[cfg(any(feature = "std", ffuzzy_error_in_core = "stable"))]
 #[test]
 fn parse_error_either_source_with_side() {
     for &(err, _err_str_display) in crate::hash::parser_state::tests::PARSE_ERROR_CASES {

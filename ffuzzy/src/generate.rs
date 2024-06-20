@@ -591,10 +591,7 @@ impl core::fmt::Display for GeneratorError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for GeneratorError {}
-#[cfg(all(not(feature = "std"), feature = "unstable"))]
-impl core::error::Error for GeneratorError {}
+crate::macros::impl_error!(GeneratorError {});
 
 impl Generator {
     /// Returns the preferred maximum input size at the specified block size.
