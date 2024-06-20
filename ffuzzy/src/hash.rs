@@ -1671,9 +1671,7 @@ where
     /// and deprecating all of them gives the developer wrong impressions
     /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
     #[inline]
-    pub fn block_hash_1_index_windows(
-        &self,
-    ) -> block::block_hash::IndexWindows {
+    pub fn block_hash_1_index_windows(&self) -> block::block_hash::IndexWindows {
         block::block_hash::IndexWindows::new(self.block_hash_1(), self.log_blocksize)
     }
 
@@ -1727,9 +1725,7 @@ where
     /// and deprecating all of them gives the developer wrong impressions
     /// (it doesn't and won't have non-deprecated interface in v0.3.x anyway).
     #[inline]
-    pub fn block_hash_2_index_windows(
-        &self,
-    ) -> block::block_hash::IndexWindows {
+    pub fn block_hash_2_index_windows(&self) -> block::block_hash::IndexWindows {
         block::block_hash::IndexWindows::new(
             self.block_hash_2(),
             self.log_blocksize.wrapping_add(1),
