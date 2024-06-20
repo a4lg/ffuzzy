@@ -782,6 +782,8 @@ where
         block_hash_2: &[u8],
     ) -> Self {
         debug_assert!(block_size::is_valid(block_size));
+        debug_assert!(block_hash_1.len() <= S1);
+        debug_assert!(block_hash_2.len() <= S2);
         Self::new_from_internals_near_raw_internal(
             block_size::log_from_valid_internal(block_size),
             block_hash_1,
@@ -809,13 +811,7 @@ where
         block_hash_1: &[u8],
         block_hash_2: &[u8],
     ) -> Self {
-        unsafe {
-            Self::new_from_internals_near_raw_unchecked(
-                block_size::log_from_valid_internal(block_size),
-                block_hash_1,
-                block_hash_2,
-            )
-        }
+        Self::new_from_internals_internal(block_size, block_hash_1, block_hash_2)
     }
 
     /// Creates a new fuzzy hash object with internal contents.
@@ -834,11 +830,9 @@ where
     #[inline]
     pub fn new_from_internals(block_size: u32, block_hash_1: &[u8], block_hash_2: &[u8]) -> Self {
         assert!(block_size::is_valid(block_size));
-        Self::new_from_internals_near_raw(
-            block_size::log_from_valid_internal(block_size),
-            block_hash_1,
-            block_hash_2,
-        )
+        assert!(block_hash_1.len() <= S1);
+        assert!(block_hash_2.len() <= S2);
+        Self::new_from_internals_internal(block_size, block_hash_1, block_hash_2)
     }
 
     /// The *base-2 logarithm* form of the block size.
