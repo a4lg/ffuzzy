@@ -604,7 +604,7 @@ impl Generator {
     /// the final block size (if the block hash for double block size has
     /// enough length: `block_hash::HALF_SIZE`).
     const fn guessed_preferred_max_input_size_at(log_block_size: u8) -> u64 {
-        block_size::from_log_internal(log_block_size) as u64 * block_hash::FULL_SIZE as u64
+        block_size::from_log_internal_const(log_block_size) as u64 * block_hash::FULL_SIZE as u64
     }
 
     /// The maximum input size (inclusive).

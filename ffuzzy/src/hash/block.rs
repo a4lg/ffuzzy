@@ -109,8 +109,15 @@ pub mod block_size {
 
     /// The internal implementation of [`from_log_unchecked()`].
     #[inline(always)]
-    pub(crate) const fn from_log_internal(log_block_size: u8) -> u32 {
+    pub(crate) const fn from_log_internal_const(log_block_size: u8) -> u32 {
         MIN << log_block_size
+    }
+
+    /// The internal implementation of [`from_log_unchecked()`].
+    #[inline(always)]
+    pub(crate) fn from_log_internal(log_block_size: u8) -> u32 {
+        debug_assert!(is_log_valid(log_block_size));
+        from_log_internal_const(log_block_size)
     }
 
     /// Converts *base-2 logarithm* form of the block size to the actual one
@@ -126,7 +133,6 @@ pub mod block_size {
     #[allow(unsafe_code)]
     #[inline(always)]
     pub unsafe fn from_log_unchecked(log_block_size: u8) -> u32 {
-        debug_assert!(is_log_valid(log_block_size));
         from_log_internal(log_block_size)
     }
 

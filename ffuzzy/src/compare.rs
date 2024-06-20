@@ -1633,7 +1633,7 @@ mod const_asserts {
         // or greater than 100 (meaning, no capping is required).
         (100 + block_hash::MIN_LCS_FOR_COMPARISON as u64 - 1)
             / block_hash::MIN_LCS_FOR_COMPARISON as u64
-            <= block_size::from_log_internal(log_block_size) as u64 / block_size::MIN as u64
+            <= block_size::from_log_internal_const(log_block_size) as u64 / block_size::MIN as u64
     }
 
     // Compare with the precomputed value
