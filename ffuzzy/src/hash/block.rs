@@ -533,7 +533,7 @@ pub mod block_hash {
         }
     }
 
-    impl<'a> Iterator for NumericWindows<'a> {
+    impl Iterator for NumericWindows<'_> {
         type Item = u64;
 
         #[inline]
@@ -553,7 +553,7 @@ pub mod block_hash {
         }
     }
 
-    impl<'a> Iterator for IndexWindows<'a> {
+    impl Iterator for IndexWindows<'_> {
         type Item = u64;
 
         #[inline(always)]
@@ -570,14 +570,14 @@ pub mod block_hash {
         }
     }
 
-    impl<'a> ExactSizeIterator for NumericWindows<'a> {
+    impl ExactSizeIterator for NumericWindows<'_> {
         #[inline]
         fn len(&self) -> usize {
             self.v.len()
         }
     }
 
-    impl<'a> ExactSizeIterator for IndexWindows<'a> {
+    impl ExactSizeIterator for IndexWindows<'_> {
         #[inline]
         fn len(&self) -> usize {
             self.inner.len()
@@ -586,13 +586,13 @@ pub mod block_hash {
 
     #[allow(unsafe_code)]
     #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
-    unsafe impl<'a> core::iter::TrustedLen for NumericWindows<'a> {}
+    unsafe impl core::iter::TrustedLen for NumericWindows<'_> {}
     #[allow(unsafe_code)]
     #[cfg(all(feature = "unsafe-guarantee", feature = "unstable"))]
-    unsafe impl<'a> core::iter::TrustedLen for IndexWindows<'a> {}
+    unsafe impl core::iter::TrustedLen for IndexWindows<'_> {}
 
-    impl<'a> core::iter::FusedIterator for NumericWindows<'a> {}
-    impl<'a> core::iter::FusedIterator for IndexWindows<'a> {}
+    impl core::iter::FusedIterator for NumericWindows<'_> {}
+    impl core::iter::FusedIterator for IndexWindows<'_> {}
 }
 
 /// A generic type to constrain given block hash size using [`ConstrainedBlockHashSize`].

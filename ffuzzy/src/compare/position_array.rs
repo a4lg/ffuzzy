@@ -736,7 +736,7 @@ pub(crate) struct BlockHashPositionArrayMutRef<'a>(
     pub(crate) &'a mut u8,
 );
 
-impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayRef<'a> {
+impl BlockHashPositionArrayData for BlockHashPositionArrayRef<'_> {
     #[inline(always)]
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
@@ -747,7 +747,7 @@ impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayRef<'a> {
     }
 }
 
-impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'a> {
+impl BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'_> {
     #[inline(always)]
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE] {
         self.0
@@ -758,7 +758,7 @@ impl<'a> BlockHashPositionArrayData for BlockHashPositionArrayMutRef<'a> {
     }
 }
 
-impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
+impl BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'_> {
     #[inline(always)]
     fn representation_mut(&mut self) -> &mut [u64; block_hash::ALPHABET_SIZE] {
         self.0
@@ -769,7 +769,7 @@ impl<'a> BlockHashPositionArrayDataMut for BlockHashPositionArrayMutRef<'a> {
     }
 }
 
-impl<'a> BlockHashPositionArrayImplMutInternal for BlockHashPositionArrayMutRef<'a> {
+impl BlockHashPositionArrayImplMutInternal for BlockHashPositionArrayMutRef<'_> {
     #[inline(always)]
     fn set_len_internal(&mut self, len: u8) {
         debug_assert!(len <= 64);

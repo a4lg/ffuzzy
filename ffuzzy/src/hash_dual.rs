@@ -1228,7 +1228,7 @@ where
                 }
             }
         }
-        impl<'a, const N: usize> core::fmt::Debug for DebugBuilderForValidRLEBlock<'a, N> {
+        impl<const N: usize> core::fmt::Debug for DebugBuilderForValidRLEBlock<'_, N> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 f.debug_list()
                     .entries(
@@ -1241,7 +1241,7 @@ where
                     .finish()
             }
         }
-        impl<'a, const N: usize> core::fmt::Debug for DebugBuilderForInvalidRLEBlock<'a, N> {
+        impl<const N: usize> core::fmt::Debug for DebugBuilderForInvalidRLEBlock<'_, N> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
                 // Don't filter zeroes when invalid,
                 // unlike DebugBuilderForValidRLEBlock above.
