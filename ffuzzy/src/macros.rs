@@ -58,8 +58,10 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 macro_rules! invariant_impl {
     ($expr: expr) => {
         cfg_if::cfg_if! {
-            if #[cfg(all(feature = "unsafe", feature = "unstable", not(test)))] {
-                core::hint::assert_unchecked($expr);
+            if #[cfg(all(feature = "unsafe", ffuzzy_assume = "stable", not(test)))] {
+                #[allow(clippy::incompatible_msrv)] {
+                    core::hint::assert_unchecked($expr);
+                }
             }
             else if #[cfg(all(feature = "unsafe", not(test)))] {
                 if !($expr) {

@@ -12,7 +12,6 @@
 #![cfg_attr(feature = "unstable", feature(coverage_attribute))]
 #![cfg_attr(feature = "unstable", feature(doc_cfg))]
 #![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "unstable", feature(hint_assert_unchecked))]
 #![cfg_attr(feature = "unstable", feature(trusted_len))]
 // In the code maintenance mode, disallow all warnings.
 #![cfg_attr(feature = "maint-code", deny(warnings))]

@@ -45,6 +45,24 @@ fn main() {
         println!("cargo:rustc-cfg=ffuzzy_div_ceil=\"fallback\"");
     }
 
+    // Method: core::hint::assert_unchecked
+    // assert_unchecked: 1.77-1.80 (not used; instead using our own fallback)
+    // assert_unchecked: 1.81-
+    println!(
+        "cargo:rustc-check-cfg=cfg(\
+            ffuzzy_assume, \
+            values(\
+                \"stable\", \
+                \"fallback\"\
+            )\
+        )"
+    );
+    if rustc::is_min_version("1.81.0").unwrap_or(false) {
+        println!("cargo:rustc-cfg=ffuzzy_assume=\"stable\"");
+    } else {
+        println!("cargo:rustc-cfg=ffuzzy_assume=\"fallback\"");
+    }
+
     // Other cfgs (rustc-check-cfg)
     println!("cargo:rustc-check-cfg=cfg(ffuzzy_tests_without_debug_assertions)");
 }
