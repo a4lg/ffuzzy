@@ -1037,14 +1037,7 @@ where
                 &self.blockhash2,
                 self.len_blockhash2,
             );
-            // grcov-excl-start
-            // grcov-excl-br-start
-            if cfg!(debug_assertions) {
-                i += self.len_blockhash2 as usize;
-                debug_assert_eq!(i, len_in_str);
-            }
-            // grcov-excl-br-stop
-            // grcov-excl-stop
+            debug_assert!(i + self.len_blockhash2 as usize == len_in_str);
         }
         Ok(len_in_str)
     }
