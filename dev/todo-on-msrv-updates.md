@@ -40,7 +40,7 @@ version (MSRV), which we only expect stable features.
 ## 1.81.0
 
 *   Replace `std::error::Error` (or `core::error::Error` on `unstable`)
-    to `core::error::Error` (now `std` trait is a re-report of `core`).
+    to `core::error::Error` (now `std` trait is a re-export of `core`).
     The only exception would be `GeneratorOrIOError`, that is truly
     `std`-specific.
 *   Remove fallback path of internal `invariant!` macro.
