@@ -33,11 +33,11 @@ version (MSRV), which we only expect stable features.
 *   Remove `crate::hash_dual::private::const_asserts::div_ceil` and
     replace to `usize::div_ceil`.
 
-## 1.80.0 (Beta)
+## 1.80.0
 
 *   Start to use exclusive range patterns.
 
-## 1.81.0 (Nightly)
+## 1.81.0
 
 *   Replace `std::error::Error` (or `core::error::Error` on `unstable`)
     to `core::error::Error` (now `std` trait is a re-report of `core`).
