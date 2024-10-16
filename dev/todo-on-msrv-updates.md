@@ -43,3 +43,4 @@ version (MSRV), which we only expect stable features.
     to `core::error::Error` (now `std` trait is a re-report of `core`).
     The only exception would be `GeneratorOrIOError`, that is truly
     `std`-specific.
+*   Remove fallback path of internal `invariant!` macro.
