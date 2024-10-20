@@ -83,6 +83,7 @@ pub(crate) use invariant_impl as invariant;
 macro_rules! impl_error_impl {
     ($type:ty { $($tokens:tt)* }) => {
         #[cfg(feature = "std")]
+        #[cfg_attr(feature = "unstable", doc(cfg(all())))]
         impl std::error::Error for $type {
             $($tokens)*
         }
