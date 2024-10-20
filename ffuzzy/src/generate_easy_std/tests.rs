@@ -67,7 +67,7 @@ fn hash_file_not_exist() {
     }
 }
 
-#[cfg(unix)]
+#[cfg(all(unix, ffuzzy_os_fd = "stable"))]
 #[test]
 fn hash_file_too_large() {
     fn test_body_ignore_os_errors() -> Result<(), std::io::Error> {

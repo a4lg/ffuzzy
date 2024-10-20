@@ -7,6 +7,20 @@ fn main() {
     // Avoid unnecessary rebuilding.
     println!("cargo:rerun-if-changed=build.rs");
 
+    // Module: std::os::fd
+    //  available: 1.66- (stable)
+    println!(
+        "cargo:rustc-check-cfg=cfg(\
+            ffuzzy_os_fd, \
+            values(\
+                \"stable\"\
+            )\
+        )"
+    );
+    if rustc::is_min_version("1.66.0").unwrap_or(false) {
+        println!("cargo:rustc-cfg=ffuzzy_os_fd=\"stable\"");
+    }
+
     // Method: {Integer}::ilog2
     //  log2: 1.55-1.64 (not used; instead using our own fallback)
     // ilog2: 1.65-1.66 (not used; instead using our own fallback)

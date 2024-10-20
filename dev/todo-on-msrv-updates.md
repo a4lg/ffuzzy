@@ -24,6 +24,10 @@ version (MSRV), which we only expect stable features.
 *   Remove unconditional `#[allow(unknown_lints)]`
     (that is a workaround for lint handling bug on Rust -1.62).
 
+## 1.66.0
+
+*   Assume that `std::io::fd` is always available on Unix.
+
 ## 1.67.0
 
 *   Remove `crate::utils::u64_ilog2` and replace to `u64::ilog2`.
