@@ -265,7 +265,7 @@ pub mod parser_state;
 ///         rounding-related one).
 ///
 ///     3.  For [small block sizes](crate::compare::FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER),
-///         [cap the score to prevent exaggerating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+///         [cap the score to prevent exaggerating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()).
 ///
 /// 3.  Take the maximum of sub-similarity scores
 ///     (`0` if there's no sub-similarity scores
