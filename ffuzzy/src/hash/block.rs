@@ -709,6 +709,25 @@ mod const_asserts {
 
     // For block_hash::NumericWindows
     const_assert!(block_hash::MIN_LCS_FOR_COMPARISON > 0);
+
+    // NumericWindows must have a valid bit width.
+    // It must be *less than* 64 because we use bit shift with that width.
+    const_assert!(block_hash::NumericWindows::BITS < u64::BITS);
+
+    // IndexWindows must have a valid total bit width.
+    // It must be *less than* 64 because we use bit shift with that width.
+    const_assert!(block_hash::IndexWindows::BITS < u64::BITS);
+
+    // IndexWindows must have a valid block size bit width.
+    // It must be *less than* 64 because we use bit shift with that width.
+    //
+    // It must also be capable of storing numbers up to NUM_VALID because
+    // IndexWindows represents a window of a block hash
+    // (and NUM_VALID may be valid here).
+    const_assert!(block_hash::IndexWindows::BLOCK_SIZE_BITS < u64::BITS);
+    const_assert!(
+        (block_size::NUM_VALID as u64) < (1 << block_hash::IndexWindows::BLOCK_SIZE_BITS)
+    );
 }
 
 mod tests;
