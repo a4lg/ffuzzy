@@ -23,12 +23,12 @@ cfg-if = "1.0.0"
 static_assertions = "1.1.0"
 
 [dev-dependencies]
-glob = "0.3.1"
+glob = "0.3.2"
 itertools = "0.13.0"
 
 [target.'cfg(unix)'.dev-dependencies]
-libc = "0.2.161"
-tempfile = "=3.6.0"  # Keep MSRV <= 1.56
+libc = "=0.2.163"  # Keep MSRV <= 1.56 as possible
+tempfile = "=3.6.0"  # Keep MSRV <= 1.56 as possible
 
 [build-dependencies]
 version_check = "0.9"
