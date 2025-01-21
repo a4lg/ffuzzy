@@ -707,7 +707,7 @@ mod const_asserts {
     const_assert!((block_size::MIN as u64) << (block_size::NUM_VALID - 1) <= u32::MAX as u64);
     const_assert!((block_size::MIN as u64) << block_size::NUM_VALID > u32::MAX as u64);
 
-    // For block_hash::NumericWindow
+    // For block_hash::NumericWindows
     const_assert!(block_hash::MIN_LCS_FOR_COMPARISON > 0);
 }
 
