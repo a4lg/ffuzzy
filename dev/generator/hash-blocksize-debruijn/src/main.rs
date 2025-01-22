@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 use std::process;
 
@@ -36,7 +36,7 @@ fn main() {
                 }
                 print!(" 0x{:02x},", table[j]);
                 if j % 8 == 7 || j == table.len() - 1 {
-                    println!("");
+                    println!();
                 }
             }
             println!("];");
