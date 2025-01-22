@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Block size handlings and block hash parameters / utilities.
 
@@ -578,7 +578,7 @@ pub mod block_hash {
     }
 
     impl ExactSizeIterator for IndexWindows<'_> {
-        #[inline]
+        #[inline(always)]
         fn len(&self) -> usize {
             self.inner.len()
         }
