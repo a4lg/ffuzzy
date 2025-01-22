@@ -159,7 +159,7 @@ impl FuzzyHashCompareTarget {
     /// This is proven by Z3 and (partially) Coq in the source code:
     /// *   Z3 + Python:  
     ///     `dev/prover/compare/blocksize_capping_theorem.py`
-    /// *   Coq (uses existing ceiling function instead of `(a + b - 1) / b`):  
+    /// *   Coq:  
     ///     `dev/prover/compare/blocksize_capping_theorem.v`
     ///
     /// ## The Minimum Score Cap
