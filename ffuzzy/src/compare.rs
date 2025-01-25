@@ -535,9 +535,11 @@ impl FuzzyHashCompareTarget {
         debug_assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
         debug_assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u8);
         debug_assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u8);
-        let _max_distance = len_block_hash_lhs as u32 + len_block_hash_rhs as u32
-            - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32;
-        debug_assert!(edit_distance <= _max_distance);
+        debug_assert!(
+            edit_distance
+                <= (len_block_hash_lhs as u32 + len_block_hash_rhs as u32
+                    - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32)
+        );
         optionally_unsafe! {
             // rustc/LLVM cannot prove that
             // (len_block_hash_lhs + len_block_hash_rhs)
@@ -647,9 +649,11 @@ impl FuzzyHashCompareTarget {
         assert!(len_block_hash_rhs >= block_hash::MIN_LCS_FOR_COMPARISON as u8);
         assert!(len_block_hash_lhs <= block_hash::FULL_SIZE as u8);
         assert!(len_block_hash_rhs <= block_hash::FULL_SIZE as u8);
-        let _max_distance = len_block_hash_lhs as u32 + len_block_hash_rhs as u32
-            - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32;
-        assert!(edit_distance <= _max_distance);
+        assert!(
+            edit_distance
+                <= (len_block_hash_lhs as u32 + len_block_hash_rhs as u32
+                    - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32)
+        );
         Self::raw_score_by_edit_distance_internal(
             len_block_hash_lhs,
             len_block_hash_rhs,
