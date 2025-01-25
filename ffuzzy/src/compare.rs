@@ -156,7 +156,7 @@ impl FuzzyHashCompareTarget {
     /// For all positive integers `a`, `b` and `c`, `a <= b * c` iff
     /// `(a + b - 1) / b <= c` (where `ceil(a/b) == (a + b - 1) / b`).
     ///
-    /// This is proven by Z3 and (partially) Coq in the source code:
+    /// This is proven by Z3 and Coq in the source code:
     /// *   Z3 + Python:  
     ///     `dev/prover/compare/blocksize_capping_theorem.py`
     /// *   Coq:  
