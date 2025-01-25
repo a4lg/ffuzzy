@@ -580,7 +580,8 @@ impl FuzzyHashCompareTarget {
     ///     to perform an edit distance-based comparison (reducing maximum
     ///     possible edit distance by `2 * MIN_LCS_FOR_COMPARISON`).
     ///
-    /// If they are not satisfied, it will return a meaningless score.
+    /// If they are not satisfied, it will at least return a meaningless score
+    /// and will cause a division by zero on the worst case.
     #[cfg(feature = "unchecked")]
     #[allow(unsafe_code)]
     #[inline(always)]
