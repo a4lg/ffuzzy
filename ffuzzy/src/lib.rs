@@ -137,6 +137,18 @@ pub mod constraints {
     };
 }
 
+/// Prelude for convenient uses of this crate.
+///
+/// This module is currently empty but will be heavily used on the next version.
+/// Person who use this crate are recommended to import everything in this prelude.
+///
+/// # Example
+///
+/// ```
+/// use ssdeep::prelude::*;
+/// ```
+pub mod prelude {}
+
 /// The maximum length of the fuzzy hash's string representation
 /// (except the file name part).
 ///
