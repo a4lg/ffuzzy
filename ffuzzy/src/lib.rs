@@ -8,11 +8,16 @@
 // Allow using internal features when use of Nightly Rust features are allowed.
 #![cfg_attr(feature = "unstable", allow(internal_features))]
 // Regular nightly features
-#![cfg_attr(feature = "unstable", feature(core_intrinsics))]
-#![cfg_attr(feature = "unstable", feature(coverage_attribute))]
-#![cfg_attr(feature = "unstable", feature(doc_cfg))]
-#![cfg_attr(feature = "unstable", feature(doc_auto_cfg))]
-#![cfg_attr(feature = "unstable", feature(trusted_len))]
+#![cfg_attr(
+    feature = "unstable",
+    feature(
+        core_intrinsics,
+        coverage_attribute,
+        doc_cfg,
+        doc_auto_cfg,
+        trusted_len
+    )
+)]
 // In the code maintenance mode, disallow all warnings.
 #![cfg_attr(feature = "maint-code", deny(warnings))]
 // unsafe code is *only* allowed on enabling either "unsafe"-like features or
@@ -35,28 +40,26 @@
     deny(unsafe_code)
 )]
 // Non-test code requires documents
-#![cfg_attr(not(test), warn(missing_docs))]
-#![cfg_attr(not(test), warn(clippy::missing_docs_in_private_items))]
-// Unless in the maintenance mode, allow unknown lints.
-#![cfg_attr(not(feature = "maint-lints"), allow(unknown_lints))]
-// Unless in the maintenance mode, allow old lint names.
-#![cfg_attr(not(feature = "maint-lints"), allow(renamed_and_removed_lints))]
-// Tests: allow unused unsafe blocks (invariant! does will not need unsafe
-// on tests but others may need this macro).
-#![cfg_attr(test, allow(unused_unsafe))]
-// Tests: constant (and/or obvious) assertions should be allowed.
-#![cfg_attr(test, allow(clippy::assertions_on_constants))]
-// Tests: obvious +1 and -1 along with comparison should be allowed.
-#![cfg_attr(test, allow(clippy::int_plus_one))]
-// Tests: obvious 1 * n like operations should be allowed.
-#![cfg_attr(test, allow(clippy::identity_op))]
-// Tests: obvious x << 0 like operations should be allowed.
-#![cfg_attr(test, allow(clippy::erasing_op))]
-// Tests: true || x should be allowed.
-#![cfg_attr(test, allow(clippy::overly_complex_bool_expr))]
-#![cfg_attr(test, allow(clippy::logic_bug))]
-// Tests: false || x should be allowed.
-#![cfg_attr(test, allow(clippy::nonminimal_bool))]
+#![cfg_attr(not(test), warn(missing_docs, clippy::missing_docs_in_private_items))]
+// Unless in the maintenance mode, allow unknown lints / old lint names.
+#![cfg_attr(
+    not(feature = "maint-lints"),
+    allow(unknown_lints, renamed_and_removed_lints)
+)]
+// On tests, we allow several types of redundant operations.
+#![cfg_attr(
+    test,
+    allow(
+        unused_unsafe,
+        clippy::assertions_on_constants,
+        clippy::int_plus_one,
+        clippy::identity_op,
+        clippy::erasing_op,
+        clippy::overly_complex_bool_expr,
+        clippy::logic_bug, // renamed to clippy::overly_complex_bool_expr
+        clippy::nonminimal_bool
+    )
+)]
 
 // Import alloc and std only when necessary
 #[cfg(any(feature = "alloc", test, doc))]
