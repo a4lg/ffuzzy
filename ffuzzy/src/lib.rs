@@ -101,6 +101,13 @@ pub use hash::{
 pub use hash_dual::{DualFuzzyHash, FuzzyHashDualData, LongDualFuzzyHash};
 
 /// Module containing internal hash functions.
+///
+/// # Compatibility Notice
+///
+/// This module is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
+#[deprecated]
 pub mod internal_hashes {
     pub use super::generate::{PartialFNVHash, RollingHash};
 }
