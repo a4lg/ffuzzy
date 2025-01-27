@@ -113,6 +113,13 @@ pub mod internal_hashes {
 }
 
 /// Module containing internal efficient block hash implementation.
+///
+/// # Compatibility Notice
+///
+/// This module is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
+#[deprecated]
 pub mod internal_comparison {
     pub use super::compare::position_array::{
         block_hash_position_array_element, BlockHashPositionArray, BlockHashPositionArrayData,

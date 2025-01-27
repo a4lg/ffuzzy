@@ -9,6 +9,12 @@ use crate::macros::{invariant, optionally_unsafe};
 use crate::utils::u64_lsb_ones;
 
 /// A module containing utilities for an element of block hash position array.
+///
+/// # Compatibility Notice
+///
+/// This module is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 pub mod block_hash_position_array_element {
     /// Checks whether a given position array entry has a sequence of the given
     /// length (or longer).
@@ -148,6 +154,12 @@ pub mod block_hash_position_array_element {
 /// *   [`BlockHashPositionArrayImpl`]
 /// *   [`BlockHashPositionArrayImplUnchecked`]
 ///     (when the `unchecked` feature is enabled)
+///
+/// # Compatibility Notice
+///
+/// This trait is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 pub trait BlockHashPositionArrayData {
     /// Returns the raw representation of the block hash position array.
     fn representation(&self) -> &[u64; block_hash::ALPHABET_SIZE];
@@ -370,6 +382,12 @@ impl<T> BlockHashPositionArrayImplInternal for T where T: BlockHashPositionArray
 ///
 /// This trait contains `unsafe` methods and need to comply with constraints
 /// described in each method.
+///
+/// # Compatibility Notice
+///
+/// This trait is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 #[cfg(feature = "unchecked")]
 #[allow(unsafe_code)]
 pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData {
@@ -512,6 +530,12 @@ where
 ///
 /// This trait is automatically implemented for all types implementing
 /// the [`BlockHashPositionArrayData`] trait.
+///
+/// # Compatibility Notice
+///
+/// This trait is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 pub trait BlockHashPositionArrayImpl: BlockHashPositionArrayData {
     /// Compare whether two block hashes are equivalent.
     ///
@@ -792,6 +816,12 @@ impl BlockHashPositionArrayImplMutInternal for BlockHashPositionArrayMutRef<'_> 
 /// See also:
 /// *   [`BlockHashPositionArrayData`]
 /// *   [`BlockHashPositionArrayImpl`]
+///
+/// # Compatibility Notice
+///
+/// This type is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlockHashPositionArray {
     /// The block hash position array representation.
