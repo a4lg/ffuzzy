@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 #![cfg(test)]
+
+use alloc::format;
 
 use crate::compare::FuzzyHashCompareTarget;
 use crate::compare::position_array::{

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 // Separate from README.md to use rustdoc-specific features in docs/readme.md.
 #![doc = include_str!("_docs/readme.md")]
-// no_std
-#![cfg_attr(not(any(test, doc, feature = "std")), no_std)]
+// no_std by default (import alloc and std if necessary)
+#![no_std]
 // Allow using internal features when use of Nightly Rust features are allowed.
 #![cfg_attr(feature = "unstable", allow(internal_features))]
 // Regular nightly features
@@ -58,9 +58,11 @@
 // Tests: false || x should be allowed.
 #![cfg_attr(test, allow(clippy::nonminimal_bool))]
 
-// alloc is required when the "alloc" feature is enabled or testing (including doctests).
+// Import alloc and std only when necessary
 #[cfg(any(feature = "alloc", test, doc))]
 extern crate alloc;
+#[cfg(any(feature = "std", test, doc))]
+extern crate std;
 
 mod base64;
 mod compare;

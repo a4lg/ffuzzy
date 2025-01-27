@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Tests: [`crate::compare_easy`].
 
@@ -7,6 +7,8 @@
 
 use crate::compare_easy::{compare, ParseErrorEither, ParseErrorSide};
 use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
+
+use alloc::format;
 
 #[cfg(all(not(feature = "std"), ffuzzy_error_in_core = "stable"))]
 use core::error::Error;

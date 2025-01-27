@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 //! Dual fuzzy hashes effectively containing both normalized and raw data.
 
-#[cfg(all(feature = "alloc", not(any(test, doc, feature = "std"))))]
+#[cfg(feature = "alloc")]
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;

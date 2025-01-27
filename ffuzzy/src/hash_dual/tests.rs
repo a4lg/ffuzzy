@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Tests: [`crate::hash_dual`].
 
 #![cfg(test)]
 
 use core::cmp::Ordering;
+
+use alloc::format;
+use alloc::string::ToString;
+use alloc::vec;
+use alloc::vec::Vec;
 use std::collections::HashSet;
 
 use crate::hash::FuzzyHashData;

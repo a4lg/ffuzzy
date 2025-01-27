@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Tests: [`crate::generate_easy_std`].
 
 #![cfg(test)]
 
 use super::{hash_file, hash_stream, hash_stream_common, GeneratorOrIOError};
+
+use alloc::format;
 
 use std::error::Error;
 use std::fs::File;

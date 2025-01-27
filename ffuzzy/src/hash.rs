@@ -5,7 +5,7 @@
 
 //! Basic fuzzy hash structure.
 
-#[cfg(all(feature = "alloc", not(any(test, doc, feature = "std"))))]
+#[cfg(feature = "alloc")]
 use alloc::string::String;
 
 use crate::base64::BASE64_TABLE_U8;
