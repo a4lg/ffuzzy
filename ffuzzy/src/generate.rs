@@ -513,24 +513,18 @@ pub(crate) struct GeneratorInnerData {
 ///
 /// // Update the internal state of the generator.
 /// // Of course, you can update multiple times.
-/// if true {
-///     // Option 1: `+=` operator overload
-///     generator += buf1;
-///     generator += buf2;
-///     generator += b'\n';
-/// }
-/// else {
-///     // Option 2: `update()`-family functions
-///     //           (unlike `+=`, iterators are supported)
-///     generator.update(buf1);
-///     generator.update_by_iter((*buf2).into_iter());
-///     generator.update_by_byte(b'\n');
-/// }
+/// generator.update(buf1);
+/// generator.update_by_iter((*buf2).into_iter());
+/// generator.update_by_byte(b'\n');
 ///
 /// // Retrieve the fuzzy hash and convert to the string.
 /// let hash: RawFuzzyHash = generator.finalize().unwrap();
 /// assert_eq!(hash.to_string(), "3:aaX8v:aV");
 /// ```
+///
+/// # Compatibility Notice
+///
+/// `+=` operator is going to be removed in the next major release.
 #[derive(Debug, Clone)]
 pub struct Generator(GeneratorInnerData);
 
