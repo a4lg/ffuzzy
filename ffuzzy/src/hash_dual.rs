@@ -301,16 +301,13 @@ mod private {
     }
 }
 
-/// A trait to constrain RLE block size for given block hash size.
+/// A sealed trait to constrain RLE block size for given block hash size.
 ///
 /// This type is implemented for [`ReconstructionBlockSize`] with
 /// following block hash sizes:
 ///
 /// *   [`block_hash::FULL_SIZE`]
 /// *   [`block_hash::HALF_SIZE`]
-///
-/// Note that this trait is intentionally designed to be non-extensible
-/// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
 ///
 /// # Unstable Trait
 ///

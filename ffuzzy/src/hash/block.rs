@@ -629,15 +629,12 @@ mod private {
     impl SealedBlockHashSizes for BlockHashSizes<{ block_hash::FULL_SIZE }, { block_hash::HALF_SIZE }> {}
 }
 
-/// A trait to constrain block hash size.
+/// A sealed trait to constrain block hash size.
 ///
 /// This type is implemented for [`BlockHashSize`] with following sizes:
 ///
 /// *   [`block_hash::FULL_SIZE`]
 /// *   [`block_hash::HALF_SIZE`]
-///
-/// Note that this trait is intentionally designed to be non-extensible
-/// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
 pub trait ConstrainedBlockHashSize: private::SealedBlockHashSize {
     /// The maximum size of a block hash.
     const SIZE: usize;
@@ -649,15 +646,12 @@ where
     const SIZE: usize = SZ_BH;
 }
 
-/// A trait to constrain block hash sizes.
+/// A sealed trait to constrain block hash sizes.
 ///
 /// This type is implemented for [`BlockHashSizes`] with following sizes:
 ///
 /// *   [`block_hash::FULL_SIZE`] and [`block_hash::FULL_SIZE`]
 /// *   [`block_hash::FULL_SIZE`] and [`block_hash::HALF_SIZE`]
-///
-/// Note that this trait is intentionally designed to be non-extensible
-/// (using the [sealed trait pattern](https://rust-lang.github.io/api-guidelines/future-proofing.html)).
 pub trait ConstrainedBlockHashSizes: private::SealedBlockHashSizes {
     /// The maximum size of the block hash 1.
     const MAX_BLOCK_HASH_SIZE_1: usize;
