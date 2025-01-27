@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 //! Fuzzy hash generator and related states and hashes.
 
@@ -25,6 +25,12 @@ use crate::macros::{invariant, optionally_unsafe};
 /// Since ssdeep only uses the lowest 6 bits of the hash value, it ignores any
 /// higher bits, enabling updating the state table-based (instead of multiply
 /// and xor) unless the `opt-reduce-fnv-table` feature is enabled.
+///
+/// # Compatibility Notice
+///
+/// This type is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PartialFNVHash(u8);
 
@@ -172,6 +178,12 @@ const ROLLING_WINDOW: usize = 7;
 /// Specifically, [`RollingHash`] implements the rolling hash implemented in
 /// ssdeep version 2.13 or later.  This is the first version that officially
 /// supported ≧4GiB files and implemented a true rolling hash function.
+///
+/// # Compatibility Notice
+///
+/// This type is going to be completely private on the next major release.
+/// If you need to experiment with internal hashing functions, just
+/// vendor the source code for your needs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RollingHash {
     /// Current rolling window index.
