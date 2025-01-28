@@ -1,4 +1,4 @@
-# Planned Changes
+# Planned Breaking Changes
 
 This page lists (incomplete) list of planned changes
 on the next major release (most likely version 0.4).
@@ -7,7 +7,7 @@ on the next major release (most likely version 0.4).
 ## Major design change (and `prelude` module)
 
 The next major release will heavily utilize traits and for convenience, you
-will want to import `ssdeep::prelude::*`.
+will want to import [`ssdeep::prelude::*`](crate::prelude).
 
 This module is added in version 0.3.13.
 
@@ -22,7 +22,7 @@ to that edition.
 *   Edition 2024 case: 1.85 (not released yet)
 
 
-## Deprecation of `+=` operator overload
+## Removal of `+=` operator overload
 
 Since it's clear that this operator overload is not helpful enough,
 they are now deprecated and will be removed on the next major release.

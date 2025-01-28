@@ -237,7 +237,7 @@ source code for details).
 
 ## Internal References (For Developers)
 
-*   [Planned Changes](crate::_docs::planned_changes)
+*   [Planned Breaking Changes (most likely in version 0.4)](crate::_docs::planned_changes)
 *   [Compatibility Policy](crate::_docs::compat_policy)
 *   [Compatibility Note about SemVer Violation](crate::_docs::compat_semver_violation)
 *   [Implementation Notes](crate::_docs::internals::impl_notes)
