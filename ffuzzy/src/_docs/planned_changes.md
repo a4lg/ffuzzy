@@ -12,6 +12,27 @@ will want to import [`ssdeep::prelude::*`](crate::prelude).
 This module is added in version 0.3.13.
 
 
+## Removal of the feature `opt-reduce-fnv-table`
+
+This feature is rather subtractive than recommended additive feature rules
+(although not completely against it) and the change is too subtle (memory
+footprint of 4KiB can be easily justified on the environment which ssdeep
+hashes are generated).
+
+So, this feature is going to be removed on the next major release.
+
+It may return in the future when fine-tuning is absolutely necessary in this
+crate (but unlikely; since considered optimal algorithms are *far* better
+than past alternatives).
+
+
+## Removal of the feature: `nightly` (use `unstable` instead)
+
+Currently, the `unstable` feature is preferred to use Nightly Rust features.
+`nightly` is preserved as an alias of `unstable` (although being undocumented)
+but will be removed on the next major release.
+
+
 ## Raising MSRV
 
 Depending on the Rust edition target (we haven't decided yet),
