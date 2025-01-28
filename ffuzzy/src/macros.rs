@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
+// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023–2025
 
 //! Internal macros (mainly to share safe/unsafe code).
 
@@ -43,13 +43,10 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 /// Declare an invariant for optimization.
 ///
 /// When the feature `unsafe` is disabled, it only places [`debug_assert!()`].
-/// If both `unsafe` and `unstable` are enabled, [`core::hint::assert_unchecked()`]
-/// is used (which requires the `hint_assert_unchecked` Rust unstable feature).
-/// If only the `unsafe` feature is enabled,
+/// If `unsafe` is enabled and Rust is new enough to have
+/// [`core::hint::assert_unchecked()`], this hint is used.
+/// If `unsafe` is enabled but Rust is older than the version 1.81,
 /// [`core::hint::unreachable_unchecked()`] is used.
-///
-/// If `unsafe` and `unstable` are enabled, enable unstable
-/// `hint_assert_unchecked` feature.
 ///
 /// Optimization behaviors are disabled on tests.
 ///
