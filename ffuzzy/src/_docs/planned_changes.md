@@ -1,0 +1,52 @@
+# Planned Changes
+
+This page lists (incomplete) list of planned changes
+on the next major release (most likely version 0.4).
+
+
+## Major design change (and `prelude` module)
+
+The next major release will heavily utilize traits and for convenience, you
+will want to import `ssdeep::prelude::*`.
+
+This module is added in version 0.3.13.
+
+
+## Raising MSRV
+
+Depending on the Rust edition target (we haven't decided yet),
+MSRV on the next major release will be raised to the version specific
+to that edition.
+
+*   Edition 2021 case: at least 1.79 (most likely 1.81)
+*   Edition 2024 case: 1.85 (not released yet)
+
+
+## Deprecation of `+=` operator overload
+
+Since it's clear that this operator overload is not helpful enough,
+they are now deprecated and will be removed on the next major release.
+
+
+## Going to be Private: Internal Hashes / Comparison Structures
+
+They were useful to experiment with ssdeep internals but we could not justify
+keeping them public.  If you need to use those, just vendor the source code
+for your needs (they are relatively simple and will be easy to vendor them).
+
+For specific needs, a comparison target storing just one block hash (instead of
+two block hashes) will be public as a new type.
+
+
+## Stabilization of RLE-based compression in dual fuzzy hashes
+
+We found no issues on dual fuzzy hashes and recognized that separately storing
+"reverse normalization" data is helpful on some cases.
+
+So, the next major release will stabilize currently internal RLE-based
+compression used by dual fuzzy hashes.
+
+Also, we will attempt to reduce memory footprint and if (and only if) we are
+sure that this is performant enough (considering the use cases), the compression
+ratio will be improved from ≒5/8 to ≒1/2(=4/8) (compared to both normalized
+and raw hashes).

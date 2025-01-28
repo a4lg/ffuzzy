@@ -5,3 +5,4 @@
 pub mod compat_policy;
 pub mod compat_semver_violation;
 pub mod internals;
+pub mod planned_changes;
