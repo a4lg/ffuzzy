@@ -22,8 +22,8 @@ compression used by dual fuzzy hashes.
 
 Also, we will attempt to reduce memory footprint and if (and only if) we are
 sure that this is performant enough (considering the use cases), the compression
-ratio will be improved from ≒5/8 to ≒1/2(=4/8) (compared to both normalized
-and raw hashes).
+ratio will be improved from ≒5/8 to ≒1/2(=4/8) (with the exact same size as the
+one fuzzy hash, it will be able to represent both normalized and raw contents).
 
 
 ## MSRV
