@@ -4,6 +4,7 @@
 //! Test utilities.
 
 #![cfg(any(test, doc))]
+#![cfg_attr(feature = "unstable", doc(cfg(test)))]
 
 /// Check whether two slices are completely the same, including the address
 /// they are pointing.
