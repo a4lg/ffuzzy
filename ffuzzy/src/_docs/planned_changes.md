@@ -59,6 +59,12 @@ Currently, the `unstable` feature is preferred to use Nightly Rust features.
 `nightly` is preserved as an alias of `unstable` (although being undocumented)
 but will be removed on the next major release.
 
+### Removal of `tests-very-slow`
+
+Since commit `96dfea7d4fd5` (a part of version 0.3.1), `tests-very-slow` was
+empty for a long time.  Since there's no very time-consuming (hours-taking)
+tests, this feature is going to be removed.
+
 
 ## Removal (because of being deprecated)
 
