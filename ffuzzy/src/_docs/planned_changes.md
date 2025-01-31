@@ -68,6 +68,20 @@ Since it's clear that this operator overload is not helpful enough,
 they are now deprecated and will be removed on the next major release.
 
 
+## Removal (temporally)
+
+### Numeric windows
+
+[`crate::block_hash::NumericWindows`] is going to be removed temporally.
+
+This is because the iterator which iterates more natural index values:
+[`crate::block_hash::IndexWindows`] is there (note that how to access this kind
+of iterator will change in an incompatible way).
+
+[`crate::block_hash::NumericWindows`] will be back if removing it
+can be a problem for some use cases.
+
+
 ## Going to be Private: Internal Hashes / Comparison Structures
 
 They were useful to experiment with ssdeep internals but we could not justify
