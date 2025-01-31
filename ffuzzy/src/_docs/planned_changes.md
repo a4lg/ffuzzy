@@ -12,7 +12,35 @@ will want to import [`ssdeep::prelude::*`](crate::prelude).
 This module is added in version 0.3.13.
 
 
-## Removal of the feature `opt-reduce-fnv-table`
+## Stabilization of RLE-based compression in dual fuzzy hashes
+
+We found no issues on dual fuzzy hashes and recognized that separately storing
+"reverse normalization" data is helpful on some cases.
+
+So, the next major release will stabilize currently internal RLE-based
+compression used by dual fuzzy hashes.
+
+Also, we will attempt to reduce memory footprint and if (and only if) we are
+sure that this is performant enough (considering the use cases), the compression
+ratio will be improved from ≒5/8 to ≒1/2(=4/8) (compared to both normalized
+and raw hashes).
+
+
+## MSRV
+
+Depending on the Rust edition target (we haven't decided yet),
+MSRV on the next major release will be raised to the version specific
+to that edition.
+
+*   Edition 2021 case: at least 1.79 (most likely 1.81)  
+    Rust 1.79's associated type bounds feature makes our new trait-based design
+    far more easier.
+*   Edition 2024 case: 1.85 (not released yet)
+
+
+## Features
+
+### Removal of `opt-reduce-fnv-table`
 
 This feature is rather subtractive than recommended additive feature rules
 (although not completely against it) and the change is too subtle (memory
@@ -25,27 +53,16 @@ It may return in the future when fine-tuning is absolutely necessary in this
 crate (but unlikely; since considered optimal algorithms are *far* better
 than past alternatives).
 
-
-## Removal of the feature: `nightly` (use `unstable` instead)
+### Removal of `nightly` (use `unstable` instead)
 
 Currently, the `unstable` feature is preferred to use Nightly Rust features.
 `nightly` is preserved as an alias of `unstable` (although being undocumented)
 but will be removed on the next major release.
 
 
-## Raising MSRV
+## Removal (because of being deprecated)
 
-Depending on the Rust edition target (we haven't decided yet),
-MSRV on the next major release will be raised to the version specific
-to that edition.
-
-*   Edition 2021 case: at least 1.79 (most likely 1.81)  
-    Rust 1.79's associated type bounds feature makes our new trait-based design
-    far more easier.
-*   Edition 2024 case: 1.85 (not released yet)
-
-
-## Removal of `+=` operator overload
+### `+=` operator overloads
 
 Since it's clear that this operator overload is not helpful enough,
 they are now deprecated and will be removed on the next major release.
@@ -59,17 +76,3 @@ for your needs (they are relatively simple and will be easy to vendor them).
 
 For specific needs, a comparison target storing just one block hash (instead of
 two block hashes) will be public as a new type.
-
-
-## Stabilization of RLE-based compression in dual fuzzy hashes
-
-We found no issues on dual fuzzy hashes and recognized that separately storing
-"reverse normalization" data is helpful on some cases.
-
-So, the next major release will stabilize currently internal RLE-based
-compression used by dual fuzzy hashes.
-
-Also, we will attempt to reduce memory footprint and if (and only if) we are
-sure that this is performant enough (considering the use cases), the compression
-ratio will be improved from ≒5/8 to ≒1/2(=4/8) (compared to both normalized
-and raw hashes).
