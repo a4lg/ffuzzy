@@ -33,15 +33,13 @@ macro_rules! assert_fits_in_impl {
 #[doc(alias = "test_for_each_type")]
 macro_rules! test_for_each_type_impl {
     ($test: ident, []) => {};
-    ($test: ident, [$ty: ty$(,)?]) => {
-        loop {
-            $test!($ty);
-            break;
-        }
-    };
-    ($test: ident, [$ty: ty, $($rest: ty),+$(,)?]) => {
-        $crate::test_utils::test_for_each_type!($test, [$ty]);
-        $crate::test_utils::test_for_each_type!($test, [$($rest),+]);
+    ($test: ident, [$($ty: ty),+ $(,)?]) => {
+        $(
+            loop {
+                $test!($ty);
+                break;
+            }
+        )+
     };
 }
 
