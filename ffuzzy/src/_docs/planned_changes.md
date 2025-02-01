@@ -97,6 +97,14 @@ of iterator will change in an incompatible way).
 can be a problem for some use cases.
 
 
+## Removal (for other reasons)
+
+[`crate::FuzzyHashData::IS_NORMALIZED_FORM`] and
+[`crate::FuzzyHashData::IS_LONG_FORM`] will be removed because of consistency
+issues on the new trait-based design (it's easy to keep those but traits will
+not have easy access to them) and because we have alternative workarounds.
+
+
 ## Going to be Private: Internal Hashes / Comparison Structures
 
 They were useful to experiment with ssdeep internals but we could not justify
