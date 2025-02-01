@@ -6,10 +6,10 @@ on the next major release (most likely version 0.4).
 
 ## Major design change (and `prelude` module)
 
-The next major release will heavily utilize traits and for convenience, you
-will want to import [`ssdeep::prelude::*`](crate::prelude).
+Since the next major release will heavily utilize traits and for better
+ergonomics, you will want to import [`ssdeep::prelude::*`](crate::prelude).
 
-This module is added in version 0.3.13.
+This module is added (as an empty module) in version 0.3.13 for transition.
 
 
 ## Stabilization of RLE-based compression in dual fuzzy hashes
