@@ -5,7 +5,7 @@
 
 #![cfg(test)]
 
-use super::{assert_fits_in, eq_slice_buf, test_for_each_type, test_recommended_default};
+use super::{assert_fits_in, eq_slice_buf, test_recommended_default};
 
 #[test]
 fn test_eq_slice_buf_noteq() {
@@ -55,7 +55,7 @@ fn recommended_default_counterexample() {
 }
 
 mod test_for_each_type {
-    use super::*;
+    use crate::test_utils::test_for_each_type;
 
     struct TestTargetType<const IS_OK: bool>;
     impl<const IS_OK: bool> TestTargetType<IS_OK> {
