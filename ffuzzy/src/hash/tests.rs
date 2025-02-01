@@ -35,7 +35,7 @@ use crate::test_utils::assert_fits_in;
 
 
 macro_rules! call_for_fuzzy_hash_type {
-    { $test: ident ($($tokens:tt)*) ; } => {
+    { $test: ident ($($tokens: tt)*) ; } => {
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE},  true>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}, false>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE},  true>($($tokens)*);
@@ -44,7 +44,7 @@ macro_rules! call_for_fuzzy_hash_type {
 }
 
 macro_rules! call_for_fuzzy_hash_sizes {
-    { $test: ident ($($tokens:tt)*) ; } => {
+    { $test: ident ($($tokens: tt)*) ; } => {
         $test::<{block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>($($tokens)*);
     };

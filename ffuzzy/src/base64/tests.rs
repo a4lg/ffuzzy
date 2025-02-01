@@ -10,7 +10,7 @@ use super::{base64_index, base64_index_simple, BASE64_INVALID, BASE64_TABLE_U8};
 #[test]
 fn values_and_indices() {
     macro_rules! assert_base64_cases {
-        {[ $($ch:expr),* $(,)? ]} => {
+        {[ $($ch: expr),* $(,)? ]} => {
             let mut idx = 0usize;
             $(
                 assert!(idx < 64);

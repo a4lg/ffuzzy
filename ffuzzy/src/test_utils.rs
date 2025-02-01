@@ -24,7 +24,7 @@ macro_rules! assert_fits_in_impl {
     ($expr: expr, $ty: ty) => {
         assert!(<$ty>::try_from($expr).is_ok(), "{} does not fit into {}", stringify!($expr), stringify!($ty))
     };
-    ($expr: expr, $ty: ty, $($arg:tt)+) => {
+    ($expr: expr, $ty: ty, $($arg: tt)+) => {
         assert!(<$ty>::try_from($expr).is_ok(), $($arg)+)
     };
 }

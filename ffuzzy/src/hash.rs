@@ -355,9 +355,9 @@ macro_rules! hash_from_bytes_with_last_index_internal_template_impl {
     (
         $str: expr, $index: expr, $norm: expr,
         $log_blocksize: expr,
-        { $($proc_to_prepare_blockhash1:tt)* }, $proc_to_process_sequence_1: expr,
+        { $($proc_to_prepare_blockhash1: tt)* }, $proc_to_process_sequence_1: expr,
         $blockhash1: expr, $len_blockhash1: expr,
-        { $($proc_to_prepare_blockhash2:tt)* }, $proc_to_process_sequence_2: expr,
+        { $($proc_to_prepare_blockhash2: tt)* }, $proc_to_process_sequence_2: expr,
         $blockhash2: expr, $len_blockhash2: expr
     ) => {
         // Parse fuzzy hash

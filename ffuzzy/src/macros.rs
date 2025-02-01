@@ -78,7 +78,7 @@ pub(crate) use invariant_impl as invariant;
 /// This macro is used to implement appropriate [`Error`](std::error::Error)
 /// trait, either in `core` or `std`, depending on the configuration.
 macro_rules! impl_error_impl {
-    ($type:ty { $($tokens:tt)* }) => {
+    ($type: ty { $($tokens: tt)* }) => {
         #[cfg(feature = "std")]
         #[cfg_attr(feature = "unstable", doc(cfg(all())))]
         impl std::error::Error for $type {

@@ -370,7 +370,7 @@ fn data_model_corruption() {
             assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),
                 $fmt, 2, typename);
         };
-        ($ty: ty, $hash: expr, $fmt: literal, $($arg:tt)+) => {
+        ($ty: ty, $hash: expr, $fmt: literal, $($arg: tt)+) => {
             let typename = stringify!($ty);
             assert!(!$hash.is_valid(), $fmt, 1, typename, $($arg)+);
             assert!(format!("{:?}", $hash).starts_with("FuzzyHashDualData { ILL_FORMED: true,"),

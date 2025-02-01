@@ -26,7 +26,7 @@ use crate::test_utils::eq_slice_buf;
 
 
 macro_rules! call_for_block_hash_sizes {
-    { $test: ident ($($tokens:tt)*) ; } => {
+    { $test: ident ($($tokens: tt)*) ; } => {
         $test::<{block_hash::HALF_SIZE}>($($tokens)*);
         $test::<{block_hash::FULL_SIZE}>($($tokens)*);
     };
@@ -120,7 +120,7 @@ fn parse_block_size_from_bytes_patterns() {
     }
     // Test failure cases
     struct ParseBlockSizeFailureCase<'a> { input: &'a str, kind: ParseErrorKind, offset: usize }
-    macro_rules! fail_cases { [ $(($str:literal, $kind:ident, $offset:expr $(,)?)),* $(,)?] => { &[
+    macro_rules! fail_cases { [ $(($str: literal, $kind: ident, $offset: expr $(,)?)),* $(,)?] => { &[
         $(ParseBlockSizeFailureCase { input: $str, kind: ParseErrorKind::$kind, offset: $offset }),*
     ] }}
     const FAIL_CASES: &[ParseBlockSizeFailureCase] = fail_cases![

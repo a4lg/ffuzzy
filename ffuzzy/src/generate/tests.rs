@@ -544,7 +544,7 @@ fn rolling_hash_rolling_inspect_internal_state() {
 }
 
 macro_rules! call_for_generator_finalization {
-    { $test: ident ($($tokens:tt)*) ; } => {
+    { $test: ident ($($tokens: tt)*) ; } => {
         $test::<false, {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<true,  {block_hash::FULL_SIZE}, {block_hash::HALF_SIZE}>($($tokens)*);
         $test::<false, {block_hash::FULL_SIZE}, {block_hash::FULL_SIZE}>($($tokens)*);

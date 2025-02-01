@@ -103,14 +103,14 @@ cfg_if::cfg_if! {
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
         /// [`FuzzyHashCompareTarget::block_hash_2()`].
         macro_rules! compare_target_block_hash_pub_impl {
-            ($a:lifetime) => {
+            ($a: lifetime) => {
                 impl $a + BlockHashPositionArrayImpl
             };
         }
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1_internal()`]
         /// and [`FuzzyHashCompareTarget::block_hash_2_internal()`].
         macro_rules! compare_target_block_hash_priv_impl {
-            ($a:lifetime) => {
+            ($a: lifetime) => {
                 impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
             };
         }
@@ -119,14 +119,14 @@ cfg_if::cfg_if! {
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
         /// [`FuzzyHashCompareTarget::block_hash_2()`].
         macro_rules! compare_target_block_hash_pub_impl {
-            ($a:lifetime) => {
+            ($a: lifetime) => {
                 impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnchecked
             };
         }
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1_internal()`]
         /// and [`FuzzyHashCompareTarget::block_hash_2_internal()`].
         macro_rules! compare_target_block_hash_priv_impl {
-            ($a:lifetime) => {
+            ($a: lifetime) => {
                 impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplUnchecked + BlockHashPositionArrayImplInternal
             };
         }
