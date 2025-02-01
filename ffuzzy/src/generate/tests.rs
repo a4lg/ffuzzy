@@ -103,7 +103,7 @@ fn usage() {
     assert_eq!(generator.finalize().unwrap(), expected_hash);
     // Update function 2: update_by_iter
     let mut generator = Generator::new();
-    generator.update_by_iter(STR.iter().cloned());
+    generator.update_by_iter(STR.iter().copied());
     assert_eq!(generator.finalize().unwrap(), expected_hash);
     // Update function 3: update
     let mut generator = Generator::new();
@@ -125,7 +125,7 @@ fn usage() {
     let p1 = &generator as *const Generator;
     let generator_out = generator
         .update(b"Hello, ")
-        .update_by_iter(b"World!".iter().cloned())
+        .update_by_iter(b"World!".iter().copied())
         .update_by_byte(b'\n');
     let p2 = generator_out as *const Generator;
     assert_eq!(p1, p2); // check if we are operating with the same object.
@@ -279,7 +279,7 @@ fn length_mismatches() {
         generator.set_fixed_input_size_in_usize(STR.len() - 1),
         Ok(())
     );
-    generator.update_by_iter(STR.iter().cloned());
+    generator.update_by_iter(STR.iter().copied());
     assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
     // Error occurs on finalization.
@@ -289,7 +289,7 @@ fn length_mismatches() {
     // Use update_by_iter (and use the correct size)
     generator.reset();
     assert_eq!(generator.set_fixed_input_size_in_usize(STR.len()), Ok(()));
-    generator.update_by_iter(STR.iter().cloned());
+    generator.update_by_iter(STR.iter().copied());
     assert_eq!(generator.input_size(), STR.len() as u64);
     assert!(generator.may_warn_about_small_input_size());
     // No errors occur on finalization.
@@ -365,7 +365,7 @@ fn large_data_triggers_1() {
     generator1.update(&last_bytes[0..(7 * 64)]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter(last_bytes[0..(7 * 64)].iter().cloned());
+    generator2.update_by_iter(last_bytes[0..(7 * 64)].iter().copied());
     // Use update_by_byte
     let mut generator3 = generator_base.clone();
     for &ch in last_bytes[0..(7 * 64)].iter() {
@@ -421,7 +421,7 @@ fn large_data_triggers_1() {
     generator1.update(&last_bytes[..]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter(last_bytes.iter().cloned());
+    generator2.update_by_iter(last_bytes.iter().copied());
     // Use update_by_byte
     let mut generator3 = generator_base;
     for &ch in last_bytes.iter() {
@@ -490,7 +490,7 @@ fn large_data_triggers_2() {
     generator1.update(&[0, 0]);
     // Use update_by_iter
     let mut generator2 = generator_base.clone();
-    generator2.update_by_iter([0, 0].iter().cloned());
+    generator2.update_by_iter([0, 0].iter().copied());
     // Use update_by_byte
     let mut generator3 = generator_base;
     generator3.update_by_byte(0);
@@ -646,7 +646,7 @@ fn verify_with_small_precomputed_vectors() {
                     &fuzzy_expected_trunc,
                 );
                 generator.reset();
-                generator.update_by_iter(contents.iter().cloned());
+                generator.update_by_iter(contents.iter().copied());
                 check_results(
                     filename,
                     &generator,
@@ -761,7 +761,7 @@ fn verify_with_small_precomputed_vectors() {
                     &fuzzy_expected_trunc,
                 );
                 generator.reset();
-                generator.update_by_iter(contents.iter().cloned());
+                generator.update_by_iter(contents.iter().copied());
                 check_results(
                     filename,
                     &generator,

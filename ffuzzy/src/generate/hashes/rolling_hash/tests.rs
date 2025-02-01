@@ -30,7 +30,7 @@ fn usage() {
     assert_eq!(hash.value(), EXPECTED_HASH);
     // Update function 2: update_by_iter
     let mut hash = RollingHash::new();
-    hash.update_by_iter(STR.iter().cloned());
+    hash.update_by_iter(STR.iter().copied());
     assert_eq!(hash.value(), EXPECTED_HASH);
     // Update function 3: update
     let mut hash = RollingHash::new();
@@ -53,7 +53,7 @@ fn usage() {
     let p1 = &hash as *const RollingHash;
     let h = hash
         .update(b"Hello, ")
-        .update_by_iter(b"World!".iter().cloned())
+        .update_by_iter(b"World!".iter().copied())
         .update_by_byte(b'\n');
     let p2 = h as *const RollingHash;
     assert_eq!(p1, p2); // check if we are operating with the same object.

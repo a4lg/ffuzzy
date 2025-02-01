@@ -25,7 +25,7 @@ fn test_zero_data_period() {
     // with the `opt-reduce-fnv-table` feature
     // (remove this repetition on the next major release).
     for _ in 0..((256 + ZERO_DATA_PERIOD - 1) / ZERO_DATA_PERIOD) {
-        hash.update_by_iter([0].iter().cloned().cycle().take(ZERO_DATA_PERIOD as usize));
+        hash.update_by_iter([0].iter().copied().cycle().take(ZERO_DATA_PERIOD as usize));
         assert_eq!(initial_hash.value(), hash.value());
     }
 }

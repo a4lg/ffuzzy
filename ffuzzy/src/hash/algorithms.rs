@@ -298,9 +298,9 @@ where
     let mut raw_ch: Option<u8>;
     cfg_if::cfg_if! {
         if #[cfg(feature = "strict-parser")] {
-            let mut iter = bytes.iter().cloned().take(N);
+            let mut iter = bytes.iter().copied().take(N);
         } else {
-            let mut iter = bytes.iter().cloned();
+            let mut iter = bytes.iter().copied();
         }
     }
     #[cfg_attr(not(feature = "strict-parser"), allow(unused_variables))]
@@ -356,7 +356,7 @@ where
         optionally_unsafe! {
             invariant!(index <= bytes.len());
         }
-        raw_ch = bytes[index..].iter().cloned().next(); // grcov-excl-br-line:ARRAY
+        raw_ch = bytes[index..].iter().copied().next(); // grcov-excl-br-line:ARRAY
     }
     if normalize && seq == block_hash::MAX_SEQUENCE_SIZE {
         let len = index - seq_start_in;

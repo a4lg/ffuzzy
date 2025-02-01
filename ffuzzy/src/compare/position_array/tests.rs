@@ -455,7 +455,7 @@ fn check_substring_fail_example(wrapper: &mut impl FnMut(&[u8], &mut dyn FnMut(&
     #[cfg(feature = "std")]
     {
         let alphabets =
-            std::collections::HashSet::<u8>::from_iter(STR1.iter().cloned());
+            std::collections::HashSet::<u8>::from_iter(STR1.iter().copied());
         assert!(STR2.iter().all(|x| alphabets.contains(x)));
     }
     // Test has_common_substring failure

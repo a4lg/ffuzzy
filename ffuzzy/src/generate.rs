@@ -647,7 +647,7 @@ impl Generator {
             // grcov-excl-stop
         };
         // grcov-generator-start
-        generator_update_template!(self.0, buffer.iter().cloned(), {});
+        generator_update_template!(self.0, buffer.iter().copied(), {});
         // grcov-generator-stop
         self
     }

@@ -1231,7 +1231,7 @@ where
                     .entries(
                         self.block
                             .iter()
-                            .cloned()
+                            .copied()
                             .filter(|x| *x != rle_encoding::TERMINATOR)
                             .map(DebugBuilderForRLEBlockEntry),
                     )
@@ -1243,7 +1243,7 @@ where
                 // Don't filter zeroes when invalid,
                 // unlike DebugBuilderForValidRLEBlock above.
                 f.debug_list()
-                    .entries(self.block.iter().cloned().map(DebugBuilderForRLEBlockEntry))
+                    .entries(self.block.iter().copied().map(DebugBuilderForRLEBlockEntry))
                     .finish()
             }
         }

@@ -72,7 +72,7 @@ fn usage() {
     assert_eq!(hash.value(), EXPECTED_HASH);
     // Update function 2: update_by_iter
     let mut hash = PartialFNVHash::new();
-    hash.update_by_iter(STR.iter().cloned());
+    hash.update_by_iter(STR.iter().copied());
     assert_eq!(hash.value(), EXPECTED_HASH);
     // Update function 3: update
     let mut hash = PartialFNVHash::new();
@@ -95,7 +95,7 @@ fn usage() {
     let p1 = &hash as *const PartialFNVHash;
     let h = hash
         .update(b"Hello, ")
-        .update_by_iter(b"World!".iter().cloned())
+        .update_by_iter(b"World!".iter().copied())
         .update_by_byte(b'\n');
     let p2 = h as *const PartialFNVHash;
     assert_eq!(p1, p2); // check if we are operating with the same object.
@@ -131,7 +131,7 @@ fn regular_fnv1_test_vectors() {
         // Test update_by_iter
         hash.0 = (FNV1_INIT % (1 << 6)) as u8;
         for _ in 0..repetition {
-            hash.update_by_iter(buf.iter().cloned());
+            hash.update_by_iter(buf.iter().copied());
         }
         assert_eq!(hash.value(), (expected_value % (1 << 6)) as u8);
         // Test update
