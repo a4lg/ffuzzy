@@ -324,10 +324,7 @@ fn test_make_generator_with_prefix_zeroes() {
             generator1.update_by_byte(0);
         }
         let generator2 = make_generator_with_prefix_zeroes(prefix_size);
-        // Because the Generator object intentionally lacks the implementation
-        // of PartialEq, we'll need to format using the Debug trait.
-        //
-        // Also, we need to disable this test when the feature
+        // We need to disable this test when the feature
         // `opt-reduce-fnv-table` is enabled because it will have different
         // internal representation inside PartialFNVHash (masked by low 8 bits,
         // not 6 bits as expected in this test).
