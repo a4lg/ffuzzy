@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
 // SPDX-FileCopyrightText: Copyright (C) 2013 Helmut Grohne <helmut@subdivi.de>
-// SPDX-FileCopyrightText: Copyright (C) 2017, 2023 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2017, 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 /*
     This is the alternative `update()` method to test branch coverage.
-    *   based on the commit a48ac05eb03781d88c768c71e47f51e17616bd42
+    *   based on the commit 0724f45a2e0505a89e9b88a02c5548480ce9d355
     *   no "unsafe" feature
     *   macros expanded and modified slightly
         (for clear indication of branches)
@@ -24,7 +24,7 @@
                 // grcov-excl-stop
             };
         let mut _bh: &mut BlockHashContext;
-        for ch in buffer.iter().cloned() {
+        for ch in buffer.iter().copied() {
             self.roll_hash.update_by_byte(ch);
             if self.is_last {
                 self.h_last.update_by_byte(ch);
