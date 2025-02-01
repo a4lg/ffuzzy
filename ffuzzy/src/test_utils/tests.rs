@@ -8,7 +8,7 @@
 use super::{assert_fits_in, eq_slice_buf, test_recommended_default};
 
 #[test]
-fn test_eq_slice_buf_noteq() {
+fn test_eq_slice_buf_not_eq() {
     const A: &[u8] = b"@ABCDEF@";
     const B: &[u8] = b"_ABCDEF_";
     assert_eq!(&A[1..7], b"ABCDEF");
