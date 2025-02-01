@@ -30,7 +30,7 @@ pub struct RollingHash {
     /// **Performance Analysis:**
     /// Substituting this variable's type to `usize` (more semantically correct)
     /// resulted in some slowdown (~10%).  Keeping this state for now.
-    pub(crate) index: u32,
+    index: u32,
 
     /// Hash component 1.
     ///
@@ -203,3 +203,4 @@ mod const_asserts {
 }
 
 mod tests;
+pub(crate) mod test_utils;

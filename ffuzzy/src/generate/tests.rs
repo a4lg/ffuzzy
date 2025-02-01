@@ -10,14 +10,13 @@ use alloc::format;
 use alloc::vec::Vec;
 use std::println;
 
-use super::{Generator, GeneratorError, PartialFNVHash, RollingHash};
+use super::{Generator, GeneratorError};
 
 use crate::hash::block::{
     block_hash, block_size, BlockHashSize as BHS, BlockHashSizes as BHSs,
     ConstrainedBlockHashSize as CBHS, ConstrainedBlockHashSizes as CBHSs,
 };
 use crate::hash::{FuzzyHashData, LongRawFuzzyHash, RawFuzzyHash};
-use crate::test_utils::assert_fits_in;
 
 macro_rules! call_for_generator_finalization {
     { $test: ident ($($tokens: tt)*) ; } => {
@@ -297,49 +296,24 @@ fn length_mismatches() {
     assert!(generator.finalize().is_ok());
 }
 
-// After processing specified count of zero bytes from the initial state of
-// `PartialFNVHash`, the resulting state is now back to the original one.
-// Note that this will not apply to full FNV-1 hash (only applies to the
-// lowest 6 bits and with a ssdeep-specific initial state).
-const FNV_HASH_ZERO_DATA_PERIOD: u64 = 16;
-
-#[test]
-fn test_fnv_hash_zero_data_period() {
-    let mut hash = PartialFNVHash::new();
-    let initial_value = hash.value();
-    hash.update_by_iter(
-        [0].iter()
-            .cloned()
-            .cycle()
-            .take(FNV_HASH_ZERO_DATA_PERIOD as usize),
-    );
-    let result_value = hash.value();
-    assert_eq!(result_value, initial_value);
-}
-
-#[test]
-fn make_generator_with_prefix_zeroes_prerequisites() {
-    assert_fits_in!(FNV_HASH_ZERO_DATA_PERIOD, usize);
-    assert_fits_in!(RollingHash::WINDOW_SIZE, u64);
-}
-
 // Internal function to generate a Generator object which virtually consumed
 // specific count of zero bytes.
 fn make_generator_with_prefix_zeroes(size: u64) -> Generator {
+    use super::hashes::{partial_fnv, rolling_hash};
     let mut generator = Generator::new();
     generator.0.input_size = size;
-    generator.0.roll_hash.index = (size % (RollingHash::WINDOW_SIZE as u64)) as u32;
-    for _ in 0..(size % FNV_HASH_ZERO_DATA_PERIOD) {
-        generator.0.bh_context[0].h_full.update_by_byte(0);
-        generator.0.bh_context[0].h_half.update_by_byte(0);
-    }
+    generator.0.roll_hash = rolling_hash::test_utils::new_hash_with_prefix_zeroes(size);
+    generator.0.bh_context[0].h_full = partial_fnv::test_utils::new_hash_with_prefix_zeroes(size);
+    generator.0.bh_context[0].h_half = partial_fnv::test_utils::new_hash_with_prefix_zeroes(size);
     generator
 }
 
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
 #[test]
 fn test_make_generator_with_prefix_zeroes() {
-    let max_dense_check_size = FNV_HASH_ZERO_DATA_PERIOD * (RollingHash::WINDOW_SIZE as u64) * 2;
+    use super::hashes::partial_fnv::test_utils::ZERO_DATA_PERIOD;
+    use super::RollingHash;
+    let max_dense_check_size = ZERO_DATA_PERIOD * (RollingHash::WINDOW_SIZE as u64) * 2;
     // Check 0..=max_dense_check_size and sizes 2^n (between 1KiB..1MiB inclusive).
     for prefix_size in (0..=max_dense_check_size).chain((10..=20u32).map(|x| 1u64 << x)) {
         if prefix_size > Generator::MAX_INPUT_SIZE {
