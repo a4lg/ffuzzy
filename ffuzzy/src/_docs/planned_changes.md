@@ -99,12 +99,13 @@ can be a problem for some use cases.
 
 ## Removal (for other reasons)
 
-### `FuzzyHashData::IS_*_FORM`
+### `FuzzyHashData::IS_*_FORM` (and related constants)
 
 [`crate::FuzzyHashData::IS_NORMALIZED_FORM`] and
-[`crate::FuzzyHashData::IS_LONG_FORM`] will be removed because of consistency
-issues on the new trait-based design (it's easy to keep those but traits will
-not have easy access to them) and because we have a workaround.
+[`crate::FuzzyHashData::IS_LONG_FORM`] (and related constants) will be removed
+because of consistency issues on the new trait-based design (it's easy to keep
+those but traits will not have easy access to them) and
+because we have a workaround.
 
 
 ## Going to be Private: Internal Hashes / Comparison Structures
