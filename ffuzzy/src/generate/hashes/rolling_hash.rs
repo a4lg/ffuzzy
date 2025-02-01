@@ -76,7 +76,7 @@ impl RollingHash {
     /// Left shift width of [`h3`](Self::h3) for each byte.
     ///
     /// This is 5 in ssdeep.
-    pub(crate) const H3_LSHIFT: usize = 5;
+    const H3_LSHIFT: usize = 5;
 
     /// Creates a new [`RollingHash`] with the initial value.
     pub fn new() -> Self {
@@ -171,6 +171,35 @@ impl Default for RollingHash {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Constant assertions related to this module.
+#[doc(hidden)]
+mod const_asserts {
+    use static_assertions::const_assert_eq;
+
+    use super::*;
+
+    // Compare with original ssdeep constants
+    // fuzzy.c: ROLLING_WINDOW
+    const_assert_eq!(ROLLING_WINDOW, 7);
+
+    // Consistency between module-local and struct-global one.
+    const_assert_eq!(ROLLING_WINDOW, RollingHash::WINDOW_SIZE);
+
+    // RollingHash::h3 is a rolling component and an input byte
+    // are vanished after processing more RollingHash::WINDOW_SIZE bytes.
+    // grcov-excl-tests-start
+    #[cfg(test)]
+    #[test]
+    fn rolling_hash_h3_shift_amount() {
+        assert!(RollingHash::WINDOW_SIZE
+            .checked_mul(RollingHash::H3_LSHIFT)
+            .and_then(|x| u32::try_from(x).ok())
+            .map(|x| x >= u32::BITS)
+            .unwrap_or(false));
+    }
+    // grcov-excl-tests-stop
 }
 
 mod tests;

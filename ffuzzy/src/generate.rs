@@ -20,7 +20,6 @@ mod hashes;
 
 pub use hashes::partial_fnv::PartialFNVHash;
 pub use hashes::rolling_hash::RollingHash;
-use hashes::rolling_hash::ROLLING_WINDOW;
 
 /// The invalid character for a "not filled" marker.
 const BLOCKHASH_CHAR_NIL: u8 = 0xff;
@@ -952,35 +951,9 @@ mod const_asserts {
     use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
 
     // Compare with original ssdeep constants
-    // fuzzy.c: ROLLING_WINDOW
-    const_assert_eq!(ROLLING_WINDOW, 7);
-    // fuzzy.c: HASH_INIT
-    const_assert_eq!(PartialFNVHash::FNV_HASH_INIT, 0x27);
     // ssdeep.h: SSDEEP_MIN_FILE_SIZE
     // (note that this size is exclusive, unlike inclusive MIN_RECOMMENDED_INPUT_SIZE)
     const_assert_eq!(Generator::MIN_RECOMMENDED_INPUT_SIZE - 1, 4096);
-
-    // ALPHABET_SIZE and FNV_HASH_INIT properties (for PartialFNVHash)
-    const_assert!(0 < block_hash::ALPHABET_SIZE && block_hash::ALPHABET_SIZE <= 256);
-    const_assert!(block_hash::ALPHABET_SIZE.is_power_of_two());
-    const_assert!((PartialFNVHash::FNV_HASH_INIT as u16) < (block_hash::ALPHABET_SIZE as u16));
-
-    // Consistency between module-local and struct-global one.
-    const_assert_eq!(ROLLING_WINDOW, RollingHash::WINDOW_SIZE);
-
-    // RollingHash::h3 is a rolling component and an input byte
-    // are vanished after processing more RollingHash::WINDOW_SIZE bytes.
-    // grcov-excl-tests-start
-    #[cfg(test)]
-    #[test]
-    fn rolling_hash_h3_shift_amount() {
-        assert!(RollingHash::WINDOW_SIZE
-            .checked_mul(RollingHash::H3_LSHIFT)
-            .and_then(|x| u32::try_from(x).ok())
-            .map(|x| x >= u32::BITS)
-            .unwrap_or(false));
-    }
-    // grcov-excl-tests-stop
 
     // BLOCKHASH_CHAR_NIL must be outside any valid characters.
     const_assert!(block_hash::ALPHABET_SIZE <= BLOCKHASH_CHAR_NIL as usize);
