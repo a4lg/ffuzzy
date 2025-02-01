@@ -66,6 +66,15 @@ empty for a long time.  Since there's no very time-consuming (hours-taking)
 tests, this feature is going to be removed.
 
 
+## Coverage: Removing grcov support
+
+The support for grcov is going to be removed in the next major release because
+(along with Nightly compiler) cargo-llvm-cov supports taking a branch coverage
+and required many comments to control grcov behavior because of grcov not
+knowing implicit branches (e.g. when accessing slices, defining struct
+members).
+
+
 ## Removal (because of being deprecated)
 
 ### `+=` operator overloads
