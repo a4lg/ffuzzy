@@ -67,6 +67,7 @@ pub(crate) fn base64_index(ch: u8) -> u8 {
 ///
 /// If `ch` is not a valid Base64 alphabet, [`None`] is returned.
 #[cfg(any(test, doc))]
+#[cfg_attr(feature = "unstable", doc(cfg(test)))]
 #[inline]
 fn base64_index_simple(ch: u8) -> Option<u8> {
     match ch {
