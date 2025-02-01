@@ -5,7 +5,7 @@
 
 #![cfg(test)]
 
-use super::{assert_fits_in, eq_slice_buf, test_recommended_default};
+use super::{eq_slice_buf, test_recommended_default};
 
 #[test]
 fn test_eq_slice_buf_not_eq() {
@@ -142,58 +142,62 @@ mod test_for_each_type {
     }
 }
 
-#[rustfmt::skip]
-#[test]
-fn assert_fits_in_examples() {
-    // u8: 0..=255
-    assert_fits_in!(  0i32, u8);
-    assert_fits_in!(255u16, u8);
-    assert_fits_in!(255i16, u8);
-    assert_fits_in!(255u32, u8);
-    assert_fits_in!(255i32, u8);
-    assert_fits_in!(255u64, u8);
-    assert_fits_in!(255i64, u8);
-    // i8: (-128)..=127
-    assert_fits_in!( 127i32, i8);
-    assert_fits_in!(   0i32, i8);
-    assert_fits_in!(-128i32, i8);
-}
+mod assert_fits_in {
+    use crate::test_utils::assert_fits_in;
 
-#[test]
-#[should_panic]
-fn assert_fits_in_counterexample_1() {
-    assert_fits_in!(256i32, u8);
-}
-#[test]
-#[should_panic]
-fn assert_fits_in_counterexample_2() {
-    assert_fits_in!(-1i32, u8);
-}
-#[test]
-#[should_panic]
-fn assert_fits_in_counterexample_3() {
-    assert_fits_in!(-129i32, i8);
-}
-#[test]
-#[should_panic]
-fn assert_fits_in_counterexample_4() {
-    assert_fits_in!(128i32, i8);
-}
+    #[rustfmt::skip]
+    #[test]
+    fn examples() {
+        // u8: 0..=255
+        assert_fits_in!(  0i32, u8);
+        assert_fits_in!(255u16, u8);
+        assert_fits_in!(255i16, u8);
+        assert_fits_in!(255u32, u8);
+        assert_fits_in!(255i32, u8);
+        assert_fits_in!(255u64, u8);
+        assert_fits_in!(255i64, u8);
+        // i8: (-128)..=127
+        assert_fits_in!( 127i32, i8);
+        assert_fits_in!(   0i32, i8);
+        assert_fits_in!(-128i32, i8);
+    }
 
-#[test]
-fn assert_fits_in_example_with_msg() {
-    // u8: 0..=255
-    assert_fits_in!(255i32, u8);
-    assert_fits_in!(255i32, u8, "should not fail here!");
-}
+    #[test]
+    #[should_panic]
+    fn counterexample_1() {
+        assert_fits_in!(256i32, u8);
+    }
+    #[test]
+    #[should_panic]
+    fn counterexample_2() {
+        assert_fits_in!(-1i32, u8);
+    }
+    #[test]
+    #[should_panic]
+    fn counterexample_3() {
+        assert_fits_in!(-129i32, i8);
+    }
+    #[test]
+    #[should_panic]
+    fn counterexample_4() {
+        assert_fits_in!(128i32, i8);
+    }
 
-#[test]
-#[should_panic(expected = "255i32 + 1 does not fit into u8")]
-fn assert_fits_in_counterexample_with_msg_1() {
-    assert_fits_in!(255i32 + 1, u8);
-}
-#[test]
-#[should_panic(expected = "test failed with code=256")]
-fn assert_fits_in_counterexample_with_msg_2() {
-    assert_fits_in!(255i32 + 1, u8, "test failed with code={}", 255i32 + 1);
+    #[test]
+    fn example_with_msg() {
+        // u8: 0..=255
+        assert_fits_in!(255i32, u8);
+        assert_fits_in!(255i32, u8, "should not fail here!");
+    }
+
+    #[test]
+    #[should_panic(expected = "255i32 + 1 does not fit into u8")]
+    fn counterexample_with_msg_1() {
+        assert_fits_in!(255i32 + 1, u8);
+    }
+    #[test]
+    #[should_panic(expected = "test failed with code=256")]
+    fn counterexample_with_msg_2() {
+        assert_fits_in!(255i32 + 1, u8, "test failed with code={}", 255i32 + 1);
+    }
 }
