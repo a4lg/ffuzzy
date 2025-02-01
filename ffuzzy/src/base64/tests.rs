@@ -51,7 +51,7 @@ fn invalid_chars() {
         alphabets.insert(ch);
     }
     // If `ch` is not a Base64 alphabet,
-    // base64_index for that `ch` must return None.
+    // base64_index_simple for that `ch` must return None.
     for ch in u8::MIN..=u8::MAX {
         if alphabets.contains(&ch) {
             continue;
