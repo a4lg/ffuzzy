@@ -108,11 +108,12 @@ fn inspect_internal_state_while_rolling() {
     let mut last_bytes = Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
     let mut last_bytes_actual = Vec::<u8>::with_capacity(RollingHash::WINDOW_SIZE);
     last_bytes.extend([0u8].iter().cycle().take(RollingHash::WINDOW_SIZE));
-    // Test with (0..=255) and two more pseudo-random sequences.
+    // Test with (0..=255), two more pseudo-random sequences and some `u8::MAX` bytes.
     let mut hash = RollingHash::new();
     for (pos, ch) in (u8::MIN..=u8::MAX)
         .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0xe3).wrapping_add(0x52)))
         .chain((u8::MIN..=u8::MAX).map(|x| x.wrapping_mul(0x17).wrapping_add(0xe7)))
+        .chain([u8::MAX].iter().copied().cycle().take(RollingHash::WINDOW_SIZE * 2))
         .enumerate()
     {
         hash.update_by_byte(ch);
