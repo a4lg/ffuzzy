@@ -325,6 +325,7 @@ pub enum FuzzyHashOperationError {
     /// When converting between two fuzzy hash types, copying block hash
     /// would cause a buffer overflow.
     BlockHashOverflow,
+
     /// When converting a fuzzy hash to a string, a buffer overflow would occur.
     StringizationOverflow,
 }

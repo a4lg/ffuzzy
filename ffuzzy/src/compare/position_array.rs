@@ -826,6 +826,7 @@ impl BlockHashPositionArrayImplMutInternal for BlockHashPositionArrayMutRef<'_> 
 pub struct BlockHashPositionArray {
     /// The block hash position array representation.
     representation: [u64; block_hash::ALPHABET_SIZE],
+
     /// The length of this block hash.
     len: u8,
 }

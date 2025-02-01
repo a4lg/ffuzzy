@@ -15,16 +15,22 @@
 pub enum ParseErrorKind {
     /// Block size: is empty.
     BlockSizeIsEmpty,
+
     /// Block size: starts with the digit zero (`'0'`).
     BlockSizeStartsWithZero,
+
     /// Block size: is not valid.
     BlockSizeIsInvalid,
+
     /// Block size: is too large to parse.
     BlockSizeIsTooLarge,
+
     /// Block hash (either 1 or 2): block hash is too long.
     BlockHashIsTooLong,
+
     /// Any: an unexpected character is encountered.
     UnexpectedCharacter,
+
     /// Any: an unexpected end-of-string is encountered.
     UnexpectedEndOfString,
 }
@@ -59,8 +65,10 @@ impl core::fmt::Display for ParseErrorKind {
 pub enum ParseErrorOrigin {
     /// Block size.
     BlockSize,
+
     /// Block hash 1.
     BlockHash1,
+
     /// Block hash 2.
     BlockHash2,
 }
@@ -136,12 +144,16 @@ crate::macros::impl_error!(ParseError {});
 pub(crate) enum BlockHashParseState {
     /// The end of the string is encountered.
     MetEndOfString,
+
     /// A comma character (`,`) is encountered.
     MetComma,
+
     /// A colon character (`:`) is encountered.
     MetColon,
+
     /// A block hash is too long so that would cause an overflow.
     OverflowError,
+
     /// An invalid Base64 alphabet (or just an unexpected character) is encountered.
     Base64Error,
 }

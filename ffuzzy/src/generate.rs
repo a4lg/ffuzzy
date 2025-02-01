@@ -346,12 +346,16 @@ const BLOCKHASH_CHAR_NIL: u8 = 0xff;
 struct BlockHashContext {
     /// Current index to update [`blockhash`](Self::blockhash).
     blockhash_index: usize,
+
     /// Block hash contents.
     blockhash: [u8; block_hash::FULL_SIZE],
+
     /// The last block hash character used when truncating.
     blockhash_ch_half: u8,
+
     /// Block hash updater (a FNV-1 hasher) for full block hash.
     h_full: PartialFNVHash,
+
     /// Block hash updater (a FNV-1 hasher) for truncated block hash.
     h_half: PartialFNVHash,
 }
@@ -553,12 +557,15 @@ pub enum GeneratorError {
     /// [The fixed size](Generator::set_fixed_input_size()) has a mismatch with
     /// either the previously set value or the final input size.
     FixedSizeMismatch,
+
     /// [The fixed size](Generator::set_fixed_input_size()) is
     /// [too large](Generator::MAX_INPUT_SIZE).
     FixedSizeTooLarge,
+
     /// The total input size on finalization is
     /// [too large](Generator::MAX_INPUT_SIZE).
     InputSizeTooLarge,
+
     /// The output would cause a buffer overflow for a specific output type.
     ///
     /// This error only occurs when:

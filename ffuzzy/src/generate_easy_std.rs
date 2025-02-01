@@ -22,6 +22,7 @@ use crate::macros::{invariant, optionally_unsafe};
 pub enum GeneratorOrIOError {
     /// An error caused by the fuzzy hash generator.
     GeneratorError(GeneratorError),
+
     /// An error caused by an internal I/O operation.
     IOError(std::io::Error),
 }

@@ -42,14 +42,17 @@ pub enum BlockSizeRelation {
     /// size) of the left side (of comparison) can be compared with the block
     /// hash 1 (one with a smaller block size) of the right side.
     NearLt,
+
     /// Two block sizes are not just *near* but the same.
     /// We compare both block hashes with the other and take the maximum value
     /// for the output.
     NearEq,
+
     /// Two block sizes are *near* and the block hash 1 (one with a smaller
     /// block size) of the left side (of comparison) can be compared with the
     /// block hash 2 (one with a larger block size) of the right side.
     NearGt,
+
     /// Two block sizes are *far* and a block hash comparison
     /// cannot be performed.
     Far,
@@ -433,6 +436,7 @@ pub mod block_hash {
     pub struct NumericWindows<'a> {
         /// Remaining block hash portion to compute numeric windows.
         v: &'a [u8],
+
         /// The "last" value of the numeric windows iterator
         /// (an incomplete value when no values are generated yet).
         ///
@@ -464,6 +468,7 @@ pub mod block_hash {
     pub struct IndexWindows<'a> {
         /// Inner [`NumericWindows`] object.
         inner: NumericWindows<'a>,
+
         /// The *base-2 logarithm* form of the block size.
         log_block_size: u8,
     }

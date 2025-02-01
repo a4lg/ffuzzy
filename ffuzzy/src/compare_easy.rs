@@ -23,6 +23,7 @@ use crate::hash::LongFuzzyHash;
 pub enum ParseErrorSide {
     /// The left hand side.
     Left,
+
     /// The right hand side.
     Right,
 }
