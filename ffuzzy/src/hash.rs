@@ -1970,8 +1970,9 @@ pub type LongRawFuzzyHash =
 /// Constant assertions related to the parent module.
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
     use static_assertions::{const_assert, const_assert_eq};
+
+    use super::*;
 
     // Validate Configurations of Four Variants
     // FuzzyHash

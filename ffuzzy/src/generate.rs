@@ -947,8 +947,9 @@ impl AddAssign<u8> for Generator {
 /// Constant assertions related to this module.
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
     use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
+
+    use super::*;
 
     // Compare with original ssdeep constants
     // ssdeep.h: SSDEEP_MIN_FILE_SIZE

@@ -24,7 +24,6 @@ use crate::hash::parser_state::{ParseError, ParseErrorKind, ParseErrorOrigin};
 use crate::hash::test_utils::test_blockhash_content_all;
 use crate::test_utils::eq_slice_buf;
 
-
 macro_rules! call_for_block_hash_sizes {
     { $test: ident ($($tokens: tt)*) ; } => {
         $test::<{block_hash::HALF_SIZE}>($($tokens)*);

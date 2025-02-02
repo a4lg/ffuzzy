@@ -680,8 +680,9 @@ where
 /// Constant assertions related to this module.
 #[doc(hidden)]
 mod const_asserts {
-    use super::{block_hash, block_size};
     use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
+
+    use super::{block_hash, block_size};
 
     // We must restrict alphabet size to number of Base64 alphabets.
     // It minimizes memory usage of FuzzyHashCompareTarget.

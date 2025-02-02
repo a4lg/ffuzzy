@@ -8,15 +8,16 @@
 
 use alloc::format;
 use alloc::vec::Vec;
-use std::println;
 
-use super::{Generator, GeneratorError};
+use std::println;
 
 use crate::hash::block::{
     block_hash, block_size, BlockHashSize as BHS, BlockHashSizes as BHSs,
     ConstrainedBlockHashSize as CBHS, ConstrainedBlockHashSizes as CBHSs,
 };
 use crate::hash::{FuzzyHashData, LongRawFuzzyHash, RawFuzzyHash};
+
+use super::{Generator, GeneratorError};
 
 macro_rules! call_for_generator_finalization {
     { $test: ident ($($tokens: tt)*) ; } => {
@@ -532,6 +533,7 @@ fn large_data_triggers_2() {
 fn verify_with_small_precomputed_vectors() {
     use std::fs::File;
     use std::io::{BufRead, BufReader, Read};
+
     #[cfg(not(feature = "alloc"))]
     use std::string::ToString;
 

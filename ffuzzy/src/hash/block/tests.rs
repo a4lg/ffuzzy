@@ -5,16 +5,16 @@
 
 #![cfg(test)]
 
+use core::cmp::Ordering;
+use core::ops::RangeInclusive;
+
+use crate::test_utils::assert_fits_in;
+
 use super::{
     block_hash::{self, NumericWindows},
     block_size::{self, RANGE_LOG_VALID},
     BlockSizeRelation,
 };
-
-use core::cmp::Ordering;
-use core::ops::RangeInclusive;
-
-use crate::test_utils::assert_fits_in;
 
 #[test]
 fn prerequisites() {

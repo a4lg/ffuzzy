@@ -17,13 +17,13 @@ use crate::compare::position_array::{
     BlockHashPositionArrayImplMutInternal,
     block_hash_position_array_element,
 };
-#[cfg(feature = "unchecked")]
-use crate::compare::position_array::BlockHashPositionArrayImplUnchecked;
 use crate::hash::block::block_hash;
 use crate::hash::test_utils::test_blockhash_content_all;
 use crate::test_utils::test_recommended_default;
 use crate::utils::u64_lsb_ones;
 
+#[cfg(feature = "unchecked")]
+use crate::compare::position_array::BlockHashPositionArrayImplUnchecked;
 
 #[test]
 fn prerequisite_64bit() {
@@ -771,11 +771,14 @@ fn test_has_common_substring_naive() {
 #[test]
 fn verify_has_common_substring_by_real_blockhash_vectors() {
     use core::str::FromStr;
+
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
     use std::vec::Vec;
+
     use crate::hash::LongFuzzyHash;
+
     let mut block_hashes = HashSet::new();
     for filename in [
         "data/testsuite/compare/big_cluster.uniform_blocksize.4x128.txt",
@@ -810,12 +813,15 @@ fn verify_has_common_substring_by_real_blockhash_vectors() {
 #[test]
 fn verify_edit_distance_by_real_blockhash_vectors() {
     use core::str::FromStr;
+
     use std::collections::HashSet;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
     use std::vec::Vec;
+
     use crate::compare::position_array::{BlockHashPositionArray, BlockHashPositionArrayImpl};
     use crate::hash::LongFuzzyHash;
+
     let mut block_hashes = HashSet::new();
     for filename in [
         "data/testsuite/compare/big_cluster.uniform_blocksize.4x128.txt",

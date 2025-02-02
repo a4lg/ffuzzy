@@ -5,8 +5,6 @@
 
 #![cfg(test)]
 
-use super::{hash_file, hash_stream, hash_stream_common, GeneratorOrIOError};
-
 use alloc::format;
 
 use std::error::Error;
@@ -14,6 +12,8 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::generate::{Generator, GeneratorError};
+
+use super::{hash_file, hash_stream, hash_stream_common, GeneratorOrIOError};
 
 #[test]
 fn hash_file_usage() {

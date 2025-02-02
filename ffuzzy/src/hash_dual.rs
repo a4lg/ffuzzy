@@ -138,9 +138,11 @@ mod rle_encoding {
     #[doc(hidden)]
     #[allow(clippy::int_plus_one)]
     mod const_asserts {
-        use super::*;
-        use crate::hash::block::block_hash;
         use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
+
+        use crate::hash::block::block_hash;
+
+        use super::*;
 
         // Basic Constraints
         const_assert_ne!(BITS_POSITION, 0);
@@ -197,8 +199,9 @@ pub struct ReconstructionBlockSize<const SZ_BH: usize, const SZ_R: usize> {}
 
 /// Private module to declare sealed reconstruction block constraints.
 mod private {
-    use super::*;
     use crate::hash::block::block_hash;
+
+    use super::*;
 
     /// A trait to constrain RLE block size for given block hash size.
     ///
@@ -220,8 +223,9 @@ mod private {
             /// Constant assertions related to RLE block size requirements.
             #[doc(hidden)]
             mod const_asserts {
-                use super::*;
                 use static_assertions::const_assert;
+
+                use super::*;
 
                 // grcov-excl-br-start
                 // Consider removing it once MSRV of 1.73 is acceptable.

@@ -16,13 +16,14 @@ use crate::macros::{invariant, optionally_unsafe};
 
 pub mod position_array;
 
-#[cfg(feature = "unchecked")]
-use position_array::BlockHashPositionArrayImplUnchecked;
 use position_array::{
     BlockHashPositionArray, BlockHashPositionArrayData, BlockHashPositionArrayImpl,
     BlockHashPositionArrayImplInternal, BlockHashPositionArrayImplMutInternal,
     BlockHashPositionArrayMutRef, BlockHashPositionArrayRef,
 };
+
+#[cfg(feature = "unchecked")]
+use position_array::BlockHashPositionArrayImplUnchecked;
 
 /// An efficient position array-based fuzzy hash comparison target.
 ///
@@ -1628,8 +1629,9 @@ where
 /// Constant assertions related to this module
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
     use static_assertions::{const_assert, const_assert_eq};
+
+    use super::*;
 
     /// Check whether a given block size requires no score capping.
     #[allow(dead_code)] // to avoid false error

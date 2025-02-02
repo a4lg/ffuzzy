@@ -5,15 +5,15 @@
 
 #![cfg(test)]
 
-use crate::compare_easy::{compare, ParseErrorEither, ParseErrorSide};
-use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
-
-use alloc::format;
-
 #[cfg(all(not(feature = "std"), ffuzzy_error_in_core = "stable"))]
 use core::error::Error;
 #[cfg(feature = "std")]
 use std::error::Error;
+
+use alloc::format;
+
+use crate::compare_easy::{compare, ParseErrorEither, ParseErrorSide};
+use crate::hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
 
 #[test]
 fn parse_error_either_basic_and_impls() {
