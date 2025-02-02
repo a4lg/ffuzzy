@@ -35,7 +35,7 @@ to that edition.
 *   Edition 2021 case: at least 1.79 (most likely 1.81)  
     Rust 1.79's associated type bounds feature makes our new trait-based design
     far more easier.
-*   Edition 2024 case: 1.85 (not released yet)
+*   Edition 2024 case (more likely): 1.85 (not released yet)
 
 
 ## Features
