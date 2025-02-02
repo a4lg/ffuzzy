@@ -712,8 +712,7 @@ fn verify_with_small_precomputed_vectors() {
                             assert!(is_long || (flags & TEST_WASLONG) != 0, "failed on filename={:?}, flags={}, fuzzy_str={:?}", filename, flags, fuzzy_str);
                             if is_long {
                                 RawFuzzyHash::new()
-                            }
-                            else {
+                            } else {
                                 RawFuzzyHash::try_from(fuzzy_generated.clone_normalized()).unwrap()
                             }
                         }

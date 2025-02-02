@@ -583,8 +583,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let result_hash_s_r = RawFuzzyHash::try_from(hash_l_r);
                 if result_hash_s_r == Err(FuzzyHashOperationError::BlockHashOverflow) {
                     assert!(bh2.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
-                }
-                else {
+                } else {
                     let hash_s_r = result_hash_s_r.unwrap();
                     test_lossless_conversion!(hash_l_r, hash_s_r);
                 }
@@ -593,8 +592,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let result = hash_l_r.try_into_mut_short(&mut hash_s_r);
                 if result == Err(FuzzyHashOperationError::BlockHashOverflow) {
                     assert!(bh2.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
-                }
-                else {
+                } else {
                     assert!(result.is_ok(), "failed on bytes_str={:?}", bytes_str);
                     test_lossless_conversion!(hash_l_r, hash_s_r);
                 }
@@ -606,8 +604,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let result_hash_s_n = FuzzyHash::try_from(hash_l_n);
                 if result_hash_s_n == Err(FuzzyHashOperationError::BlockHashOverflow) {
                     assert!(bh2_norm.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
-                }
-                else {
+                } else {
                     let hash_s_n = result_hash_s_n.unwrap();
                     test_lossless_conversion!(hash_l_n, hash_s_n);
                 }
@@ -616,8 +613,7 @@ fn data_model_block_hash_contents_and_lossless_conversion() {
                 let result = hash_l_n.try_into_mut_short(&mut hash_s_n);
                 if result == Err(FuzzyHashOperationError::BlockHashOverflow) {
                     assert!(bh2_norm.len() > block_hash::HALF_SIZE, "failed on bytes_str={:?}", bytes_str);
-                }
-                else {
+                } else {
                     assert!(result.is_ok(), "failed on bytes_str={:?}", bytes_str);
                     test_lossless_conversion!(hash_l_n, hash_s_n);
                 }

@@ -235,8 +235,7 @@ mod private {
                     cfg_if::cfg_if! {
                         if #[cfg(ffuzzy_div_ceil = "fallback")] {
                             a / b + (if a % b == 0 { 0 } else { 1 })
-                        }
-                        else {
+                        } else {
                             usize::div_ceil(a, b)
                         }
                     }

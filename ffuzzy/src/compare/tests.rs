@@ -267,8 +267,7 @@ fn data_model_basic() {
                 if bh2.len() <= block_hash::HALF_SIZE {
                     let dual_hash = DualFuzzyHash::from_raw_form(&RawFuzzyHash::new_from_internals(bs, bh1, bh2));
                     test_all!(hash, dual_hash);
-                }
-                else {
+                } else {
                     let dual_hash = LongDualFuzzyHash::from_raw_form(&LongRawFuzzyHash::new_from_internals(bs, bh1, bh2));
                     test_all!(hash, dual_hash);
                 }
@@ -753,8 +752,7 @@ fn score_caps_on_block_hash_comparison() {
                 // smaller than LOG_BLOCK_SIZE_CAPPING_BORDER.
                 assert!(new_score_cap < 100,
                     "failed on log_block_size={}, len={}", log_block_size, len);
-            }
-            else {
+            } else {
                 // If the length increases by one, the score cap increases by
                 // 1 << log_block_size.
                 assert_eq!(new_score_cap - score_cap, 1u32 << log_block_size,
@@ -907,16 +905,14 @@ fn compare_slightly_different() {
                             if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
                                     log_block_size, len_blockhash1_raw, len_blockhash1_raw)
-                            }
-                            else {
+                            } else {
                                 100
                             };
                         let score_cap_2 =
                             if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
                                     log_block_size + 1, len_blockhash2_raw, len_blockhash2_raw)
-                            }
-                            else {
+                            } else {
                                 100
                             };
                         let score_cap = u32::max(score_cap_1, score_cap_2);
@@ -950,16 +946,14 @@ fn compare_slightly_different() {
                             if len_blockhash1 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
                                     log_block_size, len_blockhash1_raw, len_blockhash1_raw)
-                            }
-                            else {
+                            } else {
                                 100
                             };
                         let score_cap_2 =
                             if len_blockhash2 >= block_hash::MIN_LCS_FOR_COMPARISON {
                                 FuzzyHashCompareTarget::score_cap_on_block_hash_comparison(
                                     log_block_size + 1, len_blockhash2_raw, len_blockhash2_raw)
-                            }
-                            else {
+                            } else {
                                 100
                             };
                         let score_cap = u32::max(score_cap_1, score_cap_2);

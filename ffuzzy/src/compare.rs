@@ -115,8 +115,7 @@ cfg_if::cfg_if! {
                 impl $a + BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
             };
         }
-    }
-    else {
+    } else {
         /// The return type of [`FuzzyHashCompareTarget::block_hash_1()`] and
         /// [`FuzzyHashCompareTarget::block_hash_2()`].
         macro_rules! compare_target_block_hash_pub_impl {

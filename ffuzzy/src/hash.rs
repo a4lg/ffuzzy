@@ -974,8 +974,7 @@ where
                 unsafe {
                     String::from_utf8_unchecked(vec)
                 }
-            }
-            else {
+            } else {
                 String::from_utf8(vec).unwrap()
             }
         }
@@ -1428,8 +1427,7 @@ where
                 unsafe {
                     f.write_str(core::str::from_utf8_unchecked(&buffer[..len]))
                 }
-            }
-            else {
+            } else {
                 f.write_str(core::str::from_utf8(&buffer[..len]).unwrap())
             }
         }

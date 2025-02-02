@@ -17,8 +17,7 @@
         self.input_size =
             if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
                 self.input_size.saturating_add(size)
-            }
-            else {
+            } else {
                 // grcov-excl-start: Only reproduces in 128-bit usize environments.
                 Self::MAX_INPUT_SIZE + 1
                 // grcov-excl-stop
@@ -80,8 +79,7 @@
                         _bh.blockhash_ch_half = BLOCKHASH_CHAR_NIL;
                         _bh.h_half = PartialFNVHash::new();
                     }
-                }
-                else {
+                } else {
                     if self.bhidx_end - self.bhidx_start >= 2 {
                         if self.elim_border < self.fixed_size.unwrap_or(self.input_size) {
                             let idx = self.bh_context[_i + 1].blockhash_index; // grcov-excl-br-line:ARRAY

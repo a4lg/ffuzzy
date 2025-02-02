@@ -98,8 +98,7 @@ fn test_has_sequences() {
                         // Matches to stripe itself
                         assert!(block_hash_position_array_element::has_sequences(target, test_len),
                             "failed on len={}, shift={}, stripe=0b{:064b}", len, shift, stripe);
-                    }
-                    else {
+                    } else {
                         // Possibly matches to the sequence
                         assert_eq!(
                             block_hash_position_array_element::has_sequences(target, test_len),
@@ -136,8 +135,7 @@ fn test_has_sequences() {
                     assert!(block_hash_position_array_element::has_sequences(target, test_len),
                         "failed on len={}, offset={}, test_len={}", len, offset, test_len);
                 }
-            }
-            else {
+            } else {
                 /*
                     `has_seq == false` means,
                     we have zeroed exactly one bit (at `offset`) and that caused
@@ -228,8 +226,7 @@ cfg_if::cfg_if! {
         where
             T : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal
         {}
-    }
-    else {
+    } else {
         /// Composite trait for dynamic dispatching-based tests.
         trait CompositeImpl : BlockHashPositionArrayImpl + BlockHashPositionArrayImplInternal + BlockHashPositionArrayImplUnchecked {}
         /// Auto implementation of [`CompositeImpl`].

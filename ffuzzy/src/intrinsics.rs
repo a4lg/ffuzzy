@@ -12,8 +12,7 @@ pub(crate) fn likely(value_likely_to_be_true: bool) -> bool {
     cfg_if::cfg_if! {
         if #[cfg(feature = "unstable")] {
             core::intrinsics::likely(value_likely_to_be_true)
-        }
-        else {
+        } else {
             value_likely_to_be_true
         }
     }
@@ -28,8 +27,7 @@ pub(crate) fn unlikely(value_unlikely_to_be_true: bool) -> bool {
     cfg_if::cfg_if! {
         if #[cfg(feature = "unstable")] {
             core::intrinsics::unlikely(value_unlikely_to_be_true)
-        }
-        else {
+        } else {
             value_unlikely_to_be_true
         }
     }

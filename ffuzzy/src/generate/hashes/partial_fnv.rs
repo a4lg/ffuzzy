@@ -79,8 +79,7 @@ impl PartialFNVHash {
                 self.0 = Self::FNV_TABLE
                     [self.value() as usize] // grcov-excl-br-line:ARRAY
                     [(ch & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)) as usize]; // grcov-excl-br-line:ARRAY
-            }
-            else {
+            } else {
                 self.0 = ((self.0 as u32).wrapping_mul(Self::FNV_HASH_PRIME) ^ (ch as u32)) as u8;
             }
         }
@@ -113,8 +112,7 @@ impl PartialFNVHash {
             if #[cfg(not(feature = "opt-reduce-fnv-table"))] {
                 invariant!(self.0 < (block_hash::ALPHABET_SIZE as u8));
                 self.0
-            }
-            else {
+            } else {
                 self.0 & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)
             }
         }

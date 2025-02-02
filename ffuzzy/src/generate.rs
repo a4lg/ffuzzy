@@ -499,8 +499,7 @@ macro_rules! generator_update_template {
                                 break;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         for bh1 in &mut $self.bh_context[$self.bhidx_start..$self.bhidx_end] {
                             bh1.h_full.update_by_byte(ch);
                             bh1.h_half.update_by_byte(ch);
@@ -538,8 +537,7 @@ macro_rules! generator_update_template {
                         }
                         macro_rules! bh_curr {() => { *bh }}
                         macro_rules! bh_next {() => { *bh_next }}
-                    }
-                    else {
+                    } else {
                         let mut i = $self.bhidx_start;
                         macro_rules! bh_loop_2 {
                             ($block: block) => {
@@ -572,8 +570,7 @@ macro_rules! generator_update_template {
                                 $self.h_last = bh_curr!().h_full; // grcov-excl-br-line:ARRAY
                                 $self.is_last = true;
                             }
-                        }
-                        else {
+                        } else {
                             // Reset the block hash context and advance bhidx_end
                             // so that the generator can begin block hash context updates.
                             bh_next!().reset(); // grcov-excl-br-line:ARRAY
@@ -590,8 +587,7 @@ macro_rules! generator_update_template {
                     cfg_if::cfg_if! {
                         if #[cfg(feature = "unsafe")] {
                             macro_rules! bh_curr_reused {() => { *bh }}
-                        }
-                        else {
+                        } else {
                             let bh_curr_reused = &mut $self.bh_context[i]; // grcov-excl-br-line:ARRAY
                             macro_rules! bh_curr_reused {() => { bh_curr_reused }}
                         }
@@ -606,8 +602,7 @@ macro_rules! generator_update_template {
                             bh_curr_reused!().blockhash_ch_half = BLOCKHASH_CHAR_NIL;
                             bh_curr_reused!().h_half = PartialFNVHash::new();
                         }
-                    }
-                    else if $self.bhidx_end - $self.bhidx_start >= 2
+                    } else if $self.bhidx_end - $self.bhidx_start >= 2
                         && $self.elim_border < $self.fixed_size.unwrap_or($self.input_size)
                         && bh_next!().blockhash_index >= block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
                     {

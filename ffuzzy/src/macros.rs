@@ -16,8 +16,7 @@ macro_rules! optionally_unsafe_impl {
         cfg_if::cfg_if! {
             if #[cfg(feature = "unsafe")] {
                 unsafe { $($tokens)* }
-            }
-            else {
+            } else {
                 { $($tokens)* }
             }
         }
@@ -57,15 +56,13 @@ macro_rules! invariant_impl {
                 unsafe {
                     core::hint::assert_unchecked($expr);
                 }
-            }
-            else if #[cfg(all(feature = "unsafe", not(test)))] {
+            } else if #[cfg(all(feature = "unsafe", not(test)))] {
                 if !($expr) {
                     unsafe {
                         core::hint::unreachable_unchecked();
                     }
                 }
-            }
-            else {
+            } else {
                 debug_assert!($expr);
             }
         }
