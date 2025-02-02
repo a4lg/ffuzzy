@@ -91,8 +91,8 @@ pub mod parser_state;
 /// The reason a fuzzy hash having two block hashes is, to enable comparing
 /// fuzzy hashes with similar block sizes (but not too far).
 ///
-/// In principle, we can only compare block hashes with the same block size
-/// directly.  Think following fuzzy hash for example:
+/// In principle, we can only compare block hashes with the same effective block
+/// size directly.  Think following fuzzy hash for example:
 ///
 /// ```text
 /// 6144:SIsMYod+X3oI+YnsMYod+X3oI+YZsMYod+X3oI+YLsMYod+X3oI+YQ:Z5d+X395d+X3X5d+X315d+X3+
@@ -121,8 +121,8 @@ pub mod parser_state;
 /// ```
 ///
 /// The final similarity score is the maximum of two block hash comparisons
-/// (note that [the score will be capped on small block sizes to prevent
-/// exaggeration of matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
+/// (note that [the score will be capped on small effective block sizes to
+/// prevent exaggeration of matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison())).
 ///
 /// If you have two fuzzy hashes with different block sizes but they are *near*
 /// enough, we can still perform a block hash comparison.
@@ -149,8 +149,8 @@ pub mod parser_state;
 ///
 /// Such cases are handled with [`BlockSizeRelation`] and [`block_size`]
 /// utility functions.  We can outline the relation in the table below.
-/// Note that each block size is denoted as
-/// "Actual block size ([block size in *base-2 logarithm*](Self#block-size))".
+/// Note that each (effective) block size is denoted as
+/// "Actual raw block size ([block size in *base-2 logarithm*](Self#block-size))".
 ///
 /// | Left (`lhs`) | Right (`rhs`) | Relation                              |
 /// | ------------:| -------------:|:------------------------------------- |
@@ -264,7 +264,7 @@ pub mod parser_state;
 ///         reason) and see the source code for the exact behavior (including
 ///         rounding-related one).
 ///
-///     3.  For [small block sizes](crate::compare::FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER),
+///     3.  For [small effective block sizes](crate::compare::FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER),
 ///         [cap the score to prevent exaggerating the matches](crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()).
 ///
 /// 3.  Take the maximum of sub-similarity scores
