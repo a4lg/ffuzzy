@@ -544,7 +544,7 @@ impl FuzzyHashCompareTarget {
         // (len_block_hash_lhs + len_block_hash_rhs)
         //     >= block_hash::MIN_LCS_FOR_COMPARISON * 2.
         // Place this invariant to avoid division-by-zero checking.
-        invariant!((len_block_hash_lhs + len_block_hash_rhs) > 0);
+        invariant!((len_block_hash_lhs as u32 + len_block_hash_rhs as u32) > 0);
         /*
             Possible arithmetic operations to check overflow:
             1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
