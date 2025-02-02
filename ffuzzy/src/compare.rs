@@ -542,7 +542,7 @@ impl FuzzyHashCompareTarget {
         );
         // rustc/LLVM cannot prove that
         // (len_block_hash_lhs + len_block_hash_rhs)
-        //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2.
+        //     >= block_hash::MIN_LCS_FOR_COMPARISON * 2.
         // Place this invariant to avoid division-by-zero checking.
         invariant!((len_block_hash_lhs + len_block_hash_rhs) > 0);
         /*
