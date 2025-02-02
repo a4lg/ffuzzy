@@ -16,7 +16,7 @@ use crate::hash::block::{
 use crate::hash::parser_state::{
     BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin,
 };
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 pub(crate) mod algorithms;
 pub mod block;
@@ -681,10 +681,8 @@ where
         debug_assert!(block_size::is_log_valid(log_block_size));
         debug_assert!(block_hash_1.len() <= S1);
         debug_assert!(block_hash_2.len() <= S2);
-        optionally_unsafe! {
-            invariant!(block_hash_1.len() <= S1);
-            invariant!(block_hash_2.len() <= S2);
-        }
+        invariant!(block_hash_1.len() <= S1);
+        invariant!(block_hash_2.len() <= S2);
         hash.blockhash1[..block_hash_1.len()].clone_from_slice(block_hash_1); // grcov-excl-br-line:ARRAY
         hash.blockhash2[..block_hash_2.len()].clone_from_slice(block_hash_2); // grcov-excl-br-line:ARRAY
         hash.len_blockhash1 = block_hash_1.len() as u8;
@@ -867,9 +865,7 @@ where
     /// ```
     #[inline]
     pub fn block_hash_1(&self) -> &[u8] {
-        optionally_unsafe! {
-            invariant!((self.len_blockhash1 as usize) <= S1);
-        }
+        invariant!((self.len_blockhash1 as usize) <= S1);
         &self.blockhash1[..self.len_blockhash1 as usize] // grcov-excl-br-line:ARRAY
     }
 
@@ -909,9 +905,7 @@ where
     /// ```
     #[inline]
     pub fn block_hash_2(&self) -> &[u8] {
-        optionally_unsafe! {
-            invariant!((self.len_blockhash2 as usize) <= S2);
-        }
+        invariant!((self.len_blockhash2 as usize) <= S2);
         &self.blockhash2[..self.len_blockhash2 as usize] // grcov-excl-br-line:ARRAY
     }
 
@@ -940,13 +934,11 @@ where
     #[inline]
     pub fn len_in_str(&self) -> usize {
         debug_assert!(block_size::is_log_valid(self.log_blocksize));
-        optionally_unsafe! {
-            invariant!((self.log_blocksize as usize) < block_size::NUM_VALID);
-            block_size::BLOCK_SIZES_STR[self.log_blocksize as usize].len() // grcov-excl-br-line:ARRAY
-                + self.len_blockhash1 as usize
-                + self.len_blockhash2 as usize
-                + 2
-        }
+        invariant!((self.log_blocksize as usize) < block_size::NUM_VALID);
+        block_size::BLOCK_SIZES_STR[self.log_blocksize as usize].len() // grcov-excl-br-line:ARRAY
+            + self.len_blockhash1 as usize
+            + self.len_blockhash2 as usize
+            + 2
     }
 
     /// The maximum length in the string representation.
@@ -1014,32 +1006,29 @@ where
         if buffer.len() < len_in_str {
             return Err(FuzzyHashOperationError::StringizationOverflow);
         }
-        optionally_unsafe! {
-            invariant!((self.log_blocksize as usize) < block_size::NUM_VALID);
-            let block_size_str =
-                block_size::BLOCK_SIZES_STR[self.log_blocksize as usize].as_bytes(); // grcov-excl-br-line:ARRAY
-            invariant!(block_size_str.len() <= buffer.len());
-            buffer[..block_size_str.len()].copy_from_slice(block_size_str); // grcov-excl-br-line:ARRAY
-            let mut i: usize = block_size_str.len();
-            invariant!(i < buffer.len());
-            buffer[i] = b':'; // grcov-excl-br-line:ARRAY
-            i += 1;
-            algorithms::insert_block_hash_into_bytes(
-                &mut buffer[i..],
-                &self.blockhash1,
-                self.len_blockhash1,
-            );
-            i += self.len_blockhash1 as usize;
-            invariant!(i < buffer.len());
-            buffer[i] = b':'; // grcov-excl-br-line:ARRAY
-            i += 1;
-            algorithms::insert_block_hash_into_bytes(
-                &mut buffer[i..],
-                &self.blockhash2,
-                self.len_blockhash2,
-            );
-            debug_assert!(i + self.len_blockhash2 as usize == len_in_str);
-        }
+        invariant!((self.log_blocksize as usize) < block_size::NUM_VALID);
+        let block_size_str = block_size::BLOCK_SIZES_STR[self.log_blocksize as usize].as_bytes(); // grcov-excl-br-line:ARRAY
+        invariant!(block_size_str.len() <= buffer.len());
+        buffer[..block_size_str.len()].copy_from_slice(block_size_str); // grcov-excl-br-line:ARRAY
+        let mut i: usize = block_size_str.len();
+        invariant!(i < buffer.len());
+        buffer[i] = b':'; // grcov-excl-br-line:ARRAY
+        i += 1;
+        algorithms::insert_block_hash_into_bytes(
+            &mut buffer[i..],
+            &self.blockhash1,
+            self.len_blockhash1,
+        );
+        i += self.len_blockhash1 as usize;
+        invariant!(i < buffer.len());
+        buffer[i] = b':'; // grcov-excl-br-line:ARRAY
+        i += 1;
+        algorithms::insert_block_hash_into_bytes(
+            &mut buffer[i..],
+            &self.blockhash2,
+            self.len_blockhash2,
+        );
+        debug_assert!(i + self.len_blockhash2 as usize == len_in_str);
         Ok(len_in_str)
     }
 
@@ -1325,12 +1314,10 @@ where
         {
             return false;
         }
-        optionally_unsafe! {
-            invariant!((self.len_blockhash1 as usize) <= self.blockhash1.len());
-            invariant!((self.len_blockhash2 as usize) <= self.blockhash2.len());
-            invariant!((other.len_blockhash1 as usize) <= other.blockhash1.len());
-            invariant!((other.len_blockhash2 as usize) <= other.blockhash2.len());
-        }
+        invariant!((self.len_blockhash1 as usize) <= self.blockhash1.len());
+        invariant!((self.len_blockhash2 as usize) <= self.blockhash2.len());
+        invariant!((other.len_blockhash1 as usize) <= other.blockhash1.len());
+        invariant!((other.len_blockhash2 as usize) <= other.blockhash2.len());
         let bh1_a = &self.blockhash1[0..self.len_blockhash1 as usize]; // grcov-excl-br-line:ARRAY
         let bh2_a = &self.blockhash2[0..self.len_blockhash2 as usize]; // grcov-excl-br-line:ARRAY
         let bh1_b = &other.blockhash1[0..other.len_blockhash1 as usize]; // grcov-excl-br-line:ARRAY
@@ -1361,10 +1348,8 @@ where
         state.write_u8(self.log_blocksize);
         state.write_u8(self.len_blockhash1);
         state.write_u8(self.len_blockhash2);
-        optionally_unsafe! {
-            invariant!((self.len_blockhash1 as usize) <= self.blockhash1.len());
-            invariant!((self.len_blockhash2 as usize) <= self.blockhash2.len());
-        }
+        invariant!((self.len_blockhash1 as usize) <= self.blockhash1.len());
+        invariant!((self.len_blockhash2 as usize) <= self.blockhash2.len());
         state.write(&self.blockhash1[0..self.len_blockhash1 as usize]); // grcov-excl-br-line:ARRAY
         state.write(&self.blockhash2[0..self.len_blockhash2 as usize]); // grcov-excl-br-line:ARRAY
     }

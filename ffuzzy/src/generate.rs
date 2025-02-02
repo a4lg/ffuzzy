@@ -395,9 +395,7 @@ impl Generator {
             return start;
         }
         let high_size = (size - 1) / size_unit; // grcov-excl-br-line:DIVZERO
-        optionally_unsafe! {
-            invariant!(high_size > 0);
-        }
+        invariant!(high_size > 0);
         usize::max(start, (crate::utils::u64_ilog2(high_size) + 1) as usize)
     }
 
@@ -638,6 +636,7 @@ macro_rules! generator_update_template {
 impl Generator {
     /// Process data, updating the internal state.
     #[rustfmt::skip]
+    #[allow(unused_unsafe)]
     pub fn update(&mut self, buffer: &[u8]) -> &mut Self {
         self.0.input_size = if let Ok(size) = u64::try_from(buffer.len()) { // grcov-excl-br-line: else branch only in 128-bit usize environments.
             self.0.input_size.saturating_add(size)
@@ -653,6 +652,7 @@ impl Generator {
     }
 
     /// Process data (an iterator), updating the internal state.
+    #[allow(unused_unsafe)]
     pub fn update_by_iter(&mut self, iter: impl Iterator<Item = u8>) -> &mut Self {
         // grcov-generator-start
         generator_update_template!(self.0, iter, {
@@ -663,6 +663,7 @@ impl Generator {
     }
 
     /// Process a byte, updating the internal state.
+    #[allow(unused_unsafe)]
     pub fn update_by_byte(&mut self, ch: u8) -> &mut Self {
         self.0.input_size = self.0.input_size.saturating_add(1);
         // grcov-generator-start
@@ -696,16 +697,12 @@ impl Generator {
         let mut log_block_size =
             Self::get_log_block_size_from_input_size(self.0.input_size, self.0.bhidx_start);
         log_block_size = usize::min(log_block_size, self.0.bhidx_end - 1);
-        optionally_unsafe! {
-            invariant!(log_block_size < self.0.bh_context.len());
-        }
+        invariant!(log_block_size < self.0.bh_context.len());
         while log_block_size > self.0.bhidx_start
             && self.0.bh_context[log_block_size].blockhash_index < block_hash::HALF_SIZE // grcov-excl-br-line:ARRAY
         {
             log_block_size -= 1;
-            optionally_unsafe! {
-                invariant!(log_block_size < self.0.bh_context.len());
-            }
+            invariant!(log_block_size < self.0.bh_context.len());
         }
         log_block_size
     }
@@ -736,28 +733,22 @@ impl Generator {
         fuzzy.log_blocksize = log_block_size as u8;
         // Copy block hash 1
         let roll_value = self.0.roll_hash.value();
-        optionally_unsafe! {
-            invariant!(log_block_size < self.0.bh_context.len());
-        }
+        invariant!(log_block_size < self.0.bh_context.len());
         let bh_0 = &self.0.bh_context[log_block_size]; // grcov-excl-br-line:ARRAY
         {
             let mut sz = bh_0.blockhash_index;
             if bh_0.blockhash[block_hash::FULL_SIZE - 1] != BLOCKHASH_CHAR_NIL {
                 sz += 1;
             }
-            optionally_unsafe! {
-                invariant!(sz <= fuzzy.blockhash1.len());
-                invariant!(sz <= bh_0.blockhash.len());
-            }
+            invariant!(sz <= fuzzy.blockhash1.len());
+            invariant!(sz <= bh_0.blockhash.len());
             fuzzy.blockhash1[0..sz].clone_from_slice(&bh_0.blockhash[0..sz]); // grcov-excl-br-line:ARRAY
             fuzzy.len_blockhash1 = sz as u8;
             if roll_value != 0 {
                 if sz == block_hash::FULL_SIZE {
                     fuzzy.blockhash1[block_hash::FULL_SIZE - 1] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
                 } else {
-                    optionally_unsafe! {
-                        invariant!(sz < block_hash::FULL_SIZE);
-                    }
+                    invariant!(sz < block_hash::FULL_SIZE);
                     fuzzy.blockhash1[sz] = bh_0.h_full.value(); // grcov-excl-br-line:ARRAY
                     fuzzy.len_blockhash1 += 1;
                 }
@@ -766,9 +757,7 @@ impl Generator {
         // Copy block hash 2 or adjust block hashes.
         if log_block_size < self.0.bhidx_end - 1 {
             // Copy block hash 2 (normal path)
-            optionally_unsafe! {
-                invariant!(log_block_size + 1 < self.0.bh_context.len());
-            }
+            invariant!(log_block_size + 1 < self.0.bh_context.len());
             let bh_1 = &self.0.bh_context[log_block_size + 1]; // grcov-excl-br-line:ARRAY
             if truncate {
                 let mut sz = bh_1.blockhash_index;
@@ -784,15 +773,11 @@ impl Generator {
                         }
                     };
                 } else {
-                    optionally_unsafe! {
-                        invariant!(sz <= fuzzy.blockhash2.len());
-                        invariant!(sz <= bh_1.blockhash.len());
-                    }
+                    invariant!(sz <= fuzzy.blockhash2.len());
+                    invariant!(sz <= bh_1.blockhash.len());
                     fuzzy.blockhash2[0..sz].clone_from_slice(&bh_1.blockhash[0..sz]); // grcov-excl-br-line:ARRAY
                     if roll_value != 0 {
-                        optionally_unsafe! {
-                            invariant!(sz < fuzzy.blockhash2.len());
-                        }
+                        invariant!(sz < fuzzy.blockhash2.len());
                         fuzzy.blockhash2[sz] = bh_1.h_half.value(); // grcov-excl-br-line:ARRAY
                         sz += 1;
                     }
@@ -813,10 +798,8 @@ impl Generator {
                         return Err(GeneratorError::OutputOverflow);
                     }
                 }
-                optionally_unsafe! {
-                    invariant!(sz <= fuzzy.blockhash2.len());
-                    invariant!(sz <= bh_1.blockhash.len());
-                }
+                invariant!(sz <= fuzzy.blockhash2.len());
+                invariant!(sz <= bh_1.blockhash.len());
                 fuzzy.blockhash2[0..sz].clone_from_slice(&bh_1.blockhash[0..sz]); // grcov-excl-br-line:ARRAY
                 fuzzy.len_blockhash2 = sz as u8;
                 if roll_value != 0 {
@@ -829,18 +812,14 @@ impl Generator {
                             // 3.  the input (block hash 2) is large enough.
                             return Err(GeneratorError::OutputOverflow);
                         }
-                        optionally_unsafe! {
-                            invariant!(sz < S2);
-                        }
+                        invariant!(sz < S2);
                         fuzzy.blockhash2[sz] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                         fuzzy.len_blockhash2 += 1;
                     } else {
                         if sz == block_hash::FULL_SIZE {
                             fuzzy.blockhash2[block_hash::FULL_SIZE - 1] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                         } else {
-                            optionally_unsafe! {
-                                invariant!(sz < block_hash::FULL_SIZE);
-                            }
+                            invariant!(sz < block_hash::FULL_SIZE);
                             fuzzy.blockhash2[sz] = bh_1.h_full.value(); // grcov-excl-br-line:ARRAY
                             fuzzy.len_blockhash2 += 1;
                         }

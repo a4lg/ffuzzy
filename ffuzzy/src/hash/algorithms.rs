@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // SPDX-FileCopyrightText: Copyright Andrew Tridgell <tridge@samba.org> 2002
 // SPDX-FileCopyrightText: Copyright (C) 2006 ManTech International Corporation
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>
 
 //! Algorithms used to handle fuzzy hashes.
 
@@ -10,7 +10,7 @@ use crate::hash::block::{block_hash, block_size, BlockHashSize, ConstrainedBlock
 use crate::hash::parser_state::{
     BlockHashParseState, ParseError, ParseErrorKind, ParseErrorOrigin,
 };
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 /// Normalize a block hash in place only if the original (expected) form is raw.
 #[inline(always)]
@@ -26,9 +26,7 @@ pub(crate) fn normalize_block_hash_in_place_internal<const N: usize>(
         let mut prev = BASE64_INVALID;
         let old_blockhash_len = *blockhash_len;
         let mut len: usize = 0;
-        optionally_unsafe! {
-            invariant!(old_blockhash_len as usize <= N);
-        }
+        invariant!(old_blockhash_len as usize <= N);
         for i in 0..old_blockhash_len as usize {
             let curr: u8 = blockhash[i]; // grcov-excl-br-line:ARRAY
             if curr == prev {
@@ -41,18 +39,14 @@ pub(crate) fn normalize_block_hash_in_place_internal<const N: usize>(
                 seq = 0;
                 prev = curr;
             }
-            optionally_unsafe! {
-                invariant!(len < N);
-            }
+            invariant!(len < N);
             blockhash[len] = curr; // grcov-excl-br-line:ARRAY
             len += 1;
         }
         *blockhash_len = len as u8;
         // Clear old (possibly) non-zero hash buffer (for default Eq)
-        optionally_unsafe! {
-            invariant!(len as u8 <= old_blockhash_len);
-            invariant!(len <= N);
-        }
+        invariant!(len as u8 <= old_blockhash_len);
+        invariant!(len <= N);
         blockhash[len..old_blockhash_len as usize].fill(0); // grcov-excl-br-line:ARRAY
     }
 }
@@ -79,9 +73,7 @@ fn verify_block_hash_internal<const N: usize>(
 where
     BlockHashSize<N>: ConstrainedBlockHashSize,
 {
-    optionally_unsafe! {
-        invariant!((blockhash_len as usize) <= N);
-    }
+    invariant!((blockhash_len as usize) <= N);
     let blockhash_out = &blockhash[blockhash_len as usize..]; // grcov-excl-br-line:ARRAY
     let blockhash = &blockhash[..blockhash_len as usize]; // grcov-excl-br-line:ARRAY
     if verify_normalization {
@@ -162,15 +154,11 @@ pub(crate) fn insert_block_hash_into_bytes<const N: usize>(buf: &mut [u8], hash:
 where
     BlockHashSize<N>: ConstrainedBlockHashSize,
 {
-    optionally_unsafe! {
-        invariant!((len as usize) <= N);
-    }
+    invariant!((len as usize) <= N);
     let hash = &hash[0..len as usize]; // grcov-excl-br-line:ARRAY
     for (i, idx) in hash.iter().enumerate() {
-        optionally_unsafe! {
-            invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
-            invariant!(i < buf.len());
-        }
+        invariant!((*idx as usize) < block_hash::ALPHABET_SIZE);
+        invariant!(i < buf.len());
         buf[i] = BASE64_TABLE_U8[*idx as usize]; // grcov-excl-br-line:ARRAY
     }
 }
@@ -233,11 +221,9 @@ pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8]) -> Result<(u32, usi
                         0,
                     ));
                 }
-                optionally_unsafe! {
-                    invariant!(index < bytes.len());
-                    *bytes = &bytes[index + 1..];
-                    return Ok((block_size, index + 1));
-                }
+                invariant!(index < bytes.len());
+                *bytes = &bytes[index + 1..];
+                return Ok((block_size, index + 1));
             }
             _ => {
                 return Err(ParseError(
@@ -334,9 +320,7 @@ where
             #[cfg(not(feature = "strict-parser"))]
             if crate::intrinsics::unlikely(len >= N) {
                 *blockhash_len = len as u8;
-                optionally_unsafe! {
-                    invariant!(index <= bytes.len());
-                }
+                invariant!(index <= bytes.len());
                 *bytes = &bytes[index..]; // grcov-excl-br-line:ARRAY
                 return (BlockHashParseState::OverflowError, index);
             }
@@ -353,9 +337,7 @@ where
         // Even if we reached to the end, that does not always mean that
         // we reached to the end of the string.
         // Try to fetch one more byte to decide what to do.
-        optionally_unsafe! {
-            invariant!(index <= bytes.len());
-        }
+        invariant!(index <= bytes.len());
         raw_ch = bytes[index..].iter().copied().next(); // grcov-excl-br-line:ARRAY
     }
     if normalize && seq == block_hash::MAX_SEQUENCE_SIZE {
@@ -389,9 +371,7 @@ where
         }
         None => (BlockHashParseState::MetEndOfString, index),
     };
-    optionally_unsafe! {
-        invariant!(result.1 <= bytes.len());
-    }
+    invariant!(result.1 <= bytes.len());
     *bytes = &bytes[result.1..]; // grcov-excl-br-line:ARRAY
     result
 }

@@ -16,7 +16,7 @@ use crate::hash::parser_state::{
 };
 use crate::hash::{fuzzy_norm_type, fuzzy_raw_type, FuzzyHashData};
 use crate::intrinsics::unlikely;
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 /// An RLE Encoding as used in [`FuzzyHashDualData`].
 ///
@@ -345,20 +345,16 @@ mod algorithms {
         let extend_len_minus_one = len - block_hash::MAX_SEQUENCE_SIZE - 1;
         let seq_fill_size = extend_len_minus_one / rle_encoding::MAX_RUN_LENGTH;
         let start = rle_offset;
-        optionally_unsafe! {
-            invariant!(start <= rle_block.len());
-            invariant!(start + seq_fill_size <= rle_block.len());
-            invariant!(start <= start + seq_fill_size);
-        }
+        invariant!(start <= rle_block.len());
+        invariant!(start + seq_fill_size <= rle_block.len());
+        invariant!(start <= start + seq_fill_size);
         // grcov-excl-br-start:ARRAY
         rle_block[start..start + seq_fill_size].fill(rle_encoding::encode(
             pos as u8,
             rle_encoding::MAX_RUN_LENGTH as u8,
         ));
         // grcov-excl-br-stop
-        optionally_unsafe! {
-            invariant!(start + seq_fill_size < rle_block.len());
-        }
+        invariant!(start + seq_fill_size < rle_block.len());
         // grcov-excl-br-start:ARRAY
         rle_block[start + seq_fill_size] = rle_encoding::encode(
             pos as u8,
@@ -383,41 +379,38 @@ mod algorithms {
         ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize,
     {
         debug_assert!(blockhash_in.len() <= SZ_BH);
-        optionally_unsafe! {
-            let mut rle_offset = 0;
-            let mut seq = 0usize;
-            let mut len = 0usize;
-            let mut prev = crate::base64::BASE64_INVALID;
-            for &curr in blockhash_in {
-                if curr == prev {
-                    seq += 1;
-                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                        // Preserve sequence length for RLE encoding.
-                        continue;
-                    }
+        let mut rle_offset = 0;
+        let mut seq = 0usize;
+        let mut len = 0usize;
+        let mut prev = crate::base64::BASE64_INVALID;
+        for &curr in blockhash_in {
+            if curr == prev {
+                seq += 1;
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                    // Preserve sequence length for RLE encoding.
+                    continue;
                 }
-                else {
-                    if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                        rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
-                    }
-                    seq = 0;
-                    prev = curr;
+            } else {
+                if seq >= block_hash::MAX_SEQUENCE_SIZE {
+                    rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
                 }
-                invariant!(len < blockhash_out.len());
-                blockhash_out[len] = curr; // grcov-excl-br-line:ARRAY
-                len += 1;
+                seq = 0;
+                prev = curr;
             }
-            // If we processed all original block hash, there's a case where
-            // we are in an identical character sequence.
-            if seq >= block_hash::MAX_SEQUENCE_SIZE {
-                rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
-            }
-            *blockhash_len_out = len as u8;
-            invariant!(len <= blockhash_out.len());
-            blockhash_out[len..].fill(0); // grcov-excl-br-line:ARRAY
-            invariant!(rle_offset <= rle_block_out.len());
-            rle_block_out[rle_offset..].fill(rle_encoding::TERMINATOR); // grcov-excl-br-line:ARRAY
+            invariant!(len < blockhash_out.len());
+            blockhash_out[len] = curr; // grcov-excl-br-line:ARRAY
+            len += 1;
         }
+        // If we processed all original block hash, there's a case where
+        // we are in an identical character sequence.
+        if seq >= block_hash::MAX_SEQUENCE_SIZE {
+            rle_offset = update_rle_block(rle_block_out, rle_offset, len - 1, seq + 1);
+        }
+        *blockhash_len_out = len as u8;
+        invariant!(len <= blockhash_out.len());
+        blockhash_out[len..].fill(0); // grcov-excl-br-line:ARRAY
+        invariant!(rle_offset <= rle_block_out.len());
+        rle_block_out[rle_offset..].fill(rle_encoding::TERMINATOR); // grcov-excl-br-line:ARRAY
     }
 
     /// Expand a normalized block hash to a raw form using RLE encodings.
@@ -432,52 +425,51 @@ mod algorithms {
         BlockHashSize<SZ_BH>: ConstrainedBlockHashSize,
         ReconstructionBlockSize<SZ_BH, SZ_RLE>: ConstrainedReconstructionBlockSize,
     {
-        optionally_unsafe! {
-            let mut offset_src = 0usize;
-            let mut offset_dst = 0usize;
-            let mut len_out = blockhash_len_in;
-            let copy_as_is = |blockhash_out: &mut [u8; SZ_BH], dst, src, len| {
-                invariant!(src <= blockhash_in.len());
-                invariant!(src + len <= blockhash_in.len());
-                invariant!(src <= src + len);
-                invariant!(dst <= blockhash_out.len());
-                invariant!(dst + len <= blockhash_out.len());
-                invariant!(dst <= dst + len);
-                blockhash_out[dst..dst+len].clone_from_slice(&blockhash_in[src..src+len]); // grcov-excl-br-line:ARRAY
-            };
-            for &rle in rle_block_in {
-                // Decode position and length
-                let (pos, len) = rle_encoding::decode(rle);
-                if pos == 0 {
-                    // Met the terminator
-                    debug_assert!(rle == rle_encoding::TERMINATOR);
-                    break;
-                }
-                let pos = pos as usize;
-                len_out += len;
-                let len = len as usize;
-                // Copy as is
-                let copy_len = pos - offset_src;
-                copy_as_is(blockhash_out, offset_dst, offset_src, copy_len);
-                // Copy with duplication
-                invariant!(pos < blockhash_in.len());
-                let lastch = blockhash_in[pos]; // grcov-excl-br-line:ARRAY
-                invariant!(offset_dst + copy_len <= blockhash_out.len());
-                invariant!(offset_dst + copy_len + len <= blockhash_out.len());
-                invariant!(offset_dst + copy_len <= offset_dst + copy_len + len);
-                blockhash_out[offset_dst+copy_len..offset_dst+copy_len+len].fill(lastch); // grcov-excl-br-line:ARRAY
-                // Update next offset
-                offset_src += copy_len;
-                offset_dst += copy_len + len;
+        let mut offset_src = 0usize;
+        let mut offset_dst = 0usize;
+        let mut len_out = blockhash_len_in;
+        let copy_as_is = |blockhash_out: &mut [u8; SZ_BH], dst, src, len| {
+            invariant!(src <= blockhash_in.len());
+            invariant!(src + len <= blockhash_in.len());
+            invariant!(src <= src + len);
+            invariant!(dst <= blockhash_out.len());
+            invariant!(dst + len <= blockhash_out.len());
+            invariant!(dst <= dst + len);
+            blockhash_out[dst..dst + len].clone_from_slice(&blockhash_in[src..src + len]);
+            // grcov-excl-br-line:ARRAY
+        };
+        for &rle in rle_block_in {
+            // Decode position and length
+            let (pos, len) = rle_encoding::decode(rle);
+            if pos == 0 {
+                // Met the terminator
+                debug_assert!(rle == rle_encoding::TERMINATOR);
+                break;
             }
-            // Copy as is (tail)
-            let copy_len = len_out as usize - offset_dst;
+            let pos = pos as usize;
+            len_out += len;
+            let len = len as usize;
+            // Copy as is
+            let copy_len = pos - offset_src;
             copy_as_is(blockhash_out, offset_dst, offset_src, copy_len);
-            // Finalize
+            // Copy with duplication
+            invariant!(pos < blockhash_in.len());
+            let lastch = blockhash_in[pos]; // grcov-excl-br-line:ARRAY
             invariant!(offset_dst + copy_len <= blockhash_out.len());
-            blockhash_out[offset_dst+copy_len..].fill(0); // grcov-excl-br-line:ARRAY
-            *blockhash_len_out = len_out;
+            invariant!(offset_dst + copy_len + len <= blockhash_out.len());
+            invariant!(offset_dst + copy_len <= offset_dst + copy_len + len);
+            blockhash_out[offset_dst + copy_len..offset_dst + copy_len + len].fill(lastch); // grcov-excl-br-line:ARRAY
+                                                                                            // Update next offset
+            offset_src += copy_len;
+            offset_dst += copy_len + len;
         }
+        // Copy as is (tail)
+        let copy_len = len_out as usize - offset_dst;
+        copy_as_is(blockhash_out, offset_dst, offset_src, copy_len);
+        // Finalize
+        invariant!(offset_dst + copy_len <= blockhash_out.len());
+        blockhash_out[offset_dst + copy_len..].fill(0); // grcov-excl-br-line:ARRAY
+        *blockhash_len_out = len_out;
     }
 
     /// Expand a normalized block hash to a raw form using RLE encodings.
@@ -524,13 +516,11 @@ mod algorithms {
                 // identical character sequence.
                 let end = pos as usize;
                 let start = end - (block_hash::MAX_SEQUENCE_SIZE - 1);
-                optionally_unsafe! {
-                    invariant!(start < blockhash.len());
-                    invariant!(end < blockhash.len());
-                    #[allow(clippy::int_plus_one)]
-                    {
-                        invariant!(start + 1 <= end);
-                    }
+                invariant!(start < blockhash.len());
+                invariant!(end < blockhash.len());
+                #[allow(clippy::int_plus_one)]
+                {
+                    invariant!(start + 1 <= end);
                 }
                 let ch = blockhash[start]; // grcov-excl-br-line:ARRAY
                 if unlikely(
@@ -748,10 +738,8 @@ where
         debug_assert!(block_hash_2
             .iter()
             .all(|&x| x < block_hash::ALPHABET_SIZE as u8));
-        optionally_unsafe! {
-            invariant!(block_hash_1.len() <= S1);
-            invariant!(block_hash_2.len() <= S2);
-        }
+        invariant!(block_hash_1.len() <= S1);
+        invariant!(block_hash_2.len() <= S2);
         let mut hash = Self::new();
         hash.norm_hash.log_blocksize = log_block_size;
         algorithms::compress_block_hash_with_rle(

@@ -11,7 +11,7 @@ use core::ops::AddAssign;
 use crate::hash::block::block_hash;
 
 #[cfg(not(feature = "opt-reduce-fnv-table"))]
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 /// Hasher which computes the lowest 6 bits of a 32-bit FNV-1 variant.
 ///
@@ -75,12 +75,10 @@ impl PartialFNVHash {
     pub fn update_by_byte(&mut self, ch: u8) -> &mut Self {
         cfg_if::cfg_if! {
             if #[cfg(not(feature = "opt-reduce-fnv-table"))] {
-                optionally_unsafe! {
-                    invariant!((self.value() as usize) < block_hash::ALPHABET_SIZE);
-                    self.0 = Self::FNV_TABLE
-                        [self.value() as usize] // grcov-excl-br-line:ARRAY
-                        [(ch & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)) as usize]; // grcov-excl-br-line:ARRAY
-                }
+                invariant!((self.value() as usize) < block_hash::ALPHABET_SIZE);
+                self.0 = Self::FNV_TABLE
+                    [self.value() as usize] // grcov-excl-br-line:ARRAY
+                    [(ch & (block_hash::ALPHABET_SIZE as u8).wrapping_sub(1)) as usize]; // grcov-excl-br-line:ARRAY
             }
             else {
                 self.0 = ((self.0 as u32).wrapping_mul(Self::FNV_HASH_PRIME) ^ (ch as u32)) as u8;
@@ -113,9 +111,7 @@ impl PartialFNVHash {
     pub fn value(&self) -> u8 {
         cfg_if::cfg_if! {
             if #[cfg(not(feature = "opt-reduce-fnv-table"))] {
-                optionally_unsafe! {
-                    invariant!(self.0 < (block_hash::ALPHABET_SIZE as u8));
-                }
+                invariant!(self.0 < (block_hash::ALPHABET_SIZE as u8));
                 self.0
             }
             else {
@@ -172,5 +168,5 @@ mod const_asserts {
     const_assert!((PartialFNVHash::FNV_HASH_INIT as u16) < (block_hash::ALPHABET_SIZE as u16));
 }
 
-mod tests;
 pub(crate) mod test_utils;
+mod tests;

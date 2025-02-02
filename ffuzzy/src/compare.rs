@@ -12,7 +12,7 @@ use crate::hash::{fuzzy_norm_type, FuzzyHashData};
 use crate::hash_dual::{
     ConstrainedReconstructionBlockSize, FuzzyHashDualData, ReconstructionBlockSize,
 };
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 pub mod position_array;
 
@@ -541,13 +541,11 @@ impl FuzzyHashCompareTarget {
                 <= (len_block_hash_lhs as u32 + len_block_hash_rhs as u32
                     - 2 * block_hash::MIN_LCS_FOR_COMPARISON as u32)
         );
-        optionally_unsafe! {
-            // rustc/LLVM cannot prove that
-            // (len_block_hash_lhs + len_block_hash_rhs)
-            //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2.
-            // Place this invariant to avoid division-by-zero checking.
-            invariant!((len_block_hash_lhs + len_block_hash_rhs) > 0);
-        }
+        // rustc/LLVM cannot prove that
+        // (len_block_hash_lhs + len_block_hash_rhs)
+        //     <= block_hash::MIN_LCS_FOR_COMPARISON * 2.
+        // Place this invariant to avoid division-by-zero checking.
+        invariant!((len_block_hash_lhs + len_block_hash_rhs) > 0);
         /*
             Possible arithmetic operations to check overflow:
             1.  (block_hash::FULL_SIZE * 2) * block_hash::FULL_SIZE
@@ -669,9 +667,7 @@ impl FuzzyHashCompareTarget {
         len_block_hash_lhs: u8,
         len_block_hash_rhs: u8,
     ) -> u32 {
-        optionally_unsafe! {
-            invariant!(log_block_size < FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER);
-        }
+        invariant!(log_block_size < FuzzyHashCompareTarget::LOG_BLOCK_SIZE_CAPPING_BORDER);
         (1u32 << log_block_size) * u32::min(len_block_hash_lhs as u32, len_block_hash_rhs as u32)
     }
 

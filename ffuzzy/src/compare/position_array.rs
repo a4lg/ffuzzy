@@ -5,7 +5,7 @@
 
 use crate::compare::FuzzyHashCompareTarget;
 use crate::hash::block::{block_hash, block_size};
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 use crate::utils::u64_lsb_ones;
 
 /// A module containing utilities for an element of block hash position array.
@@ -256,17 +256,15 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!(other.len() <= 64);
         let len = self.len();
         let representation = self.representation();
-        optionally_unsafe! {
-            (len as usize) == other.len()
-                && other.iter().enumerate().all(
-                    #[inline(always)]
-                    |(i, &ch)| {
-                        invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                        let value = representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                        value & (1u64 << i) != 0
-                    },
-                )
-        }
+        (len as usize) == other.len()
+            && other.iter().enumerate().all(
+                #[inline(always)]
+                |(i, &ch)| {
+                    invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
+                    let value = representation[ch as usize]; // grcov-excl-br-line:ARRAY
+                    value & (1u64 << i) != 0
+                },
+            )
     }
 
     /// The internal implementation of [`BlockHashPositionArrayImplUnchecked::has_common_substring_unchecked()`].
@@ -280,28 +278,26 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         {
             return false;
         }
-        optionally_unsafe! {
-            let mut l: usize = other.len() - block_hash::MIN_LCS_FOR_COMPARISON;
-            loop {
+        let mut l: usize = other.len() - block_hash::MIN_LCS_FOR_COMPARISON;
+        loop {
+            invariant!(l < other.len());
+            invariant!((other[l] as usize) < block_hash::ALPHABET_SIZE);
+            let mut d: u64 = representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
+            let r: usize = l + (block_hash::MIN_LCS_FOR_COMPARISON - 1);
+            while d != 0 {
+                l += 1;
                 invariant!(l < other.len());
                 invariant!((other[l] as usize) < block_hash::ALPHABET_SIZE);
-                let mut d: u64 = representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
-                let r: usize = l + (block_hash::MIN_LCS_FOR_COMPARISON - 1);
-                while d != 0 {
-                    l += 1;
-                    invariant!(l < other.len());
-                    invariant!((other[l] as usize) < block_hash::ALPHABET_SIZE);
-                    d = (d << 1) & representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
-                    if l == r && d != 0 {
-                        return true;
-                    }
+                d = (d << 1) & representation[other[l] as usize]; // grcov-excl-br-line:ARRAY
+                if l == r && d != 0 {
+                    return true;
                 }
-                // Boyer–Moore-like skipping
-                if l < block_hash::MIN_LCS_FOR_COMPARISON {
-                    break;
-                }
-                l -= block_hash::MIN_LCS_FOR_COMPARISON;
             }
+            // Boyer–Moore-like skipping
+            if l < block_hash::MIN_LCS_FOR_COMPARISON {
+                break;
+            }
+            l -= block_hash::MIN_LCS_FOR_COMPARISON;
         }
         false
     }
@@ -315,13 +311,11 @@ pub trait BlockHashPositionArrayImplInternal: BlockHashPositionArrayData {
         debug_assert!((len as usize) <= block_hash::FULL_SIZE);
         debug_assert!(other.len() <= block_hash::FULL_SIZE);
         let mut v: u64 = !0;
-        optionally_unsafe! {
-            for &ch in other.iter() {
-                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                let e: u64 = representation[ch as usize]; // grcov-excl-br-line:ARRAY
-                let p: u64 = e & v;
-                v = (v.wrapping_add(p)) | (v.wrapping_sub(p));
-            }
+        for &ch in other.iter() {
+            invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
+            let e: u64 = representation[ch as usize]; // grcov-excl-br-line:ARRAY
+            let p: u64 = e & v;
+            v = (v.wrapping_add(p)) | (v.wrapping_sub(p));
         }
         let llcs = v.count_zeros();
         (len as u32) + (other.len() as u32) - 2 * llcs
@@ -716,11 +710,9 @@ pub(crate) trait BlockHashPositionArrayImplMutInternal:
     fn init_from_partial(&mut self, blockhash: &[u8]) {
         debug_assert!(blockhash.len() <= 64);
         let representation = self.representation_mut();
-        optionally_unsafe! {
-            for (i, &ch) in blockhash.iter().enumerate() {
-                invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
-                representation[ch as usize] |= 1u64 << i; // grcov-excl-br-line:ARRAY
-            }
+        for (i, &ch) in blockhash.iter().enumerate() {
+            invariant!((ch as usize) < block_hash::ALPHABET_SIZE);
+            representation[ch as usize] |= 1u64 << i; // grcov-excl-br-line:ARRAY
         }
         self.set_len_internal(blockhash.len() as u8);
     }

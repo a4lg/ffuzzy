@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Easy generator functions depending on the standard I/O.
 
@@ -11,7 +11,7 @@ use std::path::Path;
 
 use crate::generate::{Generator, GeneratorError};
 use crate::hash::RawFuzzyHash;
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 /// The error type describing either a generator error or an I/O error.
 ///
@@ -83,9 +83,7 @@ fn hash_stream_common<R: Read>(
         if len == 0 {
             break;
         }
-        optionally_unsafe! {
-            invariant!(len <= buffer.len());
-        }
+        invariant!(len <= buffer.len());
         generator.update(&buffer[0..len]);
     }
     Ok(generator.finalize()?)

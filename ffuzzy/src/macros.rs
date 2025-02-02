@@ -9,22 +9,7 @@
 /// expanded to an `unsafe` block.
 ///
 /// Inside this block, you may place statements that may change the behavior
-/// depending on the feature `unsafe`.  For instance, you may place
-/// [`invariant!()`] inside this block.
-///
-/// ```ignore
-/// # // Because this is an internal macro, we must ignore on the doctest
-/// # // because each Rust doctest's scope is external to this crate.
-/// // INTERNAL USE (INSIDE THIS CRATE) ONLY
-/// // let index: usize = ... (but proven to be inside the array).
-/// # let index = 3usize;
-/// let array = [0, 1, 2, 3];
-/// optionally_unsafe! {
-///     invariant!(index < array.len());
-/// }
-/// // Bound checking may be optimized out.
-/// let result = array[index];
-/// ```
+/// depending on the feature `unsafe`.
 #[doc(alias = "optionally_unsafe")]
 macro_rules! optionally_unsafe_impl {
     {$($tokens: tt)*} => {
@@ -50,19 +35,34 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 ///
 /// Optimization behaviors are disabled on tests.
 ///
-/// Use this macro along with [`optionally_unsafe!{}`].
+/// # Example
+///
+/// ```ignore
+/// # // Because this is an internal macro, we must ignore on the doctest
+/// # // because each Rust doctest's scope is external to this crate.
+/// // INTERNAL USE (INSIDE THIS CRATE) ONLY
+/// // let index: usize = ... (but proven to be inside the array).
+/// # let index = 3usize;
+/// let array = [0, 1, 2, 3];
+/// invariant!(index < array.len());
+/// // Bound checking may be optimized out.
+/// let result = array[index];
+/// ```
 #[doc(alias = "invariant")]
 macro_rules! invariant_impl {
     ($expr: expr) => {
         cfg_if::cfg_if! {
             if #[cfg(all(feature = "unsafe", ffuzzy_assume = "stable", not(test)))] {
-                #[allow(clippy::incompatible_msrv)] {
+                #[allow(clippy::incompatible_msrv)]
+                unsafe {
                     core::hint::assert_unchecked($expr);
                 }
             }
             else if #[cfg(all(feature = "unsafe", not(test)))] {
                 if !($expr) {
-                    core::hint::unreachable_unchecked();
+                    unsafe {
+                        core::hint::unreachable_unchecked();
+                    }
                 }
             }
             else {

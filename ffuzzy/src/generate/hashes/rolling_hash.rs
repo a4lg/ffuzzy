@@ -8,7 +8,7 @@
 
 use core::ops::AddAssign;
 
-use crate::macros::{invariant, optionally_unsafe};
+use crate::macros::invariant;
 
 /// See [`RollingHash::WINDOW_SIZE`].
 pub const ROLLING_WINDOW: usize = 7;
@@ -92,9 +92,7 @@ impl RollingHash {
     /// Updates the hash value by processing a byte.
     #[inline]
     pub fn update_by_byte(&mut self, ch: u8) -> &mut Self {
-        optionally_unsafe! {
-            invariant!((self.index as usize) < Self::WINDOW_SIZE);
-        }
+        invariant!((self.index as usize) < Self::WINDOW_SIZE);
         self.h2 = self.h2.wrapping_sub(self.h1);
         self.h2 = self
             .h2
@@ -202,5 +200,5 @@ mod const_asserts {
     // grcov-excl-tests-stop
 }
 
-mod tests;
 pub(crate) mod test_utils;
+mod tests;
