@@ -478,7 +478,7 @@ pub unsafe trait BlockHashPositionArrayImplUnchecked: BlockHashPositionArrayData
     ///     [`block_hash::FULL_SIZE`].
     /// *   All elements in `other` must be less than
     ///     [`block_hash::ALPHABET_SIZE`].
-    /// *   `log_block_size` [must be valid](block_size::is_log_valid)
+    /// *   `log_block_size` [must be valid](block_size::is_log_valid())
     ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
     ///     not valid as a block size for a fuzzy hash object but valid on this
     ///     method).

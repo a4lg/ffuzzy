@@ -435,7 +435,7 @@ impl Generator {
     ///
     /// Although that this implementation handles [`u64`] as the native input
     /// size type and
-    /// [the file size in the Rust standard library](std::fs::Metadata::len)
+    /// [the file size in the Rust standard library](std::fs::Metadata::len())
     /// is represented as [`u64`], it's not rare that you want to give a
     /// [`usize`] to hash a buffer (or your program uses [`usize`] for its
     /// native size representation).

@@ -728,7 +728,7 @@ impl FuzzyHashCompareTarget {
     /// computation and a safety measure in this method), following semantic
     /// constraints may be added on the future versions:
     ///
-    /// *   `log_block_size` [must be valid](block_size::is_log_valid)
+    /// *   `log_block_size` [must be valid](block_size::is_log_valid())
     ///     or must be equal to [`block_size::NUM_VALID`] (this value itself is
     ///     not valid as a block size for a fuzzy hash object but will be valid
     ///     on this method).

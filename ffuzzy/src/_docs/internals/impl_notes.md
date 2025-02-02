@@ -20,7 +20,7 @@ Invariants can suppress another type of runtime check (not just array
 bounds check): division by zero.
 
 A big exception is the
-[generator's main loop](crate::generate::Generator::update).
+[generator's main loop](crate::generate::Generator::update()).
 Because using pointer-based block hash context access is much efficient (we
 can even reuse pointer ranges), the structure of this loop changes
 significantly between both implementations.

@@ -1417,7 +1417,7 @@ where
     ///
     /// This method assumes that the fuzzy hash data is not broken.
     ///
-    /// Unlike this method, [`Debug`](core::fmt::Debug::fmt) implementation
+    /// Unlike this method, [`Debug` implementation](core::fmt::Debug::fmt())
     /// does not cause problems if a given fuzzy hash is broken.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut buffer = [0u8; crate::MAX_LEN_IN_STR];

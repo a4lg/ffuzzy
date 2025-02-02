@@ -394,7 +394,7 @@ pub mod block_hash {
     /// To score similarity between two block hashes with the same block size,
     /// ssdeep expects that two block hashes are similar enough.
     /// In specific, ssdeep expects that they
-    /// [have a common substring](crate::compare::position_array::BlockHashPositionArrayImpl::has_common_substring)
+    /// [have a common substring](crate::compare::position_array::BlockHashPositionArrayImpl::has_common_substring())
     /// of a length [`MIN_LCS_FOR_COMPARISON`] or longer to reduce the
     /// possibility of false matches by chance.
     ///
