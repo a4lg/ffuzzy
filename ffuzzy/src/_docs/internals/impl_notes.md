@@ -16,10 +16,6 @@ invariant to tell the optimizer that the array access is safe.  Despite that
 generating an invariant itself is an unsafe operation, most code looks
 like safe Rust.
 
-To not to miss `unsafe` invariant uses, `invariant!` macro must be placed
-inside an `optionally_unsafe!` macro block (which is going to be an `unsafe`
-block or a regular block depending on the configuration).
-
 Invariants can suppress another type of runtime check (not just array
 bounds check): division by zero.
 
