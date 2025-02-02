@@ -1601,7 +1601,7 @@ where
     /// [`block_hash_1_windows()`](Self::block_hash_1_windows())
     /// but each window is a numeric value corresponding each substring.
     ///
-    /// See also: [`block_hash::NumericWindows`].
+    /// See also: [`block_hash::NumericWindows`]
     #[inline]
     pub fn block_hash_1_numeric_windows(&self) -> block::block_hash::NumericWindows {
         block::block_hash::NumericWindows::new(self.block_hash_1())
@@ -1615,7 +1615,7 @@ where
     /// except that each window contains block hash 1's effective block size
     /// (*base-2 logarithm* form of the block size of the hash).
     ///
-    /// See also: [`block_hash::IndexWindows`].
+    /// See also: [`block_hash::IndexWindows`]
     ///
     /// # Example (pseudo code)
     ///
@@ -1672,7 +1672,7 @@ where
     /// Windows representing substrings
     /// suitable for filtering block hashes to match (block hash 2).
     ///
-    /// See also: [`block_hash_1_windows()`](Self::block_hash_1_windows()).
+    /// See also: [`block_hash_1_windows()`](Self::block_hash_1_windows())
     #[inline]
     pub fn block_hash_2_windows(&self) -> core::slice::Windows<'_, u8> {
         self.block_hash_2()
@@ -1686,7 +1686,7 @@ where
     /// [`block_hash_2_windows()`](Self::block_hash_2_windows())
     /// but each window is a numeric value corresponding each substring.
     ///
-    /// See also: [`block_hash::NumericWindows`].
+    /// See also: [`block_hash::NumericWindows`]
     #[inline]
     pub fn block_hash_2_numeric_windows(&self) -> block::block_hash::NumericWindows {
         block::block_hash::NumericWindows::new(self.block_hash_2())
