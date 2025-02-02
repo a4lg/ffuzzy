@@ -183,7 +183,7 @@ assert_eq!(hash1.compare(&hash2), 88);
     reduce memory footprint since a generator is about 2KiB in size and a
     temporary object used for fuzzy hash comparison is about 1KiB in size (so
     that reducing 4KiB does not benefit well).
-*   `tests-slow` and `tests-very-slow`  
+*   `tests-slow` and `tests-very-slow` (`tests-very-slow` is deprecated)  
     They will enable "slow" (may take seconds or even a couple of minutes) and
     "very slow" (may take more than that) tests, respectively.
 
