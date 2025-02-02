@@ -164,8 +164,9 @@ pub const MAX_LEN_IN_STR: usize = LongRawFuzzyHash::MAX_LEN_IN_STR;
 /// Constant assertions related to the base requirements.
 #[doc(hidden)]
 mod const_asserts {
-    use super::*;
     use static_assertions::const_assert;
+
+    use super::*;
 
     // We expect that usize is at least 16 bits in width.
     // Note that, some tests even require that usize is at least 32 bits.
