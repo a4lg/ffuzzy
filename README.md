@@ -149,7 +149,7 @@ assert_eq!(hash1.compare(&hash2), 88);
 *   `strict-parser`  
     It enables the strict parser which rejects the fuzzy hash strings that would
     cause an error on the "raw" variant but not on the "normalized" variant
-    (on the defualt parser).
+    (on the default parser).
     This is disabled by default (because it slows the parser) but enabling it
     will make the parser less confusing and more robust.
 *   `unsafe` (**fast but unsafe**)  
