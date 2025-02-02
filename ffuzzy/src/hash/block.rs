@@ -7,9 +7,9 @@ use core::cmp::Ordering;
 
 /// A type to represent relation between two block sizes.
 ///
-/// Because the core comparison method can only compare two block hashes
-/// with the same block size, we cannot compare two fuzzy hashes if their
-/// block sizes are not near enough.
+/// Because the core comparison function can only compare two block hashes
+/// with the same effective block size, we cannot compare two fuzzy hashes
+/// if their block sizes are not near enough.
 ///
 /// There are three cases where we can perform actual block hash comparison:
 ///
@@ -20,6 +20,8 @@ use core::cmp::Ordering;
 /// 3. **Greater than** ([`NearGt`](Self::NearGt))  
 ///    `bs_a > bs_b && bs_a == bs_b * 2`
 ///
+/// See also: ["Relations with Block Size" section of `FuzzyHashData`](crate::FuzzyHashData#relations-with-block-size)
+///
 /// This type represents those *near* cases (three variants) and the case which
 /// two fuzzy hashes cannot perform a block hash comparison, the *far* case
 /// (the [`Far`](Self::Far) variant).
@@ -28,31 +30,35 @@ use core::cmp::Ordering;
 /// [`block_size::compare_sizes()`](crate::block_size::compare_sizes()) or
 /// [`FuzzyHashData::compare_block_sizes()`](crate::hash::FuzzyHashData::compare_block_sizes()).
 ///
-/// Note: in this crate, it can efficiently handle such relations by using the
-/// [*base-2 logarithms* form of the block size](crate::hash::FuzzyHashData#block-size)
-/// (no multiplication required).
-///
 /// # Compatibility Note
 ///
 /// Since the version 0.3, the representation of this enum is no longer
 /// specified as specific representation of this enum is not important.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockSizeRelation {
+    /// Near and less than (i.e. `x < x * 2`).
+    ///
     /// Two block sizes are *near* and the block hash 2 (one with a larger block
     /// size) of the left side (of comparison) can be compared with the block
     /// hash 1 (one with a smaller block size) of the right side.
     NearLt,
 
+    /// Near and equals (i.e. `x == x`).
+    ///
     /// Two block sizes are not just *near* but the same.
     /// We compare both block hashes with the other and take the maximum value
     /// for the output.
     NearEq,
 
+    /// Near and greater than (i.e. `x * 2 > x`).
+    ///
     /// Two block sizes are *near* and the block hash 1 (one with a smaller
     /// block size) of the left side (of comparison) can be compared with the
     /// block hash 2 (one with a larger block size) of the right side.
     NearGt,
 
+    /// Far (e.g. `x` and `x * 4`).
+    ///
     /// Two block sizes are *far* and a block hash comparison
     /// cannot be performed.
     Far,
