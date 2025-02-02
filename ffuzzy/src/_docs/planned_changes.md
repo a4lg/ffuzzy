@@ -32,7 +32,7 @@ Depending on the Rust edition target (we haven't decided yet),
 MSRV on the next major release will be raised to the version specific
 to that edition.
 
-*   Edition 2021 case: at least 1.79 (most likely 1.81)  
+*   Edition 2021 case: at least 1.79 (most likely 1.83)  
     Rust 1.79's associated type bounds feature makes our new trait-based design
     far more easier.
 *   Edition 2024 case (more likely): 1.85 (not released yet)
