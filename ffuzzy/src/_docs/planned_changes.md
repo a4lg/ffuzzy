@@ -114,5 +114,9 @@ They were useful to experiment with ssdeep internals but we could not justify
 keeping them public.  If you need to use those, just vendor the source code
 for your needs (they are relatively simple and will be easy to vendor them).
 
+Two internal hashes for fuzzy hash generator is separated to new internal
+modules to make vendoring the source code much easier (although not completely
+separate from the rest, it should be easy to cut the dependencies).
+
 For specific needs, a comparison target storing just one block hash (instead of
 two block hashes) will be public as a new type.
