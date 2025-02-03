@@ -168,7 +168,7 @@ mod const_asserts {
 
     use super::*;
 
-    // We expect that usize is at least 16 bits in width.
+    // Environment: We expect that usize is at least 16 bits in width.
     // Note that, some tests even require that usize is at least 32 bits.
     const_assert!(usize::BITS >= 16);
 
