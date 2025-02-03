@@ -85,6 +85,8 @@ impl core::fmt::Display for ParseErrorOrigin {
 // grcov-excl-br-start:STRUCT_MEMBER
 
 /// The error type for parse operations of a fuzzy hash.
+///
+/// See also: [`ParseErrorInfo`]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseError(
     pub(crate) ParseErrorKind,
