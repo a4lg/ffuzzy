@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: Copyright (C) 2023, 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+// SPDX-FileCopyrightText: Copyright (C) 2023–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 //! Tests: [`crate::utils`].
 
 #![cfg(test)]
+
+use alloc::borrow::ToOwned;
 
 use super::{u64_ilog2, u64_lsb_ones};
 
@@ -32,7 +34,6 @@ fn u64_ilog2_near_borders() {
 
 #[test]
 fn u64_lsb_ones_from_binary_string() {
-    use alloc::borrow::ToOwned;
     // Make binary number string "01...1" (with `n` ones), parse and compare
     for n in 0..=u64::BITS {
         let size = usize::try_from(n).unwrap();
