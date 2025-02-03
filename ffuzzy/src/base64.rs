@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023, 2024
+// SPDX-FileCopyrightText: Authored by Tsukasa OI <floss_ssdeep@irq.a4lg.com> in 2023–2025
 
 //! Base64 handlings.
 
@@ -19,6 +19,9 @@ pub(crate) const BASE64_TABLE_U8: [u8; 64] = [
 /// Reverse byte to Base64 character index table.
 ///
 /// This table has all 256 entries for branchless lookup, even on safe Rust.
+///
+/// Invalid entries are filled with `0x40`,
+/// which is equal to [`BASE64_INVALID`].
 ///
 /// # Performance Analysis
 ///
