@@ -150,10 +150,10 @@ pub mod constraints {
 pub mod prelude {}
 
 /// The maximum length of the fuzzy hash's string representation
-/// (except the file name part).
+/// (except optional file name part).
 ///
-/// This is the maximum length of the longest valid fuzzy hash
-/// (except the file name part) when represented in a string.
+/// This is the maximum length of the longest valid fuzzy hash (except
+/// optional file name part) when represented in a string.
 ///
 /// Note that again, this value does not count
 /// [the file name part of the fuzzy hash](crate::hash::FuzzyHashData#fuzzy-hash-internals)
