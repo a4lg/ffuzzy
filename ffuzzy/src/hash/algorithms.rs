@@ -170,7 +170,7 @@ where
 /// to resume parsing the next part (i.e. block size → block hash 1)
 /// if succeeds (the end of `bytes` is always unchanged).
 ///
-/// If it succeeds, [`Ok`] containing a tuple containing a valid block size and
+/// If it succeeds, [`Ok`] with a tuple containing a valid block size and
 /// the number of processed bytes (including trailing colon `':'`) is returned.
 ///
 /// Otherwise, an [`Err`] with detailed parse error information is returned.
