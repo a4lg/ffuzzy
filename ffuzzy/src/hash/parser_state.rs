@@ -54,8 +54,8 @@ impl core::fmt::Display for ParseErrorKind {
 /// See ["Fuzzy Hash Internals" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-internals)
 /// for corresponding parts.
 ///
-/// Since the parser ignores the file name part,
-/// this part is currently not in this enumeration.
+/// Since the parser currently ignores the file name part,
+/// this part is not in this enumeration for now.
 ///
 /// # Compatibility Note
 ///
