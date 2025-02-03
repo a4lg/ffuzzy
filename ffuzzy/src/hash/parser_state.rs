@@ -89,6 +89,7 @@ impl core::fmt::Display for ParseErrorOrigin {
 /// See also: [`ParseErrorInfo`]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseError(
+    // Use pub(crate) to enable direct initialization.
     pub(crate) ParseErrorKind,
     pub(crate) ParseErrorOrigin,
     pub(crate) usize,
