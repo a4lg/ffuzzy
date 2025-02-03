@@ -3,8 +3,7 @@
 
 //! Internal parser state and its handling.
 
-/// An enumeration representing a cause of
-/// a [fuzzy hash](crate::hash::FuzzyHashData) parse error.
+/// An enumeration representing a cause of a fuzzy hash parse error.
 ///
 /// # Compatibility Note
 ///
@@ -50,8 +49,7 @@ impl core::fmt::Display for ParseErrorKind {
     }
 }
 
-/// A part which (possibly) caused a
-/// [fuzzy hash](crate::hash::FuzzyHashData) parse error.
+/// A part which (possibly) caused a fuzzy hash parse error.
 ///
 /// See [`FuzzyHashData`](crate::hash::FuzzyHashData) for corresponding parts.
 ///
@@ -86,8 +84,7 @@ impl core::fmt::Display for ParseErrorOrigin {
 
 // grcov-excl-br-start:STRUCT_MEMBER
 
-/// The error type for parse operations of
-/// [`FuzzyHashData`](crate::hash::FuzzyHashData).
+/// The error type for parse operations of a fuzzy hash.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseError(
     pub(crate) ParseErrorKind,
@@ -97,13 +94,14 @@ pub struct ParseError(
 
 // grcov-excl-br-stop
 
-/// The trait implementing a [`FuzzyHashData`](crate::hash::FuzzyHashData)
-/// parse error.
+/// The trait implementing a fuzzy hash parse error.
 pub trait ParseErrorInfo {
     /// Returns the cause of the error.
     fn kind(&self) -> ParseErrorKind;
+
     /// Returns the part which (possibly) caused the error.
     fn origin(&self) -> ParseErrorOrigin;
+
     /// Returns the offset which (possibly) caused the error.
     ///
     /// Note that this offset may not be exact but may be usable as a hint.
