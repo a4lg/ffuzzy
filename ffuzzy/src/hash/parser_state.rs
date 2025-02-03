@@ -51,10 +51,11 @@ impl core::fmt::Display for ParseErrorKind {
 
 /// A part which (possibly) caused a fuzzy hash parse error.
 ///
-/// See [`FuzzyHashData`](crate::hash::FuzzyHashData) for corresponding parts.
+/// See ["Fuzzy Hash Internals" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-internals)
+/// for corresponding parts.
 ///
 /// Since the parser ignores the file name part,
-/// this part is not in this enumeration.
+/// this part is currently not in this enumeration.
 ///
 /// # Compatibility Note
 ///
