@@ -163,12 +163,17 @@ where
     }
 }
 
-/// Parse block size part of the fuzzy hash from given bytes.
+/// Parse block size part of the fuzzy hash from given bytes,
+/// including trailing colon separating block size and block hash 1.
 ///
-/// If success, [`Ok`] containing a valid block size is returned.
+/// `bytes` (input/output) is updated to start with the first character
+/// to resume parsing the next part (i.e. block size → block hash 1)
+/// if succeeds (the end of `bytes` is always unchanged).
 ///
-/// `i` (input/output) is updated to the last character index to continue
-/// parsing if succeeds.  If it fails, the value of `i` is preserved.
+/// If it succeeds, [`Ok`] containing a tuple containing a valid block size and
+/// the number of processed bytes (including trailing colon `':'`) is returned.
+///
+/// Otherwise, an [`Err`] with detailed parse error information is returned.
 #[inline]
 pub(crate) fn parse_block_size_from_bytes(bytes: &mut &[u8]) -> Result<(u32, usize), ParseError> {
     let mut block_size = 0u32;
