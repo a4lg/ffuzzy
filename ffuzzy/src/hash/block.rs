@@ -87,10 +87,10 @@ pub mod block_size {
 
     /// The number of valid block sizes.
     ///
-    /// [`NUM_VALID`] is the smallest value which 2<sup>n</sup> exceeds
-    /// [`u32::MAX`] and this value itself is not valid as a *base-2 logarithm*
-    /// form of the block size (in fact, this is the *smallest* invalid value)
-    /// in the fuzzy hash object.
+    /// [`NUM_VALID`] is the smallest value which
+    /// [`MIN`] * 2<sup>n</sup>exceeds [`u32::MAX`] and this value
+    /// itself is not valid as a *base-2 logarithm* form of the block size (in
+    /// fact, this is the *smallest* invalid value) in the fuzzy hash object.
     ///
     /// Note that, it *can* however be a valid *effective base-2 logarithm* form
     /// of the block size of the block hash 2 where the (base) block size (as in
