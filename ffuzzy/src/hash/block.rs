@@ -679,6 +679,7 @@ where
 
 /// Constant assertions related to this module.
 #[doc(hidden)]
+#[allow(clippy::unnecessary_cast)]
 mod const_asserts {
     use static_assertions::{const_assert, const_assert_eq, const_assert_ne};
 
@@ -705,7 +706,7 @@ mod const_asserts {
     const_assert_ne!(block_size::NUM_VALID as u8, u8::MAX);
 
     // MAX_SEQUENCE_SIZE: fits in u32 and safe to add 1 (in either u32 or usize)
-    const_assert!(block_hash::MAX_SEQUENCE_SIZE < 0xffff_ffff);
+    const_assert!(usize::BITS < 32 || block_hash::MAX_SEQUENCE_SIZE < 0xffff_ffff as usize);
     const_assert_ne!(block_hash::MAX_SEQUENCE_SIZE, usize::MAX);
 
     // block_size::NUM_VALID - 1 indicates the largest n so that
