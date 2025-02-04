@@ -1531,8 +1531,8 @@ where
     /// with pre-computation.
     ///
     /// *Note*: This is particularly useful for large scale clustering because
-    /// if we have a common substring, there is a guarantee that the final
-    /// similarity score is greater than zero.  So, finding a common substring
+    /// there is a guarantee that the final similarity score is greater than
+    /// zero if we have a common substring.  So, finding a common substring
     /// is a fundamental operation to split a set of unique fuzzy hashes into
     /// disjoint sets of single-linkage clusters (two elements in the same set
     /// may (or may not) be a member of a cluster with a non-zero similarity but
