@@ -77,6 +77,16 @@ members).
 
 ## Removal (because of being deprecated)
 
+### [`From`] implementation from Raw to Normalized variants
+
+Because it is found that they break a semantic rule of the [`From`] trait,
+conversion from raw fuzzy hash to normalized fuzzy hash as implementations of
+[`From`] is deprecated and will be removed on the next major release.
+
+To convert raw fuzzy hash to the normalized counterpart, you must use
+`normalize()`-like methods (may be renamed in the next release but the
+conversion feature itself will be preserved).
+
 ### `+=` operator overloads
 
 Since it's clear that this operator overload is not helpful enough,
