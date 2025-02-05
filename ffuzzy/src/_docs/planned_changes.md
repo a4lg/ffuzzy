@@ -79,11 +79,11 @@ members).
 
 ### [`From`] implementation from Raw to Normalized variants
 
-Because it is found that they break a semantic rule of the [`From`] trait,
-conversion from raw fuzzy hash to normalized fuzzy hash as implementations of
+Because it is found that it breaks a semantic rule of the [`From`] trait,
+conversion from raw fuzzy hash to normalized fuzzy hash as an implementation of
 [`From`] is deprecated and will be removed on the next major release.
 
-To convert raw fuzzy hash to the normalized counterpart, you must use
+To convert a raw fuzzy hash to the normalized counterpart, you must use
 `normalize()`-like methods (may be renamed in the next release but the
 conversion feature itself will be preserved).
 
