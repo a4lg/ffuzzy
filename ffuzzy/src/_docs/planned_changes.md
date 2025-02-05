@@ -40,6 +40,11 @@ to that edition.
 
 ## Features
 
+### Removal of `strict-parser`
+
+Simply, the next version will make this default and there will be no option
+to disable that strict behavior.
+
 ### Removal of `opt-reduce-fnv-table`
 
 This feature is rather subtractive than recommended additive feature rules
