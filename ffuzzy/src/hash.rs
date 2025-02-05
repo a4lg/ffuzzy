@@ -1828,6 +1828,10 @@ where
     }
 }
 
+/// # Compatibility Note
+///
+/// Because this conversion breaks a semantic rule of the [`From`] trait,
+/// it will be removed in the next major release.
 impl<const S1: usize, const S2: usize> core::convert::From<raw_type!(S1, S2)> for norm_type!(S1, S2)
 where
     BlockHashSize<S1>: ConstrainedBlockHashSize,
