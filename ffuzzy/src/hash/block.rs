@@ -399,7 +399,8 @@ pub mod block_hash {
     /// possibility of false matches by chance.
     ///
     /// If we couldn't find such a common substring, the low level block hash
-    /// comparison method returns zero (meaning, not similar).
+    /// comparison method returns zero (meaning, not similar as long as
+    /// [two normalized fuzzy hashes are different](crate::hash::FuzzyHashData#fuzzy-hash-comparison)).
     ///
     /// Finding such common substrings is a special case of finding a
     /// [longest common substring (LCS)](https://en.wikipedia.org/wiki/Longest_common_substring).
