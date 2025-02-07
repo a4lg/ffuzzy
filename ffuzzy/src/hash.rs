@@ -961,7 +961,7 @@ where
         Display trait and to_string method below are equivalent and shadowing
         default to_string helps improving the performance.
     */
-    /// Converts the fuzzy hash to the string.
+    /// Converts the fuzzy hash to the corresponding string representation.
     #[cfg(feature = "alloc")]
     #[allow(clippy::inherent_to_string_shadow_display)]
     pub fn to_string(&self) -> String {
