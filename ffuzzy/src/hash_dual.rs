@@ -1035,8 +1035,9 @@ where
     /// The primary purpose of this is debugging and it should always
     /// return [`true`] unless...
     ///
-    /// *   There is a bug in this crate, corrupting this structure or
-    /// *   A memory corruption is occurred somewhere else.
+    /// *   There is a bug in this crate, corrupting this structure,
+    /// *   A memory corruption is occurred somewhere else or
+    /// *   An `unsafe` function to construct this object is misused.
     ///
     /// Because of its purpose, this method is not designed to be fast.
     ///
