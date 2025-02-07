@@ -958,8 +958,8 @@ where
 
     /*
         #[allow(clippy::inherent_to_string_shadow_display)] BELOW IS INTENTIONAL.
-        Display trait and to_string method below are equivalent and shadowing
-        default to_string helps improving the performance.
+        Display trait and to_string() method below are equivalent and shadowing
+        default to_string() helps improving the performance.
     */
     /// Converts the fuzzy hash to the corresponding string representation.
     #[cfg(feature = "alloc")]
