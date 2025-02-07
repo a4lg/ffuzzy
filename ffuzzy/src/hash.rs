@@ -214,9 +214,9 @@ pub mod parser_state;
 /// For instance (`/usr/libexec/geoclue` on Ubuntu 23.10):
 ///
 /// ```text
+///                                                                                                                                   v
 /// Non-truncated (long):        6144:M5/qVhAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71C3O:M5/qzAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71ETfJ
 /// Truncated (short / regular): 6144:M5/qVhAWFfzlpxdJ/YQINNbZ2cQpn77+Ptn+7ADOeb8Gj+OK8o4u1TzxwBf71C3O:M5/qzAWFfzlpxdJ/YQINNbZ2cQpn77+i
-///                                                                                                                                   ^
 /// ```
 ///
 /// Beware that the 32nd character of the block hash 2 are different (`P` and
