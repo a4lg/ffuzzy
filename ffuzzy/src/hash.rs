@@ -70,7 +70,8 @@ pub mod parser_state;
 /// inaccurate as the block size gets larger.
 ///
 /// There is an important property of the block size: all valid block sizes
-/// can be represented as [`block_size::MIN`] * 2<sup>n</sup> (`n` ≧ 0).
+/// can be represented as [`block_size::MIN`] * 2<sup>n</sup> (a power of two
+/// where `n` ≧ 0).
 ///
 /// In this crate, the block size is stored as `n` (the **base-2 logarithm**
 /// form of the block size) for higher efficiency.
