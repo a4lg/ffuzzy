@@ -143,8 +143,8 @@ pub mod block_hash_position_array_element {
 /// that the all elements inside the string is less than
 /// [`block_hash::ALPHABET_SIZE`] (64).
 ///
-/// In other words, a string must be an array of Base64 indices
-/// (not a Base64 string itself).
+/// In other words, a string must be an array of block hash alphabets
+/// (not Base64 alphabets).
 ///
 /// # Compatibility Note
 ///
