@@ -1,6 +1,6 @@
 #! /bin/env python3
 # SPDX-License-Identifier: MIT
-# SPDX-FileCopyrightText: Copyright (C) 2024 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+# SPDX-FileCopyrightText: Copyright (C) 2024–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 import functools
 import sys
@@ -11,7 +11,6 @@ STRLEN = 64
 
 # For variable naming
 DIGITS = len(str(STRLEN))
-DIGIT_FORMAT = '{{:0{}}}'.format(DIGITS)
 
 def Max(a, b):
     return z3.If(a > b, a, b)
@@ -22,7 +21,7 @@ def DeMorganNot(and_clauses):
     return z3.Or(*[z3.Not(p) for p in and_clauses])
 
 def FindCounterexamples(name, constraints):
-    print('Whether {} has a counterexample... '.format(name), file=sys.stderr, end='')
+    print(f'Whether {name} has a counterexample... ', file=sys.stderr, end='')
     sys.stderr.flush()
     solver = z3.Solver()
     for constraint in constraints:
@@ -32,7 +31,7 @@ def FindCounterexamples(name, constraints):
         print('found!\n\nCounterexample:', file=sys.stderr)
         model = solver.model()
         for d in sorted(model.decls(), key=str):
-            print('{} = {}'.format(d, model[d]))
+            print(f'{d} = {model[d]}')
         sys.exit(1)
     else:
         print('not found.', file=sys.stderr)
@@ -53,10 +52,10 @@ dp_row1 = []
 dp_char_equal = []
 
 for i in range(-1, STRLEN):
-    dp_row0.append(z3.Int('dp_R0_' + DIGIT_FORMAT.format(i)))
-    dp_row1.append(z3.Int('dp_R1_' + DIGIT_FORMAT.format(i)))
+    dp_row0.append(z3.Int(f'dp_R0_{i:0{DIGITS}}'))
+    dp_row1.append(z3.Int(f'dp_R1_{i:0{DIGITS}}'))
 for i in range(STRLEN):
-    dp_char_equal.append(z3.Bool('b_E_' + DIGIT_FORMAT.format(i)))
+    dp_char_equal.append(z3.Bool(f'b_E_{i:0{DIGITS}}'))
 
 constraints_dp_row0 = []
 constraints_dp_rows_init = []
@@ -159,15 +158,15 @@ b_E = dp_char_equal
 # Vertical differences (True if the vertical difference is +1)
 b_V = []
 for i in range(-1, STRLEN):
-    b_V.append(z3.Bool('b_V_' + DIGIT_FORMAT.format(i)))
+    b_V.append(z3.Bool(f'b_V_{i:0{DIGITS}}'))
     constraints_b_V.append(b_V[i+1] == (dp_row1[i+1] - dp_row0[i+1] == 1))
 
 # Horizontal differences (likewise)
 b_P = []    # Previous row
 b_H = []    # Current row
 for i in range(STRLEN):
-    b_P.append(z3.Bool('b_P_' + DIGIT_FORMAT.format(i)))
-    b_H.append(z3.Bool('b_H_' + DIGIT_FORMAT.format(i)))
+    b_P.append(z3.Bool(f'b_P_{i:0{DIGITS}}'))
+    b_H.append(z3.Bool(f'b_H_{i:0{DIGITS}}'))
     constraints_b_P.append(b_P[i] == (dp_row0[i+1] - dp_row0[i] == 1))
     constraints_b_H.append(b_H[i] == (dp_row1[i+1] - dp_row1[i] == 1))
 
