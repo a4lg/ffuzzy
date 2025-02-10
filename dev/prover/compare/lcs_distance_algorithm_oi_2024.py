@@ -5,15 +5,15 @@
 import sys
 import z3
 
-####
-####    NOT IN THIS PROOF:
-####
-####    Each DP cell (x,y) only depends on (x',y')
-####        where x' <= x && y' <= y && (x != x' && y != y'),
-####    making the whole algorithm usable to the strings
-####    shorter than STRLEN below (on the bit-parallel algorithm,
-####    ignoring upper bits will work).
-####
+'''
+    NOT IN THIS PROOF:
+
+    Each DP cell (x,y) only depends on (x',y')
+        where x' <= x && y' <= y && (x != x' && y != y'),
+    making the whole algorithm usable to the strings
+    shorter than STRLEN below (on the bit-parallel algorithm,
+    ignoring upper bits will work).
+'''
 
 # (Maximum) string 1 length and the word size in the bit-parallel algorithm.
 STRLEN = 64
@@ -28,15 +28,20 @@ GENERALIZED = False
 # For variable naming
 DIGITS = len(str(STRLEN))
 
+
 def Min(a, b):
     return z3.If(a < b, a, b)
+
+
 def Min3(a, b, c):
     return Min(a, Min(b, c))
+
 
 def DeMorganNot(and_clauses):
     # Convert AND clauses and get the complement expression
     # (e.g. for X && Y [and_clauses], return !(X && Y) == (!X || !Y))
     return z3.Or(*[z3.Not(p) for p in and_clauses])
+
 
 def FindCounterexamples(name, constraints):
     print(f'Whether {name} has a counterexample... ', file=sys.stderr, end='')
@@ -55,11 +60,10 @@ def FindCounterexamples(name, constraints):
         print('not found.', file=sys.stderr)
 
 
-
-##
-##  DP algorithm to calculate the LCS distance
-##  between string 1 and string 2
-##
+'''
+    DP algorithm to calculate the LCS distance
+    between string 1 and string 2
+'''
 
 # Row 0: The previously calculated row
 dp_row0 = []
@@ -86,40 +90,42 @@ for i in range(STRLEN):
     # This is a definition for the first row (where the differences are all +1).
     # For other rows, it is to be proven below.
     constraints_dp_row0.append(z3.Or(
-        dp_row0[i+1] - dp_row0[i] ==  1,
+        dp_row0[i+1] - dp_row0[i] == +1,
         dp_row0[i+1] - dp_row0[i] == -1
     ))
 # Initialization of the first column of the current row
 # (depending on the generalization)
 if GENERALIZED:
     constraints_dp_row1_init.append(z3.Or(
-        dp_row1[0] - dp_row0[0] ==  1,
+        dp_row1[0] - dp_row0[0] == +1,
         dp_row1[0] - dp_row0[0] == -1,
     ))
 else:
     constraints_dp_row1_init.append(
-        dp_row1[0] - dp_row0[0] ==  1
+        dp_row1[0] - dp_row0[0] == +1
     )
 # Calculation of the current row (remaining columns corresponding string 1)
 for i in range(STRLEN):
     constraints_dp_row1_calc.append(dp_row1[i+1] == Min3(
         dp_row0[i+1] + 1,
-        dp_row1[i  ] + 1,
-        dp_row0[i  ] + z3.If(dp_char_equal[i], 0, 2)
+        dp_row1[i+0] + 1,
+        dp_row0[i+0] + z3.If(dp_char_equal[i], 0, 2)
     ))
 
 # Post condition of the current row after the calculation of the current row
 for i in range(STRLEN):
     # Horizontal difference is always either 1 or -1
     constraints_dp_row1_post.append(z3.Or(
-        dp_row1[i+1] - dp_row1[i] ==  1,
+        dp_row1[i+1] - dp_row1[i] == +1,
         dp_row1[i+1] - dp_row1[i] == -1
     ))
 # Make sure that the post condition is satisfied.
 if True:
     FindCounterexamples(
         'DP post condition (horizontal)',
-        constraints_dp_row0 + constraints_dp_row1_init + constraints_dp_row1_calc + \
+        constraints_dp_row0 +
+        constraints_dp_row1_init +
+        constraints_dp_row1_calc +
         [DeMorganNot(constraints_dp_row1_post)]
     )
 
@@ -127,14 +133,16 @@ if True:
 for i in range(-1, STRLEN):
     # Vertical difference is always either 1 or -1
     constraints_dp_rows_post.append(z3.Or(
-        dp_row1[i+1] - dp_row0[i+1] ==  1,
+        dp_row1[i+1] - dp_row0[i+1] == +1,
         dp_row1[i+1] - dp_row0[i+1] == -1
     ))
 # Make sure that the post condition is satisfied.
 if True:
     FindCounterexamples(
         'DP post condition (vertical)',
-        constraints_dp_row0 + constraints_dp_row1_init + constraints_dp_row1_calc + \
+        constraints_dp_row0 +
+        constraints_dp_row1_init +
+        constraints_dp_row1_calc +
         [DeMorganNot(constraints_dp_rows_post)]
     )
 
@@ -146,11 +154,10 @@ constraints_dp = \
     constraints_dp_rows_post
 
 
-
-##
-##  DP algorithm, converted to boolean expressions
-##  and encoded as "differences".
-##
+'''
+    DP algorithm, converted to boolean expressions
+    and encoded as "differences".
+'''
 constraints_b_V = []    # Vertical differences
 constraints_b_P = []    # Horizontal differences (on the previous row)
 constraints_b_H = []    # Horizontal differences (on the current row)
@@ -186,8 +193,10 @@ for i in range(STRLEN):
 if True:
     FindCounterexamples(
         'DP-BOOL calculation (horizontal)',
-        constraints_dp + \
-        constraints_b_V + constraints_b_P + constraints_b_H + \
+        constraints_dp +
+        constraints_b_V +
+        constraints_b_P +
+        constraints_b_H +
         [DeMorganNot(constraints_b_H_calc)]
     )
 
@@ -208,9 +217,11 @@ for i in range(-1, STRLEN):
 if True:
     FindCounterexamples(
         'DP-BOOL calculation (vertical)',
-        constraints_dp + \
-        constraints_b_V + constraints_b_P + constraints_b_H + \
-        constraints_b_H_calc + \
+        constraints_dp +
+        constraints_b_V +
+        constraints_b_P +
+        constraints_b_H +
+        constraints_b_H_calc +
         [DeMorganNot(constraints_b_V_calc)]
     )
 
@@ -222,12 +233,11 @@ constraints_dp_bool = \
     constraints_b_V_calc
 
 
-
-##
-##  The bit-parallel LCS distance algorithm by Tsukasa OI (2024),
-##  inspired by the concept of Myers (1999) but simplified
-##  using the "parity" relations.
-##
+'''
+    The bit-parallel LCS distance algorithm by Tsukasa OI (2024),
+    inspired by the concept of Myers (1999) but simplified
+    using the "parity" relations.
+'''
 
 # V (representing vertical differences) omits index -1,
 # making all four bit vectors' length STRLEN.
@@ -246,9 +256,9 @@ Es = [z3.Extract(i, i, E) for i in range(STRLEN)]
 constraints_bitpar_dp_bool = []
 for i in range(STRLEN):
     constraints_bitpar_dp_bool.append(b_V[i+1] == (Vs[i] == 1))
-    constraints_bitpar_dp_bool.append(b_P[i  ] == (Ps[i] == 1))
-    constraints_bitpar_dp_bool.append(b_H[i  ] == (Hs[i] == 1))
-    constraints_bitpar_dp_bool.append(b_E[i  ] == (Es[i] == 1))
+    constraints_bitpar_dp_bool.append(b_P[i+0] == (Ps[i] == 1))
+    constraints_bitpar_dp_bool.append(b_H[i+0] == (Hs[i] == 1))
+    constraints_bitpar_dp_bool.append(b_E[i+0] == (Es[i] == 1))
 
 # Construction of the "carry".
 # This is:
@@ -272,9 +282,10 @@ constraints_bitpar_V_calc = [
 if True:
     FindCounterexamples(
         'Bit-parallel calculation (vertical)',
-        constraints_dp + constraints_dp_bool + \
-        constraints_bitpar_dp_bool + \
-        constraints_bitpar_C_init + \
+        constraints_dp +
+        constraints_dp_bool +
+        constraints_bitpar_dp_bool +
+        constraints_bitpar_C_init +
         [DeMorganNot(constraints_bitpar_V_calc)]
     )
 
@@ -285,10 +296,11 @@ constraints_bitpar_H_calc = [
 if True:
     FindCounterexamples(
         'Bit-parallel calculation (horizontal)',
-        constraints_dp + constraints_dp_bool + \
-        constraints_bitpar_dp_bool + \
-        constraints_bitpar_C_init + \
-        constraints_bitpar_V_calc + \
+        constraints_dp +
+        constraints_dp_bool +
+        constraints_bitpar_dp_bool +
+        constraints_bitpar_C_init +
+        constraints_bitpar_V_calc +
         [DeMorganNot(constraints_bitpar_H_calc)]
     )
 
@@ -299,10 +311,9 @@ constraints_bitpar = \
     constraints_bitpar_H_calc
 
 
-
-##
-##  Further optimization (minor)
-##
+'''
+    Further optimization (minor)
+'''
 
 # (-1)-st bit of V in DP-BOOL domain is True on the non-generalized proof
 # and the original expression reflected that.
@@ -314,18 +325,19 @@ if not GENERALIZED:
     if True:
         FindCounterexamples(
             'Bit-parallel calculation (horizontal; optimized)',
-            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            constraints_dp +
+            constraints_dp_bool +
+            constraints_bitpar +
             [DeMorganNot(constraints_bitpar_H_opt_calc)]
         )
 
 
+'''
+    Old bit-parallel LCS distance algorithm based on Hyyrö et al. (2005),
+    heavily modified to calculate pure LCS distance between two strings.
 
-##
-##  Old bit-parallel LCS distance algorithm based on Hyyrö et al. (2005),
-##  heavily modified to calculate pure LCS distance between two strings.
-##
-##  This customized algorithm was written by Tsukasa OI for ssdeep 2.14.
-##
+    This customized algorithm was written by Tsukasa OI for ssdeep 2.14.
+'''
 
 # Note:
 # "Vertical" and "horizontal" are swapped between Hyyrö et al. (2005)
@@ -347,7 +359,9 @@ if not GENERALIZED:
     if True:
         FindCounterexamples(
             'Old bit-parallel calculation (vertical)',
-            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            constraints_dp +
+            constraints_dp_bool +
+            constraints_bitpar +
             [DeMorganNot(constraints_bitpar_old_V_calc)]
         )
 
@@ -364,7 +378,9 @@ if not GENERALIZED:
     if True:
         FindCounterexamples(
             'Old bit-parallel calculation (horizontal)',
-            constraints_dp + constraints_dp_bool + constraints_bitpar + \
+            constraints_dp +
+            constraints_dp_bool +
+            constraints_bitpar +
             [DeMorganNot(constraints_bitpar_old_H_calc)]
         )
 
