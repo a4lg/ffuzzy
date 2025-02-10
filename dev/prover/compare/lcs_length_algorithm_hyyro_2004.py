@@ -40,10 +40,12 @@ def FindCounterexamples(name, constraints):
         print('not found.', file=sys.stderr)
 
 
-'''
-    DP algorithm to calculate the LCS length
-    between string 1 and string 2
-'''
+# =========================================================================
+#
+#   DP algorithm to calculate the LCS length
+#   between string 1 and string 2
+#
+# =========================================================================
 
 # Row 0: The previously calculated row
 dp_row0 = []
@@ -149,10 +151,13 @@ constraints_dp = \
     constraints_dp_llcs_post
 
 
-'''
-    DP algorithm, converted to boolean expressions
-    and encoded as "differences".
-'''
+# =========================================================================
+#
+#   DP algorithm, converted to boolean expressions
+#   and encoded as "differences".
+#
+# =========================================================================
+
 constraints_b_V = []    # Vertical differences
 constraints_b_P = []    # Horizontal differences (on the previous row)
 constraints_b_H = []    # Horizontal differences (on the current row)
@@ -226,9 +231,11 @@ constraints_dp_bool = \
     constraints_b_H_calc
 
 
-'''
-    The bit-parallel LCS length algorithm by Hyyrö (2004).
-'''
+# =========================================================================
+#
+#   The bit-parallel LCS length algorithm by Hyyrö (2004).
+#
+# =========================================================================
 
 # V (representing vertical differences) omits index -1,
 # making all four bit vectors' length STRLEN.
@@ -268,22 +275,24 @@ if True:
         [DeMorganNot(constraints_bitpar_H_calc)]
     )
 
-'''
-    NOT IN THIS FORMAL PROOF:
-
-    Because LLCS is length of the *longest* common subsequence,
-    the LCS distance can be thought as number of operations
-    preserving the longest common subsequence between two and
-    add / remove all other characters.  That would minimize the
-    number of operations required to turn A into B.
-    That relation makes:
-        LCS-distance(a,b) = a.len() + b.len() - 2 * LCS-length(a,b)
-
-    Also, if the actual length of the string 1 is shorter than STRLEN,
-    the value of the highest valid DP cell is carried
-    to the highest position preserving the value, making:
-        row1[a.len()-1] == row1[STRLEN-1]
-        (excluding the first implicit "0" column).
-'''
+# =========================================================================
+#
+#   NOT IN THIS FORMAL PROOF:
+#
+#   Because LLCS is length of the *longest* common subsequence,
+#   the LCS distance can be thought as number of operations
+#   preserving the longest common subsequence between two and
+#   add / remove all other characters.  That would minimize the
+#   number of operations required to turn A into B.
+#   That relation makes:
+#       LCS-distance(a,b) = a.len() + b.len() - 2 * LCS-length(a,b)
+#
+#   Also, if the actual length of the string 1 is shorter than STRLEN,
+#   the value of the highest valid DP cell is carried
+#   to the highest position preserving the value, making:
+#       row1[a.len()-1] == row1[STRLEN-1]
+#       (excluding the first implicit "0" column).
+#
+# =========================================================================
 
 sys.exit(0)

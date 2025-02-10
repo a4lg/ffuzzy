@@ -5,15 +5,17 @@
 import sys
 import z3
 
-'''
-    NOT IN THIS PROOF:
-
-    Each DP cell (x,y) only depends on (x',y')
-        where x' <= x && y' <= y && (x != x' && y != y'),
-    making the whole algorithm usable to the strings
-    shorter than STRLEN below (on the bit-parallel algorithm,
-    ignoring upper bits will work).
-'''
+# =========================================================================
+#
+#   NOT IN THIS PROOF:
+#
+#   Each DP cell (x,y) only depends on (x',y')
+#       where x' <= x && y' <= y && (x != x' && y != y'),
+#   making the whole algorithm usable to the strings
+#   shorter than STRLEN below (on the bit-parallel algorithm,
+#   ignoring upper bits will work).
+#
+# =========================================================================
 
 # (Maximum) string 1 length and the word size in the bit-parallel algorithm.
 STRLEN = 64
@@ -60,10 +62,12 @@ def FindCounterexamples(name, constraints):
         print('not found.', file=sys.stderr)
 
 
-'''
-    DP algorithm to calculate the LCS distance
-    between string 1 and string 2
-'''
+# =========================================================================
+#
+#   DP algorithm to calculate the LCS distance
+#   between string 1 and string 2
+#
+# =========================================================================
 
 # Row 0: The previously calculated row
 dp_row0 = []
@@ -154,10 +158,13 @@ constraints_dp = \
     constraints_dp_rows_post
 
 
-'''
-    DP algorithm, converted to boolean expressions
-    and encoded as "differences".
-'''
+# =========================================================================
+#
+#   DP algorithm, converted to boolean expressions
+#   and encoded as "differences".
+#
+# =========================================================================
+
 constraints_b_V = []    # Vertical differences
 constraints_b_P = []    # Horizontal differences (on the previous row)
 constraints_b_H = []    # Horizontal differences (on the current row)
@@ -233,11 +240,13 @@ constraints_dp_bool = \
     constraints_b_V_calc
 
 
-'''
-    The bit-parallel LCS distance algorithm by Tsukasa OI (2024),
-    inspired by the concept of Myers (1999) but simplified
-    using the "parity" relations.
-'''
+# =========================================================================
+#
+#   The bit-parallel LCS distance algorithm by Tsukasa OI (2024),
+#   inspired by the concept of Myers (1999) but simplified
+#   using the "parity" relations.
+#
+# =========================================================================
 
 # V (representing vertical differences) omits index -1,
 # making all four bit vectors' length STRLEN.
@@ -311,9 +320,11 @@ constraints_bitpar = \
     constraints_bitpar_H_calc
 
 
-'''
-    Further optimization (minor)
-'''
+# =========================================================================
+#
+#   Further optimization (minor)
+#
+# =========================================================================
 
 # (-1)-st bit of V in DP-BOOL domain is True on the non-generalized proof
 # and the original expression reflected that.
@@ -332,12 +343,14 @@ if not GENERALIZED:
         )
 
 
-'''
-    Old bit-parallel LCS distance algorithm based on Hyyrö et al. (2005),
-    heavily modified to calculate pure LCS distance between two strings.
-
-    This customized algorithm was written by Tsukasa OI for ssdeep 2.14.
-'''
+# =========================================================================
+#
+#   Old bit-parallel LCS distance algorithm based on Hyyrö et al. (2005),
+#   heavily modified to calculate pure LCS distance between two strings.
+#
+#   This customized algorithm was written by Tsukasa OI for ssdeep 2.14.
+#
+# =========================================================================
 
 # Note:
 # "Vertical" and "horizontal" are swapped between Hyyrö et al. (2005)
