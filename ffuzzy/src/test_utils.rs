@@ -30,16 +30,17 @@ macro_rules! assert_fits_in_impl {
 }
 
 /// Test for each type.
+///
+/// Specify `id` without trailing `!`.
 #[doc(alias = "test_for_each_type")]
 macro_rules! test_for_each_type_impl {
-    ($test: ident, []) => {};
-    ($test: ident, [$($ty: ty),+ $(,)?]) => {
-        $(
+    ($id: path, [$($($ty: ty),+ $(,)?)?]) => {
+        $($(
             loop {
-                $test!($ty);
+                $id!($ty);
                 break;
             }
-        )+
+        )+)?
     };
 }
 
