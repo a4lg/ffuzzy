@@ -49,7 +49,7 @@ def FindCounterexamples(name, constraints):
         print('found!\n\nCounterexample:', file=sys.stderr)
         model = solver.model()
         for d in sorted(model.decls(), key=str):
-            print(f'{d} = {model[d]}')
+            print(f'\t{d} = {model[d]}')
         sys.exit(1)
     else:
         print('not found.', file=sys.stderr)
