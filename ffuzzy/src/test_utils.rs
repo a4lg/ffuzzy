@@ -28,6 +28,7 @@ macro_rules! assert_fits_in_impl {
         assert!(<$ty>::try_from($expr).is_ok(), $($arg)+)
     };
 }
+pub(crate) use assert_fits_in_impl as assert_fits_in;
 
 /// Test for each type.
 ///
@@ -43,6 +44,7 @@ macro_rules! test_for_each_type_impl {
         )+)?
     };
 }
+pub(crate) use test_for_each_type_impl as test_for_each_type;
 
 /// Test recommended [`Default`] implementation.
 #[doc(alias = "test_recommended_default")]
@@ -53,9 +55,6 @@ macro_rules! test_recommended_default_impl {
         assert_eq!(value1, value2);
     }};
 }
-
-pub(crate) use assert_fits_in_impl as assert_fits_in;
-pub(crate) use test_for_each_type_impl as test_for_each_type;
 pub(crate) use test_recommended_default_impl as test_recommended_default;
 
 mod tests;
