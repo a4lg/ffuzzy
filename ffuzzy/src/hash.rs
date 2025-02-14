@@ -35,6 +35,7 @@ pub mod parser_state;
 ///     [`block_hash::FULL_SIZE`].
 ///
 ///     The average piece-splitting probability is given as `1/block_size`.
+///
 /// 3.  Block hash 2.  6-bit hash per "piece", variable-length up to either
 ///     *   [`block_hash::HALF_SIZE`] (truncated / short / regular) or
 ///     *   [`block_hash::FULL_SIZE`] (non-truncated / long).
