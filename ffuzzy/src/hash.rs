@@ -220,7 +220,7 @@ pub mod parser_state;
 /// ```
 ///
 /// Beware that the 32nd character of the block hash 2 are different (`P` and
-/// `i`).  This is because the last character of an block hash may contain the
+/// `i`).  This is because the last character of a block hash may contain the
 /// information after all other individually stored pieces.
 ///
 /// # Fuzzy Hash Comparison
