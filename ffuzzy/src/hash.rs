@@ -31,12 +31,13 @@ pub mod parser_state;
 /// 1.  Block size (reciprocal of average piece-splitting probability per byte
 ///     on the block hash 1)
 ///
-/// 2.  Block hash 1.  6-bit hash per "piece", variable-length up to
-///     [`block_hash::FULL_SIZE`].
+/// 2.  Block hash 1.  6-bit hash (a block hash alphabet) per "piece",
+///     variable-length up to [`block_hash::FULL_SIZE`].
 ///
 ///     The average piece-splitting probability is given as `1/block_size`.
 ///
-/// 3.  Block hash 2.  6-bit hash per "piece", variable-length up to either
+/// 3.  Block hash 2.  6-bit hash (a block hash alphabet) per "piece",
+///     variable-length up to either
 ///     *   [`block_hash::HALF_SIZE`] (truncated / short / regular) or
 ///     *   [`block_hash::FULL_SIZE`] (non-truncated / long).
 ///
