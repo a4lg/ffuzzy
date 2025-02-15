@@ -32,7 +32,10 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 /// If `unsafe` is enabled but Rust is older than the version 1.81,
 /// [`core::hint::unreachable_unchecked()`] is used.
 ///
-/// Optimization behaviors are disabled on tests.
+/// Optimization is disabled when either:
+///
+/// *   Tests are being performed or
+/// *   Debug assertions are enabled.
 ///
 /// # Example
 ///
@@ -51,12 +54,12 @@ pub(crate) use optionally_unsafe_impl as optionally_unsafe;
 macro_rules! invariant_impl {
     ($expr: expr) => {
         cfg_if::cfg_if! {
-            if #[cfg(all(feature = "unsafe", ffuzzy_assume = "stable", not(test)))] {
+            if #[cfg(all(feature = "unsafe", ffuzzy_assume = "stable", not(test), not(debug_assertions)))] {
                 #[allow(clippy::incompatible_msrv)]
                 unsafe {
                     core::hint::assert_unchecked($expr);
                 }
-            } else if #[cfg(all(feature = "unsafe", not(test)))] {
+            } else if #[cfg(all(feature = "unsafe", not(test), not(debug_assertions)))] {
                 if !($expr) {
                     unsafe {
                         core::hint::unreachable_unchecked();
