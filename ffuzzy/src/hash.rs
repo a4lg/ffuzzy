@@ -1235,39 +1235,56 @@ where
             && self.log_blocksize == other.log_blocksize
     }
 
-    /// Compare two *base-2 logarithm* forms of the block size values from
-    /// given two fuzzy hashes to determine their block size relation.
+    /// Compare two block size values from given two fuzzy hashes
+    /// to determine their block size relation.
     #[inline]
     pub fn compare_block_sizes(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> BlockSizeRelation {
         block_size::compare_sizes(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
-    /// Checks whether two *base-2 logarithm* forms of the block size values
-    /// from given two fuzzy hashes form a near relation.
+    /// Checks whether two block size values from given two fuzzy hashes
+    /// form a near relation.
+    ///
+    /// # Compatibility Notice
+    ///
+    /// This method will be renamed to `is_block_size_near()` on the next
+    /// major release, taking the first argument as a reference to `self`.
     #[inline]
     pub fn is_block_sizes_near(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
         block_size::is_near(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
-    /// Checks whether two *base-2 logarithm* forms of the block size values
-    /// from given two fuzzy hashes form a [`BlockSizeRelation::NearEq`]
-    /// relation.
+    /// Checks whether two block size values from given two fuzzy hashes
+    /// form a [`BlockSizeRelation::NearEq`] relation.
+    ///
+    /// # Compatibility Notice
+    ///
+    /// This method will be renamed to `is_block_size_near_eq()` on the next
+    /// major release, taking the first argument as a reference to `self`.
     #[inline]
     pub fn is_block_sizes_near_eq(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
         block_size::is_near_eq(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
-    /// Checks whether two *base-2 logarithm* forms of the block size values
-    /// from given two fuzzy hashes form a [`BlockSizeRelation::NearLt`]
-    /// relation.
+    /// Checks whether two block size values from given two fuzzy hashes
+    /// form a [`BlockSizeRelation::NearLt`] relation.
+    ///
+    /// # Compatibility Notice
+    ///
+    /// This method will be renamed to `is_block_size_near_lt()` on the next
+    /// major release, taking the first argument as a reference to `self`.
     #[inline]
     pub fn is_block_sizes_near_lt(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
         block_size::is_near_lt(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
     }
 
-    /// Checks whether two *base-2 logarithm* forms of the block size values
-    /// from given two fuzzy hashes form a [`BlockSizeRelation::NearGt`]
-    /// relation.
+    /// Checks whether two block size values from given two fuzzy hashes
+    /// form a [`BlockSizeRelation::NearGt`] relation.
+    ///
+    /// # Compatibility Notice
+    ///
+    /// This method will be renamed to `is_block_size_near_gt()` on the next
+    /// major release, taking the first argument as a reference to `self`.
     #[inline]
     pub fn is_block_sizes_near_gt(lhs: impl AsRef<Self>, rhs: impl AsRef<Self>) -> bool {
         block_size::is_near_gt(lhs.as_ref().log_blocksize, rhs.as_ref().log_blocksize)
