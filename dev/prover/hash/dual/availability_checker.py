@@ -3,14 +3,15 @@
 # SPDX-FileCopyrightText: Copyright (C) 2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 #   Availability of dual block hashes with body and reconstruction
-#   lengths, Avail(4*n, n) where n ≧ 0, can be easily proven
+#   lengths, Avail(n, floor(n / 4)) where n ≧ 0, can be easily proven
 #   using mathematical induction with following props:
-#       1. Avail(0, 0)
+#       1. Avail(B, 0)                    where 0 ≦ B < 4
 #       2. Avail(B, R) -> Avail(B+4, R+1)
-#   both coming from more generic props:
+#   where some of them coming from more generic props:
 #       1. Avail(B, 0)                    where 0 ≦ B ≦ MAX_SEQUENCE_SIZE
 #       2. Avail(B, R) -> Avail(B+n, R+1) where 1 ≦ n ≦ 4
 #       3. Avail(B, R) -> Avail(B,   R+1) [not used]
+#       4. 0 ≦ B ≦ MAX_SEQUENCE_SIZE ⇔ 0 ≦ B < 4
 #
 #   However, actual correspondence to the program is not obvious from
 #   the simpler, bottom-up proof since actual dual block hash availability
@@ -90,9 +91,13 @@ def is_dual_block_available_body(body: int, recn: int) -> bool:
 
 
 if __name__ == '__main__':
-    # availability: block hash 2 of DualFuzzyHash
+    # Avail(n, floor(n / 4)) for n in 0..=64
+    for n in range(0, 64 + 1):
+        if not is_dual_block_available(n, n // 4):
+            raise AssertionError()
+    # Availability: block hash 2 of DualFuzzyHash
     print(f'{is_dual_block_available(32,  8)=}')
-    # availability: block hash 1 of DualFuzzyHash
-    # availability: block hash 1 of LongDualFuzzyHash
-    # availability: block hash 2 of LongDualFuzzyHash
+    # Availability: block hash 1 of DualFuzzyHash
+    # Availability: block hash 1 of LongDualFuzzyHash
+    # Availability: block hash 2 of LongDualFuzzyHash
     print(f'{is_dual_block_available(64, 16)=}')
