@@ -45,14 +45,19 @@ argument checking.
 
 `internal` version is safe but not exported.  The crate developers must be
 aware of the constraints and must satisfy them before calling.
-
-Note that, all `unchecked` functions are just wrappers of
-`internal` functions.  The only purpose of `internal` is to avoid `unsafe`.
+Note that, most of `unchecked` functions are just wrappers of
+`internal` functions.  If both `unchecked` and `internal` versions exist,
+the only purpose of `internal` is to avoid `unsafe`.
 
 As an exception, if a `struct` is already broken by a memory corruption
 caused by something outside this crate or a misuse of `unchecked` functions,
 it's not obligated to check such corruption
 (the crate developers can assume that `struct` is not "very" broken).
+
+Note that, `internal` version may be existing just to notify the developers
+that there are special constraints or invariants before/after calling the
+function.  On such cases, `unchecked` version may be absent and even
+unprefixed version may be, too.
 
 ### Links (to non-suffixed methods)
 
