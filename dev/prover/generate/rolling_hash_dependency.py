@@ -1,6 +1,6 @@
 #! /bin/env python3
 # SPDX-License-Identifier: MIT
-# SPDX-FileCopyrightText: Copyright (C) 2024–2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
+# SPDX-FileCopyrightText: Copyright (C) 2024, 2025 Tsukasa OI <floss_ssdeep@irq.a4lg.com>.
 
 import sys
 import z3
