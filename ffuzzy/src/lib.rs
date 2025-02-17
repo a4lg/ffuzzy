@@ -9,7 +9,6 @@
 #![cfg_attr(
     feature = "unstable",
     feature(
-        core_intrinsics,
         coverage_attribute,
         doc_cfg,
         doc_auto_cfg,
