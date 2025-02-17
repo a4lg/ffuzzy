@@ -20,7 +20,7 @@ Invariants can suppress another type of runtime check (not just array
 bounds check): division by zero.
 
 A big exception is the
-[generator's main loop](crate::generate::Generator::update()).
+[generator's main loop](crate::internals::generate::Generator::update()).
 Because using pointer-based block hash context access is much efficient (we
 can even reuse pointer ranges), the structure of this loop changes
 significantly between both implementations.
@@ -61,22 +61,22 @@ unprefixed version may be, too.
 
 ### Links (to non-suffixed methods)
 
-*   [`crate::compare::FuzzyHashCompareTarget::raw_score_by_edit_distance()`]
-*   [`crate::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()`]
-*   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_eq()`]
-*   [`crate::compare::FuzzyHashCompareTarget::compare_near_eq()`]
-*   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_lt()`]
-*   [`crate::compare::FuzzyHashCompareTarget::compare_unequal_near_gt()`]
-*   [`crate::compare::FuzzyHashCompareTarget::compare_unequal()`]
-*   [`crate::compare::position_array::BlockHashPositionArrayImpl::is_equiv()`]
-*   [`crate::compare::position_array::BlockHashPositionArrayImpl::has_common_substring()`]
-*   [`crate::compare::position_array::BlockHashPositionArrayImpl::edit_distance()`]
-*   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings_raw()`]
-*   [`crate::compare::position_array::BlockHashPositionArrayImpl::score_strings()`]
-*   [`crate::hash::FuzzyHashData::compare_unequal()`]
-*   [`crate::hash::FuzzyHashData::init_from_internals_raw()`]
-*   [`crate::hash::FuzzyHashData::new_from_internals()`]
-*   [`crate::hash::FuzzyHashData::new_from_internals_near_raw()`]
-*   [`crate::hash::FuzzyHashData::new_from_internals_raw()`]
-*   [`crate::hash::block::block_size::from_log()`] ([`Option`] is used instead of assertions)
-*   [`crate::hash::block::block_size::log_from_valid()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::raw_score_by_edit_distance()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::score_cap_on_block_hash_comparison()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::compare_unequal_near_eq()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::compare_near_eq()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::compare_unequal_near_lt()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::compare_unequal_near_gt()`]
+*   [`crate::internals::compare::FuzzyHashCompareTarget::compare_unequal()`]
+*   [`crate::internals::compare::position_array::BlockHashPositionArrayImpl::is_equiv()`]
+*   [`crate::internals::compare::position_array::BlockHashPositionArrayImpl::has_common_substring()`]
+*   [`crate::internals::compare::position_array::BlockHashPositionArrayImpl::edit_distance()`]
+*   [`crate::internals::compare::position_array::BlockHashPositionArrayImpl::score_strings_raw()`]
+*   [`crate::internals::compare::position_array::BlockHashPositionArrayImpl::score_strings()`]
+*   [`crate::internals::hash::FuzzyHashData::compare_unequal()`]
+*   [`crate::internals::hash::FuzzyHashData::init_from_internals_raw()`]
+*   [`crate::internals::hash::FuzzyHashData::new_from_internals()`]
+*   [`crate::internals::hash::FuzzyHashData::new_from_internals_near_raw()`]
+*   [`crate::internals::hash::FuzzyHashData::new_from_internals_raw()`]
+*   [`crate::internals::hash::block::block_size::from_log()`] ([`Option`] is used instead of assertions)
+*   [`crate::internals::hash::block::block_size::log_from_valid()`]

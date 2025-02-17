@@ -65,38 +65,29 @@ extern crate alloc;
 #[cfg(any(feature = "std", test, doc))]
 extern crate std;
 
-mod base64;
-mod compare;
-mod compare_easy;
-mod generate;
-mod generate_easy;
-mod generate_easy_std;
-mod hash;
-mod hash_dual;
-mod intrinsics;
-mod macros;
-mod test_utils;
-mod utils;
+mod internals;
 
 #[cfg(doc)]
 #[allow(missing_docs)]
 pub mod _docs;
 
-pub use compare::FuzzyHashCompareTarget;
+pub use crate::internals::compare::FuzzyHashCompareTarget;
 #[cfg(feature = "easy-functions")]
-pub use compare_easy::{compare, ParseErrorEither, ParseErrorSide};
-pub use generate::{Generator, GeneratorError};
+pub use crate::internals::compare_easy::{compare, ParseErrorEither, ParseErrorSide};
+pub use crate::internals::generate::{Generator, GeneratorError};
 #[cfg(feature = "easy-functions")]
-pub use generate_easy::hash_buf;
+pub use crate::internals::generate_easy::hash_buf;
 #[cfg(all(feature = "easy-functions", feature = "std"))]
-pub use generate_easy_std::{hash_file, hash_stream, GeneratorOrIOError};
-pub use hash::block::{block_hash, block_size, BlockSizeRelation};
-pub use hash::parser_state::{ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin};
-pub use hash::{
+pub use crate::internals::generate_easy_std::{hash_file, hash_stream, GeneratorOrIOError};
+pub use crate::internals::hash::block::{block_hash, block_size, BlockSizeRelation};
+pub use crate::internals::hash::parser_state::{
+    ParseError, ParseErrorInfo, ParseErrorKind, ParseErrorOrigin,
+};
+pub use crate::internals::hash::{
     FuzzyHash, FuzzyHashData, FuzzyHashOperationError, LongFuzzyHash, LongRawFuzzyHash,
     RawFuzzyHash,
 };
-pub use hash_dual::{DualFuzzyHash, FuzzyHashDualData, LongDualFuzzyHash};
+pub use crate::internals::hash_dual::{DualFuzzyHash, FuzzyHashDualData, LongDualFuzzyHash};
 
 /// Module containing internal hash functions.
 ///
@@ -107,7 +98,7 @@ pub use hash_dual::{DualFuzzyHash, FuzzyHashDualData, LongDualFuzzyHash};
 /// vendor the source code for your needs.
 #[deprecated]
 pub mod internal_hashes {
-    pub use super::generate::{PartialFNVHash, RollingHash};
+    pub use crate::internals::generate::{PartialFNVHash, RollingHash};
 }
 
 /// Module containing internal efficient block hash implementation.
@@ -119,18 +110,18 @@ pub mod internal_hashes {
 /// vendor the source code for your needs.
 #[deprecated]
 pub mod internal_comparison {
-    pub use super::compare::position_array::{
+    pub use crate::internals::compare::position_array::{
         block_hash_position_array_element, BlockHashPositionArray, BlockHashPositionArrayData,
         BlockHashPositionArrayImpl,
     };
 
     #[cfg(feature = "unchecked")]
-    pub use super::compare::position_array::BlockHashPositionArrayImplUnchecked;
+    pub use crate::internals::compare::position_array::BlockHashPositionArrayImplUnchecked;
 }
 
 /// Module containing certain constraints about fuzzy hash data.
 pub mod constraints {
-    pub use super::hash::block::{
+    pub use crate::internals::hash::block::{
         BlockHashSize, BlockHashSizes, ConstrainedBlockHashSize, ConstrainedBlockHashSizes,
     };
 }
@@ -154,7 +145,7 @@ pub mod prelude {}
 /// optional file name part) when represented in a string.
 ///
 /// Note that again, this value does not count
-/// [the file name part of the fuzzy hash](crate::hash::FuzzyHashData#fuzzy-hash-internals)
+/// [the file name part of the fuzzy hash](crate::internals::hash::FuzzyHashData#fuzzy-hash-internals)
 /// (not even an optional "comma" character separating the file name part)
 /// because [`LongRawFuzzyHash::len_in_str()`] does not.
 pub const MAX_LEN_IN_STR: usize = LongRawFuzzyHash::MAX_LEN_IN_STR;

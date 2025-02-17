@@ -228,10 +228,10 @@ source code for details).
 
 ## Internal References (for Fuzzy Hashes and Internal Algorithms)
 
-*   ["Fuzzy Hash Internals" section of `FuzzyHashData`](crate::hash::FuzzyHashData#fuzzy-hash-internals)
-*   ["Position Array Representation" section of `BlockHashPositionArrayData`](crate::compare::position_array::BlockHashPositionArrayData#position-array-representation)
+*   ["Fuzzy Hash Internals" section of `FuzzyHashData`](crate::internals::hash::FuzzyHashData#fuzzy-hash-internals)
+*   ["Position Array Representation" section of `BlockHashPositionArrayData`](crate::internals::compare::position_array::BlockHashPositionArrayData#position-array-representation)
     for internal position array implementation
-*   [`BlockHashPositionArrayImpl`](crate::compare::position_array::BlockHashPositionArrayImpl)
+*   [`BlockHashPositionArrayImpl`](crate::internals::compare::position_array::BlockHashPositionArrayImpl)
     and its methods for internal position array-based algorithms
 
 

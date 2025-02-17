@@ -30,11 +30,11 @@ version (MSRV), which we only expect stable features.
 
 ## 1.67.0
 
-*   Remove `crate::utils::u64_ilog2` and replace to `u64::ilog2`.
+*   Remove `crate::internals::utils::u64_ilog2` and replace to `u64::ilog2`.
 
 ## 1.73.0
 
-*   Remove `crate::hash_dual::private::const_asserts::div_ceil` and
+*   Remove `crate::internals::hash_dual::private::const_asserts::div_ceil` and
     replace to `usize::div_ceil`.
 
 ## 1.80.0
